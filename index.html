@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v232 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v234 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6392,32 +6392,47 @@ function _slug(n){return n.toLowerCase().replace(/['’]/g,'').replace(/[^a-z0-9
 function colourUrl(b,n){if(b==='Polytec')return 'https://www.polytec.com.au/colour/'+_slug(n)+'/';
   if(b==='Laminex'||b==='Formica')return 'https://www.google.com/search?q='+encodeURIComponent(b+' '+n+' laminate Australia');return '';}
 function colourImg(b,n){return b==='Polytec'?'https://www.polytec.com.au/img/products/380-380/'+_slug(n)+'.jpg':'';}
-var COLOUR_CUSTOM=[];
+var COLOUR_CUSTOM=[],COLOUR_BRANDS=[];
+function cpBrands(){return ['Polytec','Laminex','Formica'].concat(COLOUR_BRANDS);}
 function colourLoadCustom(){
-  try{window.storage.get('cbk-custom-colours').then(function(r){if(r&&r.value){try{COLOUR_CUSTOM=JSON.parse(r.value)||[];}catch(e){}if(document.getElementById('cp-ov'))cpRender();}});}catch(e){}
-  try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('settings').doc('colours').get().then(function(d){if(d.exists&&Array.isArray(d.data().list)){COLOUR_CUSTOM=d.data().list;try{window.storage.set('cbk-custom-colours',JSON.stringify(COLOUR_CUSTOM));}catch(e){}if(document.getElementById('cp-ov'))cpRender();}}).catch(function(){});}catch(e){}}
+  try{window.storage.get('cbk-custom-colours').then(function(r){if(r&&r.value){try{var o=JSON.parse(r.value);if(Array.isArray(o))COLOUR_CUSTOM=o;else{COLOUR_CUSTOM=o.list||[];COLOUR_BRANDS=o.brands||[];}}catch(e){}if(document.getElementById('cp-ov'))cpRender();}});}catch(e){}
+  try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('settings').doc('colours').get().then(function(d){if(d.exists&&Array.isArray(d.data().list)){COLOUR_CUSTOM=d.data().list;COLOUR_BRANDS=d.data().brands||[];try{window.storage.set('cbk-custom-colours',JSON.stringify({list:COLOUR_CUSTOM,brands:COLOUR_BRANDS}));}catch(e){}if(document.getElementById('cp-ov'))cpRender();}}).catch(function(){});}catch(e){}}
 function colourSaveCustom(){
-  try{window.storage.set('cbk-custom-colours',JSON.stringify(COLOUR_CUSTOM));}catch(e){}
-  try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('settings').doc('colours').set({list:COLOUR_CUSTOM}).catch(function(){});}catch(e){}}
+  try{window.storage.set('cbk-custom-colours',JSON.stringify({list:COLOUR_CUSTOM,brands:COLOUR_BRANDS}));}catch(e){}
+  try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('settings').doc('colours').set({list:COLOUR_CUSTOM,brands:COLOUR_BRANDS}).catch(function(){});}catch(e){}}
 var _finSheet='appl';
 var _cpCtx=null,_cpBrand='Polytec',_cpItems=[];
-function finPickColour(gi,ri){_cpCtx={gi:gi,ri:ri};_cpBrand='Polytec';colourLoadCustom();
+function finPickColour(gi,ri){_cpCtx={gi:gi,ri:ri};_cpBrand='';colourLoadCustom();
   var o=document.createElement('div');o.id='cp-ov';o.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:99997;display:flex;align-items:center;justify-content:center;padding:12px;';
   o.innerHTML='<div style="background:#fff;border-radius:14px;max-width:920px;width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;">'+
-   '<div style="padding:12px 14px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><b style="font-size:15px;">🎨 Choose colour</b>'+
-   '<div id="cp-brands" style="display:flex;gap:6px;flex-wrap:wrap;"></div><input id="cp-q" oninput="cpRender()" placeholder="🔍 Search colour (e.g. Florentine)" style="flex:1;min-width:180px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'cp-ov\').remove()">✖ Close</button></div>'+
+   '<div id="cp-step1" style="padding:16px;overflow:auto;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><b style="font-size:16px;">🎨 Which company is this material from?</b><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'cp-ov\').remove()">✖ Close</button></div>'+
+   '<div id="cp-brandgrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;"></div>'+
+   '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0;"><div style="font-size:12px;font-weight:800;margin-bottom:6px;">➕ Another company (type its name)</div><div style="display:flex;gap:6px;flex-wrap:wrap;"><input id="cp-newbrand" placeholder="e.g. Egger, Wilsonart, Melteca…" onkeydown="if(event.key===\'Enter\')cpAddBrand()" style="flex:1;min-width:180px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><button class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="cpAddBrand()">Add company</button></div></div></div>'+
+   '<div id="cp-step2" style="display:none;flex-direction:column;min-height:0;flex:1;">'+
+   '<div style="padding:12px 14px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><button class="btn btn-outline btn-sm" onclick="cpBack()">← Change company</button><b id="cp-title" style="font-size:15px;">🎨</b>'+
+   '<span id="cp-brands" style="display:none;"></span><input id="cp-q" oninput="cpRender()" placeholder="🔍 Search colour (e.g. Florentine)" style="flex:1;min-width:180px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'cp-ov\').remove()">✖ Close</button></div>'+
    '<div id="cp-count" style="padding:6px 14px;font-size:12px;color:#64748b;"></div>'+
    '<div id="cp-list" style="padding:6px 14px 10px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;flex:1;"></div>'+
    '<div style="border-top:1px solid #e2e8f0;padding:10px 14px;background:#f8fafc;"><div style="font-size:12px;font-weight:800;color:#0f172a;margin-bottom:6px;">➕ Not in the list? Add it by hand (saved for everyone)</div>'+
-   '<div style="display:flex;gap:6px;flex-wrap:wrap;"><input id="cp-newname" placeholder="Colour name" style="flex:1;min-width:150px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><input id="cp-newurl" placeholder="Link (optional)" style="flex:1;min-width:150px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><button id="cp-addbtn" class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="cpAddCustom()">Add</button></div></div></div>';
-  document.body.appendChild(o);cpRender();setTimeout(function(){document.getElementById('cp-q').focus();},50);}
-function cpBrand(b){_cpBrand=b;cpRender();}
+   '<div style="display:flex;gap:6px;flex-wrap:wrap;"><input id="cp-newname" placeholder="Colour name" style="flex:1;min-width:150px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><input id="cp-newurl" placeholder="Link (optional)" style="flex:1;min-width:150px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><button id="cp-addbtn" class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="cpAddCustom()">Add</button></div></div></div></div>';
+  document.body.appendChild(o);cpRender();}
+function cpBack(){_cpBrand='';document.getElementById('cp-q').value='';cpRender();}
+function cpBrand(b){_cpBrand=b;document.getElementById('cp-q').value='';cpRender();setTimeout(function(){document.getElementById('cp-q').focus();},50);}
+function cpAddBrand(){var n=document.getElementById('cp-newbrand').value.trim();if(!n){alert('Type the company name first.');return;}
+  if(cpBrands().some(function(b){return b.toLowerCase()===n.toLowerCase();})){alert('This company is already in the list.');return;}
+  COLOUR_BRANDS.push(n);colourSaveCustom();document.getElementById('cp-newbrand').value='';cpRender();cpBrand(n);}
+function cpDelBrand(b){if(!confirm('Remove company "'+b+'" and its colours from your list?'))return;COLOUR_BRANDS=COLOUR_BRANDS.filter(function(x){return x!==b;});COLOUR_CUSTOM=COLOUR_CUSTOM.filter(function(c){return c.brand!==b;});colourSaveCustom();cpRender();}
 function cpItemsFor(b){var a=(COLOUR_LIB[b]||[]).map(function(n){return {name:n,url:colourUrl(b,n),img:colourImg(b,n),custom:false};});
   COLOUR_CUSTOM.filter(function(c){return c.brand===b;}).forEach(function(c){a.push({name:c.name,url:c.url||colourUrl(b,c.name),img:'',custom:true,id:c.id});});
   a.sort(function(x,y){return x.name.localeCompare(y.name);});return a;}
 function cpRender(){
+  var s1=document.getElementById('cp-step1'),s2=document.getElementById('cp-step2');
+  if(!_cpBrand){s1.style.display='';s2.style.display='none';
+    document.getElementById('cp-brandgrid').innerHTML=cpBrands().map(function(b){var cnt=cpItemsFor(b).length;var cu=COLOUR_BRANDS.indexOf(b)>-1;
+      return '<div onclick="cpBrand(\''+b.replace(/'/g,"\\'")+'\')" style="position:relative;cursor:pointer;border:2px solid #e2e8f0;border-radius:12px;padding:16px 10px;text-align:center;background:#fff;"><div style="font-weight:800;font-size:15px;">'+esc(b)+'</div><div style="font-size:11px;color:#64748b;margin-top:4px;">'+cnt+' colours</div>'+(cu?'<span onclick="event.stopPropagation();cpDelBrand(\''+b.replace(/'/g,"\\'")+'\')" title="Remove company" style="position:absolute;top:4px;right:6px;color:#dc2626;font-size:14px;">×</span>':'')+'</div>';}).join('');
+    return;}
+  s1.style.display='none';s2.style.display='flex';document.getElementById('cp-title').textContent='🎨 '+_cpBrand;
   var q=(document.getElementById('cp-q').value||'').toLowerCase().trim();
-  document.getElementById('cp-brands').innerHTML=['Polytec','Laminex','Formica','Other'].map(function(b){return '<button class="btn btn-sm '+(b===_cpBrand?'':'btn-outline')+'" onclick="cpBrand(\''+b+'\')">'+b+'</button>';}).join('');
   _cpItems=cpItemsFor(_cpBrand).filter(function(n){return !q||n.name.toLowerCase().indexOf(q)>-1;});
   document.getElementById('cp-count').textContent=_cpItems.length+' colours in '+_cpBrand;
   var nn=document.getElementById('cp-newname');if(nn&&!nn.value&&q&&!_cpItems.length)nn.value=document.getElementById('cp-q').value.trim();
@@ -6433,7 +6448,7 @@ function cpAddCustom(){
 function cpDelCustom(id){if(!confirm('Remove this colour from your list?'))return;COLOUR_CUSTOM=COLOUR_CUSTOM.filter(function(c){return c.id!==id;});colourSaveCustom();cpRender();}
 function cpSelect(i){
   var n=_cpItems[i];var c=_cpCtx;if(!c||!n)return;
-  finSet('mat|'+c.gi+'|'+c.ri+'|0',(_cpBrand==='Other'?'':_cpBrand+' ')+n.name);
+  finSet('mat|'+c.gi+'|'+c.ri+'|0',_cpBrand+' '+n.name);
   if(n.url)finSet('mat|'+c.gi+'|'+c.ri+'|1',n.url);
   var o=document.getElementById('cp-ov');if(o)o.remove();renderFinishes();}
 
@@ -6474,7 +6489,7 @@ function finRowsHTML(sh,j,forPrint){
         var isLast=c===ncols-1;
         var v=finVal(j,key,(isLast&&def)?def:'');
         var inpH=forPrint?esc(v):'<input value="'+esc(v)+'" placeholder="'+(isLast?esc(hint):'')+'" oninput="finSet(\''+key+'\',this.value)" style="width:100%;min-width:130px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">';
-        if(!forPrint&&sh.key==='mat'&&c===0)inpH='<div style="display:flex;gap:4px;">'+inpH+'<button onclick="finPickColour('+gi+','+ri+')" title="Choose colour from brand list" style="background:#fef3c7;border:none;padding:6px 9px;border-radius:6px;cursor:pointer;">🎨</button></div>';
+        if(!forPrint&&sh.key==='mat'&&c===0&&!/height|refrigerator|dishwasher|oven|microwave|washing|dryer|^led|handle|speaker|woofer/i.test(label))inpH='<div style="display:flex;gap:4px;">'+inpH+'<button onclick="finPickColour('+gi+','+ri+')" title="Choose colour from brand list" style="background:#fef3c7;border:none;padding:6px 9px;border-radius:6px;cursor:pointer;">🎨</button></div>';
         tr+='<td>'+inpH+'</td>';
       }
       out+=tr+'</tr>';
@@ -7218,7 +7233,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v232 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v234 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8876,7 +8891,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=232;
+var APP_VERSION=234;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
