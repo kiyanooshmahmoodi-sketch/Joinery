@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v210 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v211 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1074,6 +1074,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <button class="view-btn" id="vb-tracker" onclick="switchView('tracker')">✅ QC</button>
   <button class="view-btn" id="vb-dispatch" onclick="switchView('dispatch')">📦 Dispatch / Shipping</button>
   <button class="view-btn" id="vb-installation" onclick="switchView('installation')">🚚 Installation</button>
+  <button class="view-btn" id="vb-admin" onclick="switchView('admin')" style="display:none;">⚙️ Admin</button>
 </div>
 
 <!-- VIEW: CABINET LIST (Cabinet & Part List, Glass Door, Steccawood & Laminate, Kickboard, Import) -->
@@ -1354,8 +1355,6 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <!-- TABS -->
 <div class="tabs">
   <div class="tab active" onclick="showTab('qc',this)">✅ Quality Check <span class="tbadge" id="tb-qc-pending">0</span></div>
-  <div class="tab" onclick="showTab('settings',this)">⚙️ Settings</div>
-  <div class="tab" onclick="showTab('users',this)">👥 Users</div>
 </div>
 
 <div class="content">
@@ -1407,6 +1406,17 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 </div>
 
 <!-- SETTINGS -->
+</div>
+
+</div><!-- /#view-tracker -->
+
+<!-- VIEW: ADMIN (only visible to the admin) -->
+<div id="view-admin" style="display:none;">
+<div class="tabs">
+  <div class="tab active" onclick="showTab('users',this)">👥 Users</div>
+  <div class="tab" onclick="showTab('settings',this)">⚙️ Settings</div>
+</div>
+<div class="content">
 <div class="panel" id="panel-settings">
   <div class="card" style="border-top:3px solid var(--green);">
     <div class="card-title">📧 Email — Web3Forms</div>
@@ -1441,8 +1451,8 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   </div>
 </div>
 </div>
+</div><!-- /#view-admin -->
 
-</div><!-- /#view-tracker -->
 
 <script>
 // PERSISTENT STORAGE SHIM (v201): when the Claude-preview window.storage API is
@@ -6686,7 +6696,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v210 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v211 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -6725,12 +6735,14 @@ function switchView(view){
   document.getElementById('view-tracker').style.display=(view==='tracker'?'block':'none');
   document.getElementById('view-installation').style.display=(view==='installation'?'block':'none');
   document.getElementById('view-dispatch').style.display=(view==='dispatch'?'block':'none');
+  var _va=document.getElementById('view-admin');if(_va)_va.style.display=(view==='admin'?'block':'none');
   var vmEl=document.getElementById('view-manager');
   if(vmEl)vmEl.style.display=(view==='manager'?'block':'none');
   document.getElementById('vb-cabinetlist').classList.toggle('active',view==='cabinetlist');
   document.getElementById('vb-tracker').classList.toggle('active',view==='tracker');
   document.getElementById('vb-installation').classList.toggle('active',view==='installation');
   document.getElementById('vb-dispatch').classList.toggle('active',view==='dispatch');
+  var _vb=document.getElementById('vb-admin');if(_vb)_vb.classList.toggle('active',view==='admin');
   updateBrand(view);
   // showTab() clears .active from EVERY .panel/.tab in the document (it was
   // written for a single tab-bar). Now that Cabinet List and QC each have
@@ -6752,6 +6764,7 @@ function switchView(view){
     // session or a project that changed while QC was hidden.
     renderAllTabs();
   }
+  if(view==='admin'){ensureViewActivePanel('view-admin','users');}
   if(view==='dispatch'){
     renderDispatchStats();renderDispatchPendingList();renderDispatchLog();
     setTimeout(focusDispScanBox,60);
@@ -8126,7 +8139,7 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
 </div>
 <script>
 // ROLES (v207): choose who you are when the app opens. Each role only sees its own sections.
-var ROLE_VIEWS={admin:['cabinetlist','tracker','dispatch','installation'],designer:['cabinetlist'],qc:['tracker'],dispatch:['dispatch','tracker'],installer:['installation','tracker']};
+var ROLE_VIEWS={admin:['cabinetlist','tracker','dispatch','installation','admin'],designer:['cabinetlist'],qc:['tracker'],dispatch:['dispatch','tracker'],installer:['installation','tracker']};
 var ROLE_HOME={admin:'cabinetlist',designer:'cabinetlist',qc:'tracker',dispatch:'dispatch',installer:'installation'};
 var ROLE_LABEL={admin:'Admin',designer:'Designer',qc:'QC Checker',dispatch:'Dispatch / Shipping',installer:'Installer'};
 var SESSION={role:'',name:''};
@@ -8167,7 +8180,7 @@ function applyRole(r,nm,em){
   b.classList.toggle('no-qc-edit',r!=='admin'&&r!=='qc');
   b.classList.toggle('no-settings',r!=='admin');
   var allowed=ROLE_VIEWS[r];
-  ['cabinetlist','tracker','dispatch','installation'].forEach(function(v){
+  ['cabinetlist','tracker','dispatch','installation','admin'].forEach(function(v){
     var el=document.getElementById('vb-'+v);if(el)el.style.display=allowed.indexOf(v)>-1?'':'none';
   });
   var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=(r==='admin'||r==='qc')?'':'none';
@@ -8348,7 +8361,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=210;
+var APP_VERSION=211;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
