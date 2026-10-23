@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v215 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v216 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1085,6 +1085,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="tab" onclick="showTab('kickboard',this)">🦶 Kickboard</div>
   <div class="tab" onclick="showTab('glassdoor',this)">🪟 Glass Door</div>
   <div class="tab" onclick="showTab('summary',this)">📊 Summary</div>
+  <div class="tab" onclick="showTab('issues',this)">⚠️ Site Issues <span class="tbadge" id="tb-iss" style="display:none">0</span></div>
   <div class="tab" onclick="showTab('notes',this)">📝 Notes</div>
 </div>
 <div class="content" id="cabinetlist-content">
@@ -1209,6 +1210,33 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   </div>
 </div>
 
+
+<!-- SITE ISSUES -->
+<div class="panel" id="panel-issues">
+  <div class="flex ai-c jb" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+    <div><div style="font-size:18px;font-weight:800;">⚠️ Site Issues</div><div style="font-size:12px;color:var(--gray);" id="si-proj">—</div></div>
+    <div id="si-filter" style="display:flex;gap:6px;">
+      <button class="btn btn-outline btn-sm" onclick="siSetFilter('open')" id="sif-open">Open</button>
+      <button class="btn btn-outline btn-sm" onclick="siSetFilter('fixed')" id="sif-fixed">Fixed</button>
+      <button class="btn btn-outline btn-sm" onclick="siSetFilter('all')" id="sif-all">All</button>
+    </div>
+  </div>
+  <div class="card" style="border-left:4px solid #dc2626;">
+    <div class="card-title" style="color:#b91c1c;">➕ Add Site Issue</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:8px;">
+      <input id="si-place" placeholder="Where? (room / cabinet no. / area)" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;">
+      <input id="si-title" placeholder="Issue title (required)" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;">
+    </div>
+    <textarea id="si-desc" rows="3" placeholder="Describe the issue…" style="width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;box-sizing:border-box;"></textarea>
+    <div style="margin:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <label class="btn btn-outline btn-sm" style="cursor:pointer;">📷 Add photos<input type="file" id="si-files" accept="image/*" multiple style="display:none" onchange="siPickPhotos(this)"></label>
+      <span id="si-pending" style="font-size:12px;color:var(--gray);"></span>
+    </div>
+    <div id="si-thumbs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
+    <button class="btn btn-sm" style="background:#dc2626;color:#fff;" onclick="siAdd()">➕ Add Issue</button>
+  </div>
+  <div id="si-list" style="margin-top:12px;"></div>
+</div>
 
 <!-- NOTES (Word-style) -->
 <div class="panel" id="panel-notes">
@@ -3139,7 +3167,7 @@ function renderUnits(q){
   }).join('');
 }
 
-function refresh(){if(typeof renderNotesDoc==='function')renderNotesDoc();updateHeader();renderUnits();renderCabinetCategories();if(typeof renderMaterials==='function')renderMaterials();if(typeof renderHwAliases==='function')renderHwAliases();saveData();}
+function refresh(){if(typeof renderNotesDoc==='function')renderNotesDoc();if(typeof renderSiteIssues==='function')renderSiteIssues();updateHeader();renderUnits();renderCabinetCategories();if(typeof renderMaterials==='function')renderMaterials();if(typeof renderHwAliases==='function')renderHwAliases();saveData();}
 
 // Re-render EVERY tracker tab at once. Use this after any operation that
 // changes the dataset (import, switching project, etc.) so no tab is left
@@ -6061,12 +6089,96 @@ function notesDocPrint(){
   w.document.close();setTimeout(function(){w.print();},300);
 }
 
+
+// ===== SITE ISSUES (per project, with photos) =====
+var _siFilter='open',_siNew=[],_siCache={};
+function siJob(){return currentJobId&&allJobs[currentJobId]?allJobs[currentJobId]:null;}
+function siSetFilter(f){_siFilter=f;renderSiteIssues();}
+function siCompress(file){return new Promise(function(res,rej){
+  var fr=new FileReader();fr.onerror=function(){rej(new Error('read'));};
+  fr.onload=function(){var im=new Image();im.onerror=function(){rej(new Error('img'));};
+    im.onload=function(){var M=1100,w=im.width,h=im.height,k=Math.min(1,M/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);
+      var c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);res(c.toDataURL('image/jpeg',0.62));};
+    im.src=fr.result;};
+  fr.readAsDataURL(file);});}
+async function siStorePhoto(data){
+  var id='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  _siCache[id]=data;
+  try{await window.storage.set('cbkph:'+id,data);}catch(e){}
+  try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('photos').doc(id).set({d:data,job:currentJobId||'',at:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(){});}catch(e){}
+  return id;}
+async function siGetPhoto(id){
+  if(_siCache[id])return _siCache[id];
+  try{var r=await window.storage.get('cbkph:'+id);if(r&&r.value){_siCache[id]=r.value;return r.value;}}catch(e){}
+  try{if(window.cloud&&cloud.db){var d=await cloud.db.collection('photos').doc(id).get();if(d.exists){var v=d.data().d;_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}}}catch(e){}
+  return '';}
+async function siPickPhotos(inp){
+  var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';
+  var pe=document.getElementById('si-pending');
+  for(var i=0;i<fs.length;i++){
+    if(pe)pe.textContent='Processing photo '+(i+1)+' / '+fs.length+'…';
+    try{var d=await siCompress(fs[i]);var id=await siStorePhoto(d);_siNew.push(id);}catch(e){alert('Could not read photo: '+fs[i].name);}
+  }
+  if(pe)pe.textContent='';siRenderNewThumbs();}
+function siRenderNewThumbs(){
+  var el=document.getElementById('si-thumbs');if(!el)return;
+  el.innerHTML=_siNew.map(function(id,i){return '<div style="position:relative;"><img data-pid="'+id+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;"><span onclick="_siNew.splice('+i+',1);siRenderNewThumbs()" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:50%;width:20px;height:20px;text-align:center;line-height:20px;cursor:pointer;font-size:12px;">×</span></div>';}).join('');
+  siHydrate(el);}
+function siHydrate(root){(root||document).querySelectorAll('img[data-pid]').forEach(function(im){
+  var id=im.getAttribute('data-pid');siGetPhoto(id).then(function(d){if(d)im.src=d;else im.alt='photo not available';});});}
+function siAdd(){
+  var j=siJob();if(!j){alert('Open or create a project first.');return;}
+  var t=document.getElementById('si-title').value.trim();
+  if(!t){alert('Please enter an issue title.');return;}
+  j.siteIssues=j.siteIssues||[];
+  j.siteIssues.unshift({id:'i'+Date.now().toString(36),title:t,place:document.getElementById('si-place').value.trim(),desc:document.getElementById('si-desc').value.trim(),
+    status:'open',by:(window.SESSION&&SESSION.name)||'',date:new Date().toLocaleString('en-AU'),photos:_siNew.slice()});
+  _siNew=[];['si-title','si-place','si-desc'].forEach(function(i){document.getElementById(i).value='';});
+  siRenderNewThumbs();siSave();renderSiteIssues();}
+function siSave(){try{saveData();}catch(e){}}
+function siToggle(id){var j=siJob();if(!j)return;(j.siteIssues||[]).forEach(function(x){if(x.id===id){x.status=x.status==='fixed'?'open':'fixed';x.fixedBy=x.status==='fixed'?((window.SESSION&&SESSION.name)||''):'';x.fixedDate=x.status==='fixed'?new Date().toLocaleString('en-AU'):'';}});siSave();renderSiteIssues();}
+function siDelete(id){var j=siJob();if(!j||!confirm('Delete this issue?'))return;j.siteIssues=(j.siteIssues||[]).filter(function(x){return x.id!==id;});siSave();renderSiteIssues();}
+function siRemovePhoto(id,pid){var j=siJob();if(!j||!confirm('Remove this photo?'))return;(j.siteIssues||[]).forEach(function(x){if(x.id===id)x.photos=(x.photos||[]).filter(function(p){return p!==pid;});});siSave();renderSiteIssues();}
+async function siAddPhotosTo(id,inp){
+  var j=siJob();if(!j)return;var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';
+  var ids=[];for(var i=0;i<fs.length;i++){try{ids.push(await siStorePhoto(await siCompress(fs[i])));}catch(e){}}
+  (j.siteIssues||[]).forEach(function(x){if(x.id===id)x.photos=(x.photos||[]).concat(ids);});siSave();renderSiteIssues();}
+function siZoom(pid){siGetPhoto(pid).then(function(d){if(!d)return;var o=document.createElement('div');
+  o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+  o.innerHTML='<img src="'+d+'" style="max-width:96vw;max-height:96vh;border-radius:8px;">';o.onclick=function(){o.remove();};document.body.appendChild(o);});}
+function renderSiteIssues(){
+  var box=document.getElementById('si-list');if(!box)return;
+  var j=siJob();var pn=document.getElementById('si-proj');if(pn)pn.textContent=j?(j.name||''):'Open or create a project first';
+  var all=j?(j.siteIssues||[]):[];
+  var openN=all.filter(function(x){return x.status!=='fixed';}).length;
+  var tb=document.getElementById('tb-iss');if(tb){tb.textContent=openN;tb.style.display=openN?'':'none';}
+  ['open','fixed','all'].forEach(function(f){var b=document.getElementById('sif-'+f);if(b){b.style.background=_siFilter===f?'#1e293b':'';b.style.color=_siFilter===f?'#fff':'';}});
+  var list=all.filter(function(x){return _siFilter==='all'||(_siFilter==='fixed'?x.status==='fixed':x.status!=='fixed');});
+  if(!list.length){box.innerHTML='<div style="text-align:center;color:#94a3b8;padding:30px;">'+(all.length?'No issues in this filter.':'No site issues yet.')+'</div>';return;}
+  box.innerHTML=list.map(function(x){
+    var fixed=x.status==='fixed';
+    var ph=(x.photos||[]).map(function(p){return '<div style="position:relative;"><img data-pid="'+p+'" onclick="siZoom(\''+p+'\')" style="width:110px;height:110px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;cursor:zoom-in;"><span onclick="siRemovePhoto(\''+x.id+'\',\''+p+'\')" title="Remove photo" style="position:absolute;top:-6px;right:-6px;background:#64748b;color:#fff;border-radius:50%;width:18px;height:18px;text-align:center;line-height:18px;cursor:pointer;font-size:11px;">×</span></div>';}).join('');
+    return '<div class="card" style="border-left:4px solid '+(fixed?'#16a34a':'#dc2626')+';margin-bottom:10px;">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">'+
+        '<div><div style="font-weight:800;font-size:15px;">'+(fixed?'✅ ':'⚠️ ')+esc(x.title)+'</div>'+
+        (x.place?'<div style="font-size:13px;color:#0284c7;font-weight:700;">📍 '+esc(x.place)+'</div>':'')+
+        '<div style="font-size:11px;color:#94a3b8;">'+esc(x.date||'')+(x.by?' · '+esc(x.by):'')+(fixed&&x.fixedBy?' · fixed by '+esc(x.fixedBy):'')+'</div></div>'+
+        '<div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;">'+
+          '<button class="btn btn-outline btn-sm" onclick="siToggle(\''+x.id+'\')">'+(fixed?'↩ Reopen':'✔ Mark fixed')+'</button>'+
+          '<label class="btn btn-outline btn-sm" style="cursor:pointer;">📷 +<input type="file" accept="image/*" multiple style="display:none" onchange="siAddPhotosTo(\''+x.id+'\',this)"></label>'+
+          '<button class="btn btn-outline btn-sm" style="color:#dc2626;" onclick="siDelete(\''+x.id+'\')">🗑</button></div></div>'+
+      (x.desc?'<div style="margin-top:8px;font-size:14px;white-space:pre-wrap;">'+esc(x.desc)+'</div>':'')+
+      (ph?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">'+ph+'</div>':'')+
+    '</div>';}).join('');
+  siHydrate(box);
+}
+
 // TABS
 function showTab(n,el){
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
   document.getElementById('panel-'+n).classList.add('active');el.classList.add('active');
-  if(n==='notes')renderNotesDoc();if(n==='summary')renderSummary();if(n==='hardware')renderHardware();if(n==='glassdoor')renderGlassDoors();if(n==='stecca')renderStecca();if(n==='kickboard')renderKickboard();updateReminderBanners();
+  if(n==='issues')renderSiteIssues();if(n==='notes')renderNotesDoc();if(n==='summary')renderSummary();if(n==='hardware')renderHardware();if(n==='glassdoor')renderGlassDoors();if(n==='stecca')renderStecca();if(n==='kickboard')renderKickboard();updateReminderBanners();
   if(n==='qc'){setTimeout(focusQcScanBox,60);}
 }
 
@@ -6286,6 +6398,7 @@ function saveCurrentJob(){
     prevCategory:existing.prevCategory||'production',
     noteHTML:(typeof existing.noteHTML==='string')?existing.noteHTML:'',
     docHTML:(typeof existing.docHTML==='string')?existing.docHTML:'',
+    siteIssues:Array.isArray(existing.siteIssues)?existing.siteIssues:[],
     priority:(typeof existing.priority==='number')?existing.priority:Date.now()};
 }
 
@@ -6460,7 +6573,7 @@ function _normJob(id,j){
     dispatches:Array.isArray(j.dispatches)?j.dispatches:[],hangingRails:Array.isArray(j.hangingRails)?j.hangingRails:[],
     glassDoors:Array.isArray(j.glassDoors)?j.glassDoors:[],steccaItems:Array.isArray(j.steccaItems)?j.steccaItems:[],
     orderReminders:j.orderReminders||defR,matAliases:j.matAliases||{},matPrintOrder:j.matPrintOrder||{},hwAliases:j.hwAliases||{},
-    notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',docHTML:(typeof j.docHTML==='string')?j.docHTML:'',
+    notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',docHTML:(typeof j.docHTML==='string')?j.docHTML:'',siteIssues:Array.isArray(j.siteIssues)?j.siteIssues:[],
     kickboards:normKick(j.kickboards),completed:j.completed||false,
     category:j.category||'production',prevCategory:j.prevCategory||'production',
     priority:(typeof j.priority==='number')?j.priority:Date.now()};
@@ -6477,7 +6590,7 @@ function _syncModuleFromCurrent(){
   if(pi)pi.value=j.name||'Project';if(pd)pd.textContent=j.name||'Project';
 }
 // Re-render every tab + the Project Manager after a load.
-function _renderEverything(){if(typeof renderNotesDoc==='function')renderNotesDoc();
+function _renderEverything(){if(typeof renderNotesDoc==='function')renderNotesDoc();if(typeof renderSiteIssues==='function')renderSiteIssues();
   refresh();renderLog();renderDispatchHistory();
   if(typeof renderSummary==='function')renderSummary();
   if(typeof renderHardware==='function')renderHardware();
@@ -6752,7 +6865,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v215 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v216 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8410,7 +8523,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=215;
+var APP_VERSION=216;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
