@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v242 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v243 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6585,6 +6585,50 @@ function finAddArea(){var j=finJob();if(!j)return;var inp=document.getElementByI
   if(!nm){alert('Type the new area name first (e.g. Powder Room).');inp.focus();return;}
   finInit(j).ss.push({id:fid(),name:nm,stone:'',link:'',mm:'',splash:'',wf:'',wfside:''});finDirty();renderFinishes();}
 
+// ===== v243: editable Appliances (rooms + appliances can be added / renamed / removed) =====
+var AP_DEFAULTS=[['Main Kitchen',['Cooktop','Rangehood','Dishwasher','Oven','Microwave','Coffee machine']],
+  ['WIP',['Cooktop','Rangehood','Dishwasher','Oven','Microwave','Coffee machine','Fridge','Washing machine','Dryer']],
+  ['Alfresco',['Cooktop','Rangehood','Refrigerator','BBQ unit']]];
+var AP_SUGGEST=['Cooktop','Rangehood','Dishwasher','Oven','Steam oven','Microwave','Coffee machine','Warming drawer','Fridge','Refrigerator','Freezer','Wine fridge','Beverage fridge','Ice maker','Washing machine','Dryer','BBQ unit','Pizza oven','Sink','Tap','Garbage disposal','Heater','Air conditioner','Speakers','TV'];
+function apInit(j){var F=finInit(j);
+  if(!Array.isArray(F.ap)){
+    var LEGN={'Main Kitchen':0,'WIP':1,'Alfresco':2};
+    var legacy=[['Cooktop','Rangehood','Dishwasher','Oven','Microwave','Coffee machine','Others'],['Cooktop','Rangehood','Dishwasher','Rangehood','Oven','Microwave','Coffee machine','Fridge','Washing machine','Dryer','Others'],['Cooktop','Rangehood','Refrigerator','BBQ unit','Others']];
+    F.ap=AP_DEFAULTS.map(function(d,gi){
+      var items=[];
+      legacy[gi].forEach(function(lab,ri){
+        var b=F.v['appl|'+gi+'|'+ri+'|0']||'',i=F.v['appl|'+gi+'|'+ri+'|1']||'';
+        var keep=(lab!=='Others'&&!(gi===1&&ri===3))||b||i;
+        if(keep)items.push({id:fid(),item:lab,brand:b,info:i});});
+      return {id:fid(),name:d[0],items:items};});
+  }
+  return F;}
+function apFind(j,rid){return (j.finishes.ap||[]).filter(function(r){return r.id===rid;})[0];}
+function apHTML(j,forPrint){var F=apInit(j);
+  var inp='width:100%;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;';
+  if(forPrint)return F.ap.map(function(r){return '<h3 style="margin:14px 0 4px;">'+esc(r.name)+'</h3><table><thead><tr><th>Item</th><th>Brand / Model No.</th><th>Additional Information</th></tr></thead><tbody>'+r.items.map(function(a){return '<tr><td>'+esc(a.item)+'</td><td>'+esc(a.brand)+'</td><td>'+esc(a.info)+'</td></tr>';}).join('')+'</tbody></table>';}).join('');
+  return '<datalist id="dl-appl">'+AP_SUGGEST.map(function(x){return '<option value="'+qe(x)+'">';}).join('')+'</datalist>'+
+   F.ap.map(function(r){return '<div class="card" style="margin-bottom:12px;border-left:4px solid #2563eb;"><div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;"><input value="'+qe(r.name)+'" onchange="apRenameRoom(\''+r.id+'\',this.value)" title="Click to rename this room" style="flex:1;font-size:16px;font-weight:800;padding:8px;border:1px dashed #94a3b8;border-radius:8px;background:#eff6ff;"><button type="button" onclick="apDelRoom(\''+r.id+'\')" title="Remove this room" style="background:#fee2e2;color:#dc2626;border:none;padding:8px 11px;border-radius:6px;cursor:pointer;">🗑</button></div>'+
+    (r.items.length?'<div style="display:grid;grid-template-columns:minmax(120px,1fr) minmax(140px,1.4fr) minmax(140px,1.4fr) 40px;gap:6px;font-size:11px;font-weight:800;color:#475569;margin-bottom:3px;"><div>ITEM</div><div>BRAND / MODEL NO.</div><div>ADDITIONAL INFORMATION</div><div></div></div>':'<div style="color:#94a3b8;font-size:13px;margin-bottom:8px;">No appliances in this room yet.</div>')+
+    r.items.map(function(a){return '<div style="display:grid;grid-template-columns:minmax(120px,1fr) minmax(140px,1.4fr) minmax(140px,1.4fr) 40px;gap:6px;margin-bottom:6px;align-items:center;">'+
+      '<input value="'+qe(a.item)+'" list="dl-appl" placeholder="Appliance" autocomplete="off" oninput="apSet(\''+r.id+'\',\''+a.id+'\',\'item\',this.value)" style="'+inp+'font-weight:700;">'+
+      '<input value="'+qe(a.brand)+'" placeholder="Brand / model" oninput="apSet(\''+r.id+'\',\''+a.id+'\',\'brand\',this.value)" style="'+inp+'">'+
+      '<input value="'+qe(a.info)+'" placeholder="Anything extra" oninput="apSet(\''+r.id+'\',\''+a.id+'\',\'info\',this.value)" style="'+inp+'">'+
+      '<button type="button" onclick="apDelItem(\''+r.id+'\',\''+a.id+'\')" title="Remove this appliance" style="background:#fee2e2;color:#dc2626;border:none;padding:7px;border-radius:6px;cursor:pointer;">🗑</button></div>';}).join('')+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><input id="ap-new-'+r.id+'" list="dl-appl" placeholder="Add appliance (type or pick, e.g. Wine fridge)" autocomplete="off" onkeydown="if(event.key===\'Enter\')apAddItem(\''+r.id+'\')" style="flex:1;min-width:200px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><button type="button" class="btn btn-outline btn-sm" onclick="apAddItem(\''+r.id+'\')">➕ Add appliance</button></div></div>';}).join('')+
+   '<div class="card" style="margin-top:10px;border-left:4px solid #16a34a;"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><b style="font-size:13px;">New room:</b><input id="ap-newroom" placeholder="e.g. Bar Area, Butler\'s Pantry, Outdoor Kitchen…" onkeydown="if(event.key===\'Enter\')apAddRoom()" style="flex:1;min-width:200px;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;"><button class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="apAddRoom()">➕ Add room</button></div></div>';}
+function apSet(rid,aid,k,v){var j=finJob();if(!j)return;var r=apFind(j,rid);if(!r)return;r.items.forEach(function(a){if(a.id===aid)a[k]=v;});finDirty();}
+function apAddItem(rid){var j=finJob();if(!j)return;var r=apFind(j,rid);if(!r)return;var inp=document.getElementById('ap-new-'+rid);var nm=(inp.value||'').trim();
+  if(!nm){alert('Type the appliance name first (e.g. Wine fridge).');inp.focus();return;}
+  r.items.push({id:fid(),item:nm,brand:'',info:''});finDirty();renderFinishes();}
+function apDelItem(rid,aid){var j=finJob();if(!j)return;var r=apFind(j,rid);if(!r)return;var a=r.items.filter(function(x){return x.id===aid;})[0];
+  if(!a||!confirm('Remove "'+(a.item||'this appliance')+'"?'))return;r.items=r.items.filter(function(x){return x.id!==aid;});finDirty();renderFinishes();}
+function apRenameRoom(rid,v){var j=finJob();if(!j)return;var r=apFind(j,rid);if(!r)return;r.name=(v||'').trim();finDirty();}
+function apDelRoom(rid){var j=finJob();if(!j)return;var r=apFind(j,rid);if(!r||!confirm('Remove the room "'+r.name+'" and all its appliances?'))return;j.finishes.ap=j.finishes.ap.filter(function(x){return x.id!==rid;});finDirty();renderFinishes();}
+function apAddRoom(){var j=finJob();if(!j)return;var inp=document.getElementById('ap-newroom');var nm=(inp.value||'').trim();
+  if(!nm){alert('Type the room name first (e.g. Bar Area).');inp.focus();return;}
+  apInit(j).ap.push({id:fid(),name:nm,items:[]});finDirty();renderFinishes();}
+
 function finJob(){return siJob();}
 function finVal(j,key,def){var v=j.finishes&&j.finishes.v;return(v&&v[key]!==undefined)?v[key]:(def||'');}
 function finSet(key,val){var j=finJob();if(!j)return;j.finishes=j.finishes||{site:'',v:{}};j.finishes.v=j.finishes.v||{};j.finishes.v[key]=val;
@@ -6652,7 +6696,7 @@ function finExtraSet(id,k,v){var j=finJob();if(!j)return;((j.finishes&&j.finishe
   clearTimeout(finSet._t);finSet._t=setTimeout(function(){try{saveData();}catch(e){}},700);}
 function finExtraDel(id){var j=finJob();if(!j||!confirm('Remove this area?'))return;j.finishes.extra.sched=j.finishes.extra.sched.filter(function(r){return r.id!==id;});try{saveData();}catch(e){}renderFinishes();}
 function finTableHTML(sh,j,forPrint){
-  if(sh.key==='mat')return msHTML(j,forPrint);if(sh.key==='sched')return ssHTML(j,forPrint);
+  if(sh.key==='appl')return apHTML(j,forPrint);if(sh.key==='mat')return msHTML(j,forPrint);if(sh.key==='sched')return ssHTML(j,forPrint);
   var first=sh.key==='sched'?'Area':'Area';
   return '<table class="sum-table" style="width:100%;"><thead><tr><th>'+first+'</th>'+sh.cols.map(function(c){return '<th'+(c==='Stone thickness (mm)'?' style="width:110px;"':'')+'>'+esc(c)+'</th>';}).join('')+((sh.key==='sched'&&!forPrint)?'<th></th>':'')+'</tr></thead><tbody>'+finRowsHTML(sh,j,forPrint)+'</tbody></table>';}
 function renderFinishes(){
@@ -7368,7 +7412,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v242 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v243 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9026,7 +9070,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=242;
+var APP_VERSION=243;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
