@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v211 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v212 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1084,7 +1084,6 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="tab" onclick="showTab('hardware',this)">🔧 Hardware</div>
   <div class="tab" onclick="showTab('kickboard',this)">🦶 Kickboard</div>
   <div class="tab" onclick="showTab('glassdoor',this)">🪟 Glass Door</div>
-  <div class="tab" onclick="showTab('stecca',this)">🪵 Steccawood &amp; Laminate</div>
   <div class="tab" onclick="showTab('summary',this)">📊 Summary</div>
 </div>
 <div class="content" id="cabinetlist-content">
@@ -6576,8 +6575,6 @@ async function openProject(){
 function checkOrderReminders(){
   var sections=[
     {key:'glass',label:'🪟 Glass Door',existing:glassDoors.length>0},
-    {key:'laminate',label:'📄 Laminate',existing:steccaItems.some(function(x){return x.type==='Laminate';})},
-    {key:'steccawood',label:'🪵 Steccawood',existing:steccaItems.some(function(x){return x.type==='Steccawood';})},
     {key:'closetRod',label:'🪧 Closet Rod',existing:hangingRails.length>0}
   ];
   // Auto-set 'yes' if data was imported for a section (skip asking)
@@ -6639,8 +6636,6 @@ function sectionHasOrdered(key){
 function updateReminderBanners(){
   var pairs=[
     {key:'glass',panelId:'panel-glassdoor',label:'Glass Door'},
-    {key:'steccawood',panelId:'panel-stecca',label:'Steccawood'},
-    {key:'laminate',panelId:'panel-stecca',label:'Laminate'},
     {key:'closetRod',panelId:'panel-hardware',label:'Closet Rod'}
   ];
   // Group banners by panel
@@ -6696,7 +6691,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v211 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v212 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -6797,10 +6792,6 @@ function showPersistentReminders(){
   var needAttention=[];
   if(orderReminders.glass==='yes'&&glassDoors.length===0)
     needAttention.push({key:'glass',label:'🪟 Glass Door',tab:'glassdoor'});
-  if(orderReminders.steccawood==='yes'&&!steccaItems.some(function(x){return x.type==='Steccawood';}))
-    needAttention.push({key:'steccawood',label:'🪵 Steccawood',tab:'stecca'});
-  if(orderReminders.laminate==='yes'&&!steccaItems.some(function(x){return x.type==='Laminate';}))
-    needAttention.push({key:'laminate',label:'📄 Laminate',tab:'stecca'});
   if(orderReminders.closetRod==='yes'&&hangingRails.length===0)
     needAttention.push({key:'closetRod',label:'🪧 Closet Rod',tab:'hardware'});
   if(!needAttention.length)return;
@@ -7361,8 +7352,6 @@ function renderProjectManager(){
     {n:totals.panel,l:'Ind. Parts',c:'#7c3aed'},
     {n:totals.joining,l:'🔗 Joining',c:'#3b82f6'},
     {n:totals.glass,l:'🪟 Glass',c:'#06b6d4'},
-    {n:totals.stecca,l:'🪵 Steccawood',c:'#d97706'},
-    {n:totals.lam,l:'📄 Laminate',c:'#0284c7'},
     {n:totals.rod,l:'🪧 Closet Rods',c:'#0891b2'},
     {n:overallPct+'%',l:'Overall Done',c:'#16a34a'}
   ].map(function(b){return'<div class="pm-stat" style="border-top-color:'+b.c+';"><div class="pm-stat-n" style="color:'+b.c+';">'+b.n+'</div><div class="pm-stat-l">'+b.l+'</div></div>';}).join('');
@@ -7400,8 +7389,6 @@ function renderProjectManager(){
     // ---- FULL card
     var pendingOrders=[];
     if((s.glass.reminder==='yes'||s.glass.reminder==='pending')&&!s.glass.total)pendingOrders.push('🪟 Glass');
-    if((s.stecca.reminder==='yes'||s.stecca.reminder==='pending')&&!s.stecca.total)pendingOrders.push('🪵 Steccawood');
-    if((s.lam.reminder==='yes'||s.lam.reminder==='pending')&&!s.lam.total)pendingOrders.push('📄 Laminate');
     if((s.rod.reminder==='yes'||s.rod.reminder==='pending')&&!s.rod.total)pendingOrders.push('🪧 Closet Rod');
     var reminderBanner=pendingOrders.length
       ? '<div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-left:4px solid #d97706;padding:10px 12px;border-radius:8px;margin-top:12px;font-size:12px;color:#92400e;font-weight:700;">⚠️ Order needed: '+pendingOrders.join(', ')+'</div>'
@@ -7412,10 +7399,8 @@ function renderProjectManager(){
       {key:'joining',label:'🔗 Joining',n:s.joining.total,d:s.joining.done,suffix:'dispatched'},
       {key:'kick',label:'🦶 Kickboard',kick:s.kick},
       {key:'glass',label:'🪟 Glass',sec:s.glass},
-      {key:'rod',label:'🪧 Closet Rod',sec:s.rod},
-      {key:'stecca',label:'🪵 Steccawood',sec:s.stecca},
-      {key:'lam',label:'📄 Laminate',sec:s.lam}
-    ];
+      {key:'rod',label:'🪧 Closet Rod',sec:s.rod}
+          ];
     var secHtml=sections.map(function(sec){
       var clickHandler='event.stopPropagation();openSectionFromPM(\''+j.id+'\',\''+sec.key+'\')';
       if(sec.kick){
@@ -8361,7 +8346,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=211;
+var APP_VERSION=212;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
