@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v241 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v242 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -7368,7 +7368,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v241 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v242 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8753,7 +8753,7 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
 <div id="role-ov" style="position:fixed;inset:0;background:#f1f5f9;z-index:100000;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;">
   <div style="width:min(420px,100%);margin-top:4vh;">
     <div style="text-align:center;margin-bottom:18px;">
-      <div style="font-size:22px;font-weight:900;color:#0f172a;letter-spacing:.5px;">CABINET DESIGNER</div>
+      <div style="font-size:22px;font-weight:900;color:#0f172a;letter-spacing:.5px;">CAB<span style="color:#f59e0b;">LINE</span></div>
       <div id="role-ver" style="font-size:11px;color:#64748b;letter-spacing:1.5px;margin-top:3px;"></div>
     </div>
     <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.1);">
@@ -8887,8 +8887,8 @@ async function forgotAdminCode(){
   _forgotAt=Date.now();er.style.color='#64748b';er.textContent='Sending…';
   try{
     var res=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body:JSON.stringify({access_key:W3F_KEY,subject:'🔐 Cabinet Designer — Admin code reminder',from_name:'Cabinet Designer',email:_adminEmail(),
-        message:'Admin code for Cabinet Designer: '+_adminCode()+'\n\nRequested on '+new Date().toLocaleString()+'.\nIf you did not ask for this, ignore it.'})});
+      body:JSON.stringify({access_key:W3F_KEY,subject:'🔐 CabLine — Admin code reminder',from_name:'CabLine',email:_adminEmail(),
+        message:'Admin code for CabLine: '+_adminCode()+'\n\nRequested on '+new Date().toLocaleString()+'.\nIf you did not ask for this, ignore it.'})});
     var d=await res.json();
     if(d.success){er.style.color='#15803d';er.textContent='✓ Sent — check the admin email inbox.';}else throw new Error(d.message);
   }catch(e){er.style.color='#b91c1c';er.textContent='Could not send the email. Check the internet connection.';}
@@ -9026,7 +9026,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=241;
+var APP_VERSION=242;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
