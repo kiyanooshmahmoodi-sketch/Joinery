@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v225 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v226 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6409,8 +6409,14 @@ function finRowsHTML(sh,j,forPrint){
       if(ri===0)tr+='<td rowspan="'+g[1].length+'" style="font-weight:800;color:#0f172a;background:#eff6ff;vertical-align:top;min-width:120px;">'+esc(g[0])+'</td>';
       if(sh.key==='sched'){
         var parts=def.split('|');
-        tr+=['stone','mm','splash','wf'].map(function(c,ci){var key=sh.key+'|'+gi+'|'+c;var v=finVal(j,key,ci===0?'':parts[ci-1]);
-          return '<td>'+(forPrint?esc(v):'<input value="'+esc(v)+'" oninput="finSet(\''+key+'\',this.value)" style="width:100%;min-width:'+(ci===0?150:70)+'px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">')+'</td>';}).join('');
+        var fld=function(c,def2){return finVal(j,sh.key+'|'+gi+'|'+c,def2);};
+        var kb=function(c){return sh.key+'|'+gi+'|'+c;};
+        var wfv=fld('splash','');var spv=wfv;var wfval=fld('wf','');var side=fld('wfside','');
+        var sel=function(key,val,opts){return forPrint?esc(val):'<select onchange="finSet(\''+key+'\',this.value);renderFinishes()" style="width:100%;min-width:90px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;">'+['']. concat(opts).map(function(o){return '<option value="'+o+'"'+(o===val?' selected':'')+'>'+(o||'—')+'</option>';}).join('')+'</select>';};
+        tr+='<td>'+(forPrint?esc(fld('stone','')):'<input value="'+esc(fld('stone',''))+'" oninput="finSet(\''+kb('stone')+'\',this.value)" style="width:100%;min-width:150px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">')+'</td>';
+        tr+='<td>'+(forPrint?esc(fld('mm',parts[0])):'<input value="'+esc(fld('mm',parts[0]))+'" oninput="finSet(\''+kb('mm')+'\',this.value)" style="width:100%;min-width:70px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">')+'</td>';
+        tr+='<td>'+sel(kb('splash'),spv,['Yes','No'])+'</td>';
+        tr+='<td>'+sel(kb('wf'),wfval,['Yes','No'])+(wfval==='Yes'?'<div style="margin-top:4px;font-size:11px;font-weight:700;color:#0e7490;">Which side?</div>'+sel(kb('wfside'),side,['Left','Right']):'')+(forPrint&&wfval==='Yes'&&side?' — '+esc(side):'')+'</td>';
         out+=tr+'</tr>';return;
       }
       tr+='<td style="font-weight:'+(head?'700':'600')+';color:'+(head?'#475569':'#1e293b')+';">'+esc(label)+'</td>';
@@ -6429,7 +6435,8 @@ function finRowsHTML(sh,j,forPrint){
     var ex=(j.finishes&&j.finishes.extra&&j.finishes.extra.sched)||[];
     ex.forEach(function(r){
       var f=function(k,w){return forPrint?esc(r[k]||''):'<input value="'+esc(r[k]||'')+'" oninput="finExtraSet(\''+r.id+'\',\''+k+'\',this.value)" style="width:100%;min-width:'+w+'px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">';};
-      out+='<tr><td style="background:#ecfdf5;font-weight:800;">'+f('area',110)+'</td><td>'+f('stone',150)+'</td><td>'+f('mm',70)+'</td><td>'+f('splash',70)+'</td><td>'+f('wf',70)+'</td>'+
+      var xs=function(k,opts){return forPrint?esc(r[k]||''):'<select onchange="finExtraSet(\''+r.id+'\',\''+k+'\',this.value);renderFinishes()" style="width:100%;min-width:90px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;">'+[''].concat(opts).map(function(o){return '<option value="'+o+'"'+(o===(r[k]||'')?' selected':'')+'>'+(o||'—')+'</option>';}).join('')+'</select>';};
+      out+='<tr><td style="background:#ecfdf5;font-weight:800;">'+f('area',110)+'</td><td>'+f('stone',150)+'</td><td>'+f('mm',70)+'</td><td>'+xs('splash',['Yes','No'])+'</td><td>'+xs('wf',['Yes','No'])+(r.wf==='Yes'?'<div style="margin-top:4px;font-size:11px;font-weight:700;color:#0e7490;">Which side?</div>'+xs('wfside',['Left','Right']):'')+'</td>'+
         (forPrint?'':'<td style="text-align:center;"><button onclick="finExtraDel(\''+r.id+'\')" title="Remove this area" style="background:#fee2e2;color:#dc2626;border:none;padding:5px 9px;border-radius:6px;cursor:pointer;">🗑</button></td>')+'</tr>';
     });
   }
@@ -6438,7 +6445,7 @@ function finAddArea(){
   var j=finJob();if(!j)return;var inp=document.getElementById('fin-newarea');var nm=inp.value.trim();
   if(!nm){alert('Type the new area name first (e.g. Powder Room).');inp.focus();return;}
   j.finishes=j.finishes||{site:'',v:{}};j.finishes.extra=j.finishes.extra||{};j.finishes.extra.sched=j.finishes.extra.sched||[];
-  j.finishes.extra.sched.push({id:'x'+Date.now().toString(36),area:nm,stone:'',mm:'',splash:'',wf:''});
+  j.finishes.extra.sched.push({id:'x'+Date.now().toString(36),area:nm,stone:'',mm:'',splash:'',wf:'',wfside:''});
   try{saveData();}catch(e){}renderFinishes();}
 function finExtraSet(id,k,v){var j=finJob();if(!j)return;((j.finishes&&j.finishes.extra&&j.finishes.extra.sched)||[]).forEach(function(r){if(r.id===id)r[k]=v;});
   clearTimeout(finSet._t);finSet._t=setTimeout(function(){try{saveData();}catch(e){}},700);}
@@ -7159,7 +7166,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v225 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v226 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8817,7 +8824,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=225;
+var APP_VERSION=226;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
