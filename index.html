@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v223 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v224 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6434,10 +6434,12 @@ function renderFinishes(){
   var pn=document.getElementById('fin-proj');if(pn)pn.textContent=j?(j.name||''):'Open or create a project first';
   tabs.innerHTML=FIN_SHEETS.map(function(sh){return '<button class="btn btn-sm '+(sh.key===_finSheet?'':'btn-outline')+'" onclick="finSheetSet(\''+sh.key+'\')">'+esc(sh.title)+'</button>';}).join('');
   var body=document.getElementById('fin-body');
-  if(!j){body.innerHTML='<div style="text-align:center;color:#94a3b8;padding:30px;">Open or create a project first.</div>';return;}
-  var si=document.getElementById('fin-site');if(si&&document.activeElement!==si)si.value=(j.finishes&&j.finishes.site)||'';
+  var nop=!j;if(nop)j={name:'',finishes:{site:'',v:{}}};
+  var si=document.getElementById('fin-site');if(si){si.disabled=nop;if(document.activeElement!==si)si.value=(j.finishes&&j.finishes.site)||'';}
   var sh=FIN_SHEETS.filter(function(x){return x.key===_finSheet;})[0];
-  body.innerHTML='<div style="font-weight:800;letter-spacing:1px;color:#475569;margin:4px 0 8px;">'+esc(sh.head)+'</div>'+finTableHTML(sh,j,false);}
+  body.innerHTML=(nop?'<div style="background:#fef3c7;border-left:4px solid #d97706;padding:10px 12px;border-radius:8px;margin-bottom:10px;font-size:13px;font-weight:700;color:#92400e;">⚠️ No project is open — you can see the sheets, but to type and save, open or create a project first (Jobs button).</div>':'')+
+    '<div style="font-weight:800;letter-spacing:1px;color:#475569;margin:4px 0 8px;">'+esc(sh.head)+'</div>'+finTableHTML(sh,j,false);
+  if(nop)body.querySelectorAll('input').forEach(function(i){i.disabled=true;});}
 function finPrint(){
   var j=finJob();if(!j)return;var sh=FIN_SHEETS.filter(function(x){return x.key===_finSheet;})[0];
   var w=window.open('','_blank');if(!w)return;
@@ -7139,7 +7141,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v223 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v224 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8797,7 +8799,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=223;
+var APP_VERSION=224;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
