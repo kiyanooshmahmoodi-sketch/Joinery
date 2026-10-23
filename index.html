@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v229 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v230 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6367,12 +6367,6 @@ function notesDocPrint(){
 // ===== FINISHES & APPLIANCES CHECKLIST (from Finishes_and_Appliances_Details.xlsx) =====
 // Row spec: [label, hint(placeholder), default, 'head'?]
 var FIN_SHEETS=[
- {key:'stone',title:'Stone',head:'STONE LAYING DETAILS',cols:['Item','Brand / Model No.','Additional Information'],groups:[
-  ['Kitchen',[['Stone code'],['Benchtop thickness'],['Stone splashback'],['Island stone thickness'],['Island waterfall'],['Cooktop'],['Sink'],['Sink type']]],
-  ["Butler's Pantry",[['Stone code'],['Benchtop thickness'],['Stone splashback'],['Cooktop'],['Sink'],['Sink type']]],
-  ['Laundry',[['Stone code'],['Benchtop thickness'],['Stone splashback'],['Sink'],['Sink type']]],
-  ['Vanities',[['Stone code'],['Stone thickness, sink model no., web link',null,null,'head'],['Stone thickness'],['Vanity 1'],['Vanity 2']]]
- ]},
  {key:'appl',title:'Appliances',head:'APPLIANCE DETAILS',cols:['Item','Brand / Model No.','Additional Information'],groups:[
   ['Main Kitchen',[['Cooktop'],['Rangehood'],['Dishwasher'],['Oven'],['Microwave'],['Coffee machine'],['Others']]],
   ['WIP',[['Cooktop'],['Rangehood'],['Dishwasher'],['Rangehood'],['Oven'],['Microwave'],['Coffee machine'],['Fridge'],['Washing machine'],['Dryer'],['Others']]],
@@ -6393,7 +6387,7 @@ var FIN_SHEETS=[
   ['Alfresco',[['',null,'20']]],['Bar',[['',null,'20']]],['Vanities',[['',null,'20']]]
  ]}
 ];
-var _finSheet='stone';
+var _finSheet='appl';
 function finJob(){return siJob();}
 function finVal(j,key,def){var v=j.finishes&&j.finishes.v;return(v&&v[key]!==undefined)?v[key]:(def||'');}
 function finSet(key,val){var j=finJob();if(!j)return;j.finishes=j.finishes||{site:'',v:{}};j.finishes.v=j.finishes.v||{};j.finishes.v[key]=val;
@@ -7172,7 +7166,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v229 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v230 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8830,7 +8824,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=229;
+var APP_VERSION=230;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
