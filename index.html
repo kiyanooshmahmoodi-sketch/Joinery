@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v222 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v223 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1080,6 +1080,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <!-- VIEW: CABINET LIST (Cabinet & Part List, Glass Door, Steccawood & Laminate, Kickboard, Import) -->
 <div id="view-cabinetlist">
 <div class="tabs">
+  <div class="tab" onclick="showTab('finishes',this)">📋 Finishes &amp; Appliances</div>
   <div class="tab active" onclick="showTab('units',this)">📦 Cabinet & Part List <span class="tbadge" id="tb-rem">0</span></div>
   <div class="tab" onclick="showTab('summary',this)">📊 Summary</div>
   <div class="tab" onclick="showTab('hardware',this)">🔧 Hardware</div>
@@ -1090,6 +1091,18 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="tab" onclick="showTab('notes',this)">📝 Notes</div>
 </div>
 <div class="content" id="cabinetlist-content">
+<!-- FINISHES & APPLIANCES CHECKLIST -->
+<div class="panel" id="panel-finishes">
+  <div class="flex ai-c jb" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+    <div><div style="font-size:18px;font-weight:800;">📋 Finishes &amp; Appliances Checklist</div><div style="font-size:12px;color:var(--gray);" id="fin-proj">—</div></div>
+    <button class="btn btn-outline btn-sm" onclick="finPrint()">🖨️ Print this sheet</button>
+  </div>
+  <div class="card" style="margin-bottom:10px;"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><b style="font-size:13px;">Site Address →</b>
+    <input id="fin-site" oninput="finSite(this.value)" placeholder="Site address here" style="flex:1;min-width:220px;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;"></div></div>
+  <div id="fin-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;"></div>
+  <div id="fin-body" style="overflow-x:auto;"></div>
+</div>
+
 <!-- ALL UNITS -->
 <div class="panel active" id="panel-units">
   <div class="card">
@@ -3207,7 +3220,7 @@ function renderUnits(q){
   }).join('');
 }
 
-function refresh(){if(typeof renderNotesDoc==='function')renderNotesDoc();if(typeof renderSiteIssues==='function')renderSiteIssues();updateHeader();renderUnits();renderCabinetCategories();if(typeof renderMaterials==='function')renderMaterials();if(typeof renderHwAliases==='function')renderHwAliases();saveData();}
+function refresh(){if(typeof renderFinishes==='function'&&_finSheet&&document.getElementById('panel-finishes')&&document.getElementById('panel-finishes').classList.contains('active'))renderFinishes();if(typeof renderNotesDoc==='function')renderNotesDoc();if(typeof renderSiteIssues==='function')renderSiteIssues();updateHeader();renderUnits();renderCabinetCategories();if(typeof renderMaterials==='function')renderMaterials();if(typeof renderHwAliases==='function')renderHwAliases();saveData();}
 
 // Re-render EVERY tracker tab at once. Use this after any operation that
 // changes the dataset (import, switching project, etc.) so no tab is left
@@ -6350,12 +6363,93 @@ function notesDocPrint(){
   w.document.write('<!DOCTYPE html><html><head><title>'+esc(n.title)+'</title><style>body{font-family:Arial,sans-serif;font-size:14px;line-height:1.6;padding:24px;color:#111}</style></head><body><div style="color:#64748b;font-size:12px;">'+esc(j.name||'')+' · '+esc(siFmt(n.date))+'</div><h2>'+esc(n.title)+'</h2>'+(n.html||'')+'</body></html>');
   w.document.close();setTimeout(function(){w.print();},500);});}
 
+
+// ===== FINISHES & APPLIANCES CHECKLIST (from Finishes_and_Appliances_Details.xlsx) =====
+// Row spec: [label, hint(placeholder), default, 'head'?]
+var FIN_SHEETS=[
+ {key:'stone',title:'Stone',head:'STONE LAYING DETAILS',cols:['Item','Brand / Model No.','Additional Information'],groups:[
+  ['Kitchen',[['Stone code'],['Benchtop thickness'],['Stone splashback'],['Island stone thickness'],['Island waterfall'],['Cooktop'],['Sink'],['Sink type']]],
+  ["Butler's Pantry",[['Stone code'],['Benchtop thickness'],['Stone splashback'],['Cooktop'],['Sink'],['Sink type']]],
+  ['Laundry',[['Stone code'],['Benchtop thickness'],['Stone splashback'],['Sink'],['Sink type']]],
+  ['Vanities',[['Stone code'],['Stone thickness, sink model no., web link',null,null,'head'],['Stone thickness'],['Vanity 1'],['Vanity 2']]]
+ ]},
+ {key:'appl',title:'Appliances',head:'APPLIANCE DETAILS',cols:['Item','Brand / Model No.','Additional Information'],groups:[
+  ['Main Kitchen',[['Cooktop'],['Rangehood'],['Dishwasher'],['Oven'],['Microwave'],['Coffee machine'],['Others']]],
+  ['WIP',[['Cooktop'],['Rangehood'],['Dishwasher'],['Rangehood'],['Oven'],['Microwave'],['Coffee machine'],['Fridge'],['Washing machine'],['Dryer'],['Others']]],
+  ['Alfresco',[['Cooktop'],['Rangehood'],['Refrigerator'],['BBQ unit'],['Others']]]
+ ]},
+ {key:'mat',title:'Material Schedule',head:'MATERIAL SCHEDULE — APPLIANCES LIST FOR DESIGN',cols:['Item','Colour / Material / Model','Weblink / Comments','Additional Info'],groups:[
+  ['Kitchen',[['Cabinet height',null,'2700'],['Doors and panels – materials'],['Base unit'],['Tall unit'],['Wall unit – middle level open cabinet'],['Wall unit – upper level'],['Bulkhead'],['Base unit shadow rails'],['Fridge unit'],
+    ['Doors and panels – materials','BASE & WALL CABINETS EXCEPT LEVEL 2 BREAKING CABINETS'],['Breaking door panels – material','Breaking cabinet colour'],['Refrigerator'],['Dishwasher','UNDER THE KITCHEN ISLAND'],['Oven','SHOULD BE PLACED IN THE TALL TOWER'],['Microwave','SPACE FOR MICROWAVE'],['Underpanel','https://www.polytec.com.au/colour/graphite/'],['LED'],['Handle type']]],
+  ['Island Bar Back',[['Barback colour'],['Doors and panels']]],
+  ["Butler's Pantry",[['Doors and panels – materials','SHELVES'],['Wall & tall unit'],['Base unit'],['Floating shelf'],['Dishwasher'],['Oven','Integrated / Normal'],['Microwave','Top mount / Under mount'],['Underpanel'],['LED'],['Handle type']]],
+  ['Laundry',[['Doors and panels – materials'],['Base unit'],['Wall unit'],['Wall & tall unit'],['Washing machine','For both base and wall cabinets'],['Dryer'],['Underpanel'],['LED'],['Handle type']]],
+  ['Vanities',[['Doors and panels'],['Vanity 1 – GF – Guest Bath'],['Vanity 2 – FF – Master Ensuite'],['Vanity 3 – FF – Common Bath'],['Vanity 4 – Granny Bath'],['Handle type']]],
+  ['Media',[['Doors and panels – materials'],['Speakers'],['Woofers']]],
+  ['Built-In Robes',[['Track colour'],['Sliding door (Mirror / Frosted)']]]
+ ]},
+ {key:'sched',title:'Stone Schedule',head:'STONE SCHEDULE',cols:['Stone','Benchtop (mm)','Splash','Water Fall'],groups:[
+  ['Kitchen',[['',null,'40|P|O']]],['Island',[['',null,'40|O|P']]],["Butler's",[['',null,'40|P|O']]],['Bar',[['',null,'20|P|O']]],
+  ['Laundry',[['',null,'20|P|O']]],['Pooja',[['',null,'20|O|O']]],['Vanities',[['',null,'20|O|O']]],['Alfresco',[['',null,'20|P|O']]]
+ ]}
+];
+var _finSheet='stone';
+function finJob(){return siJob();}
+function finVal(j,key,def){var v=j.finishes&&j.finishes.v;return(v&&v[key]!==undefined)?v[key]:(def||'');}
+function finSet(key,val){var j=finJob();if(!j)return;j.finishes=j.finishes||{site:'',v:{}};j.finishes.v=j.finishes.v||{};j.finishes.v[key]=val;
+  clearTimeout(finSet._t);finSet._t=setTimeout(function(){try{saveData();}catch(e){}},700);}
+function finSite(val){var j=finJob();if(!j)return;j.finishes=j.finishes||{site:'',v:{}};j.finishes.site=val;clearTimeout(finSet._t);finSet._t=setTimeout(function(){try{saveData();}catch(e){}},700);}
+function finSheetSet(k){_finSheet=k;renderFinishes();}
+function finRowsHTML(sh,j,forPrint){
+  var out='',n=0;
+  sh.groups.forEach(function(g,gi){
+    g[1].forEach(function(r,ri){
+      var label=r[0],hint=r[1]||'',def=r[2]||'',head=r[3]==='head';
+      var tr='<tr'+(head?' style="background:#f1f5f9;"':'')+'>';
+      if(ri===0)tr+='<td rowspan="'+g[1].length+'" style="font-weight:800;color:#0f172a;background:#eff6ff;vertical-align:top;min-width:120px;">'+esc(g[0])+'</td>';
+      if(sh.key==='sched'){
+        var parts=def.split('|');
+        tr+=['stone','mm','splash','wf'].map(function(c,ci){var key=sh.key+'|'+gi+'|'+c;var v=finVal(j,key,ci===0?'':parts[ci-1]);
+          return '<td>'+(forPrint?esc(v):'<input value="'+esc(v)+'" oninput="finSet(\''+key+'\',this.value)" style="width:100%;min-width:'+(ci===0?150:70)+'px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">')+'</td>';}).join('');
+        out+=tr+'</tr>';return;
+      }
+      tr+='<td style="font-weight:'+(head?'700':'600')+';color:'+(head?'#475569':'#1e293b')+';">'+esc(label)+'</td>';
+      if(head){tr+='<td colspan="'+(sh.cols.length-1)+'"></td></tr>';out+=tr;return;}
+      var ncols=sh.cols.length-1;
+      for(var c=0;c<ncols;c++){
+        var key=sh.key+'|'+gi+'|'+ri+'|'+c;
+        var isLast=c===ncols-1;
+        var v=finVal(j,key,(isLast&&def)?def:'');
+        tr+='<td>'+(forPrint?esc(v):'<input value="'+esc(v)+'" placeholder="'+(isLast?esc(hint):'')+'" oninput="finSet(\''+key+'\',this.value)" style="width:100%;min-width:130px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">')+'</td>';
+      }
+      out+=tr+'</tr>';
+    });
+  });
+  return out;}
+function finTableHTML(sh,j,forPrint){
+  var first=sh.key==='sched'?'Area':'Area';
+  return '<table class="sum-table" style="width:100%;"><thead><tr><th>'+first+'</th>'+sh.cols.map(function(c){return '<th>'+esc(c)+'</th>';}).join('')+'</tr></thead><tbody>'+finRowsHTML(sh,j,forPrint)+'</tbody></table>';}
+function renderFinishes(){
+  var tabs=document.getElementById('fin-tabs');if(!tabs)return;var j=finJob();
+  var pn=document.getElementById('fin-proj');if(pn)pn.textContent=j?(j.name||''):'Open or create a project first';
+  tabs.innerHTML=FIN_SHEETS.map(function(sh){return '<button class="btn btn-sm '+(sh.key===_finSheet?'':'btn-outline')+'" onclick="finSheetSet(\''+sh.key+'\')">'+esc(sh.title)+'</button>';}).join('');
+  var body=document.getElementById('fin-body');
+  if(!j){body.innerHTML='<div style="text-align:center;color:#94a3b8;padding:30px;">Open or create a project first.</div>';return;}
+  var si=document.getElementById('fin-site');if(si&&document.activeElement!==si)si.value=(j.finishes&&j.finishes.site)||'';
+  var sh=FIN_SHEETS.filter(function(x){return x.key===_finSheet;})[0];
+  body.innerHTML='<div style="font-weight:800;letter-spacing:1px;color:#475569;margin:4px 0 8px;">'+esc(sh.head)+'</div>'+finTableHTML(sh,j,false);}
+function finPrint(){
+  var j=finJob();if(!j)return;var sh=FIN_SHEETS.filter(function(x){return x.key===_finSheet;})[0];
+  var w=window.open('','_blank');if(!w)return;
+  w.document.write('<!DOCTYPE html><html><head><title>'+esc(sh.title)+' — '+esc(j.name||'')+'</title><style>body{font-family:Arial,sans-serif;font-size:12px;padding:20px;color:#111}table{border-collapse:collapse;width:100%}th,td{border:1px solid #cbd5e1;padding:6px;text-align:left;vertical-align:top}th{background:#f1f5f9}</style></head><body><h2>Finishes &amp; Appliances Checklist</h2><div>Project: <b>'+esc(j.name||'')+'</b> &nbsp; Site address: <b>'+esc((j.finishes&&j.finishes.site)||'')+'</b></div><h3>'+esc(sh.head)+'</h3>'+finTableHTML(sh,j,true)+'</body></html>');
+  w.document.close();setTimeout(function(){w.print();},400);}
+
 // TABS
 function showTab(n,el){
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
   document.getElementById('panel-'+n).classList.add('active');el.classList.add('active');
-  if(n==='issues')renderSiteIssues();if(n==='notes')renderNotesDoc();if(n==='summary')renderSummary();if(n==='hardware'||n==='closetrod')renderHardware();if(n==='glassdoor')renderGlassDoors();if(n==='stecca')renderStecca();if(n==='kickboard')renderKickboard();updateReminderBanners();
+  if(n==='finishes')renderFinishes();if(n==='issues')renderSiteIssues();if(n==='notes')renderNotesDoc();if(n==='summary')renderSummary();if(n==='hardware'||n==='closetrod')renderHardware();if(n==='glassdoor')renderGlassDoors();if(n==='stecca')renderStecca();if(n==='kickboard')renderKickboard();updateReminderBanners();
   if(n==='qc'){setTimeout(focusQcScanBox,60);}
 }
 
@@ -6576,6 +6670,7 @@ function saveCurrentJob(){
     noteHTML:(typeof existing.noteHTML==='string')?existing.noteHTML:'',
     docHTML:(typeof existing.docHTML==='string')?existing.docHTML:'',
     siteIssues:Array.isArray(existing.siteIssues)?existing.siteIssues:[],
+    finishes:(existing.finishes&&typeof existing.finishes==='object')?existing.finishes:{site:'',v:{}},
     sketches:Array.isArray(existing.sketches)?existing.sketches:[],
     notesList:Array.isArray(existing.notesList)?existing.notesList:[],
     priority:(typeof existing.priority==='number')?existing.priority:Date.now()};
@@ -6752,7 +6847,7 @@ function _normJob(id,j){
     dispatches:Array.isArray(j.dispatches)?j.dispatches:[],hangingRails:Array.isArray(j.hangingRails)?j.hangingRails:[],
     glassDoors:Array.isArray(j.glassDoors)?j.glassDoors:[],steccaItems:Array.isArray(j.steccaItems)?j.steccaItems:[],
     orderReminders:j.orderReminders||defR,matAliases:j.matAliases||{},matPrintOrder:j.matPrintOrder||{},hwAliases:j.hwAliases||{},
-    notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',docHTML:(typeof j.docHTML==='string')?j.docHTML:'',siteIssues:Array.isArray(j.siteIssues)?j.siteIssues:[],sketches:Array.isArray(j.sketches)?j.sketches:[],notesList:Array.isArray(j.notesList)?j.notesList:[],
+    notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',docHTML:(typeof j.docHTML==='string')?j.docHTML:'',siteIssues:Array.isArray(j.siteIssues)?j.siteIssues:[],finishes:(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}},sketches:Array.isArray(j.sketches)?j.sketches:[],notesList:Array.isArray(j.notesList)?j.notesList:[],
     kickboards:normKick(j.kickboards),completed:j.completed||false,
     category:j.category||'production',prevCategory:j.prevCategory||'production',
     priority:(typeof j.priority==='number')?j.priority:Date.now()};
@@ -6769,7 +6864,7 @@ function _syncModuleFromCurrent(){
   if(pi)pi.value=j.name||'Project';if(pd)pd.textContent=j.name||'Project';
 }
 // Re-render every tab + the Project Manager after a load.
-function _renderEverything(){if(typeof renderNotesDoc==='function')renderNotesDoc();if(typeof renderSiteIssues==='function')renderSiteIssues();
+function _renderEverything(){if(typeof renderFinishes==='function'&&document.getElementById('panel-finishes').classList.contains('active'))renderFinishes();if(typeof renderNotesDoc==='function')renderNotesDoc();if(typeof renderSiteIssues==='function')renderSiteIssues();
   refresh();renderLog();renderDispatchHistory();
   if(typeof renderSummary==='function')renderSummary();
   if(typeof renderHardware==='function')renderHardware();
@@ -7044,7 +7139,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v222 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v223 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8702,7 +8797,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=222;
+var APP_VERSION=223;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
