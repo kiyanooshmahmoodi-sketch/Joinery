@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v218 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v219 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1247,15 +1247,28 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="flex ai-c jb" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;">
     <div><div style="font-size:18px;font-weight:800;">📝 Notes</div><div style="font-size:12px;color:var(--gray);" id="nd-proj">—</div></div>
     <div class="flex ai-c" style="gap:8px;flex-wrap:wrap;"><span id="nd-status" style="font-size:12px;color:var(--gray);"></span>
-      <button class="btn btn-sm" id="nd-m-doc" onclick="ndMode('doc')">📄 Text</button>
+      <button class="btn btn-sm" id="nd-m-doc" onclick="ndMode('doc')">📝 Notes</button>
       <button class="btn btn-outline btn-sm" id="nd-m-sk" onclick="ndMode('sk')">✏️ Sketches</button>
-      <button class="btn btn-outline btn-sm" id="nd-print" onclick="notesDocPrint()">🖨️ Print</button></div>
+      <button class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="ndNew()">➕ Add Note</button></div>
   </div>
+  <div id="nd-list"></div>
   <div id="sk-wrap" style="display:none;">
     <button class="btn btn-sm" style="background:#7c3aed;color:#fff;margin-bottom:10px;" onclick="skOpen(null)">➕ New Sketch</button>
     <div id="sk-gallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;"></div>
   </div>
-  <div id="nd-textwrap">
+  <div id="nd-textwrap" style="display:none;">
+    <div class="card" style="margin-bottom:8px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:8px;">
+        <input id="nd-title" oninput="notesDocInput()" placeholder="Note title — what is this note about? (required)" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;font-weight:700;">
+        <input id="nd-date" type="date" oninput="notesDocInput()" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;">
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-sm" onclick="ndBack()">← Back to all notes</button>
+        <button class="btn btn-outline btn-sm" onclick="notesDocPrint()">🖨️ Print</button>
+        <button class="btn btn-outline btn-sm" style="color:#dc2626;" onclick="ndDelete()">🗑 Delete</button>
+        <span id="nd-status2" style="font-size:12px;color:var(--gray);"></span>
+      </div>
+    </div>
   <div id="nd-bar" style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:10px 10px 0 0;padding:6px;">
     <select onchange="ndCmd('formatBlock',this.value);this.selectedIndex=0" style="padding:5px;border-radius:6px;border:1px solid #cbd5e1;"><option value="">Style</option><option value="P">Normal</option><option value="H1">Heading 1</option><option value="H2">Heading 2</option><option value="H3">Heading 3</option></select>
     <select onchange="ndCmd('fontSize',this.value);this.selectedIndex=0" style="padding:5px;border-radius:6px;border:1px solid #cbd5e1;"><option value="">Size</option><option value="2">Small</option><option value="3">Normal</option><option value="5">Large</option><option value="6">Huge</option></select>
@@ -6078,30 +6091,6 @@ async function checkSendWeeklyEmail(wi){
 // ===== NOTES (Word-style document, one per project) =====
 var _ndTimer=null;
 function ndCmd(c,v){var ed=document.getElementById('nd-editor');if(!ed)return;ed.focus();try{document.execCommand('styleWithCSS',false,c==='hiliteColor'||c==='foreColor');}catch(e){}document.execCommand(c,false,v||null);notesDocInput();}
-function renderNotesDoc(){
-  if(_skMode==='sk'&&typeof renderSketches==='function')renderSketches();
-  var ed=document.getElementById('nd-editor');if(!ed)return;
-  var j=currentJobId&&allJobs[currentJobId];
-  var pn=document.getElementById('nd-proj');if(pn)pn.textContent=j?(j.name||''):'Open or create a project first';
-  ed.contentEditable=j?'true':'false';
-  if(document.activeElement===ed)return;
-  var h=(j&&typeof j.docHTML==='string')?j.docHTML:'';
-  if(ed.innerHTML!==h)ed.innerHTML=h;
-}
-function notesDocInput(){
-  var j=currentJobId&&allJobs[currentJobId];if(!j)return;
-  var ed=document.getElementById('nd-editor');
-  j.docHTML=ed.innerHTML;
-  var st=document.getElementById('nd-status');if(st)st.textContent='Saving…';
-  clearTimeout(_ndTimer);
-  _ndTimer=setTimeout(function(){try{saveData();}catch(e){}var st=document.getElementById('nd-status');if(st)st.textContent='✓ Saved';},800);
-}
-function notesDocPrint(){
-  var j=currentJobId&&allJobs[currentJobId];if(!j)return;
-  var w=window.open('','_blank');if(!w)return;
-  w.document.write('<!DOCTYPE html><html><head><title>Notes — '+String(j.name||'').replace(/</g,'&lt;')+'</title><style>body{font-family:Arial,sans-serif;font-size:14px;line-height:1.6;padding:24px;color:#111}</style></head><body><h2>'+String(j.name||'').replace(/</g,'&lt;')+' — Notes</h2>'+(j.docHTML||'')+'</body></html>');
-  w.document.close();setTimeout(function(){w.print();},300);
-}
 
 
 // ===== SITE ISSUES (per project, with photos) =====
@@ -6193,13 +6182,6 @@ function renderSiteIssues(){
 
 // ===== SKETCHES (hand drawing for iPad/Apple Pencil/finger/mouse) =====
 var _skMode='doc',_sk={id:null,undo:[],drawing:false,pen:false,color:'#111111',size:3,eraser:false,bg:'white',lx:0,ly:0};
-function ndMode(m){_skMode=m;
-  document.getElementById('sk-wrap').style.display=m==='sk'?'':'none';
-  document.getElementById('nd-textwrap').style.display=m==='doc'?'':'none';
-  document.getElementById('nd-print').style.display=m==='doc'?'':'none';
-  document.getElementById('nd-m-doc').className=m==='doc'?'btn btn-sm':'btn btn-outline btn-sm';
-  document.getElementById('nd-m-sk').className=m==='sk'?'btn btn-sm':'btn btn-outline btn-sm';
-  if(m==='sk')renderSketches();}
 function renderSketches(){
   var g=document.getElementById('sk-gallery');if(!g)return;var j=siJob();
   var list=j?(j.sketches||[]):[];
@@ -6266,6 +6248,66 @@ async function skSave(){
   if(rec){rec.pid=pid;rec.name=nm;rec.date=new Date().toLocaleString('en-AU');rec.by=(window.SESSION&&SESSION.name)||rec.by||'';}
   else j.sketches.unshift({id:'k'+Date.now().toString(36),name:nm,pid:pid,date:new Date().toLocaleString('en-AU'),by:(window.SESSION&&SESSION.name)||''});
   siSave();var o=document.getElementById('sk-ov');if(o)o.remove();renderSketches();}
+
+
+// ===== NOTES LIST (multiple titled notes per project) =====
+var _ndCur=null,_ndTimer=null;
+function ndList(){var j=siJob();if(!j)return [];
+  if(!Array.isArray(j.notesList))j.notesList=[];
+  if(!j.notesList.length&&typeof j.docHTML==='string'&&j.docHTML.trim()){j.notesList.push({id:'n'+Date.now().toString(36),title:'Notes (earlier)',date:siToday(),html:j.docHTML,by:''});j.docHTML='';}
+  return j.notesList;}
+function ndMode(m){_skMode=m;
+  var ed=_ndCur&&m==='doc'&&document.getElementById('nd-textwrap').dataset.open==='1';
+  document.getElementById('sk-wrap').style.display=m==='sk'?'':'none';
+  document.getElementById('nd-list').style.display=(m==='doc'&&!ed)?'':'none';
+  document.getElementById('nd-textwrap').style.display=ed?'':'none';
+  document.getElementById('nd-m-doc').className=m==='doc'?'btn btn-sm':'btn btn-outline btn-sm';
+  document.getElementById('nd-m-sk').className=m==='sk'?'btn btn-sm':'btn btn-outline btn-sm';
+  if(m==='sk')renderSketches();else if(!ed)renderNotesList();}
+function renderNotesList(){
+  var box=document.getElementById('nd-list');if(!box)return;var j=siJob();
+  var pn=document.getElementById('nd-proj');if(pn)pn.textContent=j?(j.name||''):'Open or create a project first';
+  var l=ndList();
+  if(!l.length){box.innerHTML='<div style="text-align:center;color:#94a3b8;padding:30px;">'+(j?'No notes yet. Tap “➕ Add Note”.':'Open or create a project first.')+'</div>';return;}
+  box.innerHTML=l.map(function(n){
+    var t=(n.html||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim().slice(0,90);
+    return '<div class="card" onclick="ndOpen(\''+n.id+'\')" style="cursor:pointer;border-left:4px solid #16a34a;margin-bottom:8px;">'+
+      '<div style="font-weight:800;font-size:15px;">📝 '+esc(n.title||'(no title)')+'</div>'+
+      '<div style="font-size:11px;color:#94a3b8;">📅 '+esc(n.date?siFmt(n.date):'')+(n.by?' · '+esc(n.by):'')+'</div>'+
+      (t?'<div style="font-size:13px;color:#64748b;margin-top:4px;">'+esc(t)+'</div>':'')+'</div>';}).join('');}
+function ndNew(){
+  var j=siJob();if(!j){alert('Open or create a project first.');return;}
+  ndList();var n={id:'n'+Date.now().toString(36),title:'',date:siToday(),html:'',by:(window.SESSION&&SESSION.name)||''};
+  j.notesList.unshift(n);ndOpen(n.id);document.getElementById('nd-title').focus();}
+function ndOpen(id){
+  var l=ndList();var n=l.filter(function(x){return x.id===id;})[0];if(!n)return;
+  _ndCur=id;_skMode='doc';
+  var w=document.getElementById('nd-textwrap');w.dataset.open='1';
+  document.getElementById('nd-title').value=n.title||'';document.getElementById('nd-date').value=n.date||siToday();
+  document.getElementById('nd-editor').innerHTML=n.html||'';
+  document.getElementById('nd-status2').textContent='';ndMode('doc');}
+function ndBack(){
+  var l=ndList();var n=l.filter(function(x){return x.id===_ndCur;})[0];
+  if(n&&!n.title.trim()&&!(n.html||'').replace(/<[^>]*>/g,'').trim()){var j=siJob();j.notesList=l.filter(function(x){return x!==n;});}
+  else if(n&&!n.title.trim()){alert('Please give this note a title.');return;}
+  document.getElementById('nd-textwrap').dataset.open='';_ndCur=null;siSave();ndMode('doc');}
+function ndDelete(){var j=siJob();if(!j||!confirm('Delete this note?'))return;j.notesList=ndList().filter(function(x){return x.id!==_ndCur;});
+  document.getElementById('nd-textwrap').dataset.open='';_ndCur=null;siSave();ndMode('doc');}
+function renderNotesDoc(){
+  if(_skMode==='sk'){if(typeof renderSketches==='function')renderSketches();return;}
+  if(document.getElementById('nd-textwrap').dataset.open==='1'&&_ndCur){var n=ndList().filter(function(x){return x.id===_ndCur;})[0];if(!n){document.getElementById('nd-textwrap').dataset.open='';_ndCur=null;}else return;}
+  ndMode('doc');}
+function notesDocInput(){
+  var n=ndList().filter(function(x){return x.id===_ndCur;})[0];if(!n)return;
+  n.title=document.getElementById('nd-title').value;n.date=document.getElementById('nd-date').value;n.html=document.getElementById('nd-editor').innerHTML;
+  var st=document.getElementById('nd-status2');if(st)st.textContent='Saving…';
+  clearTimeout(_ndTimer);
+  _ndTimer=setTimeout(function(){try{saveData();}catch(e){}var st=document.getElementById('nd-status2');if(st)st.textContent='✓ Saved';},800);}
+function notesDocPrint(){
+  var n=ndList().filter(function(x){return x.id===_ndCur;})[0];if(!n)return;var j=siJob();
+  var w=window.open('','_blank');if(!w)return;
+  w.document.write('<!DOCTYPE html><html><head><title>'+esc(n.title)+'</title><style>body{font-family:Arial,sans-serif;font-size:14px;line-height:1.6;padding:24px;color:#111}</style></head><body><div style="color:#64748b;font-size:12px;">'+esc(j.name||'')+' · '+esc(siFmt(n.date))+'</div><h2>'+esc(n.title)+'</h2>'+(n.html||'')+'</body></html>');
+  w.document.close();setTimeout(function(){w.print();},300);}
 
 // TABS
 function showTab(n,el){
@@ -6494,6 +6536,7 @@ function saveCurrentJob(){
     docHTML:(typeof existing.docHTML==='string')?existing.docHTML:'',
     siteIssues:Array.isArray(existing.siteIssues)?existing.siteIssues:[],
     sketches:Array.isArray(existing.sketches)?existing.sketches:[],
+    notesList:Array.isArray(existing.notesList)?existing.notesList:[],
     priority:(typeof existing.priority==='number')?existing.priority:Date.now()};
 }
 
@@ -6668,7 +6711,7 @@ function _normJob(id,j){
     dispatches:Array.isArray(j.dispatches)?j.dispatches:[],hangingRails:Array.isArray(j.hangingRails)?j.hangingRails:[],
     glassDoors:Array.isArray(j.glassDoors)?j.glassDoors:[],steccaItems:Array.isArray(j.steccaItems)?j.steccaItems:[],
     orderReminders:j.orderReminders||defR,matAliases:j.matAliases||{},matPrintOrder:j.matPrintOrder||{},hwAliases:j.hwAliases||{},
-    notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',docHTML:(typeof j.docHTML==='string')?j.docHTML:'',siteIssues:Array.isArray(j.siteIssues)?j.siteIssues:[],sketches:Array.isArray(j.sketches)?j.sketches:[],
+    notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',docHTML:(typeof j.docHTML==='string')?j.docHTML:'',siteIssues:Array.isArray(j.siteIssues)?j.siteIssues:[],sketches:Array.isArray(j.sketches)?j.sketches:[],notesList:Array.isArray(j.notesList)?j.notesList:[],
     kickboards:normKick(j.kickboards),completed:j.completed||false,
     category:j.category||'production',prevCategory:j.prevCategory||'production',
     priority:(typeof j.priority==='number')?j.priority:Date.now()};
@@ -6960,7 +7003,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v218 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v219 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8618,7 +8661,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=218;
+var APP_VERSION=219;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
