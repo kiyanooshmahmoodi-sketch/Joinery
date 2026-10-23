@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v216 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v217 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1215,25 +1215,29 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <div class="panel" id="panel-issues">
   <div class="flex ai-c jb" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;">
     <div><div style="font-size:18px;font-weight:800;">⚠️ Site Issues</div><div style="font-size:12px;color:var(--gray);" id="si-proj">—</div></div>
-    <div id="si-filter" style="display:flex;gap:6px;">
+    <div id="si-filter" style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="btn btn-sm" style="background:#dc2626;color:#fff;" onclick="siToggleForm()">➕ Add Issue</button>
       <button class="btn btn-outline btn-sm" onclick="siSetFilter('open')" id="sif-open">Open</button>
       <button class="btn btn-outline btn-sm" onclick="siSetFilter('fixed')" id="sif-fixed">Fixed</button>
       <button class="btn btn-outline btn-sm" onclick="siSetFilter('all')" id="sif-all">All</button>
     </div>
   </div>
-  <div class="card" style="border-left:4px solid #dc2626;">
-    <div class="card-title" style="color:#b91c1c;">➕ Add Site Issue</div>
+  <div class="card" id="si-form" style="border-left:4px solid #dc2626;display:none;">
+    <div class="card-title" style="color:#b91c1c;">➕ New Site Issue</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:8px;">
       <input id="si-place" placeholder="Where? (room / cabinet no. / area)" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;">
-      <input id="si-title" placeholder="Issue title (required)" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;">
+      <input id="si-title" placeholder="Issue (what is the problem?) — required" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;">
+      <input id="si-date" type="date" title="Date" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;">
     </div>
     <textarea id="si-desc" rows="3" placeholder="Describe the issue…" style="width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;box-sizing:border-box;"></textarea>
     <div style="margin:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <label class="btn btn-outline btn-sm" style="cursor:pointer;">📷 Add photos<input type="file" id="si-files" accept="image/*" multiple style="display:none" onchange="siPickPhotos(this)"></label>
+      <label class="btn btn-outline btn-sm" style="cursor:pointer;">📸 Take photo<input type="file" id="si-cam" accept="image/*" capture="environment" style="display:none" onchange="siPickPhotos(this)"></label>
+      <label class="btn btn-outline btn-sm" style="cursor:pointer;">🖼 From gallery<input type="file" id="si-files" accept="image/*" multiple style="display:none" onchange="siPickPhotos(this)"></label>
       <span id="si-pending" style="font-size:12px;color:var(--gray);"></span>
     </div>
     <div id="si-thumbs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
-    <button class="btn btn-sm" style="background:#dc2626;color:#fff;" onclick="siAdd()">➕ Add Issue</button>
+    <button class="btn btn-sm" style="background:#dc2626;color:#fff;" onclick="siAdd()">💾 Save Issue</button>
+    <button class="btn btn-outline btn-sm" onclick="siToggleForm(false)">Cancel</button>
   </div>
   <div id="si-list" style="margin-top:12px;"></div>
 </div>
@@ -6093,6 +6097,9 @@ function notesDocPrint(){
 // ===== SITE ISSUES (per project, with photos) =====
 var _siFilter='open',_siNew=[],_siCache={};
 function siJob(){return currentJobId&&allJobs[currentJobId]?allJobs[currentJobId]:null;}
+function siToday(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function siFmt(iso){var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(iso||'');if(!m)return iso||'';return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});}
+function siToggleForm(show){var f=document.getElementById('si-form');if(!f)return;if(show===undefined)show=f.style.display==='none';f.style.display=show?'':'none';if(show){document.getElementById('si-date').value=siToday();document.getElementById('si-title').focus();}}
 function siSetFilter(f){_siFilter=f;renderSiteIssues();}
 function siCompress(file){return new Promise(function(res,rej){
   var fr=new FileReader();fr.onerror=function(){rej(new Error('read'));};
@@ -6132,9 +6139,9 @@ function siAdd(){
   if(!t){alert('Please enter an issue title.');return;}
   j.siteIssues=j.siteIssues||[];
   j.siteIssues.unshift({id:'i'+Date.now().toString(36),title:t,place:document.getElementById('si-place').value.trim(),desc:document.getElementById('si-desc').value.trim(),
-    status:'open',by:(window.SESSION&&SESSION.name)||'',date:new Date().toLocaleString('en-AU'),photos:_siNew.slice()});
+    status:'open',by:(window.SESSION&&SESSION.name)||'',issueDate:document.getElementById('si-date').value||siToday(),date:new Date().toLocaleString('en-AU'),photos:_siNew.slice()});
   _siNew=[];['si-title','si-place','si-desc'].forEach(function(i){document.getElementById(i).value='';});
-  siRenderNewThumbs();siSave();renderSiteIssues();}
+  siRenderNewThumbs();siToggleForm(false);siSave();renderSiteIssues();}
 function siSave(){try{saveData();}catch(e){}}
 function siToggle(id){var j=siJob();if(!j)return;(j.siteIssues||[]).forEach(function(x){if(x.id===id){x.status=x.status==='fixed'?'open':'fixed';x.fixedBy=x.status==='fixed'?((window.SESSION&&SESSION.name)||''):'';x.fixedDate=x.status==='fixed'?new Date().toLocaleString('en-AU'):'';}});siSave();renderSiteIssues();}
 function siDelete(id){var j=siJob();if(!j||!confirm('Delete this issue?'))return;j.siteIssues=(j.siteIssues||[]).filter(function(x){return x.id!==id;});siSave();renderSiteIssues();}
@@ -6162,7 +6169,7 @@ function renderSiteIssues(){
       '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">'+
         '<div><div style="font-weight:800;font-size:15px;">'+(fixed?'✅ ':'⚠️ ')+esc(x.title)+'</div>'+
         (x.place?'<div style="font-size:13px;color:#0284c7;font-weight:700;">📍 '+esc(x.place)+'</div>':'')+
-        '<div style="font-size:11px;color:#94a3b8;">'+esc(x.date||'')+(x.by?' · '+esc(x.by):'')+(fixed&&x.fixedBy?' · fixed by '+esc(x.fixedBy):'')+'</div></div>'+
+        '<div style="font-size:11px;color:#94a3b8;">'+'📅 '+esc(x.issueDate?siFmt(x.issueDate):(x.date||''))+(x.by?' · '+esc(x.by):'')+(fixed&&x.fixedBy?' · fixed by '+esc(x.fixedBy):'')+'</div></div>'+
         '<div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;">'+
           '<button class="btn btn-outline btn-sm" onclick="siToggle(\''+x.id+'\')">'+(fixed?'↩ Reopen':'✔ Mark fixed')+'</button>'+
           '<label class="btn btn-outline btn-sm" style="cursor:pointer;">📷 +<input type="file" accept="image/*" multiple style="display:none" onchange="siAddPhotosTo(\''+x.id+'\',this)"></label>'+
@@ -6865,7 +6872,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v216 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v217 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8523,7 +8530,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=216;
+var APP_VERSION=217;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
