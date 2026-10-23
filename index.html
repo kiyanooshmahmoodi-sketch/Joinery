@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v208 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v209 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1355,6 +1355,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <div class="tabs">
   <div class="tab active" onclick="showTab('qc',this)">✅ Quality Check <span class="tbadge" id="tb-qc-pending">0</span></div>
   <div class="tab" onclick="showTab('settings',this)">⚙️ Settings</div>
+  <div class="tab" onclick="showTab('users',this)">👥 Users</div>
 </div>
 
 <div class="content">
@@ -1431,6 +1432,13 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     <div id="admin-rec-msg" style="font-size:12px;min-height:16px;margin-top:6px;"></div>
   </div>
 <!-- Settings PIN removed -->
+</div>
+<div class="panel" id="panel-users">
+  <div class="card">
+    <div class="card-title">👥 Users</div>
+    <div class="card-sub">New people appear here as <b>Pending</b>. Tick their roles, give them a code (4–8 digits), then press <b>Approve / Save</b>. Tell them the code yourself. They only type the code afterwards.</div>
+    <div id="users-list"><div style="color:#94a3b8;padding:14px;text-align:center;">Loading…</div></div>
+  </div>
 </div>
 </div>
 
@@ -6678,7 +6686,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v208 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v209 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -7928,7 +7936,7 @@ _selfCheckRules();
 // Put the Firebase config object here to make every copy of this file connect automatically; leave null to use the in-app setup box.
 var FIREBASE_CONFIG=null;
 
-var cloud={db:null,auth:null,user:null,role:'',unsub:null,sig:{},state:'off',pushT:null,skipped:false};
+var cloud={db:null,auth:null,user:null,unsub:null,usersUnsub:null,sig:{},pushT:null,ready:false,users:{}};
 function _cfg(){
   if(FIREBASE_CONFIG)return FIREBASE_CONFIG;
   try{var c=localStorage.getItem('cbk-fb-config');if(c)return JSON.parse(c);}catch(e){}
@@ -7960,25 +7968,14 @@ function cloudInit(){
     cloud.auth=firebase.auth();cloud.db=firebase.firestore();
     try{cloud.db.enablePersistence({synchronizeTabs:true}).catch(function(){});}catch(e){}
     cloud.auth.onAuthStateChanged(function(u){
-      if(u){cloud.user=u;cloudCloseOv();cloudStart();}
-      else{cloud.user=null;cloudStop();_cstat('☁ Sign in','#b45309');if(!cloud.skipped)cloudOpenLogin();}
+      if(u){cloud.user=u;cloud.ready=true;cloudStart();if(typeof rcOnCloudReady==='function')rcOnCloudReady();}
+      else{cloud.user=null;cloud.ready=false;cloud.auth.signInAnonymously().catch(function(e){console.error('anon sign-in',e);_cstat('☁ Enable Anonymous sign-in','#b91c1c');});}
     });
   }catch(e){console.error('cloudInit',e);_cstat('☁ Error','#b91c1c');}
 }
-function cloudOpenLogin(){document.getElementById('cloud-login').style.display='';document.getElementById('cloud-setup').style.display='none';document.getElementById('cloud-ov').style.display='flex';}
 function cloudCloseOv(){document.getElementById('cloud-ov').style.display='none';}
-function cloudSkip(){cloud.skipped=true;cloudCloseOv();}
-async function cloudSignIn(){
-  var e=document.getElementById('cloud-email').value.trim(),p=document.getElementById('cloud-pass').value,er=document.getElementById('cloud-err');
-  er.textContent='';
-  try{await cloud.auth.signInWithEmailAndPassword(e,p);}
-  catch(x){er.textContent=(x.code==='auth/invalid-credential'||x.code==='auth/wrong-password'||x.code==='auth/user-not-found')?'Wrong email or password':(x.message||'Sign-in failed');}
-}
 function cloudBtn(){
-  if(!_cfg()){document.getElementById('cloud-login').style.display='none';document.getElementById('cloud-setup').style.display='';document.getElementById('cloud-ov').style.display='flex';return;}
-  if(cloud.user){
-    if(confirm('Signed in as '+cloud.user.email+(cloud.role?' ('+cloud.role+')':'')+'.\n\nSign out?'))cloud.auth.signOut();
-  }else{cloud.skipped=false;if(cloud.auth)cloudOpenLogin();else location.reload();}
+  if(!_cfg()){document.getElementById('cloud-setup').style.display='';document.getElementById('cloud-ov').style.display='flex';}
 }
 function cloudSaveConfig(){
   var t=document.getElementById('cloud-cfg').value,er=document.getElementById('cloud-cfg-err');
@@ -7992,10 +7989,6 @@ function cloudSaveConfig(){
 function cloudStop(){if(cloud.unsub){cloud.unsub();cloud.unsub=null;}}
 async function cloudStart(){
   _cstat('☁ Syncing…','#b45309');
-  try{
-    var us=await cloud.db.collection('users').doc(cloud.user.uid).get();
-    cloud.role=us.exists?(us.data().role||'office'):'office';
-  }catch(e){cloud.role='office';}
   cloudStop();
   var first=true;
   cloud.unsub=cloud.db.collection('jobs').onSnapshot(async function(snap){
@@ -8016,22 +8009,19 @@ async function cloudStart(){
     }
     if(first){
       first=false;
-      // Upload local projects the cloud doesn't have yet (first sign-in from this computer)
       var have={};snap.forEach(function(d){have[d.id]=1;});
       Object.keys(allJobs).forEach(function(id){if(!have[id])cloudPushJob(id);});
     }
     if(changedCur)cloudReloadCurrent();
     updateProjectCount();
-    try{localStorage.removeItem('x');}catch(e){}
     if(document.getElementById('joverlay').classList.contains('show'))renderJobs(document.getElementById('jsearch').value);
-    _cstat('☁ Synced · '+(cloud.user.email.split('@')[0]),'#15803d');
+    _cstat('☁ Synced','#15803d');
     try{ if(window.storage)window.storage.set('cbk-jobs-v1',JSON.stringify({allJobs:allJobs,currentJobId:currentJobId,managerPin:managerPin,notifyEmail:NOTIFY_EMAIL})); }catch(e){}
-  },function(err){console.error('cloud listen',err);_cstat('☁ '+(err.code==='permission-denied'?'No permission':'Offline'),'#b91c1c');});
+  },function(err){console.error('cloud listen',err);_cstat('☁ '+(err.code==='permission-denied'?'No permission — check Firestore rules':'Offline'),'#b91c1c');});
 }
 function cloudReloadCurrent(){
   var job=allJobs[currentJobId];
   if(!job){refresh();renderLog();return;}
-  var id=currentJobId;
   units=ensureUnitShape(job.units||[]);shipLog=job.shipLog||[];dispatches=job.dispatches||[];hangingRails=job.hangingRails||[];glassDoors=job.glassDoors||[];steccaItems=job.steccaItems||[];orderReminders=job.orderReminders||{glass:'pending',laminate:'pending',steccawood:'pending',closetRod:'pending'};matAliases=job.matAliases||{};matPrintOrder=job.matPrintOrder||{};hwAliases=job.hwAliases||{};projectNotes=migrateNotes(job.notes);projectCompleted=job.completed||false;kickboards=normKick(job.kickboards);
   document.getElementById('proj-input').value=job.name;document.getElementById('proj-display').textContent=job.name;
   refresh();renderLog();renderDispatchHistory();
@@ -8047,10 +8037,10 @@ async function cloudPushJob(id){
   if(cloud.sig[id]===str)return;
   try{
     var p=await _pack(str);
-    p.name=allJobs[id].name||'';p.updatedAt=firebase.firestore.FieldValue.serverTimestamp();p.updatedBy=cloud.user.email||'';
+    p.name=allJobs[id].name||'';p.updatedAt=firebase.firestore.FieldValue.serverTimestamp();p.updatedBy=(window.SESSION&&SESSION.name)||'';
     cloud.sig[id]=str;
     await cloud.db.collection('jobs').doc(id).set(p);
-    _cstat('☁ Synced · '+(cloud.user.email.split('@')[0]),'#15803d');
+    _cstat('☁ Synced','#15803d');
   }catch(e){console.error('cloud push',e);delete cloud.sig[id];_cstat('☁ Not synced','#b91c1c');}
 }
 function cloudPush(){
@@ -8070,7 +8060,7 @@ window.addEventListener('load',function(){setTimeout(cloudInit,300);});
 <style>
 body.role-limited button[onclick="newJob()"],body.role-limited #del-btn,body.role-limited button[onclick="saveProject()"],body.role-limited button[onclick="saveProjectAs()"],body.role-limited button[onclick="openProject()"]{display:none!important;}
 body.no-qc-edit #qc-modal-actions{display:none!important;}
-body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings{display:none!important;}
+body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,body.no-settings .tab[onclick*="'users'"],body.no-settings #panel-users{display:none!important;}
 #role-ov .rbtn{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:14px 16px;margin-bottom:10px;border:1.5px solid #cbd5e1;border-radius:12px;background:#fff;font-size:15px;font-weight:800;color:#0f172a;cursor:pointer;text-align:left;}
 #role-ov .rbtn:hover{border-color:#1d4ed8;background:#eff6ff;}
 #role-ov .rbtn small{display:block;font-weight:600;font-size:11px;color:#64748b;margin-top:2px;}
@@ -8082,14 +8072,42 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings{di
       <div id="role-ver" style="font-size:11px;color:#64748b;letter-spacing:1.5px;margin-top:3px;"></div>
     </div>
     <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.1);">
+      <div id="role-err" style="color:#b91c1c;font-size:12px;min-height:16px;margin-bottom:6px;"></div>
+      <div id="role-cloud" style="display:none;">
+        <div id="rc-connecting" style="font-size:13px;color:#64748b;padding:14px 0;text-align:center;">Connecting…</div>
+        <div id="rc-email" style="display:none;">
+          <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:8px;">Request access</div>
+          <input id="rc-name" placeholder="Your name (e.g. Alex)" autocomplete="off" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;margin-bottom:8px;">
+          <input id="rc-email-in" type="email" placeholder="Your email" autocomplete="email" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;margin-bottom:8px;" onkeydown="if(event.key==='Enter')rcRequest()">
+          <button onclick="rcRequest()" style="width:100%;padding:12px;border:0;border-radius:10px;background:#1d4ed8;color:#fff;font-weight:800;font-size:14px;cursor:pointer;">Request access</button>
+          <div style="font-size:11px;color:#64748b;margin-top:8px;">The admin will approve you and give you a code. You only do this once on this device.</div>
+        </div>
+        <div id="rc-pending" style="display:none;text-align:center;padding:6px 0;">
+          <div style="font-size:30px;">⏳</div>
+          <div style="font-size:14px;font-weight:800;color:#0f172a;margin:4px 0;">Waiting for the admin to approve you</div>
+          <div style="font-size:12px;color:#64748b;" id="rc-pend-email"></div>
+          <div style="font-size:12px;color:#64748b;margin-top:6px;">This screen updates by itself once you are approved.</div>
+          <button onclick="rcOtherEmail()" style="margin-top:8px;border:0;background:none;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer;">Use a different email</button>
+        </div>
+        <div id="rc-code" style="display:none;">
+          <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:8px;">Hi <span id="rc-hi"></span> — enter your code</div>
+          <input id="rc-code-in" type="password" inputmode="numeric" maxlength="8" placeholder="Code" autocomplete="off" style="width:100%;box-sizing:border-box;padding:12px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:20px;letter-spacing:8px;text-align:center;" onkeydown="if(event.key==='Enter')rcSubmitCode()">
+          <button onclick="rcSubmitCode()" style="width:100%;margin-top:8px;padding:12px;border:0;border-radius:10px;background:#1d4ed8;color:#fff;font-weight:800;font-size:14px;cursor:pointer;">Enter</button>
+          <button onclick="rcOtherEmail()" style="width:100%;margin-top:4px;padding:6px;border:0;background:none;color:#64748b;font-size:12px;cursor:pointer;">Not you? Use a different email</button>
+        </div>
+        <div id="rc-roles" style="display:none;"></div>
+        <div id="rc-blocked" style="display:none;text-align:center;color:#b91c1c;font-weight:700;font-size:13px;padding:10px 0;">Access blocked. Please contact the admin.</div>
+        <div style="border-top:1px solid #e2e8f0;margin:14px 0 12px;"></div>
+      </div>
+      <div id="role-offline">
       <div style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;">Your name</div>
       <input id="role-name" placeholder="e.g. Mark" autocomplete="off" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;margin-bottom:14px;">
       <div style="font-size:12px;font-weight:700;color:#334155;margin-bottom:8px;">Enter as</div>
-      <div id="role-err" style="color:#b91c1c;font-size:12px;min-height:16px;margin-bottom:4px;"></div>
       <button class="rbtn" onclick="pickRole('designer')"><span style="font-size:22px">📋</span><span>Designer<small>Import, cabinet list, orders, prints</small></span></button>
       <button class="rbtn" onclick="pickRole('qc')"><span style="font-size:22px">✅</span><span>QC Checker<small>Quality check</small></span></button>
       <button class="rbtn" onclick="pickRole('dispatch')"><span style="font-size:22px">📦</span><span>Dispatch / Shipping<small>Scan to send to site · see QC</small></span></button>
       <button class="rbtn" onclick="pickRole('installer')"><span style="font-size:22px">🚚</span><span>Installer<small>Installation · see QC</small></span></button>
+      </div>
       <button class="rbtn" onclick="pickRole('admin')" style="margin-bottom:0;"><span style="font-size:22px">🔐</span><span>Admin<small>Everything · needs the 4-digit code</small></span></button>
       <div id="role-admin-box" style="display:none;margin-top:12px;">
         <input id="role-code" type="password" inputmode="numeric" maxlength="8" placeholder="Admin code" autocomplete="off" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:18px;letter-spacing:6px;text-align:center;" onkeydown="if(event.key==='Enter')submitAdminCode()">
@@ -8112,6 +8130,10 @@ function roleInit(){
   if(rv&&v)rv.textContent=v.textContent.toUpperCase();
   try{document.getElementById('role-name').value=localStorage.getItem('cbk-user-name')||'';}catch(e){}
   document.getElementById('role-ov').style.display='flex';
+  var cm=!!_cfg();
+  document.getElementById('role-offline').style.display=cm?'none':'';
+  document.getElementById('role-cloud').style.display=cm?'':'none';
+  if(cm)rcStart();
 }
 function pickRole(r){
   var nm=document.getElementById('role-name').value.trim(),er=document.getElementById('role-err');er.textContent='';er.style.color='#b91c1c';
@@ -8125,11 +8147,11 @@ function pickRole(r){
 function submitAdminCode(){
   var c=document.getElementById('role-code').value,er=document.getElementById('role-err');
   if(c!==_adminCode()){er.textContent='Wrong code';document.getElementById('role-code').value='';return;}
-  var nm=document.getElementById('role-name').value.trim()||'Admin';
+  var nm=(document.getElementById('role-name').value.trim()||'Admin');
   applyRole('admin',nm);
 }
-function applyRole(r,nm){
-  SESSION.role=r;SESSION.name=nm;
+function applyRole(r,nm,em){
+  SESSION.role=r;SESSION.name=nm;SESSION.email=em||'';
   try{localStorage.setItem('cbk-user-name',nm);}catch(e){}
   document.getElementById('role-ov').style.display='none';
   document.getElementById('role-code').value='';document.getElementById('role-admin-box').style.display='none';
@@ -8149,6 +8171,7 @@ function applyRole(r,nm){
   var pin=document.getElementById('proj-input');if(pin)pin.readOnly=!(r==='admin'||r==='designer');
   var re=document.getElementById('admin-rec-email');if(re&&!re.value)re.value=_adminEmail();var acs=document.getElementById('admin-code-card');if(acs)acs.style.display=r==='admin'?'':'none';
   switchView(ROLE_HOME[r]);
+  if(typeof _presence==='function')setTimeout(_presence,500);
 }
 // Guards: block actions and views the current role is not allowed to use
 (function(){
@@ -8185,6 +8208,130 @@ async function forgotAdminCode(){
     if(d.success){er.style.color='#15803d';er.textContent='✓ Sent — check the admin email inbox.';}else throw new Error(d.message);
   }catch(e){er.style.color='#b91c1c';er.textContent='Could not send the email. Check the internet connection.';}
 }
+
+// ===== CLOUD ROLES (v209): request access by email, admin approves + gives a code =====
+var _rcUnsub=null,_rcUser=null;
+function _cloudMode(){return !!_cfg();}
+function rcShow(id){['rc-connecting','rc-email','rc-pending','rc-code','rc-roles','rc-blocked'].forEach(function(x){var e=document.getElementById(x);if(e)e.style.display=(x===id?'':'none');});}
+function _ukey(e){return String(e||'').trim().toLowerCase();}
+function rcOnCloudReady(){if(!SESSION.role&&document.getElementById('role-ov').style.display!=='none')rcStart();}
+function rcStart(){
+  if(!_cloudMode())return;
+  if(!cloud.ready){rcShow('rc-connecting');return;}
+  var em='';try{em=localStorage.getItem('cbk-user-email')||'';}catch(e){}
+  if(!em){rcShow('rc-email');try{document.getElementById('rc-name').value=localStorage.getItem('cbk-user-name')||'';}catch(e){}return;}
+  rcWatch(em);
+}
+function rcWatch(em){
+  if(_rcUnsub){_rcUnsub();_rcUnsub=null;}
+  _rcUnsub=cloud.db.collection('users').doc(em).onSnapshot(function(d){
+    if(!d.exists){rcShow('rc-email');return;}
+    var u=d.data();_rcUser=u;
+    if(u.status==='approved'&&u.code){document.getElementById('rc-hi').textContent=u.name||em;rcShow('rc-code');setTimeout(function(){var c=document.getElementById('rc-code-in');if(c)c.focus();},50);}
+    else if(u.status==='blocked'){rcShow('rc-blocked');}
+    else{document.getElementById('rc-pend-email').textContent=em;rcShow('rc-pending');}
+  },function(e){var er=document.getElementById('role-err');er.style.color='#b91c1c';er.textContent='Cannot reach the server. Check internet and Firestore rules.';});
+}
+async function rcRequest(){
+  var er=document.getElementById('role-err');er.style.color='#b91c1c';er.textContent='';
+  var nm=document.getElementById('rc-name').value.trim(),em=_ukey(document.getElementById('rc-email-in').value);
+  if(!nm){er.textContent='Please type your name.';return;}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){er.textContent='Please type a valid email.';return;}
+  try{
+    var ref=cloud.db.collection('users').doc(em),d=await ref.get();
+    if(!d.exists)await ref.set({email:em,name:nm,roles:[],code:'',status:'pending',requestedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    localStorage.setItem('cbk-user-email',em);localStorage.setItem('cbk-user-name',nm);
+    rcWatch(em);
+  }catch(e){console.error(e);er.textContent='Could not send the request. Check internet.';}
+}
+function rcOtherEmail(){
+  try{localStorage.removeItem('cbk-user-email');}catch(e){}
+  if(_rcUnsub){_rcUnsub();_rcUnsub=null;}
+  rcShow('rc-email');document.getElementById('rc-email-in').value='';
+}
+function rcSubmitCode(){
+  var er=document.getElementById('role-err');er.style.color='#b91c1c';er.textContent='';
+  var fails={n:0,until:0};try{fails=JSON.parse(localStorage.getItem('cbk-code-fails')||'{"n":0,"until":0}');}catch(e){}
+  if(Date.now()<fails.until){er.textContent='Too many wrong codes. Try again in '+Math.ceil((fails.until-Date.now())/60000)+' min.';return;}
+  var c=document.getElementById('rc-code-in').value.trim(),u=_rcUser;
+  if(!u||c!==String(u.code)){
+    fails.n=(fails.n||0)+1;if(fails.n>=5){fails.until=Date.now()+600000;fails.n=0;}
+    try{localStorage.setItem('cbk-code-fails',JSON.stringify(fails));}catch(e){}
+    document.getElementById('rc-code-in').value='';er.textContent='Wrong code';return;
+  }
+  try{localStorage.setItem('cbk-code-fails','{"n":0,"until":0}');}catch(e){}
+  var roles=(u.roles||[]).filter(function(r){return ROLE_VIEWS[r];});
+  if(!roles.length){er.textContent='The admin has not given you a section yet.';return;}
+  if(roles.length===1){applyRole(roles[0],u.name||u.email,u.email);return;}
+  var box=document.getElementById('rc-roles');
+  box.innerHTML='<div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:8px;">Enter as</div>'+roles.map(function(r){return '<button class="rbtn" data-r="'+r+'">'+ROLE_LABEL[r]+'</button>';}).join('');
+  box.querySelectorAll('button').forEach(function(b){b.onclick=function(){applyRole(b.getAttribute('data-r'),u.name||u.email,u.email);};});
+  rcShow('rc-roles');
+}
+// presence: lets the admin see who is active and on which project
+function _presence(){
+  if(!SESSION.email||!cloud.db||!cloud.user)return;
+  var upd={lastSeen:firebase.firestore.FieldValue.serverTimestamp(),lastRole:SESSION.role};
+  var j=currentJobId&&allJobs[currentJobId];
+  if(j&&j.name){upd.lastProject=j.name;upd.projects=firebase.firestore.FieldValue.arrayUnion(j.name);}
+  cloud.db.collection('users').doc(SESSION.email).set(upd,{merge:true}).catch(function(){});
+}
+setInterval(_presence,30000);
+
+// ===== ADMIN: USERS PAGE =====
+var _userList=[],_usersUnsub=null;
+function usersOpen(){
+  var box=document.getElementById('users-list');
+  if(!cloud.db||!cloud.user){box.innerHTML='<div style="color:#b45309;padding:14px;">Cloud is not connected yet. Finish the Firebase setup (☁ Set up), then come back here.</div>';return;}
+  if(_usersUnsub)return;
+  _usersUnsub=cloud.db.collection('users').onSnapshot(function(snap){
+    _userList=[];snap.forEach(function(d){var u=d.data();u._id=d.id;_userList.push(u);});
+    _userList.sort(function(a,b){var pa=a.status==='pending'?0:1,pb=b.status==='pending'?0:1;if(pa!==pb)return pa-pb;return String(a.name||a._id).localeCompare(String(b.name||b._id));});
+    renderUsers();
+  },function(e){box.innerHTML='<div style="color:#b91c1c;padding:14px;">Cannot read users — check Firestore rules.</div>';});
+}
+function _fmtTs(t){try{return t&&t.toDate?t.toDate().toLocaleString():'—';}catch(e){return '—';}}
+function renderUsers(){
+  var box=document.getElementById('users-list');if(!box)return;
+  if(!_userList.length){box.innerHTML='<div style="color:#94a3b8;padding:14px;text-align:center;">No one has requested access yet.</div>';return;}
+  var RL=[['designer','Designer'],['qc','QC Checker'],['dispatch','Dispatch'],['installer','Installer']];
+  box.innerHTML=_userList.map(function(u,i){
+    var st=u.status==='approved'?['#15803d','#dcfce7','Approved']:u.status==='blocked'?['#b91c1c','#fee2e2','Blocked']:['#b45309','#fef3c7','Pending'];
+    var projs=(u.projects||[]).slice(-6).map(function(p){return esc(p);}).join(', ')||'—';
+    return '<div style="border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;margin-bottom:10px;background:#fff;">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;">'+
+        '<div><b style="font-size:14px;">'+esc(u.name||'—')+'</b> <span style="font-size:12px;color:#64748b;">'+esc(u._id)+'</span></div>'+
+        '<span style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:99px;color:'+st[0]+';background:'+st[1]+';">'+st[2]+'</span></div>'+
+      '<div style="font-size:11px;color:#64748b;margin:6px 0;">Last seen: '+_fmtTs(u.lastSeen)+' · Last project: <b>'+esc(u.lastProject||'—')+'</b><br>Projects worked on: '+projs+'</div>'+
+      '<div style="display:flex;gap:12px;flex-wrap:wrap;margin:8px 0;">'+RL.map(function(r){return '<label style="font-size:12px;font-weight:700;"><input type="checkbox" id="ur-'+i+'-'+r[0]+'" '+((u.roles||[]).indexOf(r[0])>-1?'checked':'')+'> '+r[1]+'</label>';}).join('')+'</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'+
+        '<input id="ucode-'+i+'" value="'+esc(u.code||'')+'" placeholder="Code" maxlength="8" inputmode="numeric" style="width:110px;padding:8px;border:1.5px solid #cbd5e1;border-radius:8px;font-family:monospace;font-size:15px;letter-spacing:3px;text-align:center;">'+
+        '<button class="btn btn-outline btn-sm" onclick="userRandom('+i+')">🎲 Random</button>'+
+        '<button class="btn btn-blue btn-sm" onclick="userSave('+i+')">✅ Approve / Save</button>'+
+        '<button class="btn btn-outline btn-sm" onclick="userBlock('+i+')">🚫 Block</button>'+
+        '<button class="btn btn-red btn-sm" onclick="userDelete('+i+')">🗑</button>'+
+      '</div></div>';
+  }).join('');
+}
+function userRandom(i){
+  var used={};_userList.forEach(function(u){if(u.code)used[u.code]=1;});
+  var c;do{c=String(Math.floor(1000+Math.random()*9000));}while(used[c]);
+  document.getElementById('ucode-'+i).value=c;
+}
+function userSave(i){
+  var u=_userList[i];if(!u)return;
+  var roles=['designer','qc','dispatch','installer'].filter(function(r){return document.getElementById('ur-'+i+'-'+r).checked;});
+  var code=document.getElementById('ucode-'+i).value.trim();
+  if(!roles.length){alert('Tick at least one section for this person.');return;}
+  if(!/^\d{4,8}$/.test(code)){alert('The code must be 4 to 8 digits.');return;}
+  if(code===_adminCode()){alert('That code is the admin code. Choose a different one.');return;}
+  if(_userList.some(function(x,k){return k!==i&&String(x.code)===code;})){alert('Another person already has that code. Choose a different one.');return;}
+  cloud.db.collection('users').doc(u._id).set({roles:roles,code:code,status:'approved',approvedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(e){alert('Could not save: '+e.message);});
+}
+function userBlock(i){var u=_userList[i];if(!u||!confirm('Block '+(u.name||u._id)+'?'))return;cloud.db.collection('users').doc(u._id).set({status:'blocked'},{merge:true});}
+function userDelete(i){var u=_userList[i];if(!u||!confirm('Delete '+(u.name||u._id)+' completely?'))return;cloud.db.collection('users').doc(u._id).delete();}
+(function(){var _st=showTab;showTab=function(n,el){_st(n,el);if(n==='users')usersOpen();};})();
+
 roleInit();
 </script>
 
@@ -8194,7 +8341,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=208;
+var APP_VERSION=209;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
