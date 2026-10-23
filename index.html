@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v209 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v210 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6686,7 +6686,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v209 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v210 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -7934,7 +7934,14 @@ _selfCheckRules();
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 // Put the Firebase config object here to make every copy of this file connect automatically; leave null to use the in-app setup box.
-var FIREBASE_CONFIG=null;
+var FIREBASE_CONFIG={
+  apiKey:"AIzaSyAiHTXcg65LM1JPX5zoYKi0tAGRNl0-PEg",
+  authDomain:"cabinet-designer-268a7.firebaseapp.com",
+  projectId:"cabinet-designer-268a7",
+  storageBucket:"cabinet-designer-268a7.firebasestorage.app",
+  messagingSenderId:"687552185383",
+  appId:"1:687552185383:web:d9b62c7c660b3440d07a02"
+};
 
 var cloud={db:null,auth:null,user:null,unsub:null,usersUnsub:null,sig:{},pushT:null,ready:false,users:{}};
 function _cfg(){
@@ -8341,7 +8348,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=209;
+var APP_VERSION=210;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
