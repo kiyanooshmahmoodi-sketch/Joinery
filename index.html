@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v230 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v231 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6387,7 +6387,33 @@ var FIN_SHEETS=[
   ['Alfresco',[['',null,'20']]],['Bar',[['',null,'20']]],['Vanities',[['',null,'20']]]
  ]}
 ];
+var COLOUR_LIB={Polytec:["Adriatic", "Agave", "Alabaster", "Alboran Stone", "Alicante Stone", "Aluminium", "Amaro", "Angora Oak", "Anthracite Metallic", "Antico Oak", "Antique", "Arabica", "Arcadia Oak", "Arctic Ice", "Ardesia Stone", "Argento Stone", "Artisan Oak", "Aspen Stone", "Aston White", "Athena Stone", "Australian Native", "Avion Grey", "Barrington Marble", "Batten Oak", "Beige Travertine", "Belgian Oak", "Bernini Marble", "Bespoke", "Bianco", "Black", "Black Ply", "Black Wenge", "Blackened Oak", "Blackrock", "Blanco Marquina", "Bleached Walnut", "Blonde Oak", "Blossom White", "Bone White", "Boston Oak", "Botanic", "Botany Oak", "Bottega Oak", "Bottocino", "Britannia", "Bronze Gold Leaf", "Bronzed Oak", "Brushed Aluminium", "Brushed Stainless", "Buller Stone", "Cafe Cream", "Cafe Oak", "Calacutta D'oro", "Calacutta Grey", "Canterbury Grey", "Carcass", "Carrara", "Casastone", "Casentino Beech", "Castel", "Catalina Marble", "Cavia Lini", "Chambord", "Champagne Metallic", "Char Oak", "Charcoal Fabrini", "Chateau Oak", "Cinder", "Classic White", "Cloudy Grey", "Coastal Oak", "Combat Teak", "Concrete Fabrini", "Copper Leaf", "Corsica", "Cosmic Granite", "Cream", "Crema Lini", "Crisp White", "Danish Rattan", "Dark Batten Oak", "Dark Cement", "Dawnshade", "Desideria Marble", "Designer White", "Distressed Wood", "District Oak", "Drifted Oak", "Ecru Oak", "Elemental Grey", "Emperor Stone", "Empire Oak", "Espresso Fabrini", "Estella Oak", "European Walnut", "Evergreen", "Feldspar Shimmer", "Ferro", "Florentine Walnut", "Fontaine", "Forage", "French Stone", "Gesso Lini", "Gossamer White", "Graphite", "Greige", "Grey Cement", "Grey Oak", "Grey Taj", "Greystone", "Habitat", "Havana Oak", "Hazel Oak", "Husk", "Ink Fabrini", "Italian Cotton", "Ivorio Travertine", "Jamaican Walnut", "Jasmine", "Laurel Oak", "Lava", "Light Brass Leaf", "Light Oak", "Lightstone", "Ligurian Walnut", "Maison Oak", "Malt", "Manor Oak", "Marina Grey", "Marmo di Monte", "Marmo di Torre", "Marni Lini", "Maroso Milan", "Mercurio Grey", "Mineral Metallic", "Mink", "Mocha Fabrini", "Montage", "Moss Grey", "Natural Cotton", "Natural Oak", "Natural Ply", "Natural White", "Navona Stone", "Navy", "Nero Granite", "New Antique White", "New Classic White", "New Ultra White", "Nickel", "Nomad", "Nordic Oak", "Norfolk Terrazzo", "Notaio Walnut", "Nouveau Grey", "Oasis", "Obsidian Metallic", "Ochre Figured-Wood", "Onyx Figured-Wood", "Oxford", "Oyster Grey", "Palace Teak", "Palatino", "Pallido", "Palomera Oak", "Papyrus", "Parchment", "Pearl Fabrini", "Pearl Metallic", "Perugian Walnut", "Pewter Metallic", "Phantom Black", "Plantation Ash", "Platinum Leaf", "Polar White", "Porcelain", "Portland Stone", "Portofino Stone", "Prime Oak", "Provincial Limestone", "Pure Gold Leaf", "Quartiera Maple", "Raven Metallic", "Raw", "Regal White Pearl", "Rocco Lini", "Rojo Walnut", "Roman Ceppo", "Rose Gold Leaf", "Royal Oyster", "Rubra Oak", "Satra Wood", "Sepia Oak", "Serene", "Shannon Oak", "Sienna Figured-Wood", "Silk", "Silver Metallic", "Snow Fabrini", "Society Oak", "Soft Walnut", "Solara", "Solid White", "Sterling", "Stone Grey", "Storm", "Strata Grey", "Superior White", "Swiss Rattan", "Taj Mahal", "Tasmanian Oak", "Taupe", "Temple Stone", "Tessuto Milan", "Titanium", "Tivoli Ceppo", "Topiary", "Truffle Lini", "Tunisia Stone", "Tuross Oak", "Ultra White", "Urban Slate", "Verdelho", "Vesuvius Ceppo", "Visoni Stone", "Vittoria Pearl", "Volcanic Stone", "White", "White Cement", "White Cotton", "White Mist", "Whitewood", "Wild Clay", "Wispwood"]};
+var COLOUR_URL={Polytec:function(n){return 'https://www.polytec.com.au/colour/'+n.toLowerCase().replace(/['’]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'/';}};
+var COLOUR_IMG={Polytec:function(n){return 'https://www.polytec.com.au/img/products/380-380/'+n.toLowerCase().replace(/['’]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'.jpg';}};
 var _finSheet='appl';
+var _cpCtx=null,_cpBrand='Polytec';
+function finPickColour(gi,ri){_cpCtx={gi:gi,ri:ri};_cpBrand='Polytec';
+  var o=document.createElement('div');o.id='cp-ov';o.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:99997;display:flex;align-items:center;justify-content:center;padding:12px;';
+  o.innerHTML='<div style="background:#fff;border-radius:14px;max-width:900px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">'+
+   '<div style="padding:12px 14px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><b style="font-size:15px;">🎨 Choose colour</b>'+
+   '<div id="cp-brands" style="display:flex;gap:6px;"></div><input id="cp-q" oninput="cpRender()" placeholder="🔍 Search colour (e.g. Florentine)" style="flex:1;min-width:180px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'cp-ov\').remove()">✖ Close</button></div>'+
+   '<div id="cp-count" style="padding:6px 14px;font-size:12px;color:#64748b;"></div>'+
+   '<div id="cp-list" style="padding:10px 14px 14px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;"></div></div>';
+  document.body.appendChild(o);cpRender();setTimeout(function(){document.getElementById('cp-q').focus();},50);}
+function cpBrand(b){if(!COLOUR_LIB[b])return;_cpBrand=b;cpRender();}
+function cpRender(){
+  var q=(document.getElementById('cp-q').value||'').toLowerCase().trim();
+  document.getElementById('cp-brands').innerHTML=['Polytec','Laminex','Formica'].map(function(b){var ok=!!COLOUR_LIB[b];return '<button class="btn btn-sm '+(b===_cpBrand?'':'btn-outline')+'" '+(ok?'onclick="cpBrand(\''+b+'\')"':'disabled title="Coming soon"')+'>'+b+(ok?'':' (soon)')+'</button>';}).join('');
+  var list=COLOUR_LIB[_cpBrand].filter(function(n){return !q||n.toLowerCase().indexOf(q)>-1;});
+  document.getElementById('cp-count').textContent=list.length+' colours';
+  document.getElementById('cp-list').innerHTML=list.map(function(n){var i=COLOUR_LIB[_cpBrand].indexOf(n);
+    return '<div onclick="cpSelect('+i+')" style="cursor:pointer;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff;"><div style="height:70px;background:#f1f5f9;"><img loading="lazy" src="'+COLOUR_IMG[_cpBrand](n)+'" onerror="this.style.display=\'none\'" style="width:100%;height:70px;object-fit:cover;"></div><div style="padding:6px 8px;font-size:12px;font-weight:700;">'+esc(n)+'</div></div>';}).join('')||'<div style="grid-column:1/-1;color:#94a3b8;padding:20px;text-align:center;">No colour found — you can still type it by hand.</div>';}
+function cpSelect(i){
+  var n=COLOUR_LIB[_cpBrand][i];var c=_cpCtx;if(!c)return;
+  finSet('mat|'+c.gi+'|'+c.ri+'|0',_cpBrand+' '+n);
+  finSet('mat|'+c.gi+'|'+c.ri+'|1',COLOUR_URL[_cpBrand](n));
+  var o=document.getElementById('cp-ov');if(o)o.remove();renderFinishes();}
+
 function finJob(){return siJob();}
 function finVal(j,key,def){var v=j.finishes&&j.finishes.v;return(v&&v[key]!==undefined)?v[key]:(def||'');}
 function finSet(key,val){var j=finJob();if(!j)return;j.finishes=j.finishes||{site:'',v:{}};j.finishes.v=j.finishes.v||{};j.finishes.v[key]=val;
@@ -6423,7 +6449,9 @@ function finRowsHTML(sh,j,forPrint){
         var key=sh.key+'|'+gi+'|'+ri+'|'+c;
         var isLast=c===ncols-1;
         var v=finVal(j,key,(isLast&&def)?def:'');
-        tr+='<td>'+(forPrint?esc(v):'<input value="'+esc(v)+'" placeholder="'+(isLast?esc(hint):'')+'" oninput="finSet(\''+key+'\',this.value)" style="width:100%;min-width:130px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">')+'</td>';
+        var inpH=forPrint?esc(v):'<input value="'+esc(v)+'" placeholder="'+(isLast?esc(hint):'')+'" oninput="finSet(\''+key+'\',this.value)" style="width:100%;min-width:130px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">';
+        if(!forPrint&&sh.key==='mat'&&c===0)inpH='<div style="display:flex;gap:4px;">'+inpH+'<button onclick="finPickColour('+gi+','+ri+')" title="Choose colour from brand list" style="background:#fef3c7;border:none;padding:6px 9px;border-radius:6px;cursor:pointer;">🎨</button></div>';
+        tr+='<td>'+inpH+'</td>';
       }
       out+=tr+'</tr>';
     });
@@ -7166,7 +7194,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v230 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v231 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8824,7 +8852,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=230;
+var APP_VERSION=231;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
