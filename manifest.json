@@ -1,6 +1,6 @@
 {
-  "name": "Cabinet Designer",
-  "short_name": "Cabinet Designer",
+  "name": "CabLine",
+  "short_name": "CabLine",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

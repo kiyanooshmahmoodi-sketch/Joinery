@@ -6,12 +6,12 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cabinet Designer</title>
+<title>CabLine</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="apple-mobile-web-app-title" content="Cabinet Designer">
-<meta name="application-name" content="Cabinet Designer">
+<meta name="apple-mobile-web-app-title" content="CabLine">
+<meta name="application-name" content="CabLine">
 <meta name="theme-color" content="#0f172a">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
 
@@ -1037,8 +1037,8 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
       </svg>
     </div>
     <div>
-      <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v240 · Software Design by Kiya</div>
+      <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
+      <div class="brand-sub" id="brand-sub">v241 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -3267,7 +3267,7 @@ async function sendEmail(allClear,params){
       body:JSON.stringify({
         access_key:W3F_KEY,
         subject:subject,
-        from_name:'Joinery Project Manager',
+        from_name:'CabLine',
         email:NOTIFY_EMAIL,
         message:body
       })
@@ -3300,10 +3300,10 @@ async function testEmail(){
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({
         access_key:W3F_KEY,
-        subject:'✅ Joinery Project Manager — Test Email',
-        from_name:'Joinery Project Manager',
+        subject:'✅ CabLine — Test Email',
+        from_name:'CabLine',
         email:NOTIFY_EMAIL,
-        message:'Test email from Joinery Project Manager.\n\nIf you receive this, email is working correctly! ✅'
+        message:'Test email from CabLine.\n\nIf you receive this, email is working correctly! ✅'
       })
     });
     var data=await res.json();
@@ -5781,14 +5781,14 @@ async function sendThisWeekCode(){
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({
         access_key:W3F_KEY,
-        subject:'🔐 Joinery Project Manager — Weekly Access Code',
-        from_name:'Joinery Project Manager',
+        subject:'🔐 CabLine — Weekly Access Code',
+        from_name:'CabLine',
         email:OWNER_EMAIL,
-        message:'Weekly Access Code for Joinery Project Manager\n\n'+
+        message:'Weekly Access Code for CabLine\n\n'+
           '📅 Week: '+fmt(wi.monday)+' — '+fmt(wi.sunday)+' '+wi.year+'\n\n'+
           '🔑 ACCESS CODE:  '+code+'\n\n'+
           'Valid: Monday to Sunday\n'+
-          'Enter this code when Joinery Project Manager asks for the weekly code.'
+          'Enter this code when CabLine asks for the weekly code.'
       })
     });
     var data=await res.json();
@@ -6017,13 +6017,13 @@ async function sendCodeToEmail(btn){
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({
         access_key:W3F_KEY,
-        subject:'🔐 Joinery Project Manager — Weekly Access Code',
-        from_name:'Joinery Project Manager',
+        subject:'🔐 CabLine — Weekly Access Code',
+        from_name:'CabLine',
         email:OWNER_EMAIL,
         message:'Weekly Access Code\n\n'+
           '📅 '+fmt(wi.monday)+' – '+fmt(wi.sunday)+' '+wi.year+'\n\n'+
           '🔑 CODE:  '+code+'\n\n'+
-          'Enter this code in Joinery Project Manager to unlock.'
+          'Enter this code in CabLine to unlock.'
       })
     });
     var data=await res.json();
@@ -6098,14 +6098,14 @@ async function checkSendWeeklyEmail(wi){
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({
         access_key:W3F_KEY,
-        subject:'🔐 Joinery Project Manager — Weekly Access Code',
-        from_name:'Joinery Project Manager',
+        subject:'🔐 CabLine — Weekly Access Code',
+        from_name:'CabLine',
         email:OWNER_EMAIL,
-        message:'Weekly Access Code for Joinery Project Manager\n\n'+
+        message:'Weekly Access Code for CabLine\n\n'+
           '📅 Week: '+fmt(wi.monday)+' – '+fmt(wi.sunday)+' '+wi.year+'\n\n'+
           '🔑 ACCESS CODE: '+code+'\n\n'+
           'This code is valid from Monday to Sunday.\n'+
-          'Enter it when Joinery Project Manager asks for the weekly code.'
+          'Enter it when CabLine asks for the weekly code.'
       })
     });
     var data=await res.json();
@@ -7159,7 +7159,7 @@ async function saveProjectAs(){
     try{
       var fh=await window.showSaveFilePicker({
         suggestedName:defaultName,
-        types:[{description:'Joinery Projects JSON',accept:{'application/json':['.json']}}],
+        types:[{description:'CabLine Projects JSON',accept:{'application/json':['.json']}}],
         startIn:'documents'
       });
       var writable=await fh.createWritable();
@@ -7222,7 +7222,7 @@ async function openProject(){
   }
   try{
     var fhs=await window.showOpenFilePicker({
-      types:[{description:'Joinery Projects JSON',accept:{'application/json':['.json']}}],
+      types:[{description:'CabLine Projects JSON',accept:{'application/json':['.json']}}],
       multiple:false,startIn:'documents'
     });
     var fh=fhs[0];var file=await fh.getFile();var text=await file.text();
@@ -7367,8 +7367,8 @@ var BRAND_LOGOS={
 // One consistent brand across every view now (Cabinet List / QC / Installation)
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
-var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v240 · Software Design by Kiya'};
+var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
+var BRAND_SUBS={tracker:'v241 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8589,7 +8589,7 @@ _selfCheckRules();
 <!-- ===== CLOUD SYNC (v202): Firebase login + shared projects ===== -->
 <div id="cloud-ov" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.72);z-index:99999;align-items:center;justify-content:center;font-family:inherit;">
   <div style="background:#fff;border-radius:12px;padding:22px 24px;width:min(380px,92vw);box-shadow:0 20px 50px rgba(0,0,0,.35);">
-    <div style="font-size:16px;font-weight:800;color:#0f172a;margin-bottom:4px;">Joinery Project Manager</div>
+    <div style="font-size:16px;font-weight:800;color:#0f172a;margin-bottom:4px;">CabLine</div>
     <div id="cloud-ov-sub" style="font-size:12px;color:#64748b;margin-bottom:14px;">Sign in to see the shared projects</div>
     <div id="cloud-login">
       <input id="cloud-email" type="email" placeholder="Email" autocomplete="username" style="width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid #cbd5e1;border-radius:7px;margin-bottom:8px;font-size:13px;">
@@ -9026,7 +9026,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=240;
+var APP_VERSION=241;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
