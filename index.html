@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v235 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v236 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6506,7 +6506,7 @@ function finRowsHTML(sh,j,forPrint){
         var v=finVal(j,key,(isLast&&def)?def:'');
         var inpH=forPrint?esc(v):'<input value="'+esc(v)+'" placeholder="'+(isLast?esc(hint):'')+'" oninput="finSet(\''+key+'\',this.value)" style="width:100%;min-width:130px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">';
         if(!forPrint&&sh.key==='mat'&&c===0)inpH=inpH.replace('oninput="finSet(','onchange="renderFinishes()" oninput="finSet(');
-        if(!forPrint&&sh.key==='mat'&&c===0&&!/height|refrigerator|dishwasher|oven|microwave|washing|dryer|^led|handle|speaker|woofer/i.test(label))inpH='<div style="display:flex;gap:4px;">'+inpH+'<button onclick="finPickColour('+gi+','+ri+')" title="Choose colour from brand list" style="background:#fef3c7;border:none;padding:6px 9px;border-radius:6px;cursor:pointer;">🎨</button></div>';
+        if(!forPrint&&sh.key==='mat'&&c===0&&!/height|refrigerator|dishwasher|oven|microwave|washing|dryer|^led|handle|speaker|woofer/i.test(label))inpH='<div style="display:flex;gap:4px;">'+inpH+'<button onclick="finPickColour('+gi+','+ri+')" title="Choose colour from brand list" style="background:#fbbf24;color:#451a03;font-weight:800;font-size:12px;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">🎨 '+(v?'Change':'Company &amp; colour')+'</button></div>';
         if(sh.key==='mat'&&c===0&&PAINT_RE.test(v||'')){
           var pj={};try{pj=JSON.parse(finVal(j,sh.key+'|'+gi+'|'+ri+'|paint','')||'{}');}catch(e){}
           var okp=pj.code&&pj.name&&pj.finish;
@@ -7257,7 +7257,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v235 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v236 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8915,7 +8915,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=235;
+var APP_VERSION=236;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
