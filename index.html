@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v227 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v228 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6389,8 +6389,8 @@ var FIN_SHEETS=[
   ['Built-In Robes',[['Track colour'],['Sliding door (Mirror / Frosted)']]]
  ]},
  {key:'sched',title:'Stone Schedule',head:'STONE SCHEDULE',cols:['Stone name / code','Web link','Benchtop (mm)','Splash','Water Fall'],groups:[
-  ['Kitchen',[['',null,'40|P|O']]],['Island',[['',null,'40|O|P']]],["Butler's",[['',null,'40|P|O']]],['Bar',[['',null,'20|P|O']]],
-  ['Laundry',[['',null,'20|P|O']]],['Pooja',[['',null,'20|O|O']]],['Vanities',[['',null,'20|O|O']]],['Alfresco',[['',null,'20|P|O']]]
+  ['Kitchen',[['',null,'40']]],['Island',[['',null,'40']]],["Butler's",[['',null,'40']]],['Laundry',[['',null,'20']]],
+  ['Alfresco',[['',null,'20']]],['Bar',[['',null,'20']]],['Vanities',[['',null,'20']]]
  ]}
 ];
 var _finSheet='stone';
@@ -6409,8 +6409,9 @@ function finRowsHTML(sh,j,forPrint){
       if(ri===0)tr+='<td rowspan="'+g[1].length+'" style="font-weight:800;color:#0f172a;background:#eff6ff;vertical-align:top;min-width:120px;">'+esc(g[0])+'</td>';
       if(sh.key==='sched'){
         var parts=def.split('|');
-        var fld=function(c,def2){return finVal(j,sh.key+'|'+gi+'|'+c,def2);};
-        var kb=function(c){return sh.key+'|'+gi+'|'+c;};
+        var LEG={'Kitchen':0,'Island':1,"Butler's":2,'Bar':3,'Laundry':4,'Pooja':5,'Vanities':6,'Alfresco':7};
+        var kb=function(c){return sh.key+'|'+g[0]+'|'+c;};
+        var fld=function(c,def2){var v=j.finishes&&j.finishes.v;if(v&&v[kb(c)]!==undefined)return v[kb(c)];var lk=sh.key+'|'+LEG[g[0]]+'|'+c;return(v&&v[lk]!==undefined)?v[lk]:(def2||'');};
         var wfv=fld('splash','');var spv=wfv;var wfval=fld('wf','');var side=fld('wfside','');
         var sel=function(key,val,opts){return forPrint?esc(val):'<select onchange="finSet(\''+key+'\',this.value);renderFinishes()" style="width:100%;min-width:90px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;">'+['']. concat(opts).map(function(o){return '<option value="'+o+'"'+(o===val?' selected':'')+'>'+(o||'—')+'</option>';}).join('')+'</select>';};
         tr+='<td>'+(forPrint?esc(fld('stone','')):'<input value="'+esc(fld('stone',''))+'" placeholder="Stone name or code" oninput="finSet(\''+kb('stone')+'\',this.value)" style="width:100%;min-width:150px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">')+'</td>';
@@ -7171,7 +7172,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v227 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v228 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8829,7 +8830,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=227;
+var APP_VERSION=228;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
