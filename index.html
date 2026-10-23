@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v234 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v235 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6446,11 +6446,27 @@ function cpAddCustom(){
   COLOUR_CUSTOM.push({id:'c'+Date.now().toString(36),brand:_cpBrand,name:n,url:document.getElementById('cp-newurl').value.trim()});
   colourSaveCustom();document.getElementById('cp-newname').value='';document.getElementById('cp-newurl').value='';document.getElementById('cp-q').value=n;cpRender();}
 function cpDelCustom(id){if(!confirm('Remove this colour from your list?'))return;COLOUR_CUSTOM=COLOUR_CUSTOM.filter(function(c){return c.id!==id;});colourSaveCustom();cpRender();}
+var PAINT_RE=/white\s*satin/i;
+function finPaint(gi,ri){
+  var j=finJob();if(!j)return;var key='mat|'+gi+'|'+ri+'|paint';var pj={};try{pj=JSON.parse(finVal(j,key,'')||'{}');}catch(e){}
+  var o=document.createElement('div');o.id='pt-ov';o.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:12px;';
+  o.innerHTML='<div style="background:#fff;border-radius:14px;max-width:440px;width:100%;padding:18px;">'+
+   '<div style="font-size:16px;font-weight:800;margin-bottom:4px;">🖌 Paint colour for White Satin</div><div style="font-size:12px;color:#64748b;margin-bottom:12px;">White Satin is a paintable sheet — the colour that will be painted on it must be recorded.</div>'+
+   '<label style="font-size:12px;font-weight:700;">Paint colour code *</label><input id="pt-code" value="'+esc(pj.code||'')+'" placeholder="e.g. Dulux 12345 / NCS S 0502-Y" style="width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;margin:4px 0 10px;box-sizing:border-box;">'+
+   '<label style="font-size:12px;font-weight:700;">Paint colour name *</label><input id="pt-name" value="'+esc(pj.name||'')+'" placeholder="e.g. Natural White" style="width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;margin:4px 0 10px;box-sizing:border-box;">'+
+   '<label style="font-size:12px;font-weight:700;">Finish *</label><div id="pt-fin" style="display:flex;gap:6px;margin:4px 0 14px;">'+['Satin','Gloss','Matt'].map(function(f){return '<button type="button" data-f="'+f+'" onclick="ptFin(\''+f+'\')" class="btn btn-sm '+(pj.finish===f?'':'btn-outline')+'" style="flex:1;">'+f+'</button>';}).join('')+'</div>'+
+   '<div style="display:flex;gap:8px;justify-content:flex-end;"><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'pt-ov\').remove();renderFinishes()">Later</button><button class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="ptSave('+gi+','+ri+')">💾 Save</button></div></div>';
+  o.dataset.finish=pj.finish||'';document.body.appendChild(o);setTimeout(function(){document.getElementById('pt-code').focus();},50);}
+function ptFin(f){var o=document.getElementById('pt-ov');o.dataset.finish=f;o.querySelectorAll('#pt-fin button').forEach(function(b){b.className='btn btn-sm '+(b.getAttribute('data-f')===f?'':'btn-outline');});}
+function ptSave(gi,ri){var o=document.getElementById('pt-ov');var code=document.getElementById('pt-code').value.trim(),name=document.getElementById('pt-name').value.trim(),fin=o.dataset.finish;
+  if(!code||!name||!fin){alert('Please enter the paint colour code, the colour name and choose the finish (Satin / Gloss / Matt).');return;}
+  finSet('mat|'+gi+'|'+ri+'|paint',JSON.stringify({code:code,name:name,finish:fin}));o.remove();renderFinishes();}
 function cpSelect(i){
   var n=_cpItems[i];var c=_cpCtx;if(!c||!n)return;
   finSet('mat|'+c.gi+'|'+c.ri+'|0',_cpBrand+' '+n.name);
   if(n.url)finSet('mat|'+c.gi+'|'+c.ri+'|1',n.url);
-  var o=document.getElementById('cp-ov');if(o)o.remove();renderFinishes();}
+  var o=document.getElementById('cp-ov');if(o)o.remove();renderFinishes();
+  if(PAINT_RE.test(n.name))finPaint(c.gi,c.ri);}
 
 
 function finJob(){return siJob();}
@@ -6489,7 +6505,15 @@ function finRowsHTML(sh,j,forPrint){
         var isLast=c===ncols-1;
         var v=finVal(j,key,(isLast&&def)?def:'');
         var inpH=forPrint?esc(v):'<input value="'+esc(v)+'" placeholder="'+(isLast?esc(hint):'')+'" oninput="finSet(\''+key+'\',this.value)" style="width:100%;min-width:130px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">';
+        if(!forPrint&&sh.key==='mat'&&c===0)inpH=inpH.replace('oninput="finSet(','onchange="renderFinishes()" oninput="finSet(');
         if(!forPrint&&sh.key==='mat'&&c===0&&!/height|refrigerator|dishwasher|oven|microwave|washing|dryer|^led|handle|speaker|woofer/i.test(label))inpH='<div style="display:flex;gap:4px;">'+inpH+'<button onclick="finPickColour('+gi+','+ri+')" title="Choose colour from brand list" style="background:#fef3c7;border:none;padding:6px 9px;border-radius:6px;cursor:pointer;">🎨</button></div>';
+        if(sh.key==='mat'&&c===0&&PAINT_RE.test(v||'')){
+          var pj={};try{pj=JSON.parse(finVal(j,sh.key+'|'+gi+'|'+ri+'|paint','')||'{}');}catch(e){}
+          var okp=pj.code&&pj.name&&pj.finish;
+          if(forPrint)inpH+=okp?'<div><b>Paint:</b> '+esc(pj.code)+' – '+esc(pj.name)+' – '+esc(pj.finish)+'</div>':'<div><b>Paint colour: NOT SET</b></div>';
+          else inpH+=okp?'<div onclick="finPaint('+gi+','+ri+')" title="Click to edit" style="margin-top:4px;padding:5px 8px;background:#ecfdf5;border:1px solid #86efac;border-radius:6px;font-size:12px;font-weight:700;color:#166534;cursor:pointer;">🖌 Paint: '+esc(pj.code)+' – '+esc(pj.name)+' – '+esc(pj.finish)+' ✎</div>'
+            :'<div onclick="finPaint('+gi+','+ri+')" style="margin-top:4px;padding:5px 8px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;font-size:12px;font-weight:800;color:#b91c1c;cursor:pointer;">⚠ White Satin needs a paint colour — tap to enter code, name &amp; finish</div>';
+        }
         tr+='<td>'+inpH+'</td>';
       }
       out+=tr+'</tr>';
@@ -7233,7 +7257,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v234 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v235 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8891,7 +8915,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=234;
+var APP_VERSION=235;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
