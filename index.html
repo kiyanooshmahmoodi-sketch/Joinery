@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v243 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v244 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1057,6 +1057,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
       </div>
     </div>
     <button class="tbtn" onclick="saveProjectAs()" title="Choose a different file location">💾 Save As…</button>
+    <button class="tbtn" id="bk-btn" onclick="bkClick()" style="font-weight:700;">🛟 Backup</button>
     <button class="tbtn" onclick="openProject()" title="Open project file (Save will overwrite it)">📂 Open</button>
     <input type="file" id="legacy-open" accept=".json" onchange="importJSON(event)" style="display:none;"/>
     <!-- Excel file input lives at the TOP LEVEL of the page (not nested inside
@@ -6979,6 +6980,7 @@ var _currentSavePromise=null; // Tracks any in-flight saveAllJobs so newJob can 
 function saveData(){
   // Always update the in-memory current job immediately so the UI is consistent
   saveCurrentJob();
+  try{bkSoon();}catch(e){}
   // Defer the actual storage write
   if(_saveDebounceTimer)clearTimeout(_saveDebounceTimer);
   _saveDebounceTimer=setTimeout(function(){
@@ -7239,6 +7241,51 @@ function updateSaveStatus(){
   }
 }
 
+// ===== v244: AUTO-BACKUP to a folder on the computer (Edge/Chrome on Windows/Mac) =====
+var _bkDir=null,_bkTimer=null,_bkBusy=false,_bkArmed=false;
+function bkSupported(){return !!window.showDirectoryPicker;}
+function bkDay(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+function bkStatus(msg,color){var b=document.getElementById('bk-btn');if(!b)return;
+  if(!bkSupported()){b.style.display='none';return;}
+  var last='';try{last=localStorage.getItem('cbk-bk-last')||'';}catch(e){}
+  if(msg){b.textContent=msg;b.style.color=color||'';return;}
+  if(!_bkDir){b.textContent='🛟 Set up backup';b.style.color='#fbbf24';b.title='Choose a folder (e.g. Documents) where CabLine saves a backup of all projects every day';}
+  else{b.textContent='🛟 Backup'+(last?' ✓ '+last:'');b.style.color=last&&last.indexOf(bkDay().slice(5).split('-').reverse().join('/'))>-1?'#4ade80':'';b.title='Backup folder: '+(_bkDir.name||'')+'. Click to back up now.';}}
+async function bkPerm(ask){if(!_bkDir)return false;try{var o={mode:'readwrite'};var p=await _bkDir.queryPermission(o);if(p==='granted')return true;if(ask){p=await _bkDir.requestPermission(o);return p==='granted';}}catch(e){}return false;}
+async function bkRun(ask){
+  if(_bkBusy||!_bkDir)return false;
+  if(!Object.keys(allJobs||{}).length)return false; // never overwrite a good backup with an empty workspace
+  if(!(await bkPerm(ask)))return false;
+  _bkBusy=true;
+  try{
+    var name='CabLine-Backup-'+bkDay()+'.json';
+    var fh=await _bkDir.getFileHandle(name,{create:true});var w=await fh.createWritable();await w.write(buildSaveContent());await w.close();
+    // keep only the newest 30 daily backups
+    try{var names=[];for await(var e of _bkDir.values()){if(e.kind==='file'&&/^CabLine-Backup-\d{4}-\d{2}-\d{2}\.json$/.test(e.name))names.push(e.name);}
+      names.sort();while(names.length>30){await _bkDir.removeEntry(names.shift());}}catch(e){}
+    var d=new Date(),p=function(n){return (n<10?'0':'')+n;};
+    try{localStorage.setItem('cbk-bk-last',p(d.getDate())+'/'+p(d.getMonth()+1)+' '+p(d.getHours())+':'+p(d.getMinutes()));}catch(e){}
+    _bkBusy=false;bkStatus();return true;
+  }catch(e){_bkBusy=false;bkStatus('⚠ Backup failed','#f87171');return false;}}
+function bkSoon(){if(!_bkDir)return;clearTimeout(_bkTimer);_bkTimer=setTimeout(function(){bkRun(false).then(function(ok){if(!ok)bkArm();});},90000);}
+function bkArm(){ // permission needs a click after the browser restarts: do it on the next click anywhere
+  if(_bkArmed||!_bkDir)return;_bkArmed=true;bkStatus('⚠ Tap to allow backup','#fbbf24');
+  var h=function(){document.removeEventListener('click',h,true);_bkArmed=false;bkRun(true);};document.addEventListener('click',h,true);}
+async function bkClick(){
+  if(!bkSupported()){alert('Auto-backup to a folder works in Edge or Chrome on a Windows / Mac computer.');return;}
+  if(_bkDir){var now=confirm('Backup folder: '+(_bkDir.name||'')+'\n\nOK = back up now\nCancel = choose a different folder');if(now){var ok=await bkRun(true);showMsg(ok?'🛟 Backup saved in "'+_bkDir.name+'"':'⚠ Backup did not save — allow access to the folder');return;}}
+  try{var h=await window.showDirectoryPicker({mode:'readwrite',startIn:'documents'});_bkDir=h;await persistFileHandle('__backupdir__',h);
+    var ok2=await bkRun(true);showMsg(ok2?'🛟 Backup saved in "'+h.name+'" — it will update by itself every day':'⚠ Folder chosen, but nothing to back up yet');}
+  catch(e){if(e&&e.name!=='AbortError')alert('Could not use this folder. Please choose another one (for example Documents).');}
+  bkStatus();}
+async function bkInit(){if(!bkSupported()){bkStatus();return;}
+  try{_bkDir=await restoreFileHandle('__backupdir__');}catch(e){_bkDir=null;}
+  bkStatus();if(!_bkDir)return;
+  var day=bkDay(),last='';try{last=localStorage.getItem('cbk-bk-last')||'';}catch(e){}
+  if(await bkPerm(false)){await bkRun(false);}else bkArm();}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'&&_bkDir)bkRun(false);});
+setTimeout(function(){try{bkInit();}catch(e){}},3000);
+
 // Legacy export function kept for backward compat with old buttons that call it
 async function exportJSON(){return saveProjectAs();}
 
@@ -7412,7 +7459,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v243 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v244 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9070,7 +9117,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=243;
+var APP_VERSION=244;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
