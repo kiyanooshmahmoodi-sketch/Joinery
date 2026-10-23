@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v236 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v237 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6404,15 +6404,15 @@ var _finSheet='appl';
 var _cpCtx=null,_cpBrand='Polytec',_cpItems=[];
 function finPickColour(gi,ri){_cpCtx={gi:gi,ri:ri};_cpBrand='';colourLoadCustom();
   var o=document.createElement('div');o.id='cp-ov';o.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:99997;display:flex;align-items:center;justify-content:center;padding:12px;';
-  o.innerHTML='<div style="background:#fff;border-radius:14px;max-width:920px;width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;">'+
+  o.innerHTML='<div style="background:#fff;border-radius:14px;max-width:1150px;width:100%;height:92vh;display:flex;flex-direction:column;overflow:hidden;">'+
    '<div id="cp-step1" style="padding:16px;overflow:auto;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><b style="font-size:16px;">🎨 Which company is this material from?</b><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'cp-ov\').remove()">✖ Close</button></div>'+
    '<div id="cp-brandgrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;"></div>'+
    '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0;"><div style="font-size:12px;font-weight:800;margin-bottom:6px;">➕ Another company (type its name)</div><div style="display:flex;gap:6px;flex-wrap:wrap;"><input id="cp-newbrand" placeholder="e.g. Egger, Wilsonart, Melteca…" onkeydown="if(event.key===\'Enter\')cpAddBrand()" style="flex:1;min-width:180px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><button class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="cpAddBrand()">Add company</button></div></div></div>'+
-   '<div id="cp-step2" style="display:none;flex-direction:column;min-height:0;flex:1;">'+
+   '<div id="cp-step2" style="display:none;flex-direction:column;min-height:0;flex:1 1 0;">'+
    '<div style="padding:12px 14px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><button class="btn btn-outline btn-sm" onclick="cpBack()">← Change company</button><b id="cp-title" style="font-size:15px;">🎨</b>'+
    '<span id="cp-brands" style="display:none;"></span><input id="cp-q" oninput="cpRender()" placeholder="🔍 Search colour (e.g. Florentine)" style="flex:1;min-width:180px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'cp-ov\').remove()">✖ Close</button></div>'+
    '<div id="cp-count" style="padding:6px 14px;font-size:12px;color:#64748b;"></div>'+
-   '<div id="cp-list" style="padding:6px 14px 10px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;flex:1;"></div>'+
+   '<div id="cp-list" style="padding:8px 14px 12px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;flex:1 1 0;min-height:0;align-content:start;grid-auto-rows:max-content;"></div>'+
    '<div style="border-top:1px solid #e2e8f0;padding:10px 14px;background:#f8fafc;"><div style="font-size:12px;font-weight:800;color:#0f172a;margin-bottom:6px;">➕ Not in the list? Add it by hand (saved for everyone)</div>'+
    '<div style="display:flex;gap:6px;flex-wrap:wrap;"><input id="cp-newname" placeholder="Colour name" style="flex:1;min-width:150px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><input id="cp-newurl" placeholder="Link (optional)" style="flex:1;min-width:150px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;"><button id="cp-addbtn" class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="cpAddCustom()">Add</button></div></div></div></div>';
   document.body.appendChild(o);cpRender();}
@@ -6438,9 +6438,11 @@ function cpRender(){
   var nn=document.getElementById('cp-newname');if(nn&&!nn.value&&q&&!_cpItems.length)nn.value=document.getElementById('cp-q').value.trim();
   document.getElementById('cp-addbtn').textContent='Add to '+_cpBrand;
   document.getElementById('cp-list').innerHTML=_cpItems.map(function(n,i){
-    return '<div onclick="cpSelect('+i+')" style="position:relative;cursor:pointer;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff;">'+(n.img?'<div style="height:70px;background:#f1f5f9;"><img loading="lazy" src="'+n.img+'" onerror="this.parentNode.style.display=\'none\'" style="width:100%;height:70px;object-fit:cover;"></div>':'')+
-      '<div style="padding:8px;font-size:12px;font-weight:700;">'+esc(n.name)+(n.custom?' <span style="color:#16a34a;font-size:10px;">● mine</span>':'')+'</div>'+
-      (n.custom?'<span onclick="event.stopPropagation();cpDelCustom(\''+n.id+'\')" title="Remove from my list" style="position:absolute;top:3px;right:3px;background:#fee2e2;color:#dc2626;border-radius:50%;width:18px;height:18px;text-align:center;line-height:18px;font-size:11px;">×</span>':'')+'</div>';}).join('')||'<div style="grid-column:1/-1;color:#94a3b8;padding:20px;text-align:center;">No colour found — add it by hand below.</div>';}
+    var ph='<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:34px;font-weight:800;color:#94a3b8;">'+esc(n.name.charAt(0))+'</div>';
+    return '<div onclick="cpSelect('+i+')" style="position:relative;cursor:pointer;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;min-height:150px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);">'+
+      '<div style="aspect-ratio:1/1;background:#f1f5f9;position:relative;">'+ph+(n.img?'<img loading="lazy" src="'+n.img+'" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">':'')+'</div>'+
+      '<div style="padding:10px 8px;font-size:14px;font-weight:700;text-align:center;line-height:1.25;">'+esc(n.name)+(n.custom?' <span style="color:#16a34a;font-size:10px;display:block;">● mine</span>':'')+'</div>'+
+      (n.custom?'<span onclick="event.stopPropagation();cpDelCustom(\''+n.id+'\')" title="Remove from my list" style="position:absolute;top:6px;right:6px;background:#fee2e2;color:#dc2626;border-radius:50%;width:22px;height:22px;text-align:center;line-height:22px;font-size:13px;">×</span>':'')+'</div>';}).join('')||'<div style="grid-column:1/-1;color:#94a3b8;padding:20px;text-align:center;">No colour found — add it by hand below.</div>';}
 function cpAddCustom(){
   var n=document.getElementById('cp-newname').value.trim();if(!n){alert('Type the colour name first.');return;}
   COLOUR_CUSTOM.push({id:'c'+Date.now().toString(36),brand:_cpBrand,name:n,url:document.getElementById('cp-newurl').value.trim()});
@@ -7257,7 +7259,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v236 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v237 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8915,7 +8917,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=236;
+var APP_VERSION=237;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
