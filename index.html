@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v219 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v220 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1264,6 +1264,8 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
         <button class="btn btn-sm" onclick="ndBack()">← Back to all notes</button>
+        <label class="btn btn-outline btn-sm" style="cursor:pointer;">📸 Photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="ndAddPhoto(this,true)"></label>
+        <label class="btn btn-outline btn-sm" style="cursor:pointer;">🖼 Image<input type="file" accept="image/*" multiple style="display:none" onchange="ndAddPhoto(this,false)"></label>
         <button class="btn btn-outline btn-sm" onclick="notesDocPrint()">🖨️ Print</button>
         <button class="btn btn-outline btn-sm" style="color:#dc2626;" onclick="ndDelete()">🗑 Delete</button>
         <span id="nd-status2" style="font-size:12px;color:var(--gray);"></span>
@@ -6123,12 +6125,14 @@ async function siPickPhotos(inp){
   var pe=document.getElementById('si-pending');
   for(var i=0;i<fs.length;i++){
     if(pe)pe.textContent='Processing photo '+(i+1)+' / '+fs.length+'…';
-    try{var d=await siCompress(fs[i]);var id=await siStorePhoto(d);_siNew.push(id);}catch(e){alert('Could not read photo: '+fs[i].name);}
+    try{var d=await siCompress(fs[i]);if(inp.id==='si-cam'){d=await skMarkup(d);if(!d)continue;}var id=await siStorePhoto(d);_siNew.push(id);}catch(e){alert('Could not read photo: '+fs[i].name);}
   }
   if(pe)pe.textContent='';siRenderNewThumbs();}
+async function siMarkNew(i){var d=await siGetPhoto(_siNew[i]);if(!d)return;var nd=await skMarkup(d);if(!nd)return;_siNew[i]=await siStorePhoto(nd);siRenderNewThumbs();}
+async function siMarkPhoto(iid,pid){var d=await siGetPhoto(pid);if(!d)return;var nd=await skMarkup(d);if(!nd)return;var np=await siStorePhoto(nd);var j=siJob();(j.siteIssues||[]).forEach(function(x){if(x.id===iid)x.photos=(x.photos||[]).map(function(p){return p===pid?np:p;});});siSave();renderSiteIssues();}
 function siRenderNewThumbs(){
   var el=document.getElementById('si-thumbs');if(!el)return;
-  el.innerHTML=_siNew.map(function(id,i){return '<div style="position:relative;"><img data-pid="'+id+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;"><span onclick="_siNew.splice('+i+',1);siRenderNewThumbs()" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:50%;width:20px;height:20px;text-align:center;line-height:20px;cursor:pointer;font-size:12px;">×</span></div>';}).join('');
+  el.innerHTML=_siNew.map(function(id,i){return '<div style="position:relative;"><img data-pid="'+id+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;"><span onclick="siMarkNew('+i+')" title="Write on photo" style="position:absolute;bottom:2px;left:2px;background:#7c3aed;color:#fff;border-radius:6px;padding:1px 5px;cursor:pointer;font-size:12px;">✏️</span><span onclick="_siNew.splice('+i+',1);siRenderNewThumbs()" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:50%;width:20px;height:20px;text-align:center;line-height:20px;cursor:pointer;font-size:12px;">×</span></div>';}).join('');
   siHydrate(el);}
 function siHydrate(root){(root||document).querySelectorAll('img[data-pid]').forEach(function(im){
   var id=im.getAttribute('data-pid');siGetPhoto(id).then(function(d){if(d)im.src=d;else im.alt='photo not available';});});}
@@ -6145,9 +6149,9 @@ function siSave(){try{saveData();}catch(e){}}
 function siToggle(id){var j=siJob();if(!j)return;(j.siteIssues||[]).forEach(function(x){if(x.id===id){x.status=x.status==='fixed'?'open':'fixed';x.fixedBy=x.status==='fixed'?((window.SESSION&&SESSION.name)||''):'';x.fixedDate=x.status==='fixed'?new Date().toLocaleString('en-AU'):'';}});siSave();renderSiteIssues();}
 function siDelete(id){var j=siJob();if(!j||!confirm('Delete this issue?'))return;j.siteIssues=(j.siteIssues||[]).filter(function(x){return x.id!==id;});siSave();renderSiteIssues();}
 function siRemovePhoto(id,pid){var j=siJob();if(!j||!confirm('Remove this photo?'))return;(j.siteIssues||[]).forEach(function(x){if(x.id===id)x.photos=(x.photos||[]).filter(function(p){return p!==pid;});});siSave();renderSiteIssues();}
-async function siAddPhotosTo(id,inp){
+async function siAddPhotosTo(id,inp,mark){
   var j=siJob();if(!j)return;var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';
-  var ids=[];for(var i=0;i<fs.length;i++){try{ids.push(await siStorePhoto(await siCompress(fs[i])));}catch(e){}}
+  var ids=[];for(var i=0;i<fs.length;i++){try{var dd=await siCompress(fs[i]);if(mark){dd=await skMarkup(dd);if(!dd)continue;}ids.push(await siStorePhoto(dd));}catch(e){}}
   (j.siteIssues||[]).forEach(function(x){if(x.id===id)x.photos=(x.photos||[]).concat(ids);});siSave();renderSiteIssues();}
 function siZoom(pid){siGetPhoto(pid).then(function(d){if(!d)return;var o=document.createElement('div');
   o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
@@ -6163,7 +6167,7 @@ function renderSiteIssues(){
   if(!list.length){box.innerHTML='<div style="text-align:center;color:#94a3b8;padding:30px;">'+(all.length?'No issues in this filter.':'No site issues yet.')+'</div>';return;}
   box.innerHTML=list.map(function(x){
     var fixed=x.status==='fixed';
-    var ph=(x.photos||[]).map(function(p){return '<div style="position:relative;"><img data-pid="'+p+'" onclick="siZoom(\''+p+'\')" style="width:110px;height:110px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;cursor:zoom-in;"><span onclick="siRemovePhoto(\''+x.id+'\',\''+p+'\')" title="Remove photo" style="position:absolute;top:-6px;right:-6px;background:#64748b;color:#fff;border-radius:50%;width:18px;height:18px;text-align:center;line-height:18px;cursor:pointer;font-size:11px;">×</span></div>';}).join('');
+    var ph=(x.photos||[]).map(function(p){return '<div style="position:relative;"><img data-pid="'+p+'" onclick="siZoom(\''+p+'\')" style="width:110px;height:110px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;cursor:zoom-in;"><span onclick="siMarkPhoto(\''+x.id+'\',\''+p+'\')" title="Write on photo" style="position:absolute;bottom:3px;left:3px;background:#7c3aed;color:#fff;border-radius:6px;padding:1px 5px;cursor:pointer;font-size:12px;">✏️</span><span onclick="siRemovePhoto(\''+x.id+'\',\''+p+'\')" title="Remove photo" style="position:absolute;top:-6px;right:-6px;background:#64748b;color:#fff;border-radius:50%;width:18px;height:18px;text-align:center;line-height:18px;cursor:pointer;font-size:11px;">×</span></div>';}).join('');
     return '<div class="card" style="border-left:4px solid '+(fixed?'#16a34a':'#dc2626')+';margin-bottom:10px;">'+
       '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">'+
         '<div><div style="font-weight:800;font-size:15px;">'+(fixed?'✅ ':'⚠️ ')+esc(x.title)+'</div>'+
@@ -6171,7 +6175,8 @@ function renderSiteIssues(){
         '<div style="font-size:11px;color:#94a3b8;">'+'📅 '+esc(x.issueDate?siFmt(x.issueDate):(x.date||''))+(x.by?' · '+esc(x.by):'')+(fixed&&x.fixedBy?' · fixed by '+esc(x.fixedBy):'')+'</div></div>'+
         '<div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;">'+
           '<button class="btn btn-outline btn-sm" onclick="siToggle(\''+x.id+'\')">'+(fixed?'↩ Reopen':'✔ Mark fixed')+'</button>'+
-          '<label class="btn btn-outline btn-sm" style="cursor:pointer;">📷 +<input type="file" accept="image/*" multiple style="display:none" onchange="siAddPhotosTo(\''+x.id+'\',this)"></label>'+
+          '<label class="btn btn-outline btn-sm" style="cursor:pointer;">📸<input type="file" accept="image/*" capture="environment" style="display:none" onchange="siAddPhotosTo(\''+x.id+'\',this,true)"></label>'+
+          '<label class="btn btn-outline btn-sm" style="cursor:pointer;">🖼+<input type="file" accept="image/*" multiple style="display:none" onchange="siAddPhotosTo(\''+x.id+'\',this)"></label>'+
           '<button class="btn btn-outline btn-sm" style="color:#dc2626;" onclick="siDelete(\''+x.id+'\')">🗑</button></div></div>'+
       (x.desc?'<div style="margin-top:8px;font-size:14px;white-space:pre-wrap;">'+esc(x.desc)+'</div>':'')+
       (ph?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">'+ph+'</div>':'')+
@@ -6194,7 +6199,8 @@ function skDelete(id){var j=siJob();if(!j||!confirm('Delete this sketch?'))retur
 function skBG(){var c=document.getElementById('sk-canvas'),x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
   if(_sk.bg==='grid'){x.strokeStyle='#e2e8f0';x.lineWidth=1;x.beginPath();for(var i=0;i<=c.width;i+=40){x.moveTo(i,0);x.lineTo(i,c.height);}for(var k=0;k<=c.height;k+=40){x.moveTo(0,k);x.lineTo(c.width,k);}x.stroke();}}
 function skSnap(){var c=document.getElementById('sk-canvas');_sk.undo.push(c.getContext('2d').getImageData(0,0,c.width,c.height));if(_sk.undo.length>25)_sk.undo.shift();}
-function skOpen(id){
+function skOpen(id,opts){
+  opts=opts||{};_sk.cb=opts.onSave||null;_sk.text=false;_sk.resolve=opts.resolve||null;
   var j=siJob();if(!j){alert('Open or create a project first.');return;}
   _sk.id=id;_sk.undo=[];_sk.pen=false;_sk.eraser=false;_sk.bg='white';
   var rec=id?(j.sketches||[]).filter(function(x){return x.id===id;})[0]:null;
@@ -6202,28 +6208,33 @@ function skOpen(id){
   o.style.cssText='position:fixed;inset:0;z-index:99998;background:#e2e8f0;display:flex;flex-direction:column;';
   var cols=['#111111','#dc2626','#2563eb','#16a34a','#f59e0b','#7c3aed'];
   o.innerHTML='<div style="background:#1e293b;color:#fff;padding:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">'+
-    '<input id="sk-name" placeholder="Sketch name" value="'+esc(rec?rec.name:'')+'" style="padding:7px;border-radius:6px;border:none;min-width:130px;">'+
+    '<input id="sk-name" placeholder="Sketch name" value="'+esc(rec?rec.name:'')+'" style="padding:7px;border-radius:6px;border:none;min-width:130px;'+(opts.bgData?'display:none;':'')+'">'+
     cols.map(function(c){return '<span onclick="skColor(\''+c+'\')" style="width:28px;height:28px;border-radius:50%;background:'+c+';border:2px solid #fff;cursor:pointer;"></span>';}).join('')+
     '<select id="sk-size" onchange="_sk.size=+this.value" style="padding:6px;border-radius:6px;"><option value="2">Thin</option><option value="3" selected>Medium</option><option value="6">Thick</option><option value="14">Marker</option></select>'+
     '<button class="btn btn-outline btn-sm" id="sk-er" style="color:#fff;" onclick="skEraser()">🧽 Eraser</button>'+
+    '<button class="btn btn-outline btn-sm" id="sk-tx" style="color:#fff;" onclick="skTextTool()">T Text</button>'+
     '<button class="btn btn-outline btn-sm" style="color:#fff;" onclick="skUndo()">↶ Undo</button>'+
     '<button class="btn btn-outline btn-sm" style="color:#fff;" onclick="skClear()">Clear</button>'+
     '<button class="btn btn-outline btn-sm" style="color:#fff;" onclick="_sk.bg=_sk.bg===\'grid\'?\'white\':\'grid\';skSnap();skBG();">▦ Grid</button>'+
-    '<span style="flex:1"></span><button class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="skSave()">💾 Save</button><button class="btn btn-outline btn-sm" style="color:#fff;" onclick="skClose()">✖ Close</button></div>'+
+    '<span style="flex:1"></span><button class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="skSave()">💾 Save</button><button class="btn btn-outline btn-sm" style="color:#fff;" onclick="skClose()">'+(opts.bgData?'✖ Discard photo':'✖ Close')+'</button></div>'+
     '<div style="flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px;"><canvas id="sk-canvas" width="1600" height="1100" style="background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.3);max-width:100%;touch-action:none;cursor:crosshair;"></canvas></div>';
   document.body.appendChild(o);
   var c=document.getElementById('sk-canvas');skBG();
+  if(opts.bgData){var bi=new Image();bi.onload=function(){var k=Math.min(1,1600/Math.max(bi.width,bi.height));c.width=Math.round(bi.width*k);c.height=Math.round(bi.height*k);c.getContext('2d').drawImage(bi,0,0,c.width,c.height);};bi.src=opts.bgData;}
   if(rec){siGetPhoto(rec.pid).then(function(d){if(!d)return;var im=new Image();im.onload=function(){c.getContext('2d').drawImage(im,0,0,c.width,c.height);};im.src=d;});}
   c.addEventListener('pointerdown',skDown);c.addEventListener('pointermove',skMove);
   ['pointerup','pointercancel','pointerleave'].forEach(function(t){c.addEventListener(t,skUp);});
   c.addEventListener('touchstart',function(e){e.preventDefault();},{passive:false});
 }
+function skMarkup(dataUrl){return new Promise(function(res){skOpen(null,{bgData:dataUrl,resolve:res});});}
+function skTextTool(){_sk.text=!_sk.text;_sk.eraser=false;document.getElementById('sk-tx').style.background=_sk.text?'#7c3aed':'';var e=document.getElementById('sk-er');if(e)e.style.background='';document.getElementById('sk-canvas').style.cursor=_sk.text?'text':'crosshair';}
 function skColor(c){_sk.color=c;_sk.eraser=false;var b=document.getElementById('sk-er');if(b)b.style.background='';}
 function skEraser(){_sk.eraser=!_sk.eraser;document.getElementById('sk-er').style.background=_sk.eraser?'#7c3aed':'';}
 function skPos(e){var c=document.getElementById('sk-canvas'),r=c.getBoundingClientRect();return {x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height};}
 function skDown(e){
   if(e.pointerType==='pen')_sk.pen=true;
   if(e.pointerType==='touch'&&_sk.pen)return; // palm rejection once a pencil has been used
+  if(_sk.text){e.preventDefault();var tp=skPos(e);var tv=prompt('Text / measurement:');if(tv){skSnap();var cc=document.getElementById('sk-canvas'),cx=cc.getContext('2d');var fs=Math.max(30,_sk.size*9)*(cc.width/1600>0.6?1:1.2);cx.font='bold '+fs+'px Arial,sans-serif';cx.textBaseline='middle';cx.lineWidth=fs/6;cx.strokeStyle='#ffffff';cx.lineJoin='round';cx.strokeText(tv,tp.x,tp.y);cx.fillStyle=_sk.color;cx.fillText(tv,tp.x,tp.y);}return;}
   e.preventDefault();var c=e.target;try{c.setPointerCapture(e.pointerId);}catch(x){}
   skSnap();_sk.drawing=true;var p=skPos(e);_sk.lx=p.x;_sk.ly=p.y;skLine(p.x,p.y,p.x+0.01,p.y+0.01,e);}
 function skMove(e){if(!_sk.drawing)return;if(e.pointerType==='touch'&&_sk.pen)return;e.preventDefault();
@@ -6236,9 +6247,10 @@ function skLine(x1,y1,x2,y2,e){var c=document.getElementById('sk-canvas'),x=c.ge
   x.beginPath();x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();}
 function skUndo(){var c=document.getElementById('sk-canvas');var d=_sk.undo.pop();if(d)c.getContext('2d').putImageData(d,0,0);}
 function skClear(){if(!confirm('Clear the whole sketch?'))return;skSnap();skBG();}
-function skClose(){if(confirm('Close without saving?')){var o=document.getElementById('sk-ov');if(o)o.remove();}}
+function skClose(){var photo=!!_sk.cb||!!_sk.resolve;if(confirm(photo?'Discard this photo?':'Close without saving?')){var o=document.getElementById('sk-ov');if(o)o.remove();if(_sk.resolve){var r=_sk.resolve;_sk.resolve=null;r(null);}}}
 async function skSave(){
   var j=siJob();if(!j)return;var c=document.getElementById('sk-canvas');
+  if(_sk.resolve){var rv=_sk.resolve;_sk.resolve=null;var dd=c.toDataURL('image/jpeg',0.75);var oo=document.getElementById('sk-ov');if(oo)oo.remove();rv(dd);return;}
   var data=c.toDataURL('image/png');
   if(data.length>900000){var t=document.createElement('canvas');t.width=1200;t.height=825;t.getContext('2d').drawImage(c,0,0,1200,825);data=t.toDataURL('image/jpeg',0.8);}
   var pid=await siStorePhoto(data);
@@ -6284,8 +6296,16 @@ function ndOpen(id){
   _ndCur=id;_skMode='doc';
   var w=document.getElementById('nd-textwrap');w.dataset.open='1';
   document.getElementById('nd-title').value=n.title||'';document.getElementById('nd-date').value=n.date||siToday();
-  document.getElementById('nd-editor').innerHTML=n.html||'';
+  document.getElementById('nd-editor').innerHTML=n.html||'';siHydrate(document.getElementById('nd-editor'));
   document.getElementById('nd-status2').textContent='';ndMode('doc');}
+async function ndAddPhoto(inp,mark){
+  var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';
+  for(var i=0;i<fs.length;i++){try{var d=await siCompress(fs[i]);if(mark){d=await skMarkup(d);if(!d)continue;}var id=await siStorePhoto(d);ndInsertImg(id);}catch(e){alert('Could not read photo');}}}
+document.addEventListener('click',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.getAttribute('data-pid')&&t.closest&&t.closest('#nd-editor'))siZoom(t.getAttribute('data-pid'));});
+function ndInsertImg(id){var ed=document.getElementById('nd-editor');ed.focus();
+  var sel=window.getSelection();if(!sel.rangeCount||!ed.contains(sel.anchorNode)){var r=document.createRange();r.selectNodeContents(ed);r.collapse(false);sel.removeAllRanges();sel.addRange(r);}
+  document.execCommand('insertHTML',false,'<img data-pid="'+id+'" style="max-width:100%;border-radius:6px;margin:6px 0;cursor:zoom-in;"><br>');
+  siHydrate(ed);notesDocInput();}
 function ndBack(){
   var l=ndList();var n=l.filter(function(x){return x.id===_ndCur;})[0];
   if(n&&!n.title.trim()&&!(n.html||'').replace(/<[^>]*>/g,'').trim()){var j=siJob();j.notesList=l.filter(function(x){return x!==n;});}
@@ -6299,15 +6319,19 @@ function renderNotesDoc(){
   ndMode('doc');}
 function notesDocInput(){
   var n=ndList().filter(function(x){return x.id===_ndCur;})[0];if(!n)return;
-  n.title=document.getElementById('nd-title').value;n.date=document.getElementById('nd-date').value;n.html=document.getElementById('nd-editor').innerHTML;
+  n.title=document.getElementById('nd-title').value;n.date=document.getElementById('nd-date').value;var cl=document.getElementById('nd-editor').cloneNode(true);cl.querySelectorAll('img[data-pid]').forEach(function(im){im.removeAttribute('src');});n.html=cl.innerHTML;
   var st=document.getElementById('nd-status2');if(st)st.textContent='Saving…';
   clearTimeout(_ndTimer);
   _ndTimer=setTimeout(function(){try{saveData();}catch(e){}var st=document.getElementById('nd-status2');if(st)st.textContent='✓ Saved';},800);}
 function notesDocPrint(){
   var n=ndList().filter(function(x){return x.id===_ndCur;})[0];if(!n)return;var j=siJob();
   var w=window.open('','_blank');if(!w)return;
+  var tmp=document.createElement('div');tmp.innerHTML=n.html||'';
+  var ims=Array.prototype.slice.call(tmp.querySelectorAll('img[data-pid]'));
+  Promise.all(ims.map(function(im){return siGetPhoto(im.getAttribute('data-pid')).then(function(d){if(d)im.src=d;});})).then(function(){
+  n={title:n.title,date:n.date,html:tmp.innerHTML};
   w.document.write('<!DOCTYPE html><html><head><title>'+esc(n.title)+'</title><style>body{font-family:Arial,sans-serif;font-size:14px;line-height:1.6;padding:24px;color:#111}</style></head><body><div style="color:#64748b;font-size:12px;">'+esc(j.name||'')+' · '+esc(siFmt(n.date))+'</div><h2>'+esc(n.title)+'</h2>'+(n.html||'')+'</body></html>');
-  w.document.close();setTimeout(function(){w.print();},300);}
+  w.document.close();setTimeout(function(){w.print();},500);});}
 
 // TABS
 function showTab(n,el){
@@ -7003,7 +7027,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v219 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v220 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8661,7 +8685,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=219;
+var APP_VERSION=220;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
