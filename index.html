@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v221 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v222 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1081,11 +1081,11 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <div id="view-cabinetlist">
 <div class="tabs">
   <div class="tab active" onclick="showTab('units',this)">📦 Cabinet & Part List <span class="tbadge" id="tb-rem">0</span></div>
+  <div class="tab" onclick="showTab('summary',this)">📊 Summary</div>
   <div class="tab" onclick="showTab('hardware',this)">🔧 Hardware</div>
   <div class="tab" onclick="showTab('kickboard',this)">🦶 Kickboard</div>
   <div class="tab" onclick="showTab('closetrod',this)">🪧 Closet Rod</div>
   <div class="tab" onclick="showTab('glassdoor',this)">🪟 Glass Door</div>
-  <div class="tab" onclick="showTab('summary',this)">📊 Summary</div>
   <div class="tab" onclick="showTab('issues',this)">⚠️ Site Issues <span class="tbadge" id="tb-iss" style="display:none">0</span></div>
   <div class="tab" onclick="showTab('notes',this)">📝 Notes</div>
 </div>
@@ -7044,7 +7044,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v221 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v222 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8702,7 +8702,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=221;
+var APP_VERSION=222;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
