@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v214 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v215 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1085,6 +1085,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="tab" onclick="showTab('kickboard',this)">🦶 Kickboard</div>
   <div class="tab" onclick="showTab('glassdoor',this)">🪟 Glass Door</div>
   <div class="tab" onclick="showTab('summary',this)">📊 Summary</div>
+  <div class="tab" onclick="showTab('notes',this)">📝 Notes</div>
 </div>
 <div class="content" id="cabinetlist-content">
 <!-- ALL UNITS -->
@@ -1208,6 +1209,32 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   </div>
 </div>
 
+
+<!-- NOTES (Word-style) -->
+<div class="panel" id="panel-notes">
+  <div class="flex ai-c jb" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+    <div><div style="font-size:18px;font-weight:800;">📝 Notes</div><div style="font-size:12px;color:var(--gray);" id="nd-proj">—</div></div>
+    <div class="flex ai-c" style="gap:8px;"><span id="nd-status" style="font-size:12px;color:var(--gray);"></span><button class="btn btn-outline btn-sm" onclick="notesDocPrint()">🖨️ Print</button></div>
+  </div>
+  <div id="nd-bar" style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:10px 10px 0 0;padding:6px;">
+    <select onchange="ndCmd('formatBlock',this.value);this.selectedIndex=0" style="padding:5px;border-radius:6px;border:1px solid #cbd5e1;"><option value="">Style</option><option value="P">Normal</option><option value="H1">Heading 1</option><option value="H2">Heading 2</option><option value="H3">Heading 3</option></select>
+    <select onchange="ndCmd('fontSize',this.value);this.selectedIndex=0" style="padding:5px;border-radius:6px;border:1px solid #cbd5e1;"><option value="">Size</option><option value="2">Small</option><option value="3">Normal</option><option value="5">Large</option><option value="6">Huge</option></select>
+    <button class="btn btn-outline btn-sm" onmousedown="event.preventDefault()" onclick="ndCmd('bold')"><b>B</b></button>
+    <button class="btn btn-outline btn-sm" onmousedown="event.preventDefault()" onclick="ndCmd('italic')"><i>I</i></button>
+    <button class="btn btn-outline btn-sm" onmousedown="event.preventDefault()" onclick="ndCmd('underline')"><u>U</u></button>
+    <button class="btn btn-outline btn-sm" onmousedown="event.preventDefault()" onclick="ndCmd('strikeThrough')"><s>S</s></button>
+    <label style="font-size:12px;display:flex;align-items:center;gap:3px;">A <input type="color" value="#dc2626" onchange="ndCmd('foreColor',this.value)" style="width:26px;height:24px;padding:0;border:none;"></label>
+    <label style="font-size:12px;display:flex;align-items:center;gap:3px;">🖍 <input type="color" value="#fde047" onchange="ndCmd('hiliteColor',this.value)" style="width:26px;height:24px;padding:0;border:none;"></label>
+    <button class="btn btn-outline btn-sm" onmousedown="event.preventDefault()" onclick="ndCmd('insertUnorderedList')">• List</button>
+    <button class="btn btn-outline btn-sm" onmousedown="event.preventDefault()" onclick="ndCmd('insertOrderedList')">1. List</button>
+    <button class="btn btn-outline btn-sm" onmousedown="event.preventDefault()" onclick="ndCmd('justifyLeft')">⬅</button>
+    <button class="btn btn-outline btn-sm" onmousedown="event.preventDefault()" onclick="ndCmd('justifyCenter')">↔</button>
+    <button class="btn btn-outline btn-sm" onmousedown="event.preventDefault()" onclick="ndCmd('justifyRight')">➡</button>
+    <button class="btn btn-outline btn-sm" onmousedown="event.preventDefault()" onclick="ndCmd('undo')">↶</button>
+    <button class="btn btn-outline btn-sm" onmousedown="event.preventDefault()" onclick="ndCmd('redo')">↷</button>
+  </div>
+  <div id="nd-editor" contenteditable="true" spellcheck="true" oninput="notesDocInput()" style="min-height:60vh;background:#fff;color:#111;border:1px solid #cbd5e1;border-top:none;border-radius:0 0 10px 10px;padding:24px 32px;font-size:15px;line-height:1.7;outline:none;"></div>
+</div>
 
 <!-- STECCAWOOD & LAMINATE -->
 <div class="panel" id="panel-stecca">
@@ -3112,7 +3139,7 @@ function renderUnits(q){
   }).join('');
 }
 
-function refresh(){updateHeader();renderUnits();renderCabinetCategories();if(typeof renderMaterials==='function')renderMaterials();if(typeof renderHwAliases==='function')renderHwAliases();saveData();}
+function refresh(){if(typeof renderNotesDoc==='function')renderNotesDoc();updateHeader();renderUnits();renderCabinetCategories();if(typeof renderMaterials==='function')renderMaterials();if(typeof renderHwAliases==='function')renderHwAliases();saveData();}
 
 // Re-render EVERY tracker tab at once. Use this after any operation that
 // changes the dataset (import, switching project, etc.) so no tab is left
@@ -6006,12 +6033,40 @@ async function checkSendWeeklyEmail(wi){
 // CAMERA scanning removed — this app is scanner-only (USB barcode scanner
 // acting as a keyboard). Kept camActive/camStream vars are unused now.
 
+
+// ===== NOTES (Word-style document, one per project) =====
+var _ndTimer=null;
+function ndCmd(c,v){var ed=document.getElementById('nd-editor');if(!ed)return;ed.focus();try{document.execCommand('styleWithCSS',false,c==='hiliteColor'||c==='foreColor');}catch(e){}document.execCommand(c,false,v||null);notesDocInput();}
+function renderNotesDoc(){
+  var ed=document.getElementById('nd-editor');if(!ed)return;
+  var j=currentJobId&&allJobs[currentJobId];
+  var pn=document.getElementById('nd-proj');if(pn)pn.textContent=j?(j.name||''):'Open or create a project first';
+  ed.contentEditable=j?'true':'false';
+  if(document.activeElement===ed)return;
+  var h=(j&&typeof j.docHTML==='string')?j.docHTML:'';
+  if(ed.innerHTML!==h)ed.innerHTML=h;
+}
+function notesDocInput(){
+  var j=currentJobId&&allJobs[currentJobId];if(!j)return;
+  var ed=document.getElementById('nd-editor');
+  j.docHTML=ed.innerHTML;
+  var st=document.getElementById('nd-status');if(st)st.textContent='Saving…';
+  clearTimeout(_ndTimer);
+  _ndTimer=setTimeout(function(){try{saveData();}catch(e){}var st=document.getElementById('nd-status');if(st)st.textContent='✓ Saved';},800);
+}
+function notesDocPrint(){
+  var j=currentJobId&&allJobs[currentJobId];if(!j)return;
+  var w=window.open('','_blank');if(!w)return;
+  w.document.write('<!DOCTYPE html><html><head><title>Notes — '+String(j.name||'').replace(/</g,'&lt;')+'</title><style>body{font-family:Arial,sans-serif;font-size:14px;line-height:1.6;padding:24px;color:#111}</style></head><body><h2>'+String(j.name||'').replace(/</g,'&lt;')+' — Notes</h2>'+(j.docHTML||'')+'</body></html>');
+  w.document.close();setTimeout(function(){w.print();},300);
+}
+
 // TABS
 function showTab(n,el){
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
   document.getElementById('panel-'+n).classList.add('active');el.classList.add('active');
-  if(n==='summary')renderSummary();if(n==='hardware')renderHardware();if(n==='glassdoor')renderGlassDoors();if(n==='stecca')renderStecca();if(n==='kickboard')renderKickboard();updateReminderBanners();
+  if(n==='notes')renderNotesDoc();if(n==='summary')renderSummary();if(n==='hardware')renderHardware();if(n==='glassdoor')renderGlassDoors();if(n==='stecca')renderStecca();if(n==='kickboard')renderKickboard();updateReminderBanners();
   if(n==='qc'){setTimeout(focusQcScanBox,60);}
 }
 
@@ -6230,6 +6285,7 @@ function saveCurrentJob(){
     category:existing.category||'production',
     prevCategory:existing.prevCategory||'production',
     noteHTML:(typeof existing.noteHTML==='string')?existing.noteHTML:'',
+    docHTML:(typeof existing.docHTML==='string')?existing.docHTML:'',
     priority:(typeof existing.priority==='number')?existing.priority:Date.now()};
 }
 
@@ -6404,7 +6460,7 @@ function _normJob(id,j){
     dispatches:Array.isArray(j.dispatches)?j.dispatches:[],hangingRails:Array.isArray(j.hangingRails)?j.hangingRails:[],
     glassDoors:Array.isArray(j.glassDoors)?j.glassDoors:[],steccaItems:Array.isArray(j.steccaItems)?j.steccaItems:[],
     orderReminders:j.orderReminders||defR,matAliases:j.matAliases||{},matPrintOrder:j.matPrintOrder||{},hwAliases:j.hwAliases||{},
-    notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',
+    notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',docHTML:(typeof j.docHTML==='string')?j.docHTML:'',
     kickboards:normKick(j.kickboards),completed:j.completed||false,
     category:j.category||'production',prevCategory:j.prevCategory||'production',
     priority:(typeof j.priority==='number')?j.priority:Date.now()};
@@ -6421,7 +6477,7 @@ function _syncModuleFromCurrent(){
   if(pi)pi.value=j.name||'Project';if(pd)pd.textContent=j.name||'Project';
 }
 // Re-render every tab + the Project Manager after a load.
-function _renderEverything(){
+function _renderEverything(){if(typeof renderNotesDoc==='function')renderNotesDoc();
   refresh();renderLog();renderDispatchHistory();
   if(typeof renderSummary==='function')renderSummary();
   if(typeof renderHardware==='function')renderHardware();
@@ -6696,7 +6752,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v214 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v215 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8354,7 +8410,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=214;
+var APP_VERSION=215;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
