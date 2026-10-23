@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v224 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v225 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6425,10 +6425,27 @@ function finRowsHTML(sh,j,forPrint){
       out+=tr+'</tr>';
     });
   });
+  if(sh.key==='sched'){
+    var ex=(j.finishes&&j.finishes.extra&&j.finishes.extra.sched)||[];
+    ex.forEach(function(r){
+      var f=function(k,w){return forPrint?esc(r[k]||''):'<input value="'+esc(r[k]||'')+'" oninput="finExtraSet(\''+r.id+'\',\''+k+'\',this.value)" style="width:100%;min-width:'+w+'px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">';};
+      out+='<tr><td style="background:#ecfdf5;font-weight:800;">'+f('area',110)+'</td><td>'+f('stone',150)+'</td><td>'+f('mm',70)+'</td><td>'+f('splash',70)+'</td><td>'+f('wf',70)+'</td>'+
+        (forPrint?'':'<td style="text-align:center;"><button onclick="finExtraDel(\''+r.id+'\')" title="Remove this area" style="background:#fee2e2;color:#dc2626;border:none;padding:5px 9px;border-radius:6px;cursor:pointer;">🗑</button></td>')+'</tr>';
+    });
+  }
   return out;}
+function finAddArea(){
+  var j=finJob();if(!j)return;var inp=document.getElementById('fin-newarea');var nm=inp.value.trim();
+  if(!nm){alert('Type the new area name first (e.g. Powder Room).');inp.focus();return;}
+  j.finishes=j.finishes||{site:'',v:{}};j.finishes.extra=j.finishes.extra||{};j.finishes.extra.sched=j.finishes.extra.sched||[];
+  j.finishes.extra.sched.push({id:'x'+Date.now().toString(36),area:nm,stone:'',mm:'',splash:'',wf:''});
+  try{saveData();}catch(e){}renderFinishes();}
+function finExtraSet(id,k,v){var j=finJob();if(!j)return;((j.finishes&&j.finishes.extra&&j.finishes.extra.sched)||[]).forEach(function(r){if(r.id===id)r[k]=v;});
+  clearTimeout(finSet._t);finSet._t=setTimeout(function(){try{saveData();}catch(e){}},700);}
+function finExtraDel(id){var j=finJob();if(!j||!confirm('Remove this area?'))return;j.finishes.extra.sched=j.finishes.extra.sched.filter(function(r){return r.id!==id;});try{saveData();}catch(e){}renderFinishes();}
 function finTableHTML(sh,j,forPrint){
   var first=sh.key==='sched'?'Area':'Area';
-  return '<table class="sum-table" style="width:100%;"><thead><tr><th>'+first+'</th>'+sh.cols.map(function(c){return '<th>'+esc(c)+'</th>';}).join('')+'</tr></thead><tbody>'+finRowsHTML(sh,j,forPrint)+'</tbody></table>';}
+  return '<table class="sum-table" style="width:100%;"><thead><tr><th>'+first+'</th>'+sh.cols.map(function(c){return '<th>'+esc(c)+'</th>';}).join('')+((sh.key==='sched'&&!forPrint)?'<th></th>':'')+'</tr></thead><tbody>'+finRowsHTML(sh,j,forPrint)+'</tbody></table>';}
 function renderFinishes(){
   var tabs=document.getElementById('fin-tabs');if(!tabs)return;var j=finJob();
   var pn=document.getElementById('fin-proj');if(pn)pn.textContent=j?(j.name||''):'Open or create a project first';
@@ -6438,7 +6455,8 @@ function renderFinishes(){
   var si=document.getElementById('fin-site');if(si){si.disabled=nop;if(document.activeElement!==si)si.value=(j.finishes&&j.finishes.site)||'';}
   var sh=FIN_SHEETS.filter(function(x){return x.key===_finSheet;})[0];
   body.innerHTML=(nop?'<div style="background:#fef3c7;border-left:4px solid #d97706;padding:10px 12px;border-radius:8px;margin-bottom:10px;font-size:13px;font-weight:700;color:#92400e;">⚠️ No project is open — you can see the sheets, but to type and save, open or create a project first (Jobs button).</div>':'')+
-    '<div style="font-weight:800;letter-spacing:1px;color:#475569;margin:4px 0 8px;">'+esc(sh.head)+'</div>'+finTableHTML(sh,j,false);
+    '<div style="font-weight:800;letter-spacing:1px;color:#475569;margin:4px 0 8px;">'+esc(sh.head)+'</div>'+finTableHTML(sh,j,false)+
+    (sh.key==='sched'?'<div class="card" style="margin-top:10px;border-left:4px solid #16a34a;"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><b style="font-size:13px;">New space / area:</b><input id="fin-newarea" placeholder="e.g. Powder Room, Outdoor Kitchen…" onkeydown="if(event.key===\'Enter\')finAddArea()" style="flex:1;min-width:200px;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;"><button class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="finAddArea()">➕ Add area</button></div></div>':'');
   if(nop)body.querySelectorAll('input').forEach(function(i){i.disabled=true;});}
 function finPrint(){
   var j=finJob();if(!j)return;var sh=FIN_SHEETS.filter(function(x){return x.key===_finSheet;})[0];
@@ -7141,7 +7159,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v224 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v225 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8799,7 +8817,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=224;
+var APP_VERSION=225;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
