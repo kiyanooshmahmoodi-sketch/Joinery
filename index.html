@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v217 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v218 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1246,8 +1246,16 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <div class="panel" id="panel-notes">
   <div class="flex ai-c jb" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;">
     <div><div style="font-size:18px;font-weight:800;">📝 Notes</div><div style="font-size:12px;color:var(--gray);" id="nd-proj">—</div></div>
-    <div class="flex ai-c" style="gap:8px;"><span id="nd-status" style="font-size:12px;color:var(--gray);"></span><button class="btn btn-outline btn-sm" onclick="notesDocPrint()">🖨️ Print</button></div>
+    <div class="flex ai-c" style="gap:8px;flex-wrap:wrap;"><span id="nd-status" style="font-size:12px;color:var(--gray);"></span>
+      <button class="btn btn-sm" id="nd-m-doc" onclick="ndMode('doc')">📄 Text</button>
+      <button class="btn btn-outline btn-sm" id="nd-m-sk" onclick="ndMode('sk')">✏️ Sketches</button>
+      <button class="btn btn-outline btn-sm" id="nd-print" onclick="notesDocPrint()">🖨️ Print</button></div>
   </div>
+  <div id="sk-wrap" style="display:none;">
+    <button class="btn btn-sm" style="background:#7c3aed;color:#fff;margin-bottom:10px;" onclick="skOpen(null)">➕ New Sketch</button>
+    <div id="sk-gallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;"></div>
+  </div>
+  <div id="nd-textwrap">
   <div id="nd-bar" style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:10px 10px 0 0;padding:6px;">
     <select onchange="ndCmd('formatBlock',this.value);this.selectedIndex=0" style="padding:5px;border-radius:6px;border:1px solid #cbd5e1;"><option value="">Style</option><option value="P">Normal</option><option value="H1">Heading 1</option><option value="H2">Heading 2</option><option value="H3">Heading 3</option></select>
     <select onchange="ndCmd('fontSize',this.value);this.selectedIndex=0" style="padding:5px;border-radius:6px;border:1px solid #cbd5e1;"><option value="">Size</option><option value="2">Small</option><option value="3">Normal</option><option value="5">Large</option><option value="6">Huge</option></select>
@@ -1266,6 +1274,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     <button class="btn btn-outline btn-sm" onmousedown="event.preventDefault()" onclick="ndCmd('redo')">↷</button>
   </div>
   <div id="nd-editor" contenteditable="true" spellcheck="true" oninput="notesDocInput()" style="min-height:60vh;background:#fff;color:#111;border:1px solid #cbd5e1;border-top:none;border-radius:0 0 10px 10px;padding:24px 32px;font-size:15px;line-height:1.7;outline:none;"></div>
+  </div>
 </div>
 
 <!-- STECCAWOOD & LAMINATE -->
@@ -6070,6 +6079,7 @@ async function checkSendWeeklyEmail(wi){
 var _ndTimer=null;
 function ndCmd(c,v){var ed=document.getElementById('nd-editor');if(!ed)return;ed.focus();try{document.execCommand('styleWithCSS',false,c==='hiliteColor'||c==='foreColor');}catch(e){}document.execCommand(c,false,v||null);notesDocInput();}
 function renderNotesDoc(){
+  if(_skMode==='sk'&&typeof renderSketches==='function')renderSketches();
   var ed=document.getElementById('nd-editor');if(!ed)return;
   var j=currentJobId&&allJobs[currentJobId];
   var pn=document.getElementById('nd-proj');if(pn)pn.textContent=j?(j.name||''):'Open or create a project first';
@@ -6179,6 +6189,83 @@ function renderSiteIssues(){
     '</div>';}).join('');
   siHydrate(box);
 }
+
+
+// ===== SKETCHES (hand drawing for iPad/Apple Pencil/finger/mouse) =====
+var _skMode='doc',_sk={id:null,undo:[],drawing:false,pen:false,color:'#111111',size:3,eraser:false,bg:'white',lx:0,ly:0};
+function ndMode(m){_skMode=m;
+  document.getElementById('sk-wrap').style.display=m==='sk'?'':'none';
+  document.getElementById('nd-textwrap').style.display=m==='doc'?'':'none';
+  document.getElementById('nd-print').style.display=m==='doc'?'':'none';
+  document.getElementById('nd-m-doc').className=m==='doc'?'btn btn-sm':'btn btn-outline btn-sm';
+  document.getElementById('nd-m-sk').className=m==='sk'?'btn btn-sm':'btn btn-outline btn-sm';
+  if(m==='sk')renderSketches();}
+function renderSketches(){
+  var g=document.getElementById('sk-gallery');if(!g)return;var j=siJob();
+  var list=j?(j.sketches||[]):[];
+  if(!list.length){g.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#94a3b8;padding:30px;">No sketches yet. Tap “New Sketch”.</div>';return;}
+  g.innerHTML=list.map(function(x){return '<div class="card" style="padding:8px;"><img data-pid="'+x.pid+'" onclick="skOpen(\''+x.id+'\')" style="width:100%;height:130px;object-fit:contain;background:#fff;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;">'+
+    '<div style="font-weight:700;font-size:13px;margin-top:4px;">'+esc(x.name)+'</div><div style="font-size:11px;color:#94a3b8;">'+esc(x.date||'')+(x.by?' · '+esc(x.by):'')+'</div>'+
+    '<div style="display:flex;gap:6px;margin-top:6px;"><button class="btn btn-outline btn-sm" onclick="skOpen(\''+x.id+'\')">✏️ Edit</button><button class="btn btn-outline btn-sm" style="color:#dc2626;" onclick="skDelete(\''+x.id+'\')">🗑</button></div></div>';}).join('');
+  siHydrate(g);}
+function skDelete(id){var j=siJob();if(!j||!confirm('Delete this sketch?'))return;j.sketches=(j.sketches||[]).filter(function(x){return x.id!==id;});siSave();renderSketches();}
+function skBG(){var c=document.getElementById('sk-canvas'),x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+  if(_sk.bg==='grid'){x.strokeStyle='#e2e8f0';x.lineWidth=1;x.beginPath();for(var i=0;i<=c.width;i+=40){x.moveTo(i,0);x.lineTo(i,c.height);}for(var k=0;k<=c.height;k+=40){x.moveTo(0,k);x.lineTo(c.width,k);}x.stroke();}}
+function skSnap(){var c=document.getElementById('sk-canvas');_sk.undo.push(c.getContext('2d').getImageData(0,0,c.width,c.height));if(_sk.undo.length>25)_sk.undo.shift();}
+function skOpen(id){
+  var j=siJob();if(!j){alert('Open or create a project first.');return;}
+  _sk.id=id;_sk.undo=[];_sk.pen=false;_sk.eraser=false;_sk.bg='white';
+  var rec=id?(j.sketches||[]).filter(function(x){return x.id===id;})[0]:null;
+  var o=document.createElement('div');o.id='sk-ov';
+  o.style.cssText='position:fixed;inset:0;z-index:99998;background:#e2e8f0;display:flex;flex-direction:column;';
+  var cols=['#111111','#dc2626','#2563eb','#16a34a','#f59e0b','#7c3aed'];
+  o.innerHTML='<div style="background:#1e293b;color:#fff;padding:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">'+
+    '<input id="sk-name" placeholder="Sketch name" value="'+esc(rec?rec.name:'')+'" style="padding:7px;border-radius:6px;border:none;min-width:130px;">'+
+    cols.map(function(c){return '<span onclick="skColor(\''+c+'\')" style="width:28px;height:28px;border-radius:50%;background:'+c+';border:2px solid #fff;cursor:pointer;"></span>';}).join('')+
+    '<select id="sk-size" onchange="_sk.size=+this.value" style="padding:6px;border-radius:6px;"><option value="2">Thin</option><option value="3" selected>Medium</option><option value="6">Thick</option><option value="14">Marker</option></select>'+
+    '<button class="btn btn-outline btn-sm" id="sk-er" style="color:#fff;" onclick="skEraser()">🧽 Eraser</button>'+
+    '<button class="btn btn-outline btn-sm" style="color:#fff;" onclick="skUndo()">↶ Undo</button>'+
+    '<button class="btn btn-outline btn-sm" style="color:#fff;" onclick="skClear()">Clear</button>'+
+    '<button class="btn btn-outline btn-sm" style="color:#fff;" onclick="_sk.bg=_sk.bg===\'grid\'?\'white\':\'grid\';skSnap();skBG();">▦ Grid</button>'+
+    '<span style="flex:1"></span><button class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="skSave()">💾 Save</button><button class="btn btn-outline btn-sm" style="color:#fff;" onclick="skClose()">✖ Close</button></div>'+
+    '<div style="flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px;"><canvas id="sk-canvas" width="1600" height="1100" style="background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.3);max-width:100%;touch-action:none;cursor:crosshair;"></canvas></div>';
+  document.body.appendChild(o);
+  var c=document.getElementById('sk-canvas');skBG();
+  if(rec){siGetPhoto(rec.pid).then(function(d){if(!d)return;var im=new Image();im.onload=function(){c.getContext('2d').drawImage(im,0,0,c.width,c.height);};im.src=d;});}
+  c.addEventListener('pointerdown',skDown);c.addEventListener('pointermove',skMove);
+  ['pointerup','pointercancel','pointerleave'].forEach(function(t){c.addEventListener(t,skUp);});
+  c.addEventListener('touchstart',function(e){e.preventDefault();},{passive:false});
+}
+function skColor(c){_sk.color=c;_sk.eraser=false;var b=document.getElementById('sk-er');if(b)b.style.background='';}
+function skEraser(){_sk.eraser=!_sk.eraser;document.getElementById('sk-er').style.background=_sk.eraser?'#7c3aed':'';}
+function skPos(e){var c=document.getElementById('sk-canvas'),r=c.getBoundingClientRect();return {x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height};}
+function skDown(e){
+  if(e.pointerType==='pen')_sk.pen=true;
+  if(e.pointerType==='touch'&&_sk.pen)return; // palm rejection once a pencil has been used
+  e.preventDefault();var c=e.target;try{c.setPointerCapture(e.pointerId);}catch(x){}
+  skSnap();_sk.drawing=true;var p=skPos(e);_sk.lx=p.x;_sk.ly=p.y;skLine(p.x,p.y,p.x+0.01,p.y+0.01,e);}
+function skMove(e){if(!_sk.drawing)return;if(e.pointerType==='touch'&&_sk.pen)return;e.preventDefault();
+  var evs=(e.getCoalescedEvents&&e.getCoalescedEvents())||[e];if(!evs.length)evs=[e];
+  evs.forEach(function(ev){var p=skPos(ev);skLine(_sk.lx,_sk.ly,p.x,p.y,ev);_sk.lx=p.x;_sk.ly=p.y;});}
+function skUp(){_sk.drawing=false;}
+function skLine(x1,y1,x2,y2,e){var c=document.getElementById('sk-canvas'),x=c.getContext('2d');
+  var pr=(e.pointerType==='pen'&&e.pressure)?(0.4+e.pressure*1.2):1;
+  x.lineCap='round';x.lineJoin='round';x.strokeStyle=_sk.eraser?'#ffffff':_sk.color;x.lineWidth=(_sk.eraser?_sk.size*4:_sk.size)*pr*1.6;
+  x.beginPath();x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();}
+function skUndo(){var c=document.getElementById('sk-canvas');var d=_sk.undo.pop();if(d)c.getContext('2d').putImageData(d,0,0);}
+function skClear(){if(!confirm('Clear the whole sketch?'))return;skSnap();skBG();}
+function skClose(){if(confirm('Close without saving?')){var o=document.getElementById('sk-ov');if(o)o.remove();}}
+async function skSave(){
+  var j=siJob();if(!j)return;var c=document.getElementById('sk-canvas');
+  var data=c.toDataURL('image/png');
+  if(data.length>900000){var t=document.createElement('canvas');t.width=1200;t.height=825;t.getContext('2d').drawImage(c,0,0,1200,825);data=t.toDataURL('image/jpeg',0.8);}
+  var pid=await siStorePhoto(data);
+  var nm=document.getElementById('sk-name').value.trim()||('Sketch '+((j.sketches||[]).length+1));
+  j.sketches=j.sketches||[];
+  var rec=_sk.id?j.sketches.filter(function(x){return x.id===_sk.id;})[0]:null;
+  if(rec){rec.pid=pid;rec.name=nm;rec.date=new Date().toLocaleString('en-AU');rec.by=(window.SESSION&&SESSION.name)||rec.by||'';}
+  else j.sketches.unshift({id:'k'+Date.now().toString(36),name:nm,pid:pid,date:new Date().toLocaleString('en-AU'),by:(window.SESSION&&SESSION.name)||''});
+  siSave();var o=document.getElementById('sk-ov');if(o)o.remove();renderSketches();}
 
 // TABS
 function showTab(n,el){
@@ -6406,6 +6493,7 @@ function saveCurrentJob(){
     noteHTML:(typeof existing.noteHTML==='string')?existing.noteHTML:'',
     docHTML:(typeof existing.docHTML==='string')?existing.docHTML:'',
     siteIssues:Array.isArray(existing.siteIssues)?existing.siteIssues:[],
+    sketches:Array.isArray(existing.sketches)?existing.sketches:[],
     priority:(typeof existing.priority==='number')?existing.priority:Date.now()};
 }
 
@@ -6580,7 +6668,7 @@ function _normJob(id,j){
     dispatches:Array.isArray(j.dispatches)?j.dispatches:[],hangingRails:Array.isArray(j.hangingRails)?j.hangingRails:[],
     glassDoors:Array.isArray(j.glassDoors)?j.glassDoors:[],steccaItems:Array.isArray(j.steccaItems)?j.steccaItems:[],
     orderReminders:j.orderReminders||defR,matAliases:j.matAliases||{},matPrintOrder:j.matPrintOrder||{},hwAliases:j.hwAliases||{},
-    notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',docHTML:(typeof j.docHTML==='string')?j.docHTML:'',siteIssues:Array.isArray(j.siteIssues)?j.siteIssues:[],
+    notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',docHTML:(typeof j.docHTML==='string')?j.docHTML:'',siteIssues:Array.isArray(j.siteIssues)?j.siteIssues:[],sketches:Array.isArray(j.sketches)?j.sketches:[],
     kickboards:normKick(j.kickboards),completed:j.completed||false,
     category:j.category||'production',prevCategory:j.prevCategory||'production',
     priority:(typeof j.priority==='number')?j.priority:Date.now()};
@@ -6872,7 +6960,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v217 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v218 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8530,7 +8618,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=217;
+var APP_VERSION=218;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
