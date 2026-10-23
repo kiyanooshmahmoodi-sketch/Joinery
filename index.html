@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v213 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v214 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6573,6 +6573,8 @@ async function openProject(){
 //   'yes'     → user said yes, keep reminding until at least one item is "Ordered"
 //   'no'      → user said no, never ask again in this project
 function checkOrderReminders(){
+
+  return; // reminders disabled for now
   orderReminders=orderReminders||{};orderReminders.laminate='no';orderReminders.steccawood='no'; // Steccawood & Laminate removed from Designer
   var sections=[
     {key:'glass',label:'🪟 Glass Door',existing:glassDoors.length>0},
@@ -6635,6 +6637,8 @@ function sectionHasOrdered(key){
 // Show a yellow banner at the top of each relevant tab when status='yes'
 // and no item has been marked Ordered yet.
 function updateReminderBanners(){
+
+  return; // reminders disabled for now
   var pairs=[
     {key:'glass',panelId:'panel-glassdoor',label:'Glass Door'},
     {key:'closetRod',panelId:'panel-hardware',label:'Closet Rod'}
@@ -6692,7 +6696,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v213 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v214 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -6790,6 +6794,8 @@ function switchView(view){
 // reminder='yes' but still has 0 items entered. Keeps asking until the user
 // either adds items, or clicks "Not needed" to mark as 'no'.
 function showPersistentReminders(){
+
+  return; // reminders disabled for now
   var needAttention=[];
   if(orderReminders.glass==='yes'&&glassDoors.length===0)
     needAttention.push({key:'glass',label:'🪟 Glass Door',tab:'glassdoor'});
@@ -7391,6 +7397,7 @@ function renderProjectManager(){
     var pendingOrders=[];
     if((s.glass.reminder==='yes'||s.glass.reminder==='pending')&&!s.glass.total)pendingOrders.push('🪟 Glass');
     if((s.rod.reminder==='yes'||s.rod.reminder==='pending')&&!s.rod.total)pendingOrders.push('🪧 Closet Rod');
+    pendingOrders=[]; // reminders disabled for now
     var reminderBanner=pendingOrders.length
       ? '<div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-left:4px solid #d97706;padding:10px 12px;border-radius:8px;margin-top:12px;font-size:12px;color:#92400e;font-weight:700;">⚠️ Order needed: '+pendingOrders.join(', ')+'</div>'
       : '';
@@ -8347,7 +8354,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=213;
+var APP_VERSION=214;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
