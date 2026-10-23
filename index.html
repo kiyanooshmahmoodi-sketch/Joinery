@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v228 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v229 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6388,7 +6388,7 @@ var FIN_SHEETS=[
   ['Media',[['Doors and panels – materials'],['Speakers'],['Woofers']]],
   ['Built-In Robes',[['Track colour'],['Sliding door (Mirror / Frosted)']]]
  ]},
- {key:'sched',title:'Stone Schedule',head:'STONE SCHEDULE',cols:['Stone name / code','Web link','Benchtop (mm)','Splash','Water Fall'],groups:[
+ {key:'sched',title:'Stone Schedule',head:'STONE SCHEDULE',cols:['Stone name / code','Web link','Stone thickness (mm)','Splash','Water Fall'],groups:[
   ['Kitchen',[['',null,'40']]],['Island',[['',null,'40']]],["Butler's",[['',null,'40']]],['Laundry',[['',null,'20']]],
   ['Alfresco',[['',null,'20']]],['Bar',[['',null,'20']]],['Vanities',[['',null,'20']]]
  ]}
@@ -6417,7 +6417,7 @@ function finRowsHTML(sh,j,forPrint){
         tr+='<td>'+(forPrint?esc(fld('stone','')):'<input value="'+esc(fld('stone',''))+'" placeholder="Stone name or code" oninput="finSet(\''+kb('stone')+'\',this.value)" style="width:100%;min-width:150px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">')+'</td>';
         var lk=fld('link','');
         tr+='<td>'+(forPrint?esc(lk):'<div style="display:flex;gap:4px;align-items:center;"><input value="'+esc(lk)+'" placeholder="https://…" oninput="finSet(\''+kb('link')+'\',this.value)" style="width:100%;min-width:150px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;"><button onclick="finOpenLink(\''+kb('link')+'\')" title="Open link" style="background:#e0f2fe;color:#0369a1;border:none;padding:6px 8px;border-radius:6px;cursor:pointer;">🔗</button></div>')+'</td>';
-        tr+='<td>'+(forPrint?esc(fld('mm',parts[0])):'<input value="'+esc(fld('mm',parts[0]))+'" oninput="finSet(\''+kb('mm')+'\',this.value)" style="width:100%;min-width:70px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">')+'</td>';
+        tr+='<td>'+(forPrint?esc(fld('mm',parts[0])):'<input value="'+esc(fld('mm',parts[0]))+'" oninput="finSet(\''+kb('mm')+'\',this.value)" style="width:70px;padding:7px;text-align:center;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">')+'</td>';
         tr+='<td>'+sel(kb('splash'),spv,['Yes','No'])+'</td>';
         tr+='<td>'+sel(kb('wf'),wfval,['Yes','No'])+(wfval==='Yes'?'<div style="margin-top:4px;font-size:11px;font-weight:700;color:#0e7490;">Which side?</div>'+sel(kb('wfside'),side,['Left','Right']):'')+(forPrint&&wfval==='Yes'&&side?' — '+esc(side):'')+'</td>';
         out+=tr+'</tr>';return;
@@ -6439,7 +6439,7 @@ function finRowsHTML(sh,j,forPrint){
     ex.forEach(function(r){
       var f=function(k,w){return forPrint?esc(r[k]||''):'<input value="'+esc(r[k]||'')+'" oninput="finExtraSet(\''+r.id+'\',\''+k+'\',this.value)" style="width:100%;min-width:'+w+'px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">';};
       var xs=function(k,opts){return forPrint?esc(r[k]||''):'<select onchange="finExtraSet(\''+r.id+'\',\''+k+'\',this.value);renderFinishes()" style="width:100%;min-width:90px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;">'+[''].concat(opts).map(function(o){return '<option value="'+o+'"'+(o===(r[k]||'')?' selected':'')+'>'+(o||'—')+'</option>';}).join('')+'</select>';};
-      out+='<tr><td style="background:#ecfdf5;font-weight:800;">'+f('area',110)+'</td><td>'+f('stone',150)+'</td><td>'+(forPrint?esc(r.link||''):'<div style="display:flex;gap:4px;"><input value="'+esc(r.link||'')+'" placeholder="https://…" oninput="finExtraSet(\''+r.id+'\',\'link\',this.value)" style="width:100%;min-width:150px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;"><button onclick="finOpenLinkX(\''+r.id+'\')" title="Open link" style="background:#e0f2fe;color:#0369a1;border:none;padding:6px 8px;border-radius:6px;cursor:pointer;">🔗</button></div>')+'</td><td>'+f('mm',70)+'</td><td>'+xs('splash',['Yes','No'])+'</td><td>'+xs('wf',['Yes','No'])+(r.wf==='Yes'?'<div style="margin-top:4px;font-size:11px;font-weight:700;color:#0e7490;">Which side?</div>'+xs('wfside',['Left','Right']):'')+'</td>'+
+      out+='<tr><td style="background:#ecfdf5;font-weight:800;">'+f('area',110)+'</td><td>'+f('stone',150)+'</td><td>'+(forPrint?esc(r.link||''):'<div style="display:flex;gap:4px;"><input value="'+esc(r.link||'')+'" placeholder="https://…" oninput="finExtraSet(\''+r.id+'\',\'link\',this.value)" style="width:100%;min-width:150px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;"><button onclick="finOpenLinkX(\''+r.id+'\')" title="Open link" style="background:#e0f2fe;color:#0369a1;border:none;padding:6px 8px;border-radius:6px;cursor:pointer;">🔗</button></div>')+'</td><td>'+(forPrint?esc(r.mm||''):'<input value="'+esc(r.mm||'')+'" oninput="finExtraSet(\''+r.id+'\',\'mm\',this.value)" style="width:70px;padding:7px;text-align:center;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;">')+'</td><td>'+xs('splash',['Yes','No'])+'</td><td>'+xs('wf',['Yes','No'])+(r.wf==='Yes'?'<div style="margin-top:4px;font-size:11px;font-weight:700;color:#0e7490;">Which side?</div>'+xs('wfside',['Left','Right']):'')+'</td>'+
         (forPrint?'':'<td style="text-align:center;"><button onclick="finExtraDel(\''+r.id+'\')" title="Remove this area" style="background:#fee2e2;color:#dc2626;border:none;padding:5px 9px;border-radius:6px;cursor:pointer;">🗑</button></td>')+'</tr>';
     });
   }
@@ -6458,7 +6458,7 @@ function finExtraSet(id,k,v){var j=finJob();if(!j)return;((j.finishes&&j.finishe
 function finExtraDel(id){var j=finJob();if(!j||!confirm('Remove this area?'))return;j.finishes.extra.sched=j.finishes.extra.sched.filter(function(r){return r.id!==id;});try{saveData();}catch(e){}renderFinishes();}
 function finTableHTML(sh,j,forPrint){
   var first=sh.key==='sched'?'Area':'Area';
-  return '<table class="sum-table" style="width:100%;"><thead><tr><th>'+first+'</th>'+sh.cols.map(function(c){return '<th>'+esc(c)+'</th>';}).join('')+((sh.key==='sched'&&!forPrint)?'<th></th>':'')+'</tr></thead><tbody>'+finRowsHTML(sh,j,forPrint)+'</tbody></table>';}
+  return '<table class="sum-table" style="width:100%;"><thead><tr><th>'+first+'</th>'+sh.cols.map(function(c){return '<th'+(c==='Stone thickness (mm)'?' style="width:110px;"':'')+'>'+esc(c)+'</th>';}).join('')+((sh.key==='sched'&&!forPrint)?'<th></th>':'')+'</tr></thead><tbody>'+finRowsHTML(sh,j,forPrint)+'</tbody></table>';}
 function renderFinishes(){
   var tabs=document.getElementById('fin-tabs');if(!tabs)return;var j=finJob();
   var pn=document.getElementById('fin-proj');if(pn)pn.textContent=j?(j.name||''):'Open or create a project first';
@@ -7172,7 +7172,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v228 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v229 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8830,7 +8830,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=228;
+var APP_VERSION=229;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
