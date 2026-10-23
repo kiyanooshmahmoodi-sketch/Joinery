@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v212 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v213 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -6573,6 +6573,7 @@ async function openProject(){
 //   'yes'     → user said yes, keep reminding until at least one item is "Ordered"
 //   'no'      → user said no, never ask again in this project
 function checkOrderReminders(){
+  orderReminders=orderReminders||{};orderReminders.laminate='no';orderReminders.steccawood='no'; // Steccawood & Laminate removed from Designer
   var sections=[
     {key:'glass',label:'🪟 Glass Door',existing:glassDoors.length>0},
     {key:'closetRod',label:'🪧 Closet Rod',existing:hangingRails.length>0}
@@ -6691,7 +6692,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v212 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v213 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -6776,7 +6777,7 @@ function switchView(view){
       var hasAny=units.length||glassDoors.length||hangingRails.length||steccaItems.length;
       if(hasAny){
         // First, ask any sections still 'pending' (never asked)
-        var pendingAny=Object.keys(orderReminders||{}).some(function(k){return orderReminders[k]==='pending';});
+        var pendingAny=Object.keys(orderReminders||{}).some(function(k){return k!=='laminate'&&k!=='steccawood'&&orderReminders[k]==='pending';});
         if(pendingAny){setTimeout(checkOrderReminders,300);return;}
         // Then, persistent reminder: 'yes' but still empty
         setTimeout(showPersistentReminders,300);
@@ -8346,7 +8347,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=212;
+var APP_VERSION=213;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
