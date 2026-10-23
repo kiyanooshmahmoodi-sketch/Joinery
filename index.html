@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v207 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v208 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1426,6 +1426,9 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     <div class="card-sub">The code used to enter as Admin (4–8 digits). Default is 1773.</div>
     <div class="flex gap-8 ai-c"><input id="admin-code-in" type="password" inputmode="numeric" maxlength="8" placeholder="New code" style="flex:1;"/><button class="btn btn-blue btn-sm" onclick="saveAdminCode()">Change</button></div>
     <div id="admin-code-msg" style="font-size:12px;min-height:16px;margin-top:6px;"></div>
+    <div class="card-sub" style="margin-top:10px;">Recovery email — "Forgot code?" on the start screen emails the code here:</div>
+    <div class="flex gap-8 ai-c"><input id="admin-rec-email" type="email" placeholder="admin@example.com" style="flex:1;"/><button class="btn btn-blue btn-sm" onclick="saveAdminEmail()">Save</button></div>
+    <div id="admin-rec-msg" style="font-size:12px;min-height:16px;margin-top:6px;"></div>
   </div>
 <!-- Settings PIN removed -->
 </div>
@@ -6675,7 +6678,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v207 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v208 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8091,6 +8094,7 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings{di
       <div id="role-admin-box" style="display:none;margin-top:12px;">
         <input id="role-code" type="password" inputmode="numeric" maxlength="8" placeholder="Admin code" autocomplete="off" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:18px;letter-spacing:6px;text-align:center;" onkeydown="if(event.key==='Enter')submitAdminCode()">
         <button onclick="submitAdminCode()" style="width:100%;margin-top:8px;padding:11px;border:0;border-radius:10px;background:#1d4ed8;color:#fff;font-weight:800;font-size:14px;cursor:pointer;">Enter</button>
+        <button onclick="forgotAdminCode()" style="width:100%;margin-top:6px;padding:8px;border:0;background:none;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer;">Forgot code? Email it to the admin</button>
       </div>
     </div>
   </div>
@@ -8110,7 +8114,7 @@ function roleInit(){
   document.getElementById('role-ov').style.display='flex';
 }
 function pickRole(r){
-  var nm=document.getElementById('role-name').value.trim(),er=document.getElementById('role-err');er.textContent='';
+  var nm=document.getElementById('role-name').value.trim(),er=document.getElementById('role-err');er.textContent='';er.style.color='#b91c1c';
   if(r==='admin'){
     document.getElementById('role-admin-box').style.display='block';
     setTimeout(function(){document.getElementById('role-code').focus();},50);return;
@@ -8143,7 +8147,7 @@ function applyRole(r,nm){
     var cb=document.getElementById('cloud-btn');cb.parentNode.insertBefore(chip,cb);}
   chip.textContent='👤 '+nm+' · '+ROLE_LABEL[r]+' ⇄';
   var pin=document.getElementById('proj-input');if(pin)pin.readOnly=!(r==='admin'||r==='designer');
-  var acs=document.getElementById('admin-code-card');if(acs)acs.style.display=r==='admin'?'':'none';
+  var re=document.getElementById('admin-rec-email');if(re&&!re.value)re.value=_adminEmail();var acs=document.getElementById('admin-code-card');if(acs)acs.style.display=r==='admin'?'':'none';
   switchView(ROLE_HOME[r]);
 }
 // Guards: block actions and views the current role is not allowed to use
@@ -8162,6 +8166,25 @@ function saveAdminCode(){
   if(!/^\d{4,8}$/.test(v)){m.style.color='#b91c1c';m.textContent='Use 4 to 8 digits';return;}
   try{localStorage.setItem('cbk-admin-code',v);m.style.color='#15803d';m.textContent='✓ Code changed (on this computer/browser)';document.getElementById('admin-code-in').value='';}catch(e){m.textContent='Could not save';}
 }
+function _adminEmail(){try{return localStorage.getItem('cbk-admin-email')||OWNER_EMAIL;}catch(e){return OWNER_EMAIL;}}
+function saveAdminEmail(){
+  var v=document.getElementById('admin-rec-email').value.trim(),m=document.getElementById('admin-rec-msg');
+  if(!v||v.indexOf('@')<1){m.style.color='#b91c1c';m.textContent='Invalid email';return;}
+  try{localStorage.setItem('cbk-admin-email',v);m.style.color='#15803d';m.textContent='✓ Saved: '+v;}catch(e){m.textContent='Could not save';}
+}
+var _forgotAt=0;
+async function forgotAdminCode(){
+  var er=document.getElementById('role-err');
+  if(Date.now()-_forgotAt<60000){er.style.color='#b45309';er.textContent='Already sent — wait a minute and check your email.';return;}
+  _forgotAt=Date.now();er.style.color='#64748b';er.textContent='Sending…';
+  try{
+    var res=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({access_key:W3F_KEY,subject:'🔐 Cabinet Designer — Admin code reminder',from_name:'Cabinet Designer',email:_adminEmail(),
+        message:'Admin code for Cabinet Designer: '+_adminCode()+'\n\nRequested on '+new Date().toLocaleString()+'.\nIf you did not ask for this, ignore it.'})});
+    var d=await res.json();
+    if(d.success){er.style.color='#15803d';er.textContent='✓ Sent — check the admin email inbox.';}else throw new Error(d.message);
+  }catch(e){er.style.color='#b91c1c';er.textContent='Could not send the email. Check the internet connection.';}
+}
 roleInit();
 </script>
 
@@ -8171,7 +8194,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=207;
+var APP_VERSION=208;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
