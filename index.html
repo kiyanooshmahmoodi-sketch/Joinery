@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">JOINERY PROJECT MANAGER</div>
-      <div class="brand-sub" id="brand-sub">v206 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v207 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1420,6 +1420,12 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
       <button class="btn btn-outline btn-sm" onclick="sendThisWeekCode()" style="border-color:var(--purple);color:var(--purple);">🔐 Send This Week's Code</button>
     </div>
     <div id="ejs-status" style="margin-top:8px;font-size:12px;"></div>
+  </div>
+<div class="card" id="admin-code-card" style="border-top:3px solid var(--purple);">
+    <div class="card-title">🔐 Admin code</div>
+    <div class="card-sub">The code used to enter as Admin (4–8 digits). Default is 1773.</div>
+    <div class="flex gap-8 ai-c"><input id="admin-code-in" type="password" inputmode="numeric" maxlength="8" placeholder="New code" style="flex:1;"/><button class="btn btn-blue btn-sm" onclick="saveAdminCode()">Change</button></div>
+    <div id="admin-code-msg" style="font-size:12px;min-height:16px;margin-top:6px;"></div>
   </div>
 <!-- Settings PIN removed -->
 </div>
@@ -2602,7 +2608,7 @@ function openQcModal(unitId){
       log.map(function(e){
         var ok=e.status==='approved';
         return'<div style="padding:8px 10px;border-bottom:1px solid var(--border-soft);font-size:11px;">'+
-          '<div style="display:flex;justify-content:space-between;"><span style="font-weight:700;color:'+(ok?'#16a34a':'#dc2626')+';">'+(ok?'✅ Approved':'❌ Rejected')+'</span><span style="color:#94a3b8;">'+e.date+'</span></div>'+
+          '<div style="display:flex;justify-content:space-between;"><span style="font-weight:700;color:'+(ok?'#16a34a':'#dc2626')+';">'+(ok?'✅ Approved':'❌ Rejected')+'</span><span style="color:#94a3b8;">'+e.date+(e.by?' · 👤 '+String(e.by).replace(/</g,'&lt;'):'')+'</span></div>'+
           (e.reason?'<div style="color:var(--gray);margin-top:2px;">'+e.reason.replace(/</g,'&lt;')+'</div>':'')+
         '</div>';
       }).join('')+
@@ -2625,7 +2631,7 @@ function qcApprove(){
   var u=units.find(function(x){return x.id===_qcCurrentUnitId;});if(!u)return;
   u.qcStatus='approved';u.qcReason='';
   if(!Array.isArray(u.qcLog))u.qcLog=[];
-  u.qcLog.push({status:'approved',reason:'',date:new Date().toLocaleString()});
+  u.qcLog.push({status:'approved',reason:'',date:new Date().toLocaleString(),by:(window.SESSION?SESSION.name:'')});
   closeQcModal();refresh();renderQcStats();renderQcRoomGrid();renderQcLog();
 }
 function qcSubmitReject(){
@@ -2634,7 +2640,7 @@ function qcSubmitReject(){
   var u=units.find(function(x){return x.id===_qcCurrentUnitId;});if(!u)return;
   u.qcStatus='rejected';u.qcReason=reason;
   if(!Array.isArray(u.qcLog))u.qcLog=[];
-  u.qcLog.push({status:'rejected',reason:reason,date:new Date().toLocaleString()});
+  u.qcLog.push({status:'rejected',reason:reason,date:new Date().toLocaleString(),by:(window.SESSION?SESSION.name:'')});
   closeQcModal();refresh();renderQcStats();renderQcRoomGrid();renderQcLog();
 }
 
@@ -2694,7 +2700,7 @@ function renderQcLog(){
   var log=document.getElementById('qc-log');if(!log)return;
   var entries=[];
   units.forEach(function(u){
-    (u.qcLog||[]).forEach(function(e){entries.push({id:u.id,status:e.status,reason:e.reason,date:e.date});});
+    (u.qcLog||[]).forEach(function(e){entries.push({id:u.id,status:e.status,reason:e.reason,date:e.date,by:e.by});});
   });
   entries.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   if(!entries.length){log.innerHTML='<div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">No checks yet</div>';return;}
@@ -2704,7 +2710,7 @@ function renderQcLog(){
       '<div style="display:flex;justify-content:space-between;"><b style="font-family:\'JetBrains Mono\',monospace;">'+e.id+'</b>'+
       '<span style="font-size:11px;font-weight:700;color:'+(ok?'#16a34a':'#dc2626')+';">'+(ok?'✅ Approved':'❌ Rejected')+'</span></div>'+
       (e.reason?'<div style="font-size:11px;color:var(--gray);margin-top:2px;">'+e.reason.replace(/</g,'&lt;')+'</div>':'')+
-      '<div style="font-size:10px;color:#94a3b8;margin-top:2px;">'+e.date+'</div>'+
+      '<div style="font-size:10px;color:#94a3b8;margin-top:2px;">'+e.date+(e.by?' · 👤 '+String(e.by).replace(/</g,'&lt;'):'')+'</div>'+
     '</div>';
   }).join('');
 }
@@ -2737,7 +2743,7 @@ function doInstallScan(raw){
   }
   u.installed=true;u.installedDate=new Date().toLocaleString();
   if(!Array.isArray(u.installLog))u.installLog=[];
-  u.installLog.push({date:u.installedDate,qcStatusAtInstall:u.qcStatus,qcReasonAtInstall:u.qcReason});
+  u.installLog.push({date:u.installedDate,qcStatusAtInstall:u.qcStatus,qcReasonAtInstall:u.qcReason,by:(window.SESSION?SESSION.name:'')});u.installedBy=(window.SESSION?SESSION.name:'');
   if(el){
     var pastRejections=(u.qcLog||[]).filter(function(e){return e.status==='rejected';});
     if(u.qcStatus!=='approved'){
@@ -2812,7 +2818,7 @@ function renderInstallLog(){
   var log=document.getElementById('inst-log');if(!log)return;
   var entries=[];
   units.forEach(function(u){
-    (u.installLog||[]).forEach(function(e){entries.push({id:u.id,date:e.date,qc:e.qcStatusAtInstall,reason:e.qcReasonAtInstall});});
+    (u.installLog||[]).forEach(function(e){entries.push({id:u.id,date:e.date,qc:e.qcStatusAtInstall,reason:e.qcReasonAtInstall,by:e.by});});
   });
   entries.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   if(!entries.length){log.innerHTML='<div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">No installs yet</div>';return;}
@@ -2822,7 +2828,7 @@ function renderInstallLog(){
       '<div style="display:flex;justify-content:space-between;"><b style="font-family:\'JetBrains Mono\',monospace;">'+e.id+'</b>'+
       '<span style="font-size:11px;font-weight:700;color:'+(warn?'#dc2626':'#16a34a')+';">'+(warn?'⚠️ Installed (QC issue)':'✅ Installed')+'</span></div>'+
       (warn&&e.reason?'<div style="font-size:11px;color:var(--gray);margin-top:2px;">QC reason: '+e.reason.replace(/</g,'&lt;')+'</div>':'')+
-      '<div style="font-size:10px;color:#94a3b8;margin-top:2px;">'+e.date+'</div>'+
+      '<div style="font-size:10px;color:#94a3b8;margin-top:2px;">'+e.date+(e.by?' · 👤 '+String(e.by).replace(/</g,'&lt;'):'')+'</div>'+
     '</div>';
   }).join('');
 }
@@ -2854,7 +2860,7 @@ function doDispatchScan(raw){
   u.dispatched=true;u.dispatchedDate=new Date().toLocaleString();u.status='shipped';
   if(!u.shippedAt)u.shippedAt=u.dispatchedDate;
   if(!Array.isArray(u.dispatchLog))u.dispatchLog=[];
-  u.dispatchLog.push({date:u.dispatchedDate,qcStatus:u.qcStatus,qcReason:u.qcReason});
+  u.dispatchLog.push({date:u.dispatchedDate,qcStatus:u.qcStatus,qcReason:u.qcReason,by:(window.SESSION?SESSION.name:'')});u.dispatchedBy=(window.SESSION?SESSION.name:'');
   if(el){
     var past=(u.qcLog||[]).filter(function(e){return e.status==='rejected';});
     if(u.type==='cabinet'&&u.qcStatus!=='approved'){
@@ -2900,14 +2906,14 @@ function renderDispatchPendingList(){
 function renderDispatchLog(){
   var log=document.getElementById('disp-log');if(!log)return;
   var entries=[];
-  units.forEach(function(u){(u.dispatchLog||[]).forEach(function(e){entries.push({id:u.id,date:e.date,qc:e.qcStatus,reason:e.qcReason,cab:u.type==='cabinet'});});});
+  units.forEach(function(u){(u.dispatchLog||[]).forEach(function(e){entries.push({id:u.id,date:e.date,qc:e.qcStatus,reason:e.qcReason,cab:u.type==='cabinet',by:e.by});});});
   entries.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   if(!entries.length){log.innerHTML='<div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">No dispatches yet</div>';return;}
   log.innerHTML=entries.slice(0,80).map(function(e){
     var warn=e.cab&&e.qc!=='approved';
     return'<div style="padding:9px 12px;border-bottom:1px solid var(--border-soft);"><div style="display:flex;justify-content:space-between;"><b style="font-family:\'JetBrains Mono\',monospace;">'+e.id+'</b><span style="font-size:11px;font-weight:700;color:'+(warn?'#dc2626':'#16a34a')+';">'+(warn?'⚠️ Dispatched (QC issue)':'📦 Dispatched')+'</span></div>'+
       (warn&&e.reason?'<div style="font-size:11px;color:var(--gray);margin-top:2px;">QC reason: '+e.reason.replace(/</g,'&lt;')+'</div>':'')+
-      '<div style="font-size:10px;color:#94a3b8;margin-top:2px;">'+e.date+'</div></div>';
+      '<div style="font-size:10px;color:#94a3b8;margin-top:2px;">'+e.date+(e.by?' · 👤 '+String(e.by).replace(/</g,'&lt;'):'')+'</div></div>';
   }).join('');
 }
 function clearDispatchLog(){units.forEach(function(u){u.dispatchLog=[];});saveData();renderDispatchLog();}
@@ -6669,7 +6675,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'JOINERY PROJECT MANAGER'};
-var BRAND_SUBS={tracker:'v206 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v207 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8058,13 +8064,114 @@ window.addEventListener('load',function(){setTimeout(cloudInit,300);});
 </script>
 
 
+<style>
+body.role-limited button[onclick="newJob()"],body.role-limited #del-btn,body.role-limited button[onclick="saveProject()"],body.role-limited button[onclick="saveProjectAs()"],body.role-limited button[onclick="openProject()"]{display:none!important;}
+body.no-qc-edit #qc-modal-actions{display:none!important;}
+body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings{display:none!important;}
+#role-ov .rbtn{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:14px 16px;margin-bottom:10px;border:1.5px solid #cbd5e1;border-radius:12px;background:#fff;font-size:15px;font-weight:800;color:#0f172a;cursor:pointer;text-align:left;}
+#role-ov .rbtn:hover{border-color:#1d4ed8;background:#eff6ff;}
+#role-ov .rbtn small{display:block;font-weight:600;font-size:11px;color:#64748b;margin-top:2px;}
+</style>
+<div id="role-ov" style="position:fixed;inset:0;background:#f1f5f9;z-index:100000;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;">
+  <div style="width:min(420px,100%);margin-top:4vh;">
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-size:22px;font-weight:900;color:#0f172a;letter-spacing:.5px;">CABINET DESIGNER</div>
+      <div id="role-ver" style="font-size:11px;color:#64748b;letter-spacing:1.5px;margin-top:3px;"></div>
+    </div>
+    <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.1);">
+      <div style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;">Your name</div>
+      <input id="role-name" placeholder="e.g. Mark" autocomplete="off" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;color:#334155;margin-bottom:8px;">Enter as</div>
+      <div id="role-err" style="color:#b91c1c;font-size:12px;min-height:16px;margin-bottom:4px;"></div>
+      <button class="rbtn" onclick="pickRole('designer')"><span style="font-size:22px">📋</span><span>Designer<small>Import, cabinet list, orders, prints</small></span></button>
+      <button class="rbtn" onclick="pickRole('qc')"><span style="font-size:22px">✅</span><span>QC Checker<small>Quality check</small></span></button>
+      <button class="rbtn" onclick="pickRole('dispatch')"><span style="font-size:22px">📦</span><span>Dispatch / Shipping<small>Scan to send to site · see QC</small></span></button>
+      <button class="rbtn" onclick="pickRole('installer')"><span style="font-size:22px">🚚</span><span>Installer<small>Installation · see QC</small></span></button>
+      <button class="rbtn" onclick="pickRole('admin')" style="margin-bottom:0;"><span style="font-size:22px">🔐</span><span>Admin<small>Everything · needs the 4-digit code</small></span></button>
+      <div id="role-admin-box" style="display:none;margin-top:12px;">
+        <input id="role-code" type="password" inputmode="numeric" maxlength="8" placeholder="Admin code" autocomplete="off" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:18px;letter-spacing:6px;text-align:center;" onkeydown="if(event.key==='Enter')submitAdminCode()">
+        <button onclick="submitAdminCode()" style="width:100%;margin-top:8px;padding:11px;border:0;border-radius:10px;background:#1d4ed8;color:#fff;font-weight:800;font-size:14px;cursor:pointer;">Enter</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// ROLES (v207): choose who you are when the app opens. Each role only sees its own sections.
+var ROLE_VIEWS={admin:['cabinetlist','tracker','dispatch','installation'],designer:['cabinetlist'],qc:['tracker'],dispatch:['dispatch','tracker'],installer:['installation','tracker']};
+var ROLE_HOME={admin:'cabinetlist',designer:'cabinetlist',qc:'tracker',dispatch:'dispatch',installer:'installation'};
+var ROLE_LABEL={admin:'Admin',designer:'Designer',qc:'QC Checker',dispatch:'Dispatch / Shipping',installer:'Installer'};
+var SESSION={role:'',name:''};
+function _adminCode(){try{return localStorage.getItem('cbk-admin-code')||'1773';}catch(e){return '1773';}}
+function _who(){return SESSION.name||'';}
+function roleInit(){
+  var v=document.getElementById('brand-sub');var rv=document.getElementById('role-ver');
+  if(rv&&v)rv.textContent=v.textContent.toUpperCase();
+  try{document.getElementById('role-name').value=localStorage.getItem('cbk-user-name')||'';}catch(e){}
+  document.getElementById('role-ov').style.display='flex';
+}
+function pickRole(r){
+  var nm=document.getElementById('role-name').value.trim(),er=document.getElementById('role-err');er.textContent='';
+  if(r==='admin'){
+    document.getElementById('role-admin-box').style.display='block';
+    setTimeout(function(){document.getElementById('role-code').focus();},50);return;
+  }
+  if(!nm){er.textContent='Please type your name first — it is saved with every scan you make.';document.getElementById('role-name').focus();return;}
+  applyRole(r,nm);
+}
+function submitAdminCode(){
+  var c=document.getElementById('role-code').value,er=document.getElementById('role-err');
+  if(c!==_adminCode()){er.textContent='Wrong code';document.getElementById('role-code').value='';return;}
+  var nm=document.getElementById('role-name').value.trim()||'Admin';
+  applyRole('admin',nm);
+}
+function applyRole(r,nm){
+  SESSION.role=r;SESSION.name=nm;
+  try{localStorage.setItem('cbk-user-name',nm);}catch(e){}
+  document.getElementById('role-ov').style.display='none';
+  document.getElementById('role-code').value='';document.getElementById('role-admin-box').style.display='none';
+  var b=document.body;
+  b.classList.toggle('role-limited',r!=='admin'&&r!=='designer');
+  b.classList.toggle('no-qc-edit',r!=='admin'&&r!=='qc');
+  b.classList.toggle('no-settings',r!=='admin');
+  var allowed=ROLE_VIEWS[r];
+  ['cabinetlist','tracker','dispatch','installation'].forEach(function(v){
+    var el=document.getElementById('vb-'+v);if(el)el.style.display=allowed.indexOf(v)>-1?'':'none';
+  });
+  var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=(r==='admin'||r==='qc')?'':'none';
+  var chip=document.getElementById('user-chip');
+  if(!chip){chip=document.createElement('button');chip.id='user-chip';chip.className='tbtn';chip.onclick=function(){roleInit();};chip.style.fontWeight='700';
+    var cb=document.getElementById('cloud-btn');cb.parentNode.insertBefore(chip,cb);}
+  chip.textContent='👤 '+nm+' · '+ROLE_LABEL[r]+' ⇄';
+  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=!(r==='admin'||r==='designer');
+  var acs=document.getElementById('admin-code-card');if(acs)acs.style.display=r==='admin'?'':'none';
+  switchView(ROLE_HOME[r]);
+}
+// Guards: block actions and views the current role is not allowed to use
+(function(){
+  var _sv=switchView;switchView=function(v){
+    if(SESSION.role&&ROLE_VIEWS[SESSION.role].indexOf(v)<0)v=ROLE_HOME[SESSION.role];
+    return _sv(v);};
+  var _q=doQcScan;doQcScan=function(x){if(SESSION.role!=='admin'&&SESSION.role!=='qc')return;return _q(x);};
+  var _i=doInstallScan;doInstallScan=function(x){if(SESSION.role!=='admin'&&SESSION.role!=='installer')return;return _i(x);};
+  var _d=doDispatchScan;doDispatchScan=function(x){if(SESSION.role!=='admin'&&SESSION.role!=='dispatch')return;return _d(x);};
+  var _qa=qcApprove;qcApprove=function(){if(SESSION.role!=='admin'&&SESSION.role!=='qc')return;return _qa();};
+  var _qr=qcSubmitReject;qcSubmitReject=function(){if(SESSION.role!=='admin'&&SESSION.role!=='qc')return;return _qr();};
+})();
+function saveAdminCode(){
+  var v=document.getElementById('admin-code-in').value.trim(),m=document.getElementById('admin-code-msg');
+  if(!/^\d{4,8}$/.test(v)){m.style.color='#b91c1c';m.textContent='Use 4 to 8 digits';return;}
+  try{localStorage.setItem('cbk-admin-code',v);m.style.color='#15803d';m.textContent='✓ Code changed (on this computer/browser)';document.getElementById('admin-code-in').value='';}catch(e){m.textContent='Could not save';}
+}
+roleInit();
+</script>
+
 <div id="upd-bar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99998;background:#1d4ed8;color:#fff;padding:9px 14px;font-size:13px;font-weight:700;text-align:center;">
   🔄 New version <span id="upd-ver"></span> is ready —
   <button onclick="applyUpdate()" style="margin-left:8px;padding:4px 12px;border:0;border-radius:6px;background:#fff;color:#1d4ed8;font-weight:800;cursor:pointer;">Update now</button>
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=206;
+var APP_VERSION=207;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
