@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v258 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v259 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1418,6 +1418,14 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
       <button class="btn btn-ghost btn-sm" onclick="if(confirm('Clear the installation log? This does not un-install any cabinet.'))clearInstallLog();">Clear</button>
     </div>
     <div id="inst-log"><div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">No installs yet</div></div>
+  </div>
+  <div id="inst-drawings" class="card" style="margin-top:6px;border-top:3px solid #bae6fd;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+      <div><div style="font-size:18px;font-weight:800;">📐 Production Drawings</div><div style="font-size:12px;color:#64748b;">PDF plans for this project — installers can open them on site, even without internet.</div></div>
+      <label id="dr-up" class="btn btn-sm" style="cursor:pointer;background:#0284c7;color:#fff;border:0;display:none;">⬆ Upload PDF<input type="file" accept="application/pdf,.pdf" multiple style="display:none" onchange="drUpload(this)"></label>
+    </div>
+    <div id="dr-pending" style="font-size:11px;color:#94a3b8;"></div>
+    <div id="dr-list"></div>
   </div>
   <div id="inst-issues" style="margin-top:6px;border-top:3px solid #fecaca;padding-top:14px;">
   <div class="flex ai-c jb" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;">
@@ -6236,7 +6244,7 @@ async function siStorePhoto(data){
 async function siGetPhoto(id){
   if(_siCache[id])return _siCache[id];
   try{var r=await window.storage.get('cbkph:'+id);if(r&&r.value){_siCache[id]=r.value;return r.value;}}catch(e){}
-  try{if(window.cloud&&cloud.db){var d=await cloud.db.collection('photos').doc(id).get();if(d.exists){var v=d.data().d;_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}}}catch(e){}
+  try{if(window.cloud&&cloud.db){var d=await cloud.db.collection('photos').doc(id).get();if(d.exists){var dd=d.data(),v=dd.d;if(dd.n){var parts=await Promise.all(Array.from({length:dd.n},function(_,i){return cloud.db.collection('photos').doc(id+'~'+i).get();}));if(parts.some(function(x){return !x.exists;}))return '';v=parts.map(function(x){return x.data().d;}).join('');try{await window.storage.set('cbkph:'+id,v);}catch(e){}return v;}_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}}}catch(e){}
   return '';}
 async function siPickPhotos(inp){
   var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';
@@ -6265,7 +6273,7 @@ function siAdd(){
   siRenderNewThumbs();siToggleForm(false);siSave();renderSiteIssues();}
 function siSave(){try{saveData();}catch(e){}}
 function siToggle(id){var j=siJob();if(!j)return;(j.siteIssues||[]).forEach(function(x){if(x.id===id){x.status=x.status==='fixed'?'open':'fixed';x.fixedBy=x.status==='fixed'?((window.SESSION&&SESSION.name)||''):'';x.fixedDate=x.status==='fixed'?new Date().toLocaleString('en-AU'):'';}});siSave();renderSiteIssues();}
-function siDelete(id){var j=siJob();if(!j||!confirm('Delete this issue?'))return;j.siteIssues=(j.siteIssues||[]).filter(function(x){return x.id!==id;});siSave();renderSiteIssues();}
+function siDelete(id){var j=siJob();if(!j||!confirm('Delete this issue?'))return;tomb(id);j.siteIssues=(j.siteIssues||[]).filter(function(x){return x.id!==id;});siSave();renderSiteIssues();}
 function siRemovePhoto(id,pid){var j=siJob();if(!j||!confirm('Remove this photo?'))return;(j.siteIssues||[]).forEach(function(x){if(x.id===id)x.photos=(x.photos||[]).filter(function(p){return p!==pid;});});siSave();renderSiteIssues();}
 async function siAddPhotosTo(id,inp,mark){
   var j=siJob();if(!j)return;var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';
@@ -6332,7 +6340,7 @@ function iiAdd(){
   _iiNew=[];_iiNewV=[];vnRenderNew('ii');['ii-title','ii-place','ii-desc'].forEach(function(i){document.getElementById(i).value='';});
   iiRenderNewThumbs();iiToggleForm(false);siSave();renderInstIssues();}
 function iiToggle(id){var j=siJob();if(!j)return;(j.installIssues||[]).forEach(function(x){if(x.id===id){x.status=x.status==='fixed'?'open':'fixed';x.fixedBy=x.status==='fixed'?((window.SESSION&&SESSION.name)||''):'';x.fixedDate=x.status==='fixed'?new Date().toLocaleString('en-AU'):'';}});siSave();renderInstIssues();}
-function iiDelete(id){var j=siJob();if(!j||!confirm('Delete this issue?'))return;j.installIssues=(j.installIssues||[]).filter(function(x){return x.id!==id;});siSave();renderInstIssues();}
+function iiDelete(id){var j=siJob();if(!j||!confirm('Delete this issue?'))return;tomb(id);j.installIssues=(j.installIssues||[]).filter(function(x){return x.id!==id;});siSave();renderInstIssues();}
 function iiRemovePhoto(id,pid){var j=siJob();if(!j||!confirm('Remove this photo?'))return;(j.installIssues||[]).forEach(function(x){if(x.id===id)x.photos=(x.photos||[]).filter(function(p){return p!==pid;});});siSave();renderInstIssues();}
 async function iiAddPhotosTo(id,inp,mark){
   var j=siJob();if(!j)return;var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';
@@ -6425,7 +6433,7 @@ function renderSketches(){
     '<div style="font-weight:700;font-size:13px;margin-top:4px;">'+esc(x.name)+'</div><div style="font-size:11px;color:#94a3b8;">'+esc(x.date||'')+(x.by?' · '+esc(x.by):'')+'</div>'+
     vnSketchList(x)+'<div style="display:flex;gap:6px;margin-top:6px;"><button class="btn btn-outline btn-sm" onclick="skOpen(\''+x.id+'\')">✏️ Edit</button><button class="btn btn-outline btn-sm" style="color:#dc2626;" onclick="skDelete(\''+x.id+'\')">🗑</button></div></div>';}).join('');
   siHydrate(g);vnHydrate(g);}
-function skDelete(id){var j=siJob();if(!j||!confirm('Delete this sketch?'))return;j.sketches=(j.sketches||[]).filter(function(x){return x.id!==id;});siSave();renderSketches();}
+function skDelete(id){var j=siJob();if(!j||!confirm('Delete this sketch?'))return;tomb(id);j.sketches=(j.sketches||[]).filter(function(x){return x.id!==id;});siSave();renderSketches();}
 function skBG(){var c=document.getElementById('sk-canvas'),x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
   if(_sk.bg==='grid'){x.strokeStyle='#e2e8f0';x.lineWidth=1;x.beginPath();for(var i=0;i<=c.width;i+=40){x.moveTo(i,0);x.lineTo(i,c.height);}for(var k=0;k<=c.height;k+=40){x.moveTo(0,k);x.lineTo(c.width,k);}x.stroke();}}
 function skSnap(){var c=document.getElementById('sk-canvas');_sk.undo.push(c.getContext('2d').getImageData(0,0,c.width,c.height));if(_sk.undo.length>25)_sk.undo.shift();}
@@ -6541,7 +6549,7 @@ function ndBack(){
   if(n&&!n.title.trim()&&!(n.html||'').replace(/<[^>]*>/g,'').trim()){var j=siJob();j.notesList=l.filter(function(x){return x!==n;});}
   else if(n&&!n.title.trim()){alert('Please give this note a title.');return;}
   document.getElementById('nd-textwrap').dataset.open='';_ndCur=null;siSave();ndMode('doc');}
-function ndDelete(){var j=siJob();if(!j||!confirm('Delete this note?'))return;j.notesList=ndList().filter(function(x){return x.id!==_ndCur;});
+function ndDelete(){var j=siJob();if(!j||!confirm('Delete this note?'))return;tomb(_ndCur);j.notesList=ndList().filter(function(x){return x.id!==_ndCur;});
   document.getElementById('nd-textwrap').dataset.open='';_ndCur=null;siSave();ndMode('doc');}
 function renderNotesDoc(){
   if(_skMode==='sk'){if(typeof renderSketches==='function')renderSketches();return;}
@@ -7145,6 +7153,7 @@ function saveCurrentJob(){
     docHTML:(typeof existing.docHTML==='string')?existing.docHTML:'',
     siteIssues:Array.isArray(existing.siteIssues)?existing.siteIssues:[],
     installIssues:Array.isArray(existing.installIssues)?existing.installIssues:[],
+    drawings:Array.isArray(existing.drawings)?existing.drawings:[],deleted:Array.isArray(existing.deleted)?existing.deleted:[],
     finishes:(existing.finishes&&typeof existing.finishes==='object')?existing.finishes:{site:'',v:{}},
     sketches:Array.isArray(existing.sketches)?existing.sketches:[],
     notesList:Array.isArray(existing.notesList)?existing.notesList:[],
@@ -7323,7 +7332,7 @@ function _normJob(id,j){
     dispatches:Array.isArray(j.dispatches)?j.dispatches:[],hangingRails:Array.isArray(j.hangingRails)?j.hangingRails:[],
     glassDoors:Array.isArray(j.glassDoors)?j.glassDoors:[],steccaItems:Array.isArray(j.steccaItems)?j.steccaItems:[],
     orderReminders:j.orderReminders||defR,matAliases:j.matAliases||{},matPrintOrder:j.matPrintOrder||{},hwAliases:j.hwAliases||{},
-    notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',docHTML:(typeof j.docHTML==='string')?j.docHTML:'',siteIssues:Array.isArray(j.siteIssues)?j.siteIssues:[],installIssues:Array.isArray(j.installIssues)?j.installIssues:[],finishes:(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}},sketches:Array.isArray(j.sketches)?j.sketches:[],notesList:Array.isArray(j.notesList)?j.notesList:[],
+    notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',docHTML:(typeof j.docHTML==='string')?j.docHTML:'',siteIssues:Array.isArray(j.siteIssues)?j.siteIssues:[],installIssues:Array.isArray(j.installIssues)?j.installIssues:[],drawings:Array.isArray(j.drawings)?j.drawings:[],deleted:Array.isArray(j.deleted)?j.deleted:[],finishes:(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}},sketches:Array.isArray(j.sketches)?j.sketches:[],notesList:Array.isArray(j.notesList)?j.notesList:[],
     kickboards:normKick(j.kickboards),completed:j.completed||false,
     category:j.category||'production',prevCategory:j.prevCategory||'production',
     priority:(typeof j.priority==='number')?j.priority:Date.now()};
@@ -7664,7 +7673,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v258 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v259 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9046,6 +9055,58 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
+// ===== v259: PRODUCTION DRAWINGS (PDF) in Installation =====
+function tomb(id){var j=siJob();if(!j)return;j.deleted=j.deleted||[];if(j.deleted.indexOf(id)<0)j.deleted.push(id);}
+function drMB(n){return (n/1048576).toFixed(1)+' MB';}
+async function drUpload(inp){
+  var j=siJob();var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';if(!j){alert('Open a project first.');return;}
+  var pe=document.getElementById('dr-pending');
+  for(var i=0;i<fs.length;i++){var f=fs[i];
+    if(!/pdf$/i.test(f.type)&&!/\.pdf$/i.test(f.name)){alert(f.name+' is not a PDF.');continue;}
+    if(f.size>15*1048576){alert(f.name+' is '+drMB(f.size)+' — too big (max 15 MB). Please compress the PDF first.');continue;}
+    if(pe)pe.textContent='Saving '+f.name+'…';
+    try{
+      var d=await new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.onerror=function(){rej(new Error('read'));};fr.readAsDataURL(f);});
+      var id='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+      await window.storage.set('cbkph:'+id,d);
+      j.drawings=j.drawings||[];
+      j.drawings.unshift({id:id,name:f.name.replace(/\.pdf$/i,''),size:f.size,date:new Date().toLocaleString('en-AU'),by:(window.SESSION&&SESSION.name)||''});
+      siSave();upEnqueue(id,currentJobId||'');
+    }catch(e){alert('Could not save '+f.name+' on this device.');}
+  }
+  if(pe)pe.textContent='';renderDrawings();}
+function drDelete(id){var j=siJob();if(!j||!confirm('Delete this drawing for everyone?'))return;
+  j.drawings=(j.drawings||[]).filter(function(x){return x.id!==id;});tomb(id);siSave();
+  try{window.storage.delete&&window.storage.delete('cbkph:'+id);}catch(e){}
+  try{if(window.cloud&&cloud.db)cloud.db.collection('photos').doc(id).delete().catch(function(){});}catch(e){}
+  renderDrawings();}
+async function drOpen(id,name){
+  var d=await siGetPhoto(id);
+  if(!d){alert('This drawing is not on this device yet and there is no internet to download it.');return;}
+  var blob=await (await fetch(d)).blob();var url=URL.createObjectURL(blob);
+  var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:#0f172a;z-index:100000;display:flex;flex-direction:column;';
+  o.innerHTML='<div style="display:flex;gap:8px;align-items:center;padding:8px 12px;background:#1e293b;color:#fff;flex-wrap:wrap;"><b style="flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📄 '+esc(name||'Drawing')+'</b>'+
+   '<a href="'+url+'" target="_blank" style="color:#fff;background:#0284c7;padding:6px 12px;border-radius:8px;font-weight:700;text-decoration:none;">Open full screen ↗</a>'+
+   '<button style="background:#dc2626;color:#fff;border:0;padding:6px 14px;border-radius:8px;font-weight:700;" id="dr-x">✕ Close</button></div>'+
+   '<iframe src="'+url+'" style="flex:1;border:0;background:#fff;"></iframe>';
+  document.body.appendChild(o);document.getElementById('dr-x').onclick=function(){o.remove();setTimeout(function(){URL.revokeObjectURL(url);},2000);};}
+var _drBusy=false;
+async function renderDrawings(){
+  var box=document.getElementById('dr-list');if(!box)return;var j=siJob();
+  var adm=window.SESSION&&SESSION.role==='admin';var up=document.getElementById('dr-up');if(up)up.style.display=adm?'':'none';
+  var list=j?(j.drawings||[]):[];
+  if(!list.length){box.innerHTML='<div style="color:#94a3b8;font-size:13px;padding:8px 0;">'+(j?'No production drawings uploaded yet.':'Open a project first.')+'</div>';return;}
+  var loc={};for(var i=0;i<list.length;i++){try{var r=await window.storage.get('cbkph:'+list[i].id);loc[list[i].id]=!!(r&&r.value);}catch(e){}}
+  box.innerHTML=list.map(function(x){var has=loc[x.id];
+    return '<div class="card" style="margin:6px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-left:4px solid #0284c7;">'+
+     '<div style="flex:1;min-width:150px;"><div style="font-weight:800;">📄 '+esc(x.name)+'</div><div style="font-size:11px;color:#94a3b8;">'+drMB(x.size||0)+' · '+esc(x.date||'')+(x.by?' · '+esc(x.by):'')+'</div>'+
+     '<div style="font-size:11px;font-weight:700;color:'+(has?'#15803d':'#b45309')+';">'+(has?'✓ Saved on this device — works offline':'☁ Not on this device yet — downloading when online…')+'</div></div>'+
+     '<button class="btn btn-sm" style="background:#0284c7;color:#fff;border:0;" onclick="drOpen(\''+x.id+'\',\''+qe(x.name)+'\')">Open</button>'+
+     (adm?'<button class="btn btn-outline btn-sm" style="color:#dc2626;" onclick="drDelete(\''+x.id+'\')">🗑</button>':'')+'</div>';}).join('');
+  // download missing drawings in the background so they are available on site without internet
+  if(!_drBusy&&navigator.onLine){_drBusy=true;try{var got=false;for(var k=0;k<list.length;k++){if(!loc[list[k].id]){var d=await siGetPhoto(list[k].id);if(d)got=true;}}if(got){_drBusy=false;renderDrawings();return;}}catch(e){}_drBusy=false;}}
+var _ris=renderInstallStats;renderInstallStats=function(){_ris.apply(this,arguments);try{renderDrawings();}catch(e){}};
+
 // ===== v253: SAFE UPLOAD QUEUE — photos & voice are kept on this device and uploaded automatically whenever there is internet =====
 var _upDone={};
 function upNotify(){var k=Object.keys(_upDone);if(!k.length)return;var box=document.getElementById('up-toast');if(!box){box=document.createElement('div');box.id='up-toast';box.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:99999;max-width:92vw;display:flex;flex-direction:column;gap:6px;pointer-events:none;';document.body.appendChild(box);}
@@ -9063,6 +9124,11 @@ async function upEnqueue(id,job){await upLoad();if(!_upQ.some(function(q){return
 function upIds(job){var out={};try{var s=JSON.stringify(job);var re=/\\?"(p[a-z0-9]{13})\\?"/g,m;while((m=re.exec(s)))out[m[1]]=1;}catch(e){}return Object.keys(out);}
 async function upScan(){await upLoad();var have={};_upQ.forEach(function(q){have[q.id]=1;});
   Object.keys(allJobs||{}).forEach(function(jid){upIds(allJobs[jid]).forEach(function(id){if(!_upOK[id]&&!have[id]&&!_upFail[id]){have[id]=1;_upQ.push({id:id,job:jid});}});});}
+async function upPut(id,d,job){var T=800000,col=cloud.db.collection('photos');
+  if(d.length<=T){await col.doc(id).set({d:d,job:job,at:firebase.firestore.FieldValue.serverTimestamp()});return;}
+  var n=Math.ceil(d.length/T);
+  for(var i=0;i<n;i++)await col.doc(id+'~'+i).set({d:d.slice(i*T,(i+1)*T),job:job});
+  await col.doc(id).set({d:'',n:n,job:job,at:firebase.firestore.FieldValue.serverTimestamp()});}
 async function upKick(){
   await upLoad();if(Date.now()-_upScanT>30000){_upScanT=Date.now();await upScan();}
   if(_upBusy)return;
@@ -9075,7 +9141,7 @@ async function upKick(){
       if(!d){try{var r=await window.storage.get('cbkph:'+id);d=r&&r.value;}catch(e){}}
       if(!d){_upOK[id]=1;_upQ.shift();upSave();continue;}      // not stored on this device (already online elsewhere)
       try{
-        await Promise.race([cloud.db.collection('photos').doc(id).set({d:d,job:q.job||'',at:firebase.firestore.FieldValue.serverTimestamp()}),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},25000);})]);
+        await Promise.race([upPut(id,d,q.job||''),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},d.length>800000?180000:25000);})]);
         _upOK[id]=1;_upQ.shift();upSave();upStat();
         var jb=allJobs[q.job]||{},jn=jb.name||jb.projectName||jb.project||jb.title||'Project';var dd=_upDone[jn]=_upDone[jn]||{p:0,v:0};if(/^data:audio/.test(d))dd.v++;else dd.p++;
       }catch(e){
@@ -9096,10 +9162,11 @@ setInterval(function(){upKick();try{cloudFlush();}catch(e){}},45000);
 setTimeout(function(){upLoad().then(function(){upStat();upKick();});},4000);
 // ----- projects: never lose changes made offline -----
 function _hs(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return h+':'+s.length;}
-var _SYNC_ARR=['siteIssues','installIssues','notesList','sketches'];
+var _SYNC_ARR=['siteIssues','installIssues','notesList','sketches','drawings'];
 function mergeJobs(base,other){var m=JSON.parse(JSON.stringify(base));
+  var dl=(Array.isArray(m.deleted)?m.deleted:[]).concat(Array.isArray(other.deleted)?other.deleted:[]),dm={};dl.forEach(function(x){dm[x]=1;});m.deleted=Object.keys(dm);
   _SYNC_ARR.forEach(function(k){var a=Array.isArray(m[k])?m[k]:[];var have={};a.forEach(function(x){if(x&&x.id)have[x.id]=1;});
-    (Array.isArray(other[k])?other[k]:[]).forEach(function(x){if(x&&x.id&&!have[x.id])a.push(x);});m[k]=a;});
+    (Array.isArray(other[k])?other[k]:[]).forEach(function(x){if(x&&x.id&&!have[x.id])a.push(x);});m[k]=a.filter(function(x){return !(x&&x.id&&dm[x.id]);});});
   // scans: each cabinet/part is its own record — keep whichever side has more QC/dispatch/install history, add any record the other side has
   var ev=function(u){return((u.qcLog||[]).length)+((u.dispatchLog||[]).length)+((u.installLog||[]).length);};
   var mu=Array.isArray(m.units)?m.units:[],idx={};mu.forEach(function(u,i){if(u&&u.id!=null)idx[u.id]=i;});
@@ -9403,7 +9470,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=258;
+var APP_VERSION=259;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
