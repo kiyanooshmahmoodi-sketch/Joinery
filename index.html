@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v287 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v288 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -7863,7 +7863,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v287 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v288 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9696,7 +9696,8 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=282;
+// v288: version is read from the visible version label (BRAND_SUBS), so it can never fall behind and keep showing the update bar
+var APP_VERSION=(function(){try{return parseInt((String(BRAND_SUBS.tracker).match(/v(\d+)/)||[])[1],10)||0;}catch(e){return 0;}})();
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
