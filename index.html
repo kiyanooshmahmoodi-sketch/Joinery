@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v284 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v285 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -3660,7 +3660,7 @@ function filterDetail(q){
         '<td><span class="drow-room">🏠 '+(u.room||'—')+'</span></td>'+
         typeCell+
         '<td class="drow-mat">'+(u.mat?matL(u.mat):'—')+edgeTag(u)+'</td>'+
-        '<td style="font-size:11px;color:var(--gray);">'+u.parts.length+' parts<div style="font-size:10px;color:#94a3b8;margin-top:2px;">'+pnames+'</div></td>'+
+        '<td style="font-size:11px;color:var(--gray);min-width:150px;">'+_partsDetails(u,pnames)+'</td>'+
         '<td style="text-align:center;">'+([(u.isPTO?'<span style="font-size:10px;background:#fce7f3;color:#ec4899;padding:2px 7px;border-radius:5px;font-weight:700;">🔘 PTO</span>':''),(hasHW(u)?'<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:5px;font-weight:700;">🔧 Hardware</span>':''),(hasCurve(u)?'<span style="font-size:10px;background:#ede9fe;color:#6d28d9;padding:2px 7px;border-radius:5px;font-weight:700;">〰️ Curve</span>':'')].filter(Boolean).join(' ')||'—')+'</td>'+
         hwCell+
         _cmCell(u,comments)+
@@ -3982,6 +3982,18 @@ function _cmCell(u,allComments){
   return '<td style="max-width:220px;"><input value="'+qe(b.comment||'')+'" placeholder="Hardware comment…" onchange="setBottomComment(\''+String(u.id).replace(/'/g,"\\'")+'\',this.value)" spellcheck="false" '+
     'style="width:100%;min-width:140px;padding:5px 7px;font-size:11px;font-weight:600;color:var(--blue);border:1px solid #93c5fd;border-radius:5px;font-family:inherit;background:#eff6ff;" title="Edit the hardware comment (e.g. change (2) to (3))">'+
     (others?'<div style="font-size:10px;color:#94a3b8;margin-top:2px;">💬 '+esc(others)+'</div>':'')+'</td>';
+}
+// v285: click the "N parts" cell of a cabinet to open the FULL list of its parts
+function _partsDetails(u,pnames){
+  var rows=(u.parts||[]).map(function(p){
+    if(typeof p==='string')return '<div style="padding:2px 0;border-bottom:1px solid #f1f5f9;"><b>'+esc(p)+'</b></div>';
+    var dim=(p.w||p.h)?(p.w||0)+'×'+(p.h||0):'';
+    var q=(p.qty&&p.qty>1)?' ×'+p.qty:'';
+    var diffMat=(p.mat&&u.mat&&p.mat!==u.mat)?' <span style="color:#d97706;">('+esc(matL(p.mat))+')</span>':'';
+    return '<div style="padding:2px 0;border-bottom:1px solid #f1f5f9;display:flex;gap:8px;justify-content:space-between;"><span><b style="color:#0f172a;">'+esc(p.name||'')+'</b>'+q+diffMat+'</span><span style="font-family:monospace;color:#64748b;white-space:nowrap;">'+dim+'</span></div>';}).join('');
+  return '<details><summary style="cursor:pointer;color:#2563eb;font-weight:700;list-style:none;">▸ '+(u.parts||[]).length+' parts</summary>'+
+    '<div style="margin-top:5px;font-size:11px;color:#475569;min-width:230px;max-width:340px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;">'+rows+'</div></details>'+
+    '<div class="pnames-short" style="font-size:10px;color:#94a3b8;margin-top:2px;">'+esc(pnames)+'</div>';
 }
 function setBottomComment(unitId,val){
   var u=units.find(function(x){return x.id===unitId;});if(!u)return;var b=_bottomPart(u);if(!b)return;
@@ -7799,7 +7811,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v284 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v285 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
