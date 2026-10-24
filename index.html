@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v246 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v247 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -3914,10 +3914,18 @@ function buildHWTotals(){
     String(txt).split(/\r?\n/).forEach(function(line){
       var t=line.replace(/^\s*[|I]\s*[A-H]\s*[|I]\s*(?=\S)/,'').trim();
       if(!t)return;
-      counts[t]=(counts[t]||0)+1;
+      var qty=1,m=/^(.*?)\s*\((\d+)\)\s*$/.exec(t);   // "110 Hinge (4)" = 4 hinges on this cabinet
+      if(m&&m[1]){t=m[1].trim();qty=parseInt(m[2],10)||1;}
+      counts[t]=(counts[t]||0)+qty;
     });
   });
-  return Object.keys(counts).sort().map(function(k){return{model:k,count:counts[k]};});
+  // family = name without its trailing size (Spice rack 150 / Spice rack 200 -> Spice rack)
+  var fam={};
+  Object.keys(counts).sort().forEach(function(name){
+    var f=name.replace(/\s+\d+(\s*x\s*\d+)?\s*(mm)?$/i,'').trim()||name;
+    (fam[f]=fam[f]||{family:f,total:0,items:[]});fam[f].total+=counts[name];fam[f].items.push({model:name,count:counts[name]});
+  });
+  return Object.keys(fam).sort().map(function(k){return fam[k];});
 }
 // List of distinct RAW hardware model strings in this project, with how
 // many cabinets use each — feeds the "Hardware Models" rename card.
@@ -4374,9 +4382,12 @@ function renderHardware(){
   var hwTot=buildHWTotals();
   var hwTotSection=hwTot.length?'<div class="card" style="border-left:4px solid #16a34a;margin-bottom:14px;background:linear-gradient(135deg,#f0fdf4,#fff 70%);">'+
     '<div class="card-title" style="margin:0 0 4px;color:#166534;">📦 Total to order</div>'+
-    '<div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Every item counted on its own and added up over all cabinets (e.g. a cabinet with A + B + C runners counts 3).</div>'+
+    '<div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Every item counted on its own and added up over all cabinets (e.g. a cabinet with A + B + C runners counts 3; \"110 Hinge (4)\" counts 4 hinges). Sizes of the same item are also added together.</div>'+
     '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">'+
-    hwTot.map(function(r){return'<div style="background:#fff;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;"><span style="font-size:12px;font-weight:600;color:#14532d;">'+esc(r.model)+'</span><span style="font-size:16px;font-weight:800;color:#16a34a;font-family:\'JetBrains Mono\',monospace;">'+r.count+'</span></div>';}).join('')+
+    hwTot.map(function(f){var multi=f.items.length>1;
+      return'<div style="background:#fff;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><span style="font-size:13px;font-weight:700;color:#14532d;">'+esc(multi?f.family+' — total':f.items[0].model)+'</span><span style="font-size:18px;font-weight:800;color:#16a34a;font-family:\'JetBrains Mono\',monospace;">'+f.total+'</span></div>'+
+        (multi?f.items.map(function(r){return'<div style="display:flex;justify-content:space-between;font-size:12px;color:#475569;margin-top:4px;padding-left:8px;"><span>'+esc(r.model)+'</span><b>'+r.count+'</b></div>';}).join(''):'')+'</div>';}).join('')+
     '</div></div>':'';
   // ===== Section 2: Closet Rods =====
   var railsSection='<div class="card" style="border-left:4px solid #06b6d4;">'+
@@ -7576,7 +7587,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v246 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v247 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9234,7 +9245,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=246;
+var APP_VERSION=247;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
