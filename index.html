@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v273 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v274 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1700,7 +1700,7 @@ var camActive=false,camStream=null,scanTick=null,lastScan='',lastScanT=0;
 var lockedIds=[],pendingUnits=[],pendingGlass=[],pendingRods=[],_lastImportFileNames=[];
 
 // PART CLASSIFICATION
-var IND=['door','cbk-door','base door','drawer face','drawer front','drw face','cbk-drawer',
+var IND=['door','cbk-door','base door','drawer face','drawer front','drw face','drw front','dwr face','dwr front','cbk-drawer','cbk-drw','cbk-dwr',
   'panel','finished panel','exterior panel','linden panel','lindon panel','fend','cbk-fend','finished end',
   'filler','l filler','l shape filler','appliance filler','tall face filler','wall face filler','base face filler','face filler','cbk-filler',
   'finger','fingerpull','finger pull','fingerpull rail','fingernail','finger nail','finger rail','cbk-finger',
@@ -1729,6 +1729,8 @@ function classify(name){
     var kw=FORCE_IND[fi].replace(/[^a-z0-9]/g,'');
     if(kw&&(n.indexOf(FORCE_IND[fi])!==-1||nn.indexOf(kw)!==-1))return'panel';
   }
+  // Drawer / DWR / DRW are all the same thing: the drawer FRONT or FACE is a loose part (any separator, e.g. Drawer-Front, DWR_Face, DRW Front)
+  if(/(drawer|drw|dwr)(front|face)/.test(nn))return'panel';
   // Check full IND list
   for(var i=0;i<IND.length;i++){if(n.indexOf(IND[i])!==-1)return'panel';}
   return'cabinet';
@@ -1777,7 +1779,7 @@ function _selfCheckRules(){
   try{
     var fails=[];
     var mustCab=['UBack','U Back','U-Back','U_Back','U/Back','CBK-UBack','1UBack','WHITE HMR UBACK'];
-    var mustPart=['Door','Drawer Front','Shadowline','Shadow-Line','Fingerpull','Finger-Pull','Finger Rail','Kick','Filler','Appliance Filler','Tray Face','CBK-Tray Face'];
+    var mustPart=['Door','Drawer Front','DWR Front','DRW Face','Drw-Front','DWR_Face','CBK-DRW Front','Drawer-Face','Shadowline','Shadow-Line','Fingerpull','Finger-Pull','Finger Rail','Kick','Filler','Appliance Filler','Tray Face','CBK-Tray Face'];
     var mustNotUback=['Back','Drawer Back','Door Back','Aluminium Backing'];
     var trayCab=['Tray Bottom','Tray Side','Tray Back','Tray Runner','Tray Panel','Cutlery Tray'];
     mustCab.forEach(function(s){if(!isUBack(s))fails.push('UBack missed: '+s);});
@@ -2139,7 +2141,7 @@ function getCat(name){var n=name.toLowerCase();
   if(n.indexOf('floating')!==-1&&(n.indexOf('shelf')!==-1||n.indexOf('shelv')!==-1))return'Floating Shelf';
   if(n.indexOf('join')!==-1)return'🔗 Joining Parts';
   if(n.indexOf('door')!==-1)return'Door';
-  if(n.indexOf('drawer')!==-1||n.indexOf('drw face')!==-1||n.indexOf('tray face')!==-1||n.indexOf('tray front')!==-1||n.indexOf('tray panel')!==-1)return'Drawer';
+  if(n.indexOf('drawer')!==-1||n.indexOf('drw')!==-1||n.indexOf('dwr')!==-1||n.indexOf('tray face')!==-1||n.indexOf('tray front')!==-1||n.indexOf('tray panel')!==-1)return'Drawer';
   if(n.indexOf('finger')!==-1)return'Finger Rail';
   if(n.indexOf('appliance filler')!==-1)return'Appliance Filler';
   if(n.indexOf('l filler')!==-1||n.indexOf('l shape')!==-1)return'L Filler';
@@ -7700,7 +7702,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v273 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v274 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9533,7 +9535,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=273;
+var APP_VERSION=274;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
