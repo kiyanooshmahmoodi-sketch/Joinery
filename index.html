@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v279 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v280 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1733,7 +1733,7 @@ function classify(name){
   // NOTE: only the visible drawer FRONT/FACE is a loose part: "Drawer Front/Face", "Drw Face", "Dwr Face". "Drw Front"/"Dwr Front" is the drawer BOX front inside the carcass.
   if(/drawer(front|face)|(drw|dwr)face/.test(nn))return'panel';
   // A part named EXACTLY "Drawer", "DRW" or "DWR" (no prefix, no suffix) is the visible drawer front → loose part. Any prefix/suffix (Drw Front, Drw Side, Drw Bottom…) is the drawer box inside the carcass.
-  if(nn==='drawer'||nn==='drw'||nn==='dwr')return'panel';
+  if(/^(drawer|drw|dwr)\d*$/.test(nn))return'panel';   // also with a number: DRW1, Drawer 2, DWR-3
   // Check full IND list
   for(var i=0;i<IND.length;i++){if(n.indexOf(IND[i])!==-1)return'panel';}
   return'cabinet';
@@ -1782,9 +1782,9 @@ function _selfCheckRules(){
   try{
     var fails=[];
     var mustCab=['UBack','U Back','U-Back','U_Back','U/Back','CBK-UBack','1UBack','WHITE HMR UBACK'];
-    var mustPart=['Door','Drawer Front','DRW Face','DWR_Face','Drawer-Face','Drawer','DRW','DWR','drw','Shadowline','Shadow-Line','Fingerpull','Finger-Pull','Finger Rail','Kick','Filler','Appliance Filler','Tray Face','CBK-Tray Face'];
+    var mustPart=['Door','Drawer Front','DRW Face','DWR_Face','Drawer-Face','Drawer','DRW','DWR','drw','DRW1','Drawer2','Drawer 3','DWR-4','Shadowline','Shadow-Line','Fingerpull','Finger-Pull','Finger Rail','Kick','Filler','Appliance Filler','Tray Face','CBK-Tray Face'];
     var mustNotUback=['Back','Drawer Back','Door Back','Aluminium Backing'];
-    var mustCabPart=['Drw Front','Dwr Front','Drw Back','Drw Side','Drw Bottom'];
+    var mustCabPart=['Drw Front','Dwr Front','Drw Back','Drw Side','Drw Bottom','Drawer Side','Drawer Bottom','Drawer Back','Drw1 Front'];
     var trayCab=['Tray Bottom','Tray Side','Tray Back','Tray Runner','Tray Panel','Cutlery Tray'];
     mustCab.forEach(function(s){if(!isUBack(s))fails.push('UBack missed: '+s);});
     mustNotUback.forEach(function(s){if(isUBack(s))fails.push('UBack false+: '+s);});
@@ -7743,7 +7743,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v279 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v280 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9576,7 +9576,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=279;
+var APP_VERSION=280;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
