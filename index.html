@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v256 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v257 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -7642,7 +7642,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v256 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v257 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9063,6 +9063,8 @@ async function upKick(){
   }finally{_upBusy=false;}
   upStat();
   if(!_upQ.length&&_upToast){_upToast=false;try{upNotify();}catch(e){}}}
+
+try{if('serviceWorker' in navigator&&location.protocol!=='file:')window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}catch(e){}
 window.addEventListener('online',function(){upKick();try{cloudFlush();}catch(e){}});
 window.addEventListener('offline',upStat);
 function upWake(){_upScanT=0;upKick();try{cloudFlush();}catch(e){}}
@@ -9379,7 +9381,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=256;
+var APP_VERSION=257;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
