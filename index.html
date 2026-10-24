@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v259 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v260 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -7673,7 +7673,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v259 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v260 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9063,7 +9063,7 @@ async function drUpload(inp){
   var pe=document.getElementById('dr-pending');
   for(var i=0;i<fs.length;i++){var f=fs[i];
     if(!/pdf$/i.test(f.type)&&!/\.pdf$/i.test(f.name)){alert(f.name+' is not a PDF.');continue;}
-    if(f.size>15*1048576){alert(f.name+' is '+drMB(f.size)+' — too big (max 15 MB). Please compress the PDF first.');continue;}
+    if(f.size>50*1048576){alert(f.name+' is '+drMB(f.size)+' — too big (max 50 MB). Please compress the PDF first.');continue;}
     if(pe)pe.textContent='Saving '+f.name+'…';
     try{
       var d=await new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.onerror=function(){rej(new Error('read'));};fr.readAsDataURL(f);});
@@ -9108,7 +9108,7 @@ async function renderDrawings(){
 var _ris=renderInstallStats;renderInstallStats=function(){_ris.apply(this,arguments);try{renderDrawings();}catch(e){}};
 
 // ===== v253: SAFE UPLOAD QUEUE — photos & voice are kept on this device and uploaded automatically whenever there is internet =====
-var _upDone={};
+var _upDone={},_upProg={},_upMsg='';
 function upNotify(){var k=Object.keys(_upDone);if(!k.length)return;var box=document.getElementById('up-toast');if(!box){box=document.createElement('div');box.id='up-toast';box.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:99999;max-width:92vw;display:flex;flex-direction:column;gap:6px;pointer-events:none;';document.body.appendChild(box);}
   k.forEach(function(n){var d=_upDone[n],parts=[];if(d.p)parts.push(d.p+' photo'+(d.p>1?'s':''));if(d.v)parts.push(d.v+' voice clip'+(d.v>1?'s':''));var t=document.createElement('div');t.style.cssText='background:#15803d;color:#fff;font-weight:700;font-size:13px;padding:10px 14px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.3);';t.textContent='☁ Uploaded ✓  '+n+' — '+parts.join(' + ');box.appendChild(t);setTimeout(function(){t.remove();},9000);});_upDone={};}
 var _upQ=[],_upOK={},_upBusy=false,_upFail={},_upLoaded=false,_upScanT=0,_upToast=false;
@@ -9118,7 +9118,7 @@ async function upLoad(){if(_upLoaded)return;_upLoaded=true;
 function upSave(){try{window.storage.set('cbk-upq',JSON.stringify(_upQ));window.storage.set('cbk-upok',JSON.stringify(Object.keys(_upOK)));}catch(e){}}
 function upStat(){var el=document.getElementById('up-stat');if(!el)return;var n=_upQ.length,f=Object.keys(_upFail).length;
   if(f){el.textContent='⚠ '+f+' file(s) too big to upload';el.style.color='#b91c1c';el.title='These photos/voice clips could not be uploaded';return;}
-  if(n){el.textContent='📤 '+n+' photo/voice waiting to upload'+(navigator.onLine?'…':' (no internet)');el.style.color='#b45309';el.title='Saved on this device. They upload by themselves as soon as there is internet — keep the app open.';}
+  if(n){el.textContent='📤 '+n+' photo/voice/file waiting to upload'+(navigator.onLine?'…':' (no internet)')+_upMsg;el.style.color='#b45309';el.title='Saved on this device. They upload by themselves as soon as there is internet — keep the app open.';}
   else{el.textContent='✓ Photos & voice uploaded';el.style.color='#15803d';el.title='Everything is uploaded — other people can see it';}}
 async function upEnqueue(id,job){await upLoad();if(!_upQ.some(function(q){return q.id===id;})){_upQ.push({id:id,job:job||''});upSave();}_upToast=true;upStat();upKick();}
 function upIds(job){var out={};try{var s=JSON.stringify(job);var re=/\\?"(p[a-z0-9]{13})\\?"/g,m;while((m=re.exec(s)))out[m[1]]=1;}catch(e){}return Object.keys(out);}
@@ -9127,7 +9127,10 @@ async function upScan(){await upLoad();var have={};_upQ.forEach(function(q){have
 async function upPut(id,d,job){var T=800000,col=cloud.db.collection('photos');
   if(d.length<=T){await col.doc(id).set({d:d,job:job,at:firebase.firestore.FieldValue.serverTimestamp()});return;}
   var n=Math.ceil(d.length/T);
-  for(var i=0;i<n;i++)await col.doc(id+'~'+i).set({d:d.slice(i*T,(i+1)*T),job:job});
+  for(var i=_upProg[id]||0;i<n;i++){
+    await Promise.race([col.doc(id+'~'+i).set({d:d.slice(i*T,(i+1)*T),job:job}),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},45000);})]);
+    _upProg[id]=i+1;_upMsg=' — big file '+(i+1)+'/'+n;upStat();}
+  _upMsg='';
   await col.doc(id).set({d:'',n:n,job:job,at:firebase.firestore.FieldValue.serverTimestamp()});}
 async function upKick(){
   await upLoad();if(Date.now()-_upScanT>30000){_upScanT=Date.now();await upScan();}
@@ -9141,7 +9144,7 @@ async function upKick(){
       if(!d){try{var r=await window.storage.get('cbkph:'+id);d=r&&r.value;}catch(e){}}
       if(!d){_upOK[id]=1;_upQ.shift();upSave();continue;}      // not stored on this device (already online elsewhere)
       try{
-        await Promise.race([upPut(id,d,q.job||''),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},d.length>800000?180000:25000);})]);
+        if(d.length>800000)await upPut(id,d,q.job||'');else await Promise.race([upPut(id,d,q.job||''),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},25000);})]);delete _upProg[id];
         _upOK[id]=1;_upQ.shift();upSave();upStat();
         var jb=allJobs[q.job]||{},jn=jb.name||jb.projectName||jb.project||jb.title||'Project';var dd=_upDone[jn]=_upDone[jn]||{p:0,v:0};if(/^data:audio/.test(d))dd.v++;else dd.p++;
       }catch(e){
@@ -9470,7 +9473,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=259;
+var APP_VERSION=260;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
