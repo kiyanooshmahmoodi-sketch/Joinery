@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v267 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v268 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1082,6 +1082,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <button class="view-btn" id="vb-tracker" onclick="switchView('tracker')">✅ QC</button>
   <button class="view-btn" id="vb-dispatch" onclick="switchView('dispatch')">📦 Dispatch / Shipping</button>
   <button class="view-btn" id="vb-installation" onclick="switchView('installation')">🚚 Installation <span class="tbadge" id="vb-ii-badge" style="display:none">0</span></button>
+  <button class="view-btn" id="vb-drawings" onclick="switchView('drawings')" style="display:none;">📐 Drawings</button>
   <button class="view-btn" id="vb-admin" onclick="switchView('admin')" style="display:none;">⚙️ Admin</button>
 </div>
 
@@ -1390,6 +1391,10 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 </div>
 
 <!-- VIEW: INSTALLATION -->
+<div id="view-drawings" style="display:none;">
+  <div id="drw-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
+  <div id="drw-host"></div>
+</div>
 <div id="view-installation" style="display:none;">
   <div id="inst-drawings-prod" class="card" style="margin-top:6px;border-top:3px solid #bae6fd;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
@@ -7689,7 +7694,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v267 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v268 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -7727,6 +7732,8 @@ function switchView(view){
   document.getElementById('view-cabinetlist').style.display=(view==='cabinetlist'?'block':'none');
   document.getElementById('view-tracker').style.display=(view==='tracker'?'block':'none');
   document.getElementById('view-installation').style.display=(view==='installation'?'block':'none');
+  var _vd=document.getElementById('view-drawings');if(_vd)_vd.style.display=(view==='drawings'?'block':'none');
+  var _bd=document.getElementById('vb-drawings');if(_bd)_bd.classList.toggle('active',view==='drawings');
   document.getElementById('view-dispatch').style.display=(view==='dispatch'?'block':'none');
   var _va=document.getElementById('view-admin');if(_va)_va.style.display=(view==='admin'?'block':'none');
   var vmEl=document.getElementById('view-manager');
@@ -7762,6 +7769,7 @@ function switchView(view){
     renderDispatchStats();renderDispatchPendingList();renderDispatchLog();
     setTimeout(focusDispScanBox,60);
   }
+  if(view==='drawings'){drTab(_drwTab);}
   if(view==='installation'){
     if(typeof renderInstallStats==='function')renderInstallStats();
     if(typeof renderInstallPendingList==='function')renderInstallPendingList();
@@ -9137,6 +9145,19 @@ function renderInstFin(){var tabs=document.getElementById('if-tabs'),body=docume
     if(m){var u=/^www\./i.test(t)?'https://'+t:t;td.innerHTML='<a href="'+qe(u)+'" target="_blank" rel="noopener" style="color:#0369a1;font-weight:700;word-break:break-all;">🔗 Open link</a>';}
     else if(/https?:\/\/\S+/i.test(t)){td.innerHTML=esc(t).replace(/(https?:\/\/[^\s<]+)/gi,function(u){return '<a href="'+u+'" target="_blank" rel="noopener" style="color:#0369a1;font-weight:700;word-break:break-all;">'+u+'</a>';});}});
   body.querySelectorAll('input,select,textarea,button').forEach(function(i){i.disabled=true;});}
+var _drwTab='prod';
+var DRW_TABS=[['prod','📐 Production Drawings','inst-drawings-prod'],['arch','🏛 Architectural Drawings','inst-drawings-arch'],['iss','⚠️ Installation Issues & Notes','inst-issues']];
+function drTab(k){_drwTab=k;var t=document.getElementById('drw-tabs');if(!t)return;
+  t.innerHTML=DRW_TABS.map(function(x){return '<button class="btn '+(x[0]===k?'':'btn-outline')+'" onclick="drTab(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');
+  DRW_TABS.forEach(function(x){var el=document.getElementById(x[2]);if(el)el.style.display=(x[0]===k||!document.getElementById('drw-host').contains(el))?'':'none';});
+  try{renderDrawings();renderInstIssues();}catch(e){}}
+function drPlace(){   // installer: these 3 sections live in the Drawings tab. Everyone else: they stay on the Installation page (admin uploads there).
+  var inst=window.SESSION&&SESSION.role==='installer',host=document.getElementById('drw-host'),view=document.getElementById('view-installation');if(!host||!view)return;
+  var ids=DRW_TABS.map(function(x){return x[2];}),els=ids.map(function(i){return document.getElementById(i);});
+  var badge=document.getElementById('vb-ii-badge');
+  if(inst){els.forEach(function(el){if(el)host.appendChild(el);});var bd=document.getElementById('vb-drawings');if(badge&&bd)bd.appendChild(badge);}
+  else{var first=view.firstChild;els.forEach(function(el){if(el){el.style.display='';view.insertBefore(el,first);}});var bi=document.getElementById('vb-installation');if(badge&&bi)bi.appendChild(badge);}
+  var b=document.getElementById('vb-drawings');if(b)b.style.display=inst?'':'none';}
 var _ris=renderInstallStats;renderInstallStats=function(){_ris.apply(this,arguments);try{renderDrawings();renderInstFin();}catch(e){}};
 
 // ===== v253: SAFE UPLOAD QUEUE — photos & voice are kept on this device and uploaded automatically whenever there is internet =====
@@ -9283,7 +9304,7 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
 </div>
 <script>
 // ROLES (v207): choose who you are when the app opens. Each role only sees its own sections.
-var ROLE_VIEWS={admin:['cabinetlist','tracker','dispatch','installation','admin'],designer:['cabinetlist'],qc:['tracker'],dispatch:['dispatch','tracker'],installer:['installation','tracker']};
+var ROLE_VIEWS={admin:['cabinetlist','tracker','dispatch','installation','admin'],designer:['cabinetlist'],qc:['tracker'],dispatch:['dispatch','tracker'],installer:['installation','drawings','tracker']};
 var ROLE_HOME={admin:'cabinetlist',designer:'cabinetlist',qc:'tracker',dispatch:'dispatch',installer:'installation'};
 var ROLE_LABEL={admin:'Admin',designer:'Designer',qc:'QC Checker',dispatch:'Dispatch / Shipping',installer:'Installer'};
 var SESSION={role:'',name:''};
@@ -9339,6 +9360,7 @@ function applyRole(r,nm,em){
 }
 // Guards: block actions and views the current role is not allowed to use
 (function(){
+  var _ar=applyRole;applyRole=function(){var r=_ar.apply(this,arguments);try{drPlace();}catch(e){}return r;};
   var _sv=switchView;switchView=function(v){
     if(SESSION.role&&ROLE_VIEWS[SESSION.role].indexOf(v)<0)v=ROLE_HOME[SESSION.role];
     return _sv(v);};
@@ -9505,7 +9527,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=267;
+var APP_VERSION=268;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
