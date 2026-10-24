@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v245 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v246 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -3905,6 +3905,20 @@ function buildHWSummary(){
   });
   return Object.keys(counts).sort().map(function(k){return{model:k,count:counts[k]};});
 }
+// TOTAL hardware to order: each line of every cabinet's hardware text is counted on its own
+// (drawer labels like |A| |B| |C| are removed), added over all cabinets.
+function buildHWTotals(){
+  var counts={};
+  units.filter(function(u){return u.type==='cabinet'&&hasHW(u);}).forEach(function(u){
+    var txt=getHWModelDisplay(u)||'';
+    String(txt).split(/\r?\n/).forEach(function(line){
+      var t=line.replace(/^\s*[|I]\s*[A-H]\s*[|I]\s*(?=\S)/,'').trim();
+      if(!t)return;
+      counts[t]=(counts[t]||0)+1;
+    });
+  });
+  return Object.keys(counts).sort().map(function(k){return{model:k,count:counts[k]};});
+}
 // List of distinct RAW hardware model strings in this project, with how
 // many cabinets use each — feeds the "Hardware Models" rename card.
 function buildHwRawList(){
@@ -4346,7 +4360,7 @@ function renderHardware(){
       '<div class="card-title" style="margin:0;color:#92400e;">🔧 UBack Hardware Summary</div>'+
       '<div style="font-size:24px;font-weight:800;color:#f59e0b;font-family:\'JetBrains Mono\',monospace;">'+hwTotal+'</div>'+
     '</div>'+
-    '<div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Cabinets whose UBack is tagged with hardware, grouped by the model written on their Bottom part — use this to order.</div>'+
+    '<div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Cabinets whose UBack is tagged with hardware, grouped by the model written on their Bottom part. <b>×N = number of cabinets</b> with exactly this set.</div>'+
     (hwSummary.length
       ?'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">'+
         hwSummary.map(function(r){return'<div style="background:#fff;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;">'+
@@ -4357,6 +4371,13 @@ function renderHardware(){
       :'<div style="font-size:12px;color:#94a3b8;">No cabinets tagged with hardware in this job</div>')+
   '</div>';
 
+  var hwTot=buildHWTotals();
+  var hwTotSection=hwTot.length?'<div class="card" style="border-left:4px solid #16a34a;margin-bottom:14px;background:linear-gradient(135deg,#f0fdf4,#fff 70%);">'+
+    '<div class="card-title" style="margin:0 0 4px;color:#166534;">📦 Total to order</div>'+
+    '<div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Every item counted on its own and added up over all cabinets (e.g. a cabinet with A + B + C runners counts 3).</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">'+
+    hwTot.map(function(r){return'<div style="background:#fff;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;"><span style="font-size:12px;font-weight:600;color:#14532d;">'+esc(r.model)+'</span><span style="font-size:16px;font-weight:800;color:#16a34a;font-family:\'JetBrains Mono\',monospace;">'+r.count+'</span></div>';}).join('')+
+    '</div></div>':'';
   // ===== Section 2: Closet Rods =====
   var railsSection='<div class="card" style="border-left:4px solid #06b6d4;">'+
     '<div class="flex ai-c jb" style="margin-bottom:14px;flex-wrap:wrap;gap:10px;">'+
@@ -4435,7 +4456,7 @@ function renderHardware(){
   }
   railsSection+='</div>';
 
-  list.innerHTML=ptoSection+hwSection;
+  list.innerHTML=ptoSection+hwSection+hwTotSection;
   var rl=document.getElementById('rod-list');if(rl)rl.innerHTML=railsSection;
 }
 
@@ -7555,7 +7576,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v245 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v246 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9213,7 +9234,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=245;
+var APP_VERSION=246;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
