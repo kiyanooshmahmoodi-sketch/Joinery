@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v262 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v263 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1391,34 +1391,6 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 
 <!-- VIEW: INSTALLATION -->
 <div id="view-installation" style="display:none;">
-  <div class="alert alert-info">💡 Scan a cabinet when it's being installed. If it was never QC-approved, you'll see a warning with the reason so you know what to check.</div>
-  <div class="stats-row" style="margin-bottom:14px;">
-    <div class="stat"><div class="stat-n" style="color:var(--blue)" id="inst-total">0</div><div class="stat-l">TOTAL</div></div>
-    <div class="stat"><div class="stat-n" style="color:var(--green)" id="inst-done">0</div><div class="stat-l">INSTALLED 🚚</div></div>
-    <div class="stat"><div class="stat-n" style="color:var(--yellow)" id="inst-remaining">0</div><div class="stat-l">REMAINING</div></div>
-  </div>
-  <div class="card">
-    <div class="card-title">🔫 Scan to Install</div>
-    <div style="font-size:11px;color:var(--gray);margin-bottom:8px;line-height:1.5;">
-      A USB barcode scanner works like a keyboard — <b>no pairing needed</b>. Click the box, then scan (or type the ID and press Enter).
-    </div>
-    <input id="inst-scan-box" placeholder="👆 Click here — then scan" autocomplete="off" spellcheck="false"
-      onkeydown="instScanBoxKey(event)" oninput="instScanBoxInput()" onblur="scanBoxBlur()"
-      style="width:100%;box-sizing:border-box;font-size:16px;font-weight:700;padding:14px;border:2px solid var(--blue);border-radius:10px;font-family:'JetBrains Mono',monospace;text-align:center;background:#eff6ff;"/>
-    <div class="rbox r-wait" id="r-inst" style="margin-top:8px;">Waiting...</div>
-  </div>
-  <div class="card">
-    <div class="card-title" style="color:var(--yellow);margin:0 0 4px;">⏳ Still Needs Installing</div>
-    <div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Grouped by room — cabinets and independent parts both shown. Colorless until scanned as installed; tap any cabinet with a ⚠️ QC badge to see why it was rejected.</div>
-    <div id="inst-pending-list"><div style="text-align:center;color:var(--green);padding:20px;">✅ All units installed!</div></div>
-  </div>
-  <div class="card">
-    <div class="flex ai-c jb" style="margin-bottom:10px;">
-      <div class="card-title" style="margin:0;">📋 Installation Log</div>
-      <button class="btn btn-ghost btn-sm" onclick="if(confirm('Clear the installation log? This does not un-install any cabinet.'))clearInstallLog();">Clear</button>
-    </div>
-    <div id="inst-log"><div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">No installs yet</div></div>
-  </div>
   <div id="inst-drawings-prod" class="card" style="margin-top:6px;border-top:3px solid #bae6fd;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
       <div><div style="font-size:18px;font-weight:800;">📐 Production Drawings</div><div style="font-size:12px;color:#64748b;">PDF production plans for this project — installers can open them on site, even without internet.</div></div>
@@ -1464,6 +1436,34 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   </div>
   <div id="ii-list" style="margin-top:12px;"></div>
 </div>
+  <div class="alert alert-info">💡 Scan a cabinet when it's being installed. If it was never QC-approved, you'll see a warning with the reason so you know what to check.</div>
+  <div class="stats-row" style="margin-bottom:14px;">
+    <div class="stat"><div class="stat-n" style="color:var(--blue)" id="inst-total">0</div><div class="stat-l">TOTAL</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--green)" id="inst-done">0</div><div class="stat-l">INSTALLED 🚚</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--yellow)" id="inst-remaining">0</div><div class="stat-l">REMAINING</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🔫 Scan to Install</div>
+    <div style="font-size:11px;color:var(--gray);margin-bottom:8px;line-height:1.5;">
+      A USB barcode scanner works like a keyboard — <b>no pairing needed</b>. Click the box, then scan (or type the ID and press Enter).
+    </div>
+    <input id="inst-scan-box" placeholder="👆 Click here — then scan" autocomplete="off" spellcheck="false"
+      onkeydown="instScanBoxKey(event)" oninput="instScanBoxInput()" onblur="scanBoxBlur()"
+      style="width:100%;box-sizing:border-box;font-size:16px;font-weight:700;padding:14px;border:2px solid var(--blue);border-radius:10px;font-family:'JetBrains Mono',monospace;text-align:center;background:#eff6ff;"/>
+    <div class="rbox r-wait" id="r-inst" style="margin-top:8px;">Waiting...</div>
+  </div>
+  <div class="card">
+    <div class="card-title" style="color:var(--yellow);margin:0 0 4px;">⏳ Still Needs Installing</div>
+    <div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Grouped by room — cabinets and independent parts both shown. Colorless until scanned as installed; tap any cabinet with a ⚠️ QC badge to see why it was rejected.</div>
+    <div id="inst-pending-list"><div style="text-align:center;color:var(--green);padding:20px;">✅ All units installed!</div></div>
+  </div>
+  <div class="card">
+    <div class="flex ai-c jb" style="margin-bottom:10px;">
+      <div class="card-title" style="margin:0;">📋 Installation Log</div>
+      <button class="btn btn-ghost btn-sm" onclick="if(confirm('Clear the installation log? This does not un-install any cabinet.'))clearInstallLog();">Clear</button>
+    </div>
+    <div id="inst-log"><div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">No installs yet</div></div>
+  </div>
 </div>
 
 <div id="view-dispatch" style="display:none;">
@@ -7681,7 +7681,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v262 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v263 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9483,7 +9483,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=262;
+var APP_VERSION=263;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
