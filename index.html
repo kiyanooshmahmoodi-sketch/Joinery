@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v275 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v276 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -3183,8 +3183,8 @@ function renderCabinetCategories(){
   var box=document.getElementById('cab-categories');if(!box)return;
   var cabs=units.filter(function(u){return u.type==='cabinet';});
   if(!cabs.length){box.innerHTML='<div style="text-align:center;color:#94a3b8;padding:16px;font-size:13px;">No cabinets yet — import an Excel file to see categories here.</div>';return;}
-  var ctCol={'Cabinet':'#4f6ef7','Structure Cabinet':'#f97316','Colour Edge Cabinet':'#8b5cf6','Colour Cabinet':'#22c55e'};
-  var typeOrder=['Cabinet','Structure Cabinet','Colour Edge Cabinet','Colour Cabinet'];
+  var ctCol={'Cabinet':'#4f6ef7','Structure Cabinet':'#f97316','Colour Edge Cabinet':'#8b5cf6','Curve Cabinet':'#ec4899','Colour Cabinet':'#22c55e'};
+  var typeOrder=['Cabinet','Structure Cabinet','Curve Cabinet','Colour Edge Cabinet','Colour Cabinet'];
   var byType={};
   cabs.forEach(function(u){var t=getCabType(u);byType[t]=(byType[t]||0)+1;});
   var hwCount=cabs.filter(function(u){return hasHW(u);}).length;
@@ -3225,12 +3225,6 @@ function renderCabinetCategories(){
     }).join('')+
   '</div>';
 
-  html+='<div style="font-size:10px;color:#94a3b8;letter-spacing:.5px;font-weight:700;margin-bottom:8px;">INDEPENDENT TAGS (can overlap any type above)</div>';
-  html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;">'+
-    (curveCount?card('Curve',curveCount,'#6d28d9',"openCabDetail('CURVE')",'〰️'):'')+
-    (!curveCount?'<div style="color:#94a3b8;font-size:12px;padding:8px;">None in this project</div>':'')+
-  '</div>';
-
   box.innerHTML=html;
 }
 
@@ -3252,7 +3246,7 @@ function renderUnits(q){
   var tbRem=document.getElementById('tb-rem');if(tbRem)tbRem.textContent=units.length;
   var g=document.getElementById('unit-grid');
   if(!list.length){g.innerHTML='<div style="text-align:center;color:#94a3b8;padding:30px;">No units found</div>';return;}
-  var ctCol={'Cabinet':'#4f6ef7','Structure Cabinet':'#f97316','Colour Edge Cabinet':'#8b5cf6','Colour Cabinet':'#22c55e'};
+  var ctCol={'Cabinet':'#4f6ef7','Structure Cabinet':'#f97316','Colour Edge Cabinet':'#8b5cf6','Curve Cabinet':'#ec4899','Colour Cabinet':'#22c55e'};
   var catColU={'🔗 Joining Parts':'#3b82f6','Door':'#ef4444','Drawer':'#f97316','Finger Rail':'#8b5cf6','Filler':'#3b82f6','L Filler':'#2563eb','Appliance Filler':'#14b8a6','Kick Face':'#f59e0b','Underpanel':'#0d9488','Bulkhead':'#7c3aed','Bench Top':'#16a34a','Bar Back':'#dc2626','Shelf Support':'#6366f1','Blind Panel':'#0891b2','Finished End':'#d97706','Linden Panel':'#c2410c','Panel':'#22c55e','Stile':'#94a3b8','MDF Glass Door':'#0ea5e9','Aluminium Glass Door':'#0284c7','Floating Shelf':'#059669','Other':'#cbd5e1'};
   function cardHtml(u){
     var icon=u.type==='cabinet'?'🗄️':'🚪';
@@ -3466,7 +3460,7 @@ function renderSummary(){
   var cabTypeC={},cabTypeI={};
   var cabs2=units.filter(function(u){return u.type==='cabinet';});
   cabs2.forEach(function(u){var t=getCabType(u);cabTypeC[t]=(cabTypeC[t]||0)+1;if(!cabTypeI[t])cabTypeI[t]=[];cabTypeI[t].push(u);});
-  var ctCol={'Cabinet':'#4f6ef7','Structure Cabinet':'#f97316','Colour Edge Cabinet':'#8b5cf6','Colour Cabinet':'#22c55e'};
+  var ctCol={'Cabinet':'#4f6ef7','Structure Cabinet':'#f97316','Colour Edge Cabinet':'#8b5cf6','Curve Cabinet':'#ec4899','Colour Cabinet':'#22c55e'};
   var scab=document.getElementById('sum-cabs-type');
   if(scab){
     if(!cabs2.length){scab.innerHTML='<div style="color:#94a3b8;">No cabinets yet</div>';return;}
@@ -3474,7 +3468,7 @@ function renderSummary(){
     var shippedCabs=cabs2.filter(function(u){return u.status==='shipped';}).length;
     var cabPct=totalCabs>0?Math.round(shippedCabs/totalCabs*100):0;
     // Build type rows for master card
-    var typeOrder=['Cabinet','Structure Cabinet','Colour Edge Cabinet','Colour Cabinet'];
+    var typeOrder=['Cabinet','Structure Cabinet','Curve Cabinet','Colour Edge Cabinet','Colour Cabinet'];
     var typeRows=typeOrder.map(function(t){
       var cnt=cabTypeC[t]||0;if(!cnt)return'';
       var col=ctCol[t]||'#64748b';
@@ -3591,7 +3585,7 @@ function filterDetail(q){
 
   if(detailMode==='cabinets'){
     var isAllCabs=(detailCategory==='ALL'||detailCategory==='HW'||detailCategory==='CURVE');
-    var ctCol2={'Cabinet':'#4f6ef7','Structure Cabinet':'#f97316','Colour Edge Cabinet':'#8b5cf6','Colour Cabinet':'#22c55e'};
+    var ctCol2={'Cabinet':'#4f6ef7','Structure Cabinet':'#f97316','Colour Edge Cabinet':'#8b5cf6','Curve Cabinet':'#ec4899','Colour Cabinet':'#22c55e'};
     tbody.innerHTML=filtered.map(function(u,i){
       var pnames=u.parts.slice(0,5).map(function(p){return typeof p==='string'?p:p.name;}).join(', ')+(u.parts.length>5?' +'+(u.parts.length-5)+' more':'');
       var comments=u.parts.map(function(p){return typeof p==='object'?(p.comment||''):'';}).filter(Boolean).join('; ');
@@ -4039,6 +4033,8 @@ function getCabType(unit){
   if(/white\s*satin\s*16(?!\d)/i.test(allMatsStr)){
     return'Colour Edge Cabinet';
   }
+  // Curve Cabinet — UBack name contains "Curve" (own category, between Structure and Colour Edge)
+  if(hasCurve(unit))return'Curve Cabinet';
   if(uback){
     var uname=(typeof uback==='string'?uback:(uback.name||'')).toLowerCase();
     // Colour Cabinet — UBack Color / Colour (any prefix/suffix, e.g. "UBack
@@ -4238,7 +4234,7 @@ function printAllPartsDetailed(){
 function openCabDetail(type){
   detailMode='cabinets';
   detailCategory=type;
-  var ctCol={'Cabinet':'#4f6ef7','Structure Cabinet':'#f97316','Colour Edge Cabinet':'#8b5cf6','Colour Cabinet':'#22c55e','HW':'#92400e','CURVE':'#6d28d9'};
+  var ctCol={'Cabinet':'#4f6ef7','Structure Cabinet':'#f97316','Colour Edge Cabinet':'#8b5cf6','Curve Cabinet':'#ec4899','Colour Cabinet':'#22c55e','HW':'#92400e','CURVE':'#6d28d9'};
   var isAll=(type==='ALL');
   if(isAll){
     detailUnits=units.filter(function(u){return u.type==='cabinet';});
@@ -4260,7 +4256,7 @@ function openCabDetail(type){
   if(isAll){
     var byType={};
     detailUnits.forEach(function(u){var t=getCabType(u);byType[t]=(byType[t]||0)+1;});
-    var typeOrder=['Cabinet','Structure Cabinet','Colour Edge Cabinet','Colour Cabinet'];
+    var typeOrder=['Cabinet','Structure Cabinet','Curve Cabinet','Colour Edge Cabinet','Colour Cabinet'];
     var parts=typeOrder.filter(function(t){return byType[t];}).map(function(t){
       return'<span style="background:'+(ctCol[t]||'#64748b')+';color:#fff;padding:1px 7px;border-radius:5px;font-size:10px;font-weight:700;margin-right:4px;">'+t+': '+byType[t]+'</span>';
     }).join('');
@@ -5732,7 +5728,7 @@ function printSummary(){
     cabTypeC[t].count++;
     if(u.status==='shipped')cabTypeC[t].shipped++;
   });
-  var ctCol={'Cabinet':'#4f46e5','Structure Cabinet':'#f97316','Colour Edge Cabinet':'#8b5cf6','Colour Cabinet':'#22c55e'};
+  var ctCol={'Cabinet':'#4f46e5','Structure Cabinet':'#f97316','Colour Edge Cabinet':'#8b5cf6','Curve Cabinet':'#ec4899','Colour Cabinet':'#22c55e'};
 
   // Independent parts categories
   var catC={};
@@ -5836,7 +5832,7 @@ function printSummary(){
   if(cabs.length){
     html+='<h2>🗄️ By Cabinet Type</h2>'+
       '<table><thead><tr><th>TYPE</th><th style="width:80px;text-align:center;">COUNT</th><th style="width:80px;text-align:center;">SHIPPED</th><th style="width:200px;">PROGRESS</th></tr></thead><tbody>';
-    var typeOrder=['Cabinet','Structure Cabinet','Colour Edge Cabinet','Colour Cabinet'];
+    var typeOrder=['Cabinet','Structure Cabinet','Curve Cabinet','Colour Edge Cabinet','Colour Cabinet'];
     typeOrder.forEach(function(t){
       var d=cabTypeC[t];if(!d)return;
       var col=ctCol[t]||'#64748b';
@@ -7719,7 +7715,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v275 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v276 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9552,7 +9548,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=275;
+var APP_VERSION=276;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
