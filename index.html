@@ -5586,7 +5586,16 @@ function renderMaterials(){
 
 // ===== v283: Edge colour per cabinet / part for White Satin 16 (Colour Edge) =====
 function isEdgeMat(m){return /white\s*satin\s*16(?!\d)/i.test(String(m||''));}
-function edgeOf(u){return (u&&u.edge)?String(u.edge):'';}
+function edgeFromComment(u){
+  if(!u||u.type!=='cabinet')return '';
+  var ps=u.parts||[];
+  for(var i=0;i<ps.length;i++){var p=ps[i];
+    if(p&&typeof p==='object'&&isUBack(p.name||'')&&p.comment){
+      var c=String(p.comment).trim().replace(/^(edge\s*colou?r|edge|colou?r)\s*[:=\-]?\s*/i,'').trim();
+      if(c)return c;}}
+  return '';
+}
+function edgeOf(u){if(!u)return '';return u.edge?String(u.edge):edgeFromComment(u);}
 function edgeTag(u){var e=edgeOf(u);return e?'<div style="font-size:11px;font-weight:800;color:#be185d;margin-top:3px;">🎨 Edge: '+esc(e)+'</div>':'';}
 function setUnitEdge(id,val){
   var u=units.find(function(x){return x.id===id;});if(!u)return;
@@ -5595,16 +5604,16 @@ function setUnitEdge(id,val){
 }
 function setAllEdge(mat,val){
   val=String(val||'').trim();if(!val)return;
-  var n=0;units.forEach(function(u){if((u.mat||'(no material)')===mat&&!u.edge){u.edge=val;n++;}});
+  var n=0;units.forEach(function(u){if((u.mat||'(no material)')===mat&&!edgeOf(u)){u.edge=val;n++;}});
   saveData();renderMaterials();try{refresh();}catch(e){}showMsg('✓ Edge colour "'+val+'" set on '+n+' empty item(s)');
 }
 function edgeEditor(m,list,color){
-  var emp=list.filter(function(u){return !u.edge;}).length;
+  var emp=list.filter(function(u){return !edgeOf(u);}).length;
   var rows=list.map(function(u){
     var nm=u.type==='cabinet'?'🗄️ Cabinet':'🚪 '+esc((u.parts&&u.parts[0]&&u.parts[0].name)||'Part');
     return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:5px;">'+
       '<div style="flex:0 0 46%;min-width:0;font-size:11px;"><b style="font-family:monospace;">'+esc(u.id)+'</b><div style="color:#64748b;font-size:10px;">'+nm+(u.room?' · '+esc(u.room):'')+'</div></div>'+
-      '<input value="'+qe(u.edge||'')+'" placeholder="Edge colour…" spellcheck="false" onchange="setUnitEdge(\''+String(u.id).replace(/'/g,"\\'")+'\',this.value)" '+
+      '<input value="'+qe(u.edge||'')+'" placeholder="'+(edgeFromComment(u)?qe(edgeFromComment(u))+' (from UBack comment)':'Edge colour…')+'" spellcheck="false" onchange="setUnitEdge(\''+String(u.id).replace(/'/g,"\\'")+'\',this.value)" '+
       'style="flex:1;min-width:0;padding:5px 7px;font-size:12px;font-weight:700;color:#be185d;border:1px solid #f9a8d4;border-radius:5px;font-family:inherit;background:#fdf2f8;"/></div>';}).join('');
   return '<details style="margin-bottom:10px;border:1px solid #f9a8d4;border-radius:8px;padding:8px 10px;background:#fff7fb;">'+
     '<summary style="cursor:pointer;font-size:12px;font-weight:800;color:#be185d;">🎨 Edge colours ('+(list.length-emp)+'/'+list.length+' set)</summary>'+
@@ -5732,7 +5741,7 @@ function printByMaterial(mat,filter){
       '</tr></thead><tbody>';
     var idx=0;
     cabs.forEach(function(u){
-      (u.parts||[]).forEach(function(p){idx++;sectionHtml+=rowOfPart(p,idx-1,u.cabId,u.room,u.edge);});
+      (u.parts||[]).forEach(function(p){idx++;sectionHtml+=rowOfPart(p,idx-1,u.cabId,u.room,edgeOf(u));});
     });
     sectionHtml+='</tbody></table>';
   }
@@ -5751,7 +5760,7 @@ function printByMaterial(mat,filter){
         '<th style="padding:8px;text-align:left;">COMMENT</th>'+
       '</tr></thead><tbody>';
     pans.forEach(function(u,i){
-      (u.parts||[]).forEach(function(p){sectionHtml+=rowOfPart(p,i,u.cabId||u.id,u.room,u.edge);});
+      (u.parts||[]).forEach(function(p){sectionHtml+=rowOfPart(p,i,u.cabId||u.id,u.room,edgeOf(u));});
     });
     sectionHtml+='</tbody></table>';
   }
