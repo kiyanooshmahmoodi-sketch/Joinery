@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v280 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v281 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -2287,8 +2287,8 @@ function handleExcel(files){
   // v277: decide "which cabinet numbers have a UBack" across ALL imported files (and the cabinets already in the project) BEFORE
   // grouping. A cabinet's carcass is often split over several material files (e.g. UBack in White HMR, Front Stretcher in HMR 16mm) —
   // looking at one file at a time wrongly turned its stretcher/sides into loose parts.
-  var _loaded=new Array(arr.length),_read=0,_cabHasUBackAll={};
-  units.forEach(function(u){if(u&&u.type==='cabinet'&&u.id)_cabHasUBackAll[u.id]=true;});
+  var _loaded=new Array(arr.length),_read=0,_cabHasUBackAll={},_cabUBackMat={};
+  units.forEach(function(u){if(u&&u.type==='cabinet'&&u.id){_cabHasUBackAll[u.id]=true;_cabUBackMat[u.id]=u.mat;}});
   function _processLoaded(it){var file=it.file,mat=it.mat,wb=it.wb;
       try{if(!wb)throw new Error('could not open file');
         wb.SheetNames.forEach(function(sn){
@@ -2333,6 +2333,9 @@ function handleExcel(files){
               // "N#" cabinet numbers (cab.forcePart) are ALWAYS loose parts,
               // regardless of UBack — drafters use "N" for off-list items.
               var type=cab.forcePart?'panel':(cabHasUBack[cab.id]?baseType:'panel');
+              // v280: a BLIND PANEL made from the SAME material as its cabinet's UBack (e.g. HMR 16mm carcass) is an inside carcass part of that cabinet.
+              // A blind panel in a different (finish) material stays a loose part scanned on its own.
+              if(type==='panel'&&!cab.forcePart&&cabHasUBack[cab.id]&&/blind\s*panel/i.test(partName)&&_cabUBackMat[cab.id]===mat)type='cabinet';
               // Use per-cabinet qty (from cabRef parentheses, e.g. "R9:903(2)")
               // NOT the row's total qty (column 0) — that's the SUM across all cabinets.
               var perCabQty=cab.qty||1;
@@ -2416,7 +2419,7 @@ function handleExcel(files){
         _loaded.forEach(function(it){if(!it.wb)return;it.wb.SheetNames.forEach(function(sn){
           var rws=XLSX.utils.sheet_to_json(it.wb.Sheets[sn],{header:1,defval:''});
           rws.forEach(function(row){if(!row||row.length<4)return;var pn0=String(row[3]||'').trim(),cr0=String(row[4]||'').trim();
-            if(!cr0||!pn0||!isUBack(pn0))return;parseCabRef(cr0).forEach(function(cb){_cabHasUBackAll[cb.id]=true;});});});});
+            if(!cr0||!pn0||!isUBack(pn0))return;parseCabRef(cr0).forEach(function(cb){_cabHasUBackAll[cb.id]=true;if(!_cabUBackMat[cb.id])_cabUBackMat[cb.id]=it.mat;});});});});
         _loaded.forEach(function(it){_processLoaded(it);});
       }
     };reader.readAsArrayBuffer(file);
@@ -7743,7 +7746,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v280 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v281 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9576,7 +9579,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=280;
+var APP_VERSION=281;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
