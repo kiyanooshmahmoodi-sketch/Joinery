@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v254 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v255 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -7642,7 +7642,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v254 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v255 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9025,6 +9025,9 @@ function cloudDelete(id){
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
 // ===== v253: SAFE UPLOAD QUEUE — photos & voice are kept on this device and uploaded automatically whenever there is internet =====
+var _upDone={};
+function upNotify(){var k=Object.keys(_upDone);if(!k.length)return;var box=document.getElementById('up-toast');if(!box){box=document.createElement('div');box.id='up-toast';box.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:99999;max-width:92vw;display:flex;flex-direction:column;gap:6px;pointer-events:none;';document.body.appendChild(box);}
+  k.forEach(function(n){var d=_upDone[n],parts=[];if(d.p)parts.push(d.p+' photo'+(d.p>1?'s':''));if(d.v)parts.push(d.v+' voice clip'+(d.v>1?'s':''));var t=document.createElement('div');t.style.cssText='background:#15803d;color:#fff;font-weight:700;font-size:13px;padding:10px 14px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.3);';t.textContent='☁ Uploaded ✓  '+n+' — '+parts.join(' + ');box.appendChild(t);setTimeout(function(){t.remove();},9000);});_upDone={};}
 var _upQ=[],_upOK={},_upBusy=false,_upFail={},_upLoaded=false,_upScanT=0,_upToast=false;
 async function upLoad(){if(_upLoaded)return;_upLoaded=true;
   try{var r=await window.storage.get('cbk-upq');if(r&&r.value)_upQ=JSON.parse(r.value)||[];}catch(e){}
@@ -9052,13 +9055,14 @@ async function upKick(){
       try{
         await Promise.race([cloud.db.collection('photos').doc(id).set({d:d,job:q.job||'',at:firebase.firestore.FieldValue.serverTimestamp()}),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},25000);})]);
         _upOK[id]=1;_upQ.shift();upSave();upStat();
+        var jb=allJobs[q.job]||{},jn=jb.name||jb.projectName||jb.project||jb.title||'Project';var dd=_upDone[jn]=_upDone[jn]||{p:0,v:0};if(/^data:audio/.test(d))dd.v++;else dd.p++;
       }catch(e){
         if(e&&(e.code==='invalid-argument'||/exceeds|too large|size/i.test(e.message||''))){_upFail[id]=1;_upQ.shift();upSave();continue;}
         break;}  // no internet / server busy — try again later
     }
   }finally{_upBusy=false;}
   upStat();
-  if(!_upQ.length&&_upToast){_upToast=false;try{showMsg('☁ Photos & voice uploaded ✓');}catch(e){}}}
+  if(!_upQ.length&&_upToast){_upToast=false;try{upNotify();}catch(e){}}}
 window.addEventListener('online',function(){upKick();try{cloudFlush();}catch(e){}});
 window.addEventListener('offline',upStat);
 function upWake(){_upScanT=0;upKick();try{cloudFlush();}catch(e){}}
@@ -9365,7 +9369,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=254;
+var APP_VERSION=255;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
