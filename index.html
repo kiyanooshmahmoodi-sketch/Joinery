@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v260 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v261 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1419,13 +1419,21 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div id="inst-log"><div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">No installs yet</div></div>
   </div>
-  <div id="inst-drawings" class="card" style="margin-top:6px;border-top:3px solid #bae6fd;">
+  <div id="inst-drawings-prod" class="card" style="margin-top:6px;border-top:3px solid #bae6fd;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-      <div><div style="font-size:18px;font-weight:800;">📐 Production Drawings</div><div style="font-size:12px;color:#64748b;">PDF plans for this project — installers can open them on site, even without internet.</div></div>
-      <label id="dr-up" class="btn btn-sm" style="cursor:pointer;background:#0284c7;color:#fff;border:0;display:none;">⬆ Upload PDF<input type="file" accept="application/pdf,.pdf" multiple style="display:none" onchange="drUpload(this)"></label>
+      <div><div style="font-size:18px;font-weight:800;">📐 Production Drawings</div><div style="font-size:12px;color:#64748b;">PDF production plans for this project — installers can open them on site, even without internet.</div></div>
+      <label id="dr-up-prod" class="btn btn-sm" style="cursor:pointer;background:#0284c7;color:#fff;border:0;display:none;">⬆ Upload PDF<input type="file" accept="application/pdf,.pdf" multiple style="display:none" onchange="drUpload(this,'prod')"></label>
     </div>
-    <div id="dr-pending" style="font-size:11px;color:#94a3b8;"></div>
-    <div id="dr-list"></div>
+    <div id="dr-pending-prod" style="font-size:11px;color:#94a3b8;"></div>
+    <div id="dr-list-prod"></div>
+  </div>
+  <div id="inst-drawings-arch" class="card" style="margin-top:6px;border-top:3px solid #ddd6fe;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+      <div><div style="font-size:18px;font-weight:800;">🏛 Architect Drawings</div><div style="font-size:12px;color:#64748b;">PDF architect plans for this project — also available offline once downloaded.</div></div>
+      <label id="dr-up-arch" class="btn btn-sm" style="cursor:pointer;background:#0284c7;color:#fff;border:0;display:none;">⬆ Upload PDF<input type="file" accept="application/pdf,.pdf" multiple style="display:none" onchange="drUpload(this,'arch')"></label>
+    </div>
+    <div id="dr-pending-arch" style="font-size:11px;color:#94a3b8;"></div>
+    <div id="dr-list-arch"></div>
   </div>
   <div id="inst-issues" style="margin-top:6px;border-top:3px solid #fecaca;padding-top:14px;">
   <div class="flex ai-c jb" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;">
@@ -7673,7 +7681,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v260 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v261 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9058,9 +9066,9 @@ function cloudDelete(id){
 // ===== v259: PRODUCTION DRAWINGS (PDF) in Installation =====
 function tomb(id){var j=siJob();if(!j)return;j.deleted=j.deleted||[];if(j.deleted.indexOf(id)<0)j.deleted.push(id);}
 function drMB(n){return (n/1048576).toFixed(1)+' MB';}
-async function drUpload(inp){
+async function drUpload(inp,kind){kind=kind||'prod';
   var j=siJob();var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';if(!j){alert('Open a project first.');return;}
-  var pe=document.getElementById('dr-pending');
+  var pe=document.getElementById('dr-pending-'+kind);
   for(var i=0;i<fs.length;i++){var f=fs[i];
     if(!/pdf$/i.test(f.type)&&!/\.pdf$/i.test(f.name)){alert(f.name+' is not a PDF.');continue;}
     if(f.size>50*1048576){alert(f.name+' is '+drMB(f.size)+' — too big (max 50 MB). Please compress the PDF first.');continue;}
@@ -9070,11 +9078,12 @@ async function drUpload(inp){
       var id='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
       await window.storage.set('cbkph:'+id,d);
       j.drawings=j.drawings||[];
-      j.drawings.unshift({id:id,name:f.name.replace(/\.pdf$/i,''),size:f.size,date:new Date().toLocaleString('en-AU'),by:(window.SESSION&&SESSION.name)||''});
+      j.drawings.unshift({kind:kind,id:id,name:f.name.replace(/\.pdf$/i,''),size:f.size,date:new Date().toLocaleString('en-AU'),by:(window.SESSION&&SESSION.name)||''});
       siSave();upEnqueue(id,currentJobId||'');
     }catch(e){alert('Could not save '+f.name+' on this device.');}
   }
   if(pe)pe.textContent='';renderDrawings();}
+function drKind(x){return x.kind==='arch'?'arch':'prod';}
 function drDelete(id){var j=siJob();if(!j||!confirm('Delete this drawing for everyone?'))return;
   j.drawings=(j.drawings||[]).filter(function(x){return x.id!==id;});tomb(id);siSave();
   try{window.storage.delete&&window.storage.delete('cbkph:'+id);}catch(e){}
@@ -9092,19 +9101,20 @@ async function drOpen(id,name){
   document.body.appendChild(o);document.getElementById('dr-x').onclick=function(){o.remove();setTimeout(function(){URL.revokeObjectURL(url);},2000);};}
 var _drBusy=false;
 async function renderDrawings(){
-  var box=document.getElementById('dr-list');if(!box)return;var j=siJob();
-  var adm=window.SESSION&&SESSION.role==='admin';var up=document.getElementById('dr-up');if(up)up.style.display=adm?'':'none';
-  var list=j?(j.drawings||[]):[];
-  if(!list.length){box.innerHTML='<div style="color:#94a3b8;font-size:13px;padding:8px 0;">'+(j?'No production drawings uploaded yet.':'Open a project first.')+'</div>';return;}
-  var loc={};for(var i=0;i<list.length;i++){try{var r=await window.storage.get('cbkph:'+list[i].id);loc[list[i].id]=!!(r&&r.value);}catch(e){}}
-  box.innerHTML=list.map(function(x){var has=loc[x.id];
-    return '<div class="card" style="margin:6px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-left:4px solid #0284c7;">'+
-     '<div style="flex:1;min-width:150px;"><div style="font-weight:800;">📄 '+esc(x.name)+'</div><div style="font-size:11px;color:#94a3b8;">'+drMB(x.size||0)+' · '+esc(x.date||'')+(x.by?' · '+esc(x.by):'')+'</div>'+
-     '<div style="font-size:11px;font-weight:700;color:'+(has?'#15803d':'#b45309')+';">'+(has?'✓ Saved on this device — works offline':'☁ Not on this device yet — downloading when online…')+'</div></div>'+
-     '<button class="btn btn-sm" style="background:#0284c7;color:#fff;border:0;" onclick="drOpen(\''+x.id+'\',\''+qe(x.name)+'\')">Open</button>'+
-     (adm?'<button class="btn btn-outline btn-sm" style="color:#dc2626;" onclick="drDelete(\''+x.id+'\')">🗑</button>':'')+'</div>';}).join('');
-  // download missing drawings in the background so they are available on site without internet
-  if(!_drBusy&&navigator.onLine){_drBusy=true;try{var got=false;for(var k=0;k<list.length;k++){if(!loc[list[k].id]){var d=await siGetPhoto(list[k].id);if(d)got=true;}}if(got){_drBusy=false;renderDrawings();return;}}catch(e){}_drBusy=false;}}
+  var j=siJob();var adm=window.SESSION&&SESSION.role==='admin';var missing=false,allList=j?(j.drawings||[]):[];
+  var loc={};for(var i=0;i<allList.length;i++){try{var r=await window.storage.get('cbkph:'+allList[i].id);loc[allList[i].id]=!!(r&&r.value);}catch(e){}}
+  ['prod','arch'].forEach(function(k){
+    var box=document.getElementById('dr-list-'+k);if(!box)return;
+    var up=document.getElementById('dr-up-'+k);if(up)up.style.display=adm?'':'none';
+    var list=allList.filter(function(x){return drKind(x)===k;});
+    if(!list.length){box.innerHTML='<div style="color:#94a3b8;font-size:13px;padding:8px 0;">'+(j?'No '+(k==='arch'?'architect':'production')+' drawings uploaded yet.':'Open a project first.')+'</div>';return;}
+    box.innerHTML=list.map(function(x){var has=loc[x.id];if(!has)missing=true;
+      return '<div class="card" style="margin:6px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-left:4px solid '+(k==='arch'?'#7c3aed':'#0284c7')+';">'+
+       '<div style="flex:1;min-width:150px;"><div style="font-weight:800;">📄 '+esc(x.name)+'</div><div style="font-size:11px;color:#94a3b8;">'+drMB(x.size||0)+' · '+esc(x.date||'')+(x.by?' · '+esc(x.by):'')+'</div>'+
+       '<div style="font-size:11px;font-weight:700;color:'+(has?'#15803d':'#b45309')+';">'+(has?'✓ Saved on this device — works offline':'☁ Not on this device yet — downloading when online…')+'</div></div>'+
+       '<button class="btn btn-sm" style="background:#0284c7;color:#fff;border:0;" onclick="drOpen(\''+x.id+'\',\''+qe(x.name)+'\')">Open</button>'+
+       (adm?'<button class="btn btn-outline btn-sm" style="color:#dc2626;" onclick="drDelete(\''+x.id+'\')">🗑</button>':'')+'</div>';}).join('');});
+  if(!_drBusy&&navigator.onLine&&missing){_drBusy=true;try{var got=false;for(var k=0;k<allList.length;k++){if(!loc[allList[k].id]){var d=await siGetPhoto(allList[k].id);if(d)got=true;}}if(got){_drBusy=false;renderDrawings();return;}}catch(e){}_drBusy=false;}}
 var _ris=renderInstallStats;renderInstallStats=function(){_ris.apply(this,arguments);try{renderDrawings();}catch(e){}};
 
 // ===== v253: SAFE UPLOAD QUEUE — photos & voice are kept on this device and uploaded automatically whenever there is internet =====
@@ -9473,7 +9483,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=260;
+var APP_VERSION=261;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
