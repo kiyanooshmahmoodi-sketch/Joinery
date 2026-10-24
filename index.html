@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v285 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v286 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1731,12 +1731,14 @@ function classify(name){
   }
   // Drawer / DWR / DRW are all the same thing: the drawer FRONT or FACE is a loose part (any separator, e.g. Drawer-Front, DWR_Face, DRW Front)
   // NOTE: only the visible drawer FRONT/FACE is a loose part: "Drawer Front/Face", "Drw Face", "Dwr Face". "Drw Front"/"Dwr Front" is the drawer BOX front inside the carcass.
-  // v284: any Drawer/DRW/DWR name with "front" (Drawer Front, Drw Front, Dwr Front, CBK-Drawer Front, Drw1 Front…) is part of the drawer BOX → CABINET (with Left/Right Side, Back, Bottom).
-  if(/(drawer|drw|dwr)/.test(nn)&&nn.indexOf('front')!==-1)return'cabinet';
-  // Drawer Face / Drw Face / Dwr Face = visible face → loose PART
-  if(/drawerface|(drw|dwr)face/.test(nn))return'panel';
-  // A part named EXACTLY "Drawer", "DRW" or "DWR" (no prefix, no suffix) is the visible drawer front → loose part. Any prefix/suffix (Drw Front, Drw Side, Drw Bottom…) is the drawer box inside the carcass.
-  if(/^(drawer|drw|dwr)\d*$/.test(nn))return'panel';   // also with a number: DRW1, Drawer 2, DWR-3
+  // v286 DRAWER RULE: any name containing Drawer / DRW / DWR (any prefix, suffix, number, e.g. FP-DWR, DRW1, Drawer Face) is a loose PART,
+  // EXCEPT the drawer BOX pieces — Front, Back, Bottom, Left/Right Side (e.g. Drawer Front, Drw L Side, Dwr Back, Drawer Bottom) — which stay in the CABINET.
+  // (Anything containing UBack is always a cabinet — decided by isUBack() before classify() is used.)
+  if(/(drawer|drw|dwr)/.test(nn)){
+    if(nn.indexOf('uback')!==-1)return'cabinet';
+    if(/front|back|bottom|side/.test(nn))return'cabinet';
+    return'panel';
+  }
   // Check full IND list
   for(var i=0;i<IND.length;i++){if(n.indexOf(IND[i])!==-1)return'panel';}
   return'cabinet';
@@ -1779,7 +1781,7 @@ function isUBack(name){
 //   kickboard · shadowline · underpanel · bulkhead · barback · bench/benchtop
 //   · shelf support · stile · join/joining/joiner · TRAY FACE (only).
 // TRAY: only "tray face" is a PART; every other tray part is a cabinet part.
-// DRAWER (v284): exactly Drawer / DRW / DWR (optionally + a number) and Drawer Face / Drw Face / Dwr Face = loose PART. Any Drawer/DRW/DWR name containing Front (Drawer Front, Drw Front…) + Left/Right Side, Back, Bottom = drawer BOX → stays in the CABINET.
+// DRAWER (v286): ANY name with Drawer / DRW / DWR (any prefix/suffix/number: FP-DWR, DRW1, Drawer Face…) = loose PART, EXCEPT Front / Back / Bottom / Left-Right Side names (drawer BOX) = CABINET.
 //   Anything else with a prefix/suffix (Drw Front, Drw Side, Drw Bottom, Drawer Side…) = drawer BOX = cabinet part.
 // BLIND PANEL: same material as the cabinet's UBack → part of the cabinet; different material (Grain etc.) → loose part.
 // CABINET: anything containing UBack (any prefix/suffix/separator/material).
@@ -1791,9 +1793,9 @@ function _selfCheckRules(){
   try{
     var fails=[];
     var mustCab=['UBack','U Back','U-Back','U_Back','U/Back','CBK-UBack','1UBack','WHITE HMR UBACK'];
-    var mustPart=['Door','Drawer Face','DRW Face','DWR_Face','Drawer-Face','Drawer','DRW','DWR','drw','DRW1','Drawer2','Drawer 3','DWR-4','Shadowline','Shadow-Line','Fingerpull','Finger-Pull','Finger Rail','Kick','Filler','Appliance Filler','Tray Face','CBK-Tray Face'];
+    var mustPart=['Door','Drawer Face','DRW Face','DWR_Face','Drawer-Face','Drawer','DRW','DWR','drw','DRW1','Drawer2','Drawer 3','DWR-4','FP-DWR','FP DRW','CBK-Drawer','DWR 2','Drawer Panel','Shadowline','Shadow-Line','Fingerpull','Finger-Pull','Finger Rail','Kick','Filler','Appliance Filler','Tray Face','CBK-Tray Face'];
     var mustNotUback=['Back','Drawer Back','Door Back','Aluminium Backing'];
-    var mustCabPart=['Drawer Front','CBK-Drawer Front','DRW Front','DWR Front','Drawer Front 2','Drawer Left Side','Drawer Right Side','Drw Front','Dwr Front','Drw Back','Drw Side','Drw Bottom','Drawer Side','Drawer Bottom','Drawer Back','Drw1 Front'];
+    var mustCabPart=['Drw L Side','Drw R Side','Drw Bottom','Drw Back','Dwr Left Side','Drawer Right Side','Drawer Front','CBK-Drawer Front','DRW Front','DWR Front','Drawer Front 2','Drawer Left Side','Drawer Right Side','Drw Front','Dwr Front','Drw Back','Drw Side','Drw Bottom','Drawer Side','Drawer Bottom','Drawer Back','Drw1 Front'];
     var trayCab=['Tray Bottom','Tray Side','Tray Back','Tray Runner','Tray Panel','Cutlery Tray'];
     mustCab.forEach(function(s){if(!isUBack(s))fails.push('UBack missed: '+s);});
     mustNotUback.forEach(function(s){if(isUBack(s))fails.push('UBack false+: '+s);});
@@ -7811,7 +7813,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v285 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v286 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
