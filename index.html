@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v282 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v283 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -3313,7 +3313,7 @@ function renderUnits(q){
     '</div>':'')+
     '<div class="ucard-head"><div class="ucard-id">'+icon+' '+u.id+'</div>'+
     '<span class="ubadge" style="background:'+typeCol+';color:#fff;font-weight:700;">'+typeLabel.toUpperCase()+'</span></div>'+
-    '<div class="umat">'+(u.mat?matL(u.mat):'—')+'</div><div class="uroom">🏠 '+(u.room||'—')+'</div>'+
+    '<div class="umat">'+(u.mat?matL(u.mat):'—')+'</div>'+edgeTag(u)+'<div class="uroom">🏠 '+(u.room||'—')+'</div>'+
     (u.type==='cabinet'?'<div class="parts-chips">'+parts.slice(0,6).map(function(p){return'<span class="chip">'+(typeof p==='string'?p:(p&&p.name)||'')+'</span>';}).join('')+(parts.length>6?'<span class="chip">+'+(parts.length-6)+'</span>':'')+'</div>':'')+
     '<div class="ufoot"></div></div>';
   }
@@ -3656,7 +3656,7 @@ function filterDetail(q){
         '<td><span class="drow-id">'+u.id+'</span></td>'+
         '<td><span class="drow-room">🏠 '+(u.room||'—')+'</span></td>'+
         typeCell+
-        '<td class="drow-mat">'+(u.mat?matL(u.mat):'—')+'</td>'+
+        '<td class="drow-mat">'+(u.mat?matL(u.mat):'—')+edgeTag(u)+'</td>'+
         '<td style="font-size:11px;color:var(--gray);">'+u.parts.length+' parts<div style="font-size:10px;color:#94a3b8;margin-top:2px;">'+pnames+'</div></td>'+
         '<td style="text-align:center;">'+([(u.isPTO?'<span style="font-size:10px;background:#fce7f3;color:#ec4899;padding:2px 7px;border-radius:5px;font-weight:700;">🔘 PTO</span>':''),(hasHW(u)?'<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:5px;font-weight:700;">🔧 Hardware</span>':''),(hasCurve(u)?'<span style="font-size:10px;background:#ede9fe;color:#6d28d9;padding:2px 7px;border-radius:5px;font-weight:700;">〰️ Curve</span>':'')].filter(Boolean).join(' ')||'—')+'</td>'+
         hwCell+
@@ -3701,7 +3701,7 @@ function filterDetail(q){
         '<td><span class="drow-room">🏠 '+(u.room||'—')+'</span></td>'+
         catCell+
         '<td class="drow-part">'+(isGlass?'<span style="color:#0284c7;font-weight:600;">🔲 '+pname+'</span>':isDoor?'<span style="color:#ef4444;font-weight:600;">🚪 '+pname+'</span>':pname)+'</td>'+
-        '<td class="drow-mat">'+(u.mat?matL(u.mat):'—')+'</td>'+
+        '<td class="drow-mat">'+(u.mat?matL(u.mat):'—')+edgeTag(u)+'</td>'+
         handingCell+
         dimsCell+
         '<td>'+_qcCell(u)+'</td>'+
@@ -5572,6 +5572,7 @@ function renderMaterials(){
         '<span><b style="color:'+color+';font-family:\'JetBrains Mono\',monospace;font-size:15px;">'+g.panels+'</b> parts</span>'+
         '<span><b style="color:#16a34a;font-family:\'JetBrains Mono\',monospace;font-size:15px;">'+g.shipped+'</b> shipped</span>'+
       '</div>'+
+      (isEdgeMat(m)?edgeEditor(m,g.units,color):'')+
       '<div style="height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden;margin-bottom:10px;"><div style="height:100%;width:'+pct+'%;background:'+color+';border-radius:3px;"></div></div>'+
       '<div style="display:flex;gap:4px;flex-wrap:wrap;">'+
         '<button onclick="printByMaterial(\''+m.replace(/'/g,"\\'")+'\',\'cabs\')" style="flex:1;min-width:90px;background:#0284c7;color:#fff;border:none;padding:7px 8px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;" title="Print only cabinets">🗄️ Cabs ('+g.cabs+')</button>'+
@@ -5583,6 +5584,34 @@ function renderMaterials(){
   }).join('');
 }
 
+// ===== v283: Edge colour per cabinet / part for White Satin 16 (Colour Edge) =====
+function isEdgeMat(m){return /white\s*satin\s*16(?!\d)/i.test(String(m||''));}
+function edgeOf(u){return (u&&u.edge)?String(u.edge):'';}
+function edgeTag(u){var e=edgeOf(u);return e?'<div style="font-size:11px;font-weight:800;color:#be185d;margin-top:3px;">🎨 Edge: '+esc(e)+'</div>':'';}
+function setUnitEdge(id,val){
+  var u=units.find(function(x){return x.id===id;});if(!u)return;
+  u.edge=String(val||'').trim();if(!u.edge)delete u.edge;
+  saveData();try{refresh();}catch(e){}showMsg(u.edge?'✓ Edge colour saved for '+id:'✓ Edge colour cleared for '+id);
+}
+function setAllEdge(mat,val){
+  val=String(val||'').trim();if(!val)return;
+  var n=0;units.forEach(function(u){if((u.mat||'(no material)')===mat&&!u.edge){u.edge=val;n++;}});
+  saveData();renderMaterials();try{refresh();}catch(e){}showMsg('✓ Edge colour "'+val+'" set on '+n+' empty item(s)');
+}
+function edgeEditor(m,list,color){
+  var emp=list.filter(function(u){return !u.edge;}).length;
+  var rows=list.map(function(u){
+    var nm=u.type==='cabinet'?'🗄️ Cabinet':'🚪 '+esc((u.parts&&u.parts[0]&&u.parts[0].name)||'Part');
+    return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:5px;">'+
+      '<div style="flex:0 0 46%;min-width:0;font-size:11px;"><b style="font-family:monospace;">'+esc(u.id)+'</b><div style="color:#64748b;font-size:10px;">'+nm+(u.room?' · '+esc(u.room):'')+'</div></div>'+
+      '<input value="'+qe(u.edge||'')+'" placeholder="Edge colour…" spellcheck="false" onchange="setUnitEdge(\''+String(u.id).replace(/'/g,"\\'")+'\',this.value)" '+
+      'style="flex:1;min-width:0;padding:5px 7px;font-size:12px;font-weight:700;color:#be185d;border:1px solid #f9a8d4;border-radius:5px;font-family:inherit;background:#fdf2f8;"/></div>';}).join('');
+  return '<details style="margin-bottom:10px;border:1px solid #f9a8d4;border-radius:8px;padding:8px 10px;background:#fff7fb;">'+
+    '<summary style="cursor:pointer;font-size:12px;font-weight:800;color:#be185d;">🎨 Edge colours ('+(list.length-emp)+'/'+list.length+' set)</summary>'+
+    '<div style="margin:8px 0;display:flex;gap:6px;"><input id="edge-all-'+m.replace(/[^a-zA-Z0-9]/g,'_')+'" placeholder="Same colour for all empty…" spellcheck="false" style="flex:1;min-width:0;padding:5px 7px;font-size:12px;border:1px solid #cbd5e1;border-radius:5px;font-family:inherit;"/>'+
+    '<button onclick="setAllEdge(\''+m.replace(/'/g,"\\'")+'\',document.getElementById(\'edge-all-'+m.replace(/[^a-zA-Z0-9]/g,'_')+'\').value)" style="background:#be185d;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">Apply</button></div>'+
+    '<div style="max-height:320px;overflow:auto;">'+rows+'</div></details>';
+}
 function setMatPrintOrder(mat,val){
   var n=parseInt(val,10);
   if(isNaN(n)||n<1){delete matPrintOrder[mat];}else{matPrintOrder[mat]=n;}
@@ -5673,7 +5702,7 @@ function printByMaterial(mat,filter){
   cabs.forEach(function(u){totalPieces+=(u.parts||[]).reduce(function(s,p){return s+(parseInt(p.qty)||1);},0);});
   totalPieces+=pans.length;
   var win=window.open('','_blank');
-  function rowOfPart(p,i,cabId,room){
+  function rowOfPart(p,i,cabId,room,edge){
     return'<tr>'+
       '<td style="padding:6px;color:#94a3b8;">'+(i+1)+'</td>'+
       '<td style="padding:6px;font-family:monospace;font-weight:700;color:#0284c7;">'+(cabId||'—')+'</td>'+
@@ -5681,6 +5710,7 @@ function printByMaterial(mat,filter){
       '<td style="padding:6px;text-align:center;font-family:monospace;">'+(p.w||0)+'×'+(p.h||0)+'</td>'+
       '<td style="padding:6px;text-align:center;font-weight:800;">'+(p.qty||1)+'</td>'+
       '<td style="padding:6px;font-size:10px;color:#64748b;">'+(p.edgeband||'—')+'</td>'+
+      '<td style="padding:6px;font-weight:800;color:#be185d;">'+(edge||'')+'</td>'+
       '<td style="padding:6px;color:#64748b;">'+(room||'—')+'</td>'+
       '<td style="padding:6px;font-size:10px;color:#475569;">'+(p.comment||'—')+'</td>'+
     '</tr>';
@@ -5696,12 +5726,13 @@ function printByMaterial(mat,filter){
         '<th style="padding:8px;text-align:center;width:90px;">W×H</th>'+
         '<th style="padding:8px;text-align:center;width:50px;">QTY</th>'+
         '<th style="padding:8px;text-align:left;width:100px;">EDGEBAND</th>'+
+        '<th style="padding:8px;text-align:left;width:90px;color:#be185d;">EDGE COLOUR</th>'+
         '<th style="padding:8px;text-align:left;width:60px;">ROOM</th>'+
         '<th style="padding:8px;text-align:left;">COMMENT</th>'+
       '</tr></thead><tbody>';
     var idx=0;
     cabs.forEach(function(u){
-      (u.parts||[]).forEach(function(p){idx++;sectionHtml+=rowOfPart(p,idx-1,u.cabId,u.room);});
+      (u.parts||[]).forEach(function(p){idx++;sectionHtml+=rowOfPart(p,idx-1,u.cabId,u.room,u.edge);});
     });
     sectionHtml+='</tbody></table>';
   }
@@ -5715,11 +5746,12 @@ function printByMaterial(mat,filter){
         '<th style="padding:8px;text-align:center;width:90px;">W×H</th>'+
         '<th style="padding:8px;text-align:center;width:50px;">QTY</th>'+
         '<th style="padding:8px;text-align:left;width:100px;">EDGEBAND</th>'+
+        '<th style="padding:8px;text-align:left;width:90px;color:#be185d;">EDGE COLOUR</th>'+
         '<th style="padding:8px;text-align:left;width:60px;">ROOM</th>'+
         '<th style="padding:8px;text-align:left;">COMMENT</th>'+
       '</tr></thead><tbody>';
     pans.forEach(function(u,i){
-      (u.parts||[]).forEach(function(p){sectionHtml+=rowOfPart(p,i,u.cabId||u.id,u.room);});
+      (u.parts||[]).forEach(function(p){sectionHtml+=rowOfPart(p,i,u.cabId||u.id,u.room,u.edge);});
     });
     sectionHtml+='</tbody></table>';
   }
@@ -7755,7 +7787,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v282 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v283 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9289,7 +9321,7 @@ function mergeJobs(base,other){var m=JSON.parse(JSON.stringify(base));
   var mu=Array.isArray(m.units)?m.units:[],idx={};mu.forEach(function(u,i){if(u&&u.id!=null)idx[u.id]=i;});
   (Array.isArray(other.units)?other.units:[]).forEach(function(u){if(!u||u.id==null)return;
     if(!(u.id in idx)){idx[u.id]=mu.length;mu.push(JSON.parse(JSON.stringify(u)));}
-    else{var i=idx[u.id];if(ev(u)>ev(mu[i]))mu[i]=JSON.parse(JSON.stringify(u));}});
+    else{var i=idx[u.id];var _ed=mu[i].edge||u.edge;if(ev(u)>ev(mu[i]))mu[i]=JSON.parse(JSON.stringify(u));if(_ed&&!mu[i].edge)mu[i].edge=_ed;}});
   m.units=mu;
   ['dispatches','shipLog'].forEach(function(k){var a=Array.isArray(m[k])?m[k]:[],seen={};a.forEach(function(x){seen[JSON.stringify(x)]=1;});
     (Array.isArray(other[k])?other[k]:[]).forEach(function(x){var j=JSON.stringify(x);if(!seen[j]){seen[j]=1;a.push(x);}});m[k]=a;});
