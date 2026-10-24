@@ -1038,7 +1038,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v255 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v256 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -7642,7 +7642,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v255 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v256 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9075,7 +9075,17 @@ function _hs(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i
 var _SYNC_ARR=['siteIssues','installIssues','notesList','sketches'];
 function mergeJobs(base,other){var m=JSON.parse(JSON.stringify(base));
   _SYNC_ARR.forEach(function(k){var a=Array.isArray(m[k])?m[k]:[];var have={};a.forEach(function(x){if(x&&x.id)have[x.id]=1;});
-    (Array.isArray(other[k])?other[k]:[]).forEach(function(x){if(x&&x.id&&!have[x.id])a.push(x);});m[k]=a;});return m;}
+    (Array.isArray(other[k])?other[k]:[]).forEach(function(x){if(x&&x.id&&!have[x.id])a.push(x);});m[k]=a;});
+  // scans: each cabinet/part is its own record — keep whichever side has more QC/dispatch/install history, add any record the other side has
+  var ev=function(u){return((u.qcLog||[]).length)+((u.dispatchLog||[]).length)+((u.installLog||[]).length);};
+  var mu=Array.isArray(m.units)?m.units:[],idx={};mu.forEach(function(u,i){if(u&&u.id!=null)idx[u.id]=i;});
+  (Array.isArray(other.units)?other.units:[]).forEach(function(u){if(!u||u.id==null)return;
+    if(!(u.id in idx)){idx[u.id]=mu.length;mu.push(JSON.parse(JSON.stringify(u)));}
+    else{var i=idx[u.id];if(ev(u)>ev(mu[i]))mu[i]=JSON.parse(JSON.stringify(u));}});
+  m.units=mu;
+  ['dispatches','shipLog'].forEach(function(k){var a=Array.isArray(m[k])?m[k]:[],seen={};a.forEach(function(x){seen[JSON.stringify(x)]=1;});
+    (Array.isArray(other[k])?other[k]:[]).forEach(function(x){var j=JSON.stringify(x);if(!seen[j]){seen[j]=1;a.push(x);}});m[k]=a;});
+  return m;}
 function sigSave(){try{window.storage.set('cbk-cloudsig',JSON.stringify(cloud.sigH||{}));}catch(e){}}
 var _cloudFirstDone=false;
 function cloudFlush(){if(!_cloudFirstDone||!window.cloud||!cloud.db||!cloud.user||!navigator.onLine)return;cloud.sigH=cloud.sigH||{};
@@ -9369,7 +9379,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=255;
+var APP_VERSION=256;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
