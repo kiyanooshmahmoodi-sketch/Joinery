@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v277 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v278 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1700,7 +1700,7 @@ var camActive=false,camStream=null,scanTick=null,lastScan='',lastScanT=0;
 var lockedIds=[],pendingUnits=[],pendingGlass=[],pendingRods=[],_lastImportFileNames=[];
 
 // PART CLASSIFICATION
-var IND=['door','cbk-door','base door','drawer face','drawer front','drw face','drw front','dwr face','dwr front','cbk-drawer','cbk-drw','cbk-dwr',
+var IND=['door','cbk-door','base door','drawer face','drawer front','drw face','dwr face','cbk-drawer','cbk-drw','cbk-dwr',
   'panel','finished panel','exterior panel','linden panel','lindon panel','fend','cbk-fend','finished end',
   'filler','l filler','l shape filler','appliance filler','tall face filler','wall face filler','base face filler','face filler','cbk-filler',
   'finger','fingerpull','finger pull','fingerpull rail','fingernail','finger nail','finger rail','cbk-finger',
@@ -1730,7 +1730,8 @@ function classify(name){
     if(kw&&(n.indexOf(FORCE_IND[fi])!==-1||nn.indexOf(kw)!==-1))return'panel';
   }
   // Drawer / DWR / DRW are all the same thing: the drawer FRONT or FACE is a loose part (any separator, e.g. Drawer-Front, DWR_Face, DRW Front)
-  if(/(drawer|drw|dwr)(front|face)/.test(nn))return'panel';
+  // NOTE: only the visible drawer FRONT/FACE is a loose part: "Drawer Front/Face", "Drw Face", "Dwr Face". "Drw Front"/"Dwr Front" is the drawer BOX front inside the carcass.
+  if(/drawer(front|face)|(drw|dwr)face/.test(nn))return'panel';
   // Check full IND list
   for(var i=0;i<IND.length;i++){if(n.indexOf(IND[i])!==-1)return'panel';}
   return'cabinet';
@@ -1779,12 +1780,14 @@ function _selfCheckRules(){
   try{
     var fails=[];
     var mustCab=['UBack','U Back','U-Back','U_Back','U/Back','CBK-UBack','1UBack','WHITE HMR UBACK'];
-    var mustPart=['Door','Drawer Front','DWR Front','DRW Face','Drw-Front','DWR_Face','CBK-DRW Front','Drawer-Face','Shadowline','Shadow-Line','Fingerpull','Finger-Pull','Finger Rail','Kick','Filler','Appliance Filler','Tray Face','CBK-Tray Face'];
+    var mustPart=['Door','Drawer Front','DRW Face','DWR_Face','Drawer-Face','Shadowline','Shadow-Line','Fingerpull','Finger-Pull','Finger Rail','Kick','Filler','Appliance Filler','Tray Face','CBK-Tray Face'];
     var mustNotUback=['Back','Drawer Back','Door Back','Aluminium Backing'];
+    var mustCabPart=['Drw Front','Dwr Front','Drw Back','Drw Side','Drw Bottom'];
     var trayCab=['Tray Bottom','Tray Side','Tray Back','Tray Runner','Tray Panel','Cutlery Tray'];
     mustCab.forEach(function(s){if(!isUBack(s))fails.push('UBack missed: '+s);});
     mustNotUback.forEach(function(s){if(isUBack(s))fails.push('UBack false+: '+s);});
     mustPart.forEach(function(s){if(classify(s)!=='panel')fails.push('should be PART: '+s);});
+    mustCabPart.forEach(function(s){if(classify(s)!=='cabinet')fails.push('drawer BOX part should stay in CABINET: '+s);});
     trayCab.forEach(function(s){if(classify(s)!=='cabinet')fails.push('tray should be CABINET: '+s);});
     // HW / Curve flag checks (independent tags, never a getCabType() value)
     var mkUnit=function(ubackName,mat){return{type:'cabinet',mat:mat||'HMR',parts:[{name:ubackName,mat:mat||'HMR'},{name:'Bottom',mat:mat||'HMR'}]};};
@@ -2347,6 +2350,7 @@ function handleExcel(files){
               }else{
                 // Carcass parts of a UBack cabinet — group into ONE cabinet unit
                 if(!groups[cab.id])groups[cab.id]={id:cab.id,cabId:cab.id,room:cab.room,parts:[],mat:mat,status:'factory',shippedAt:null,type:'panel',isPTO:false,isJoining:false};
+                if(isUBack(partName))groups[cab.id].mat=mat;   // the cabinet's material is its UBack's material (not whichever file happened to be read first)
                 if(!groups[cab.id].parts.find(function(p){return p.name===partName;}))groups[cab.id].parts.push(entry);
                 if(isPTO)groups[cab.id].isPTO=true;
                 if(isJoining)groups[cab.id].isJoining=true;
@@ -7737,7 +7741,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v277 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v278 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9570,7 +9574,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=277;
+var APP_VERSION=278;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
