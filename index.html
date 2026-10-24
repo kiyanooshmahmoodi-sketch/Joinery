@@ -969,7 +969,13 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
         <button class="btn" style="flex:1;background:#dc2626;color:#fff;border:none;justify-content:center;" onclick="qcShowRejectForm()">❌ Reject</button>
       </div>
       <div id="qc-reject-form" style="display:none;margin-top:14px;">
-        <textarea id="qc-reject-reason" rows="3" placeholder="Reason for rejection (e.g. scratched panel, wrong size)..."></textarea>
+        <textarea id="qc-reject-reason" rows="3" spellcheck="true" placeholder="Reason for rejection (e.g. scratched panel, wrong size)..."></textarea>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;">
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;">📸 Take photo of the fault<input type="file" accept="image/*" capture="environment" style="display:none" onchange="qcPickPhotos(this,true)"></label>
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;">🖼 Gallery<input type="file" accept="image/*" multiple style="display:none" onchange="qcPickPhotos(this,false)"></label>
+          <span id="qc-pending" style="font-size:11px;color:#94a3b8;"></span>
+        </div>
+        <div id="qc-thumbs" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
         <div class="flex gap-8" style="margin-top:10px;">
           <button class="btn btn-outline" style="flex:1;justify-content:center;" onclick="qcHideRejectForm()">Cancel</button>
           <button class="btn" style="flex:1;background:#dc2626;color:#fff;border:none;justify-content:center;" onclick="qcSubmitReject()">Submit Rejection</button>
@@ -1038,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v257 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v258 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -2740,7 +2746,7 @@ function openQcModal(unitId){
   if(u.qcStatus==='approved'){
     html='<span style="color:#16a34a;font-weight:700;">✅ Currently Approved</span>';
   }else if(u.qcStatus==='rejected'){
-    html='<span style="color:#dc2626;font-weight:700;">❌ Currently Rejected</span><div style="margin-top:6px;padding:10px;background:#fef2f2;border-radius:8px;color:#7f1d1d;">Reason: '+(u.qcReason||'—').replace(/</g,'&lt;')+'</div>';
+    html='<span style="color:#dc2626;font-weight:700;">❌ Currently Rejected</span><div style="margin-top:6px;padding:10px;background:#fef2f2;border-radius:8px;color:#7f1d1d;">Reason: '+(u.qcReason||'—').replace(/</g,'&lt;')+(u.qcPhotos&&u.qcPhotos.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">'+qcThumbsHTML(u.qcPhotos,false)+'</div>':'')+'</div>';
   }else{
     html='<span style="color:#d97706;font-weight:700;">⏳ Pending — not yet checked</span>';
   }
@@ -2753,7 +2759,7 @@ function openQcModal(unitId){
       '<div style="font-size:12px;color:#78350f;margin-top:2px;">'+model.replace(/</g,'&lt;')+'</div>'+
     '</div>';
   }
-  statusEl.innerHTML=html;
+  statusEl.innerHTML=html;siHydrate(statusEl);
   qcHideRejectForm();
   document.getElementById('qc-modal-actions').style.display='flex';
   // Full history — always shown, so even an approved cabinet still shows any
@@ -2770,9 +2776,11 @@ function openQcModal(unitId){
         return'<div style="padding:8px 10px;border-bottom:1px solid var(--border-soft);font-size:11px;">'+
           '<div style="display:flex;justify-content:space-between;"><span style="font-weight:700;color:'+(ok?'#16a34a':'#dc2626')+';">'+(ok?'✅ Approved':'❌ Rejected')+'</span><span style="color:#94a3b8;">'+e.date+(e.by?' · 👤 '+String(e.by).replace(/</g,'&lt;'):'')+'</span></div>'+
           (e.reason?'<div style="color:var(--gray);margin-top:2px;">'+e.reason.replace(/</g,'&lt;')+'</div>':'')+
+          (e.photos&&e.photos.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">'+qcThumbsHTML(e.photos,false)+'</div>':'')+
         '</div>';
       }).join('')+
       '</div>';
+    siHydrate(histEl);
   }
   document.getElementById('qc-modal-bg').classList.add('show');
 }
@@ -2786,10 +2794,22 @@ function qcHideRejectForm(){
   document.getElementById('qc-reject-form').style.display='none';
   document.getElementById('qc-modal-actions').style.display='flex';
   var t=document.getElementById('qc-reject-reason');if(t)t.value='';
+  _qcNew=[];qcRenderNew();
 }
+var _qcNew=[];
+function qcThumbsHTML(ids,rm){return (ids||[]).map(function(id,i){return '<div style="position:relative;"><img data-pid="'+id+'" onclick="qcOpenPhoto(\''+id+'\')" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;cursor:pointer;">'+(rm?'<span onclick="qcRemoveNew('+i+')" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:50%;width:20px;height:20px;text-align:center;line-height:20px;font-size:12px;cursor:pointer;">✕</span>':'')+'</div>';}).join('');}
+function qcRenderNew(){var el=document.getElementById('qc-thumbs');if(!el)return;el.innerHTML=qcThumbsHTML(_qcNew,true);siHydrate(el);}
+function qcRemoveNew(i){_qcNew.splice(i,1);qcRenderNew();}
+async function qcPickPhotos(inp,cam){var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';var pe=document.getElementById('qc-pending');
+  for(var i=0;i<fs.length;i++){if(pe)pe.textContent='Processing photo '+(i+1)+' / '+fs.length+'…';
+    try{var d=await siCompress(fs[i]);if(cam){d=await skMarkup(d);if(!d)continue;}var id=await siStorePhoto(d);_qcNew.push(id);}catch(e){alert('Could not read photo: '+fs[i].name);}}
+  if(pe)pe.textContent='';qcRenderNew();}
+async function qcOpenPhoto(pid){var d=await siGetPhoto(pid);if(!d){alert('Photo not uploaded yet — it is still on the device that took it.');return;}
+  var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100000;display:flex;align-items:center;justify-content:center;';o.onclick=function(){o.remove();};
+  var im=document.createElement('img');im.src=d;im.style.cssText='max-width:96vw;max-height:92vh;border-radius:8px;';o.appendChild(im);document.body.appendChild(o);}
 function qcApprove(){
   var u=units.find(function(x){return x.id===_qcCurrentUnitId;});if(!u)return;
-  u.qcStatus='approved';u.qcReason='';
+  u.qcStatus='approved';u.qcReason='';u.qcPhotos=[];
   if(!Array.isArray(u.qcLog))u.qcLog=[];
   u.qcLog.push({status:'approved',reason:'',date:new Date().toLocaleString(),by:(window.SESSION?SESSION.name:'')});
   closeQcModal();refresh();renderQcStats();renderQcRoomGrid();renderQcLog();
@@ -2798,9 +2818,9 @@ function qcSubmitReject(){
   var reason=(document.getElementById('qc-reject-reason').value||'').trim();
   if(!reason){alert('Please write a reason for rejection.');return;}
   var u=units.find(function(x){return x.id===_qcCurrentUnitId;});if(!u)return;
-  u.qcStatus='rejected';u.qcReason=reason;
+  var ph=_qcNew.slice();_qcNew=[];u.qcStatus='rejected';u.qcReason=reason;u.qcPhotos=ph;
   if(!Array.isArray(u.qcLog))u.qcLog=[];
-  u.qcLog.push({status:'rejected',reason:reason,date:new Date().toLocaleString(),by:(window.SESSION?SESSION.name:'')});
+  u.qcLog.push({status:'rejected',reason:reason,photos:ph,date:new Date().toLocaleString(),by:(window.SESSION?SESSION.name:'')});
   closeQcModal();refresh();renderQcStats();renderQcRoomGrid();renderQcLog();
 }
 
@@ -2860,7 +2880,7 @@ function renderQcLog(){
   var log=document.getElementById('qc-log');if(!log)return;
   var entries=[];
   units.forEach(function(u){
-    (u.qcLog||[]).forEach(function(e){entries.push({id:u.id,status:e.status,reason:e.reason,date:e.date,by:e.by});});
+    (u.qcLog||[]).forEach(function(e){entries.push({id:u.id,status:e.status,reason:e.reason,photos:e.photos,date:e.date,by:e.by});});
   });
   entries.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   if(!entries.length){log.innerHTML='<div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">No checks yet</div>';return;}
@@ -2870,9 +2890,11 @@ function renderQcLog(){
       '<div style="display:flex;justify-content:space-between;"><b style="font-family:\'JetBrains Mono\',monospace;">'+e.id+'</b>'+
       '<span style="font-size:11px;font-weight:700;color:'+(ok?'#16a34a':'#dc2626')+';">'+(ok?'✅ Approved':'❌ Rejected')+'</span></div>'+
       (e.reason?'<div style="font-size:11px;color:var(--gray);margin-top:2px;">'+e.reason.replace(/</g,'&lt;')+'</div>':'')+
+      (e.photos&&e.photos.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">'+qcThumbsHTML(e.photos,false)+'</div>':'')+
       '<div style="font-size:10px;color:#94a3b8;margin-top:2px;">'+e.date+(e.by?' · 👤 '+String(e.by).replace(/</g,'&lt;'):'')+'</div>'+
     '</div>';
   }).join('');
+  siHydrate(log);
 }
 function clearQcLog(){
   units.forEach(function(u){u.qcLog=[];});
@@ -7642,7 +7664,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v257 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v258 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9381,7 +9403,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=257;
+var APP_VERSION=258;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
