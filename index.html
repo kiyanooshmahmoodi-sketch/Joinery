@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v271 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v273 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1677,6 +1677,7 @@ var hangingRails=[]; // {id, room, cabId, length, color, installation:'factory'|
 var glassDoors=[]; // {id, room, cabId, width, height, profileColor, glassType}
 var steccaItems=[]; // {id, type:'Steccawood'|'Laminate', model, color, size, qty, room, notes, workflow}
 var orderReminders={glass:'pending',laminate:'pending',steccawood:'pending',closetRod:'pending'}; // 'pending'|'yes'|'no'
+function matL(m){try{return (m&&matAliases&&matAliases[m])||m;}catch(e){return m;}}
 var matAliases={}; // {originalMat: customDisplayName} — user-defined renaming per project
 var hwAliases={}; // {originalHwModelText: customDisplayName} — user-defined renaming per project
 var matPrintOrder={}; // {originalMat: number} — controls material section order in Parts print (lower = first)
@@ -3277,7 +3278,7 @@ function renderUnits(q){
     '</div>':'')+
     '<div class="ucard-head"><div class="ucard-id">'+icon+' '+u.id+'</div>'+
     '<span class="ubadge" style="background:'+typeCol+';color:#fff;font-weight:700;">'+typeLabel.toUpperCase()+'</span></div>'+
-    '<div class="umat">'+(u.mat||'—')+'</div><div class="uroom">🏠 '+(u.room||'—')+'</div>'+
+    '<div class="umat">'+(u.mat?matL(u.mat):'—')+'</div><div class="uroom">🏠 '+(u.room||'—')+'</div>'+
     (u.type==='cabinet'?'<div class="parts-chips">'+parts.slice(0,6).map(function(p){return'<span class="chip">'+(typeof p==='string'?p:(p&&p.name)||'')+'</span>';}).join('')+(parts.length>6?'<span class="chip">+'+(parts.length-6)+'</span>':'')+'</div>':'')+
     '<div class="ufoot"></div></div>';
   }
@@ -3620,7 +3621,7 @@ function filterDetail(q){
         '<td><span class="drow-id">'+u.id+'</span></td>'+
         '<td><span class="drow-room">🏠 '+(u.room||'—')+'</span></td>'+
         typeCell+
-        '<td class="drow-mat">'+(u.mat||'—')+'</td>'+
+        '<td class="drow-mat">'+(u.mat?matL(u.mat):'—')+'</td>'+
         '<td style="font-size:11px;color:var(--gray);">'+u.parts.length+' parts<div style="font-size:10px;color:#94a3b8;margin-top:2px;">'+pnames+'</div></td>'+
         '<td style="text-align:center;">'+([(u.isPTO?'<span style="font-size:10px;background:#fce7f3;color:#ec4899;padding:2px 7px;border-radius:5px;font-weight:700;">🔘 PTO</span>':''),(hasHW(u)?'<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:5px;font-weight:700;">🔧 Hardware</span>':''),(hasCurve(u)?'<span style="font-size:10px;background:#ede9fe;color:#6d28d9;padding:2px 7px;border-radius:5px;font-weight:700;">〰️ Curve</span>':'')].filter(Boolean).join(' ')||'—')+'</td>'+
         hwCell+
@@ -3665,7 +3666,7 @@ function filterDetail(q){
         '<td><span class="drow-room">🏠 '+(u.room||'—')+'</span></td>'+
         catCell+
         '<td class="drow-part">'+(isGlass?'<span style="color:#0284c7;font-weight:600;">🔲 '+pname+'</span>':isDoor?'<span style="color:#ef4444;font-weight:600;">🚪 '+pname+'</span>':pname)+'</td>'+
-        '<td class="drow-mat">'+(u.mat||'—')+'</td>'+
+        '<td class="drow-mat">'+(u.mat?matL(u.mat):'—')+'</td>'+
         handingCell+
         dimsCell+
         '<td>'+_qcCell(u)+'</td>'+
@@ -3771,7 +3772,7 @@ function printDetail(){
             '<td>Room '+(u.room||'').replace('R','')+'</td>'+
             catTd+
             '<td>'+(isGlass?'<span class="glass-type">🔲 '+pname+'</span>':isDoor?'<span style="color:#ef4444;font-weight:600;">🚪 '+pname+'</span>':pname)+'</td>'+
-            '<td style="color:#64748b;">'+(u.mat||'—')+'</td>'+
+            '<td style="color:#64748b;">'+(u.mat?matL(u.mat):'—')+'</td>'+
             handingTd+
             '<td>'+(isGlass&&w!=='—'?'<span class="glass-dim">'+w+'</span>':'<span style="font-family:monospace;">'+w+'</span>')+'</td>'+
             '<td>'+(isGlass&&h!=='—'?'<span class="glass-dim">'+h+'</span>':'<span style="font-family:monospace;">'+h+'</span>')+'</td>'+
@@ -4134,7 +4135,7 @@ function printAllParts(){
       '</tr>';
     }).join('');
     var displayMat=matAliases[mat]||mat;
-    var matLabel=(displayMat!==mat)?(esc(displayMat)+' <span style="font-weight:400;color:#94a3b8;">(Excel: '+esc(mat)+')</span>'):esc(mat);
+    var matLabel=esc(displayMat);
     return'<div class="mat-section-title">'+matLabel+' — '+matParts.length+' part(s)</div>'+
       '<table><thead><tr><th style="text-align:left;">Category</th><th>Total Count</th></tr></thead>'+
       '<tbody>'+rows+'</tbody></table>';
@@ -4199,7 +4200,7 @@ function printAllPartsDetailed(){
       '</tr>';
     }).join('');
     var displayMat=matAliases[mat]||mat;
-    var matLabel=(displayMat!==mat)?(esc(displayMat)+' <span style="font-weight:400;color:#94a3b8;">(Excel: '+esc(mat)+')</span>'):esc(mat);
+    var matLabel=esc(displayMat);
     return'<div class="mat-section-title">'+matLabel+' — '+byMat[mat].length+' part(s)</div>'+
       '<table><thead><tr><th>Room</th><th>ID</th><th style="text-align:left;">Category</th><th style="text-align:left;">Part Name</th></tr></thead>'+
       '<tbody>'+rows+'</tbody></table>';
@@ -4558,7 +4559,7 @@ function printPTOOnly(){
     (ptoCabs.length
       ?'<h2 style="font-size:14px;color:#475569;margin:18px 0 8px;">Cabinets requiring PTO:</h2>'+
        '<table><thead><tr><th style="width:30px;">#</th><th>CABINET ID</th><th>ROOM</th><th>MATERIAL</th></tr></thead><tbody>'+
-       ptoCabs.map(function(c,i){return'<tr><td style="color:#94a3b8;font-family:monospace;">'+(i+1)+'</td><td class="cabid">'+(c.cabId||'—')+'</td><td>'+(c.room||'—')+'</td><td>'+(c.mat||'—')+'</td></tr>';}).join('')+
+       ptoCabs.map(function(c,i){return'<tr><td style="color:#94a3b8;font-family:monospace;">'+(i+1)+'</td><td class="cabid">'+(c.cabId||'—')+'</td><td>'+(c.room||'—')+'</td><td>'+(c.mat?matL(c.mat):'—')+'</td></tr>';}).join('')+
        '</tbody></table>'
       :'')+
     '</body></html>');
@@ -5597,7 +5598,7 @@ function printByMaterial(mat,filter){
   var matched=units.filter(function(u){return (u.mat||'(no material)')===mat;});
   if(!matched.length){alert('No items of this material');return;}
   var displayMat=matAliases[mat]||mat;
-  var origLabel=(displayMat!==mat)?' <span style="font-size:13px;color:#94a3b8;font-weight:400;">(Excel: '+mat+')</span>':'';
+  var origLabel='';
   var proj=(document.getElementById('proj-input').value||'Project');
   var date=new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});
   // Separate cabinets vs panels
@@ -7699,7 +7700,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v271 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v273 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9532,7 +9533,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=271;
+var APP_VERSION=273;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
