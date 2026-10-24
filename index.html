@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v276 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v277 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -2279,10 +2279,13 @@ function handleExcel(files){
   if(elProg)elProg.style.display='block';
   if(elRes)elRes.style.display='none';
   if(elBar)elBar.style.width='0%';
-  arr.forEach(function(file){
-    var mat=detectMat(file.name);var reader=new FileReader();
-    reader.onload=function(e){
-      try{var wb=XLSX.read(e.target.result,{type:'array'});
+  // v277: decide "which cabinet numbers have a UBack" across ALL imported files (and the cabinets already in the project) BEFORE
+  // grouping. A cabinet's carcass is often split over several material files (e.g. UBack in White HMR, Front Stretcher in HMR 16mm) —
+  // looking at one file at a time wrongly turned its stretcher/sides into loose parts.
+  var _loaded=new Array(arr.length),_read=0,_cabHasUBackAll={};
+  units.forEach(function(u){if(u&&u.type==='cabinet'&&u.id)_cabHasUBackAll[u.id]=true;});
+  function _processLoaded(it){var file=it.file,mat=it.mat,wb=it.wb;
+      try{if(!wb)throw new Error('could not open file');
         wb.SheetNames.forEach(function(sn){
           var ws=wb.Sheets[sn];var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
           // ── PASS 1 (CORE RULE) ──────────────────────────────────────
@@ -2290,7 +2293,7 @@ function handleExcel(files){
           // number with a UBack is a CABINET; one without is a set of loose
           // PARTS that must each be scanned individually. This must be known
           // before grouping, because the UBack row may appear in any order.
-          var cabHasUBack={};
+          var cabHasUBack=_cabHasUBackAll;
           rows.forEach(function(row){
             if(!row||row.length<4)return;
             var pn0=String(row[3]||'').trim(),cr0=String(row[4]||'').trim();
@@ -2397,6 +2400,19 @@ function handleExcel(files){
         pendingUnits=Object.values(groups).sort(function(a,b){return a.id.localeCompare(b.id);});
         showXLPreview(arr.map(function(f){return f.name;}));
       }
+  }
+  arr.forEach(function(file,fi){
+    var mat=detectMat(file.name);var reader=new FileReader();
+    reader.onload=function(e){
+      var wb=null;try{wb=XLSX.read(e.target.result,{type:'array'});}catch(err){console.error('could not read '+file.name,err);}
+      _loaded[fi]={file:file,mat:mat,wb:wb};_read++;
+      if(_read===arr.length){
+        _loaded.forEach(function(it){if(!it.wb)return;it.wb.SheetNames.forEach(function(sn){
+          var rws=XLSX.utils.sheet_to_json(it.wb.Sheets[sn],{header:1,defval:''});
+          rws.forEach(function(row){if(!row||row.length<4)return;var pn0=String(row[3]||'').trim(),cr0=String(row[4]||'').trim();
+            if(!cr0||!pn0||!isUBack(pn0))return;parseCabRef(cr0).forEach(function(cb){_cabHasUBackAll[cb.id]=true;});});});});
+        _loaded.forEach(function(it){_processLoaded(it);});
+      }
     };reader.readAsArrayBuffer(file);
   });
 }
@@ -2425,7 +2441,12 @@ function closeXlModal(){document.getElementById('xl-modal-bg').classList.remove(
 
 function confirmImport(){
   var added=0,skipped=0;
-  pendingUnits.forEach(function(u){if(units.find(function(x){return x.id===u.id;})){skipped++;return;}units.push(u);added++;});
+  var merged=0;
+  pendingUnits.forEach(function(u){var ex=units.find(function(x){return x.id===u.id;});
+    if(ex){ // same cabinet already in the project: add the carcass parts it doesn't have yet (e.g. parts from another material file)
+      if(ex.type==='cabinet'&&u.type==='cabinet'){var addedP=0;(u.parts||[]).forEach(function(p){if(!ex.parts.find(function(q){return q.name===p.name;})){ex.parts.push(p);addedP++;}});if(addedP){merged++;return;}}
+      skipped++;return;}
+    units.push(u);added++;});
   // Also add any auto-detected Glass entries (parts with "glass" in name)
   var glassAdded=0;
   pendingGlass.forEach(function(g){
@@ -2442,6 +2463,7 @@ function confirmImport(){
   units=ensureUnitShape(units);
   closeXlModal();
   var msg='✓ '+added+' units added';
+  if(merged)msg+=' · '+merged+' cabinets got extra parts';
   if(skipped)msg+=' · '+skipped+' skipped';
   if(glassAdded)msg+=' · 🪟 '+glassAdded+' glass items';
   if(rodAdded)msg+=' · 🪧 '+rodAdded+' closet rods';
@@ -7715,7 +7737,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v276 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v277 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9548,7 +9570,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=276;
+var APP_VERSION=277;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
