@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v265 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v266 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1436,6 +1436,12 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   </div>
   <div id="ii-list" style="margin-top:12px;"></div>
 </div>
+  <div id="inst-finishes" class="card" style="margin-top:6px;border-top:3px solid #bbf7d0;">
+    <div style="font-size:18px;font-weight:800;">🎨 Finishes — Material · Stone · Appliances</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:8px;">View only — this is filled in by the designer and updates by itself.</div>
+    <div id="if-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
+    <div id="if-body" style="overflow-x:auto;"></div>
+  </div>
   <div class="alert alert-info">💡 Scan a cabinet when it's being installed. If it was never QC-approved, you'll see a warning with the reason so you know what to check.</div>
   <div class="stats-row" style="margin-bottom:14px;">
     <div class="stat"><div class="stat-n" style="color:var(--blue)" id="inst-total">0</div><div class="stat-l">TOTAL</div></div>
@@ -7681,7 +7687,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v265 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v266 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9039,6 +9045,7 @@ function cloudReloadCurrent(){
   if(typeof renderGlassDoors==='function')renderGlassDoors();
   if(typeof renderStecca==='function')renderStecca();if(typeof renderKickboard==='function')renderKickboard();
   if(typeof updateReminderBanners==='function')updateReminderBanners();
+  try{renderInstFin();renderDrawings();renderInstIssues();}catch(e){}
 }
 async function cloudPushJob(id){
   if(!cloud.db||!cloud.user||!allJobs[id])return;
@@ -9115,7 +9122,16 @@ async function renderDrawings(){
        '<button class="btn btn-sm" style="background:#0284c7;color:#fff;border:0;" onclick="drOpen(\''+x.id+'\',\''+qe(x.name)+'\')">Open</button>'+
        (adm?'<button class="btn btn-outline btn-sm" style="color:#dc2626;" onclick="drDelete(\''+x.id+'\')">🗑</button>':'')+'</div>';}).join('');});
   if(!_drBusy&&navigator.onLine&&missing){_drBusy=true;try{var got=false;for(var k=0;k<allList.length;k++){if(!loc[allList[k].id]){var d=await siGetPhoto(allList[k].id);if(d)got=true;}}if(got){_drBusy=false;renderDrawings();return;}}catch(e){}_drBusy=false;}}
-var _ris=renderInstallStats;renderInstallStats=function(){_ris.apply(this,arguments);try{renderDrawings();}catch(e){}};
+var _ifSheet='mat';
+function ifSet(k){_ifSheet=k;renderInstFin();}
+function renderInstFin(){var tabs=document.getElementById('if-tabs'),body=document.getElementById('if-body');if(!tabs||!body)return;
+  tabs.innerHTML=FIN_SHEETS.map(function(sh){return '<button class="btn btn-sm '+(sh.key===_ifSheet?'':'btn-outline')+'" onclick="ifSet(\''+sh.key+'\')">'+esc(sh.title)+'</button>';}).join('');
+  var j=siJob();if(!j){body.innerHTML='<div style="color:#94a3b8;font-size:13px;">Open a project first.</div>';return;}
+  var sh=FIN_SHEETS.filter(function(x){return x.key===_ifSheet;})[0]||FIN_SHEETS[0];
+  var copy=JSON.parse(JSON.stringify(j));   // read-only copy: nothing the installer sees can change the project
+  try{body.innerHTML='<div style="font-weight:800;letter-spacing:1px;color:#475569;margin:4px 0 8px;">'+esc(sh.head)+'</div>'+finTableHTML(sh,copy,true);}catch(e){body.innerHTML='<div style="color:#b91c1c;">Could not show this sheet.</div>';}
+  body.querySelectorAll('input,select,textarea,button').forEach(function(i){i.disabled=true;});}
+var _ris=renderInstallStats;renderInstallStats=function(){_ris.apply(this,arguments);try{renderDrawings();renderInstFin();}catch(e){}};
 
 // ===== v253: SAFE UPLOAD QUEUE — photos & voice are kept on this device and uploaded automatically whenever there is internet =====
 var _upDone={},_upProg={},_upMsg='';
@@ -9483,7 +9499,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=265;
+var APP_VERSION=266;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
