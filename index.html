@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v261 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v262 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1429,7 +1429,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   </div>
   <div id="inst-drawings-arch" class="card" style="margin-top:6px;border-top:3px solid #ddd6fe;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-      <div><div style="font-size:18px;font-weight:800;">🏛 Architect Drawings</div><div style="font-size:12px;color:#64748b;">PDF architect plans for this project — also available offline once downloaded.</div></div>
+      <div><div style="font-size:18px;font-weight:800;">🏛 Architectural Drawings</div><div style="font-size:12px;color:#64748b;">PDF architectural plans for this project — also available offline once downloaded.</div></div>
       <label id="dr-up-arch" class="btn btn-sm" style="cursor:pointer;background:#0284c7;color:#fff;border:0;display:none;">⬆ Upload PDF<input type="file" accept="application/pdf,.pdf" multiple style="display:none" onchange="drUpload(this,'arch')"></label>
     </div>
     <div id="dr-pending-arch" style="font-size:11px;color:#94a3b8;"></div>
@@ -7681,7 +7681,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v261 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v262 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9107,7 +9107,7 @@ async function renderDrawings(){
     var box=document.getElementById('dr-list-'+k);if(!box)return;
     var up=document.getElementById('dr-up-'+k);if(up)up.style.display=adm?'':'none';
     var list=allList.filter(function(x){return drKind(x)===k;});
-    if(!list.length){box.innerHTML='<div style="color:#94a3b8;font-size:13px;padding:8px 0;">'+(j?'No '+(k==='arch'?'architect':'production')+' drawings uploaded yet.':'Open a project first.')+'</div>';return;}
+    if(!list.length){box.innerHTML='<div style="color:#94a3b8;font-size:13px;padding:8px 0;">'+(j?'No '+(k==='arch'?'architectural':'production')+' drawings uploaded yet.':'Open a project first.')+'</div>';return;}
     box.innerHTML=list.map(function(x){var has=loc[x.id];if(!has)missing=true;
       return '<div class="card" style="margin:6px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-left:4px solid '+(k==='arch'?'#7c3aed':'#0284c7')+';">'+
        '<div style="flex:1;min-width:150px;"><div style="font-weight:800;">📄 '+esc(x.name)+'</div><div style="font-size:11px;color:#94a3b8;">'+drMB(x.size||0)+' · '+esc(x.date||'')+(x.by?' · '+esc(x.by):'')+'</div>'+
@@ -9483,7 +9483,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=261;
+var APP_VERSION=262;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
