@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v278 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v279 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1700,7 +1700,7 @@ var camActive=false,camStream=null,scanTick=null,lastScan='',lastScanT=0;
 var lockedIds=[],pendingUnits=[],pendingGlass=[],pendingRods=[],_lastImportFileNames=[];
 
 // PART CLASSIFICATION
-var IND=['door','cbk-door','base door','drawer face','drawer front','drw face','dwr face','cbk-drawer','cbk-drw','cbk-dwr',
+var IND=['door','cbk-door','base door','drawer face','drawer front','drw face','dwr face','cbk-drawer',
   'panel','finished panel','exterior panel','linden panel','lindon panel','fend','cbk-fend','finished end',
   'filler','l filler','l shape filler','appliance filler','tall face filler','wall face filler','base face filler','face filler','cbk-filler',
   'finger','fingerpull','finger pull','fingerpull rail','fingernail','finger nail','finger rail','cbk-finger',
@@ -1732,6 +1732,8 @@ function classify(name){
   // Drawer / DWR / DRW are all the same thing: the drawer FRONT or FACE is a loose part (any separator, e.g. Drawer-Front, DWR_Face, DRW Front)
   // NOTE: only the visible drawer FRONT/FACE is a loose part: "Drawer Front/Face", "Drw Face", "Dwr Face". "Drw Front"/"Dwr Front" is the drawer BOX front inside the carcass.
   if(/drawer(front|face)|(drw|dwr)face/.test(nn))return'panel';
+  // A part named EXACTLY "Drawer", "DRW" or "DWR" (no prefix, no suffix) is the visible drawer front → loose part. Any prefix/suffix (Drw Front, Drw Side, Drw Bottom…) is the drawer box inside the carcass.
+  if(nn==='drawer'||nn==='drw'||nn==='dwr')return'panel';
   // Check full IND list
   for(var i=0;i<IND.length;i++){if(n.indexOf(IND[i])!==-1)return'panel';}
   return'cabinet';
@@ -1780,7 +1782,7 @@ function _selfCheckRules(){
   try{
     var fails=[];
     var mustCab=['UBack','U Back','U-Back','U_Back','U/Back','CBK-UBack','1UBack','WHITE HMR UBACK'];
-    var mustPart=['Door','Drawer Front','DRW Face','DWR_Face','Drawer-Face','Shadowline','Shadow-Line','Fingerpull','Finger-Pull','Finger Rail','Kick','Filler','Appliance Filler','Tray Face','CBK-Tray Face'];
+    var mustPart=['Door','Drawer Front','DRW Face','DWR_Face','Drawer-Face','Drawer','DRW','DWR','drw','Shadowline','Shadow-Line','Fingerpull','Finger-Pull','Finger Rail','Kick','Filler','Appliance Filler','Tray Face','CBK-Tray Face'];
     var mustNotUback=['Back','Drawer Back','Door Back','Aluminium Backing'];
     var mustCabPart=['Drw Front','Dwr Front','Drw Back','Drw Side','Drw Bottom'];
     var trayCab=['Tray Bottom','Tray Side','Tray Back','Tray Runner','Tray Panel','Cutlery Tray'];
@@ -7741,7 +7743,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v278 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v279 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9574,7 +9576,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=278;
+var APP_VERSION=279;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
