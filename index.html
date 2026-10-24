@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v286 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v287 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1127,6 +1127,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="card" id="cab-categories-card">
     <div class="flex ai-c jb" style="margin-bottom:2px;flex-wrap:wrap;gap:8px;">
       <div class="card-title" style="margin:0;">📊 Cabinet Categories</div>
+      <button class="btn btn-outline btn-sm" onclick="reapplyRules()" title="Re-sort existing cabinets/parts with the current cabinet-vs-part rules (items already scanned/shipped are not touched)">🔄 Re-apply rules</button>
       <button class="btn btn-outline btn-sm" onclick="printAllCabinets()">🖨️ Print Full Cabinet List</button>
       <button class="btn btn-outline btn-sm" onclick="printAllParts()">🖨️ Print Parts List (Summary)</button>
       <button class="btn btn-outline btn-sm" onclick="printAllPartsDetailed()">🖨️ Print Parts List (Detailed)</button>
@@ -3996,6 +3997,55 @@ function _partsDetails(u,pnames){
   return '<details><summary style="cursor:pointer;color:#2563eb;font-weight:700;list-style:none;">▸ '+(u.parts||[]).length+' parts</summary>'+
     '<div style="margin-top:5px;font-size:11px;color:#475569;min-width:230px;max-width:340px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;">'+rows+'</div></details>'+
     '<div class="pnames-short" style="font-size:10px;color:#94a3b8;margin-top:2px;">'+esc(pnames)+'</div>';
+}
+// v287: re-sort an ALREADY imported project with the current rules (no re-import needed).
+// Items with any scan/QC/dispatch/install activity are never touched.
+function _unitBusy(u){
+  return !!((u.qcLog&&u.qcLog.length)||(u.dispatchLog&&u.dispatchLog.length)||(u.installLog&&u.installLog.length)||u.qcStatus||u.installed||u.shippedAt||(u.status&&u.status!=='factory'));
+}
+function reapplyRules(){
+  var split=0,merged=0,busy=0,newUnits=[],removeIds={};
+  var cabById={};units.forEach(function(u){if(u.type==='cabinet')cabById[u.id]=u;});
+  // A) loose-part names that are sitting inside a cabinet → split out as individual parts
+  units.forEach(function(u){
+    if(u.type!=='cabinet'||!Array.isArray(u.parts))return;
+    var ub=u.parts.find(function(p){return p&&typeof p==='object'&&isUBack(p.name);});
+    if(!ub)return;
+    var out=[];
+    u.parts.forEach(function(p){
+      if(!p||typeof p!=='object'||isUBack(p.name))return;
+      if(classify(p.name)!=='panel')return;
+      if(blindPanelJoinsCabinet(p.name,p.mat,ub.mat||u.mat))return;
+      out.push(p);
+    });
+    if(!out.length)return;
+    if(_unitBusy(u)){busy++;return;}
+    out.forEach(function(p){
+      u.parts.splice(u.parts.indexOf(p),1);
+      var q=parseInt(p.qty)||1,slug=String(p.name).toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,10),base=u.id+'_'+slug;
+      for(var i=0;i<q;i++){
+        var pid=base,n=2;
+        while(units.some(function(x){return x.id===pid;})||newUnits.some(function(x){return x.id===pid;})){pid=base+'_'+n;n++;}
+        newUnits.push({id:pid,cabId:u.cabId||u.id,room:u.room,parts:[{name:p.name,h:p.h,w:p.w,qty:1,comment:p.comment,edgeband:p.edgeband,mat:p.mat}],mat:p.mat||u.mat,status:'factory',shippedAt:null,type:'panel',isPTO:false,isJoining:/\bjoin/i.test(p.name)});
+        split++;
+      }
+    });
+  });
+  // B) independent pieces whose name is now a cabinet part (e.g. Drawer Front) and whose cabinet exists → merge back
+  units.forEach(function(u){
+    if(u.type!=='panel'||!u.parts||!u.parts[0])return;
+    var p=u.parts[0],cab=cabById[u.cabId];
+    if(!cab||cab===u)return;
+    if(typeof p!=='object'||isUBack(p.name)||classify(p.name)!=='cabinet')return;
+    if(_unitBusy(u)||_unitBusy(cab)){busy++;return;}
+    var ex=cab.parts.find(function(x){return x&&x.name===p.name;});
+    if(!ex)cab.parts.push({name:p.name,h:p.h,w:p.w,qty:1,comment:p.comment,edgeband:p.edgeband,mat:p.mat});else ex.qty=(parseInt(ex.qty)||1)+1;
+    removeIds[u.id]=1;merged++;
+  });
+  if(!split&&!merged){showMsg(busy?'Nothing changed — '+busy+' item(s) already scanned/shipped were left alone':'✓ Everything already follows the current rules');return;}
+  units=units.filter(function(u){return !removeIds[u.id];}).concat(newUnits);
+  saveData();try{refresh();}catch(e){}
+  showMsg('✓ Rules re-applied: '+split+' part(s) split out of cabinets, '+merged+' part(s) moved into cabinets'+(busy?' · '+busy+' already-scanned item(s) left alone':''));
 }
 function setBottomComment(unitId,val){
   var u=units.find(function(x){return x.id===unitId;});if(!u)return;var b=_bottomPart(u);if(!b)return;
@@ -7813,7 +7863,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v286 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v287 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
