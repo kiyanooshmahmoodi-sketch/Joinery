@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v281 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v282 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1776,8 +1776,14 @@ function isUBack(name){
 //   kickboard · shadowline · underpanel · bulkhead · barback · bench/benchtop
 //   · shelf support · stile · join/joining/joiner · TRAY FACE (only).
 // TRAY: only "tray face" is a PART; every other tray part is a cabinet part.
+// DRAWER: part named exactly Drawer / DRW / DWR (optionally + a number: DRW1, Drawer 2) and Drawer Front/Face, Drw Face = loose PART.
+//   Anything else with a prefix/suffix (Drw Front, Drw Side, Drw Bottom, Drawer Side…) = drawer BOX = cabinet part.
+// BLIND PANEL: same material as the cabinet's UBack → part of the cabinet; different material (Grain etc.) → loose part.
 // CABINET: anything containing UBack (any prefix/suffix/separator/material).
 // ════════════════════════════════════════════════════════════════════
+// RULE: a BLIND PANEL made from the SAME material as its cabinet's UBack (e.g. HMR 16mm cabinet + HMR 16mm blind panel) is part of that cabinet.
+// A blind panel in a different material (e.g. Grain MDF 16/18) stays a loose part scanned on its own. (Cabinet must have a UBack.)
+function blindPanelJoinsCabinet(partName,mat,ubackMat){return /blind\s*panel/i.test(partName||'')&&!!mat&&!!ubackMat&&String(mat).trim().toLowerCase()===String(ubackMat).trim().toLowerCase();}
 function _selfCheckRules(){
   try{
     var fails=[];
@@ -1789,6 +1795,9 @@ function _selfCheckRules(){
     mustCab.forEach(function(s){if(!isUBack(s))fails.push('UBack missed: '+s);});
     mustNotUback.forEach(function(s){if(isUBack(s))fails.push('UBack false+: '+s);});
     mustPart.forEach(function(s){if(classify(s)!=='panel')fails.push('should be PART: '+s);});
+    if(!blindPanelJoinsCabinet('Blind Panel','HMR 16mm','HMR 16mm'))fails.push('Blind Panel same material as UBack should join cabinet');
+    if(blindPanelJoinsCabinet('Blind Panel','Grain MDF 16mm','HMR 16mm'))fails.push('Blind Panel in different material must stay loose');
+    if(blindPanelJoinsCabinet('Door','HMR 16mm','HMR 16mm'))fails.push('only Blind Panel gets the same-material rule');
     mustCabPart.forEach(function(s){if(classify(s)!=='cabinet')fails.push('drawer BOX part should stay in CABINET: '+s);});
     trayCab.forEach(function(s){if(classify(s)!=='cabinet')fails.push('tray should be CABINET: '+s);});
     // HW / Curve flag checks (independent tags, never a getCabType() value)
@@ -2335,7 +2344,7 @@ function handleExcel(files){
               var type=cab.forcePart?'panel':(cabHasUBack[cab.id]?baseType:'panel');
               // v280: a BLIND PANEL made from the SAME material as its cabinet's UBack (e.g. HMR 16mm carcass) is an inside carcass part of that cabinet.
               // A blind panel in a different (finish) material stays a loose part scanned on its own.
-              if(type==='panel'&&!cab.forcePart&&cabHasUBack[cab.id]&&/blind\s*panel/i.test(partName)&&_cabUBackMat[cab.id]===mat)type='cabinet';
+              if(type==='panel'&&!cab.forcePart&&cabHasUBack[cab.id]&&blindPanelJoinsCabinet(partName,mat,_cabUBackMat[cab.id]))type='cabinet';
               // Use per-cabinet qty (from cabRef parentheses, e.g. "R9:903(2)")
               // NOT the row's total qty (column 0) — that's the SUM across all cabinets.
               var perCabQty=cab.qty||1;
@@ -7746,7 +7755,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v281 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v282 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9579,7 +9588,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=281;
+var APP_VERSION=282;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
