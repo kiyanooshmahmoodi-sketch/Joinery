@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v268 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v269 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1098,9 +1098,14 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="tab" onclick="showTab('glassdoor',this)">🪟 Glass Door</div>
   <div class="tab" onclick="showTab('issues',this)">⚠️ Site Issues <span class="tbadge" id="tb-iss" style="display:none">0</span></div>
   <div class="tab" onclick="showTab('notes',this)">📝 Notes</div>
+  <div class="tab" onclick="showTab('drawings',this)">📐 Drawings</div>
 </div>
 <div class="content" id="cabinetlist-content">
 <!-- FINISHES & APPLIANCES CHECKLIST -->
+<div class="panel" id="panel-drawings">
+  <div style="margin-bottom:10px;"><div style="font-size:18px;font-weight:800;">📐 Drawings — upload PDF plans</div><div style="font-size:12px;color:var(--gray);">Upload the Installation Drawings and Architectural Drawings here. The installer sees them in his Drawings tab (view only).</div></div>
+  <div id="dr-host-designer"></div>
+</div>
 <div class="panel" id="panel-finishes">
   <div class="flex ai-c jb" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;">
     <div><div style="font-size:18px;font-weight:800;">📋 Finishes &amp; Appliances Checklist</div><div style="font-size:12px;color:var(--gray);" id="fin-proj">—</div></div>
@@ -1398,7 +1403,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <div id="view-installation" style="display:none;">
   <div id="inst-drawings-prod" class="card" style="margin-top:6px;border-top:3px solid #bae6fd;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-      <div><div style="font-size:18px;font-weight:800;">📐 Production Drawings</div><div style="font-size:12px;color:#64748b;">PDF production plans for this project — installers can open them on site, even without internet.</div></div>
+      <div><div style="font-size:18px;font-weight:800;">📐 Installation Drawings</div><div style="font-size:12px;color:#64748b;">PDF installation plans for this project — installers can open them on site, even without internet.</div></div>
       <label id="dr-up-prod" class="btn btn-sm" style="cursor:pointer;background:#0284c7;color:#fff;border:0;display:none;">⬆ Upload PDF<input type="file" accept="application/pdf,.pdf" multiple style="display:none" onchange="drUpload(this,'prod')"></label>
     </div>
     <div id="dr-pending-prod" style="font-size:11px;color:#94a3b8;"></div>
@@ -6952,7 +6957,7 @@ function showTab(n,el){
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
   document.getElementById('panel-'+n).classList.add('active');el.classList.add('active');
-  if(n==='finishes')renderFinishes();if(n==='issues')renderSiteIssues();if(n==='notes')renderNotesDoc();if(n==='summary')renderSummary();if(n==='hardware'||n==='closetrod')renderHardware();if(n==='glassdoor')renderGlassDoors();if(n==='stecca')renderStecca();if(n==='kickboard')renderKickboard();updateReminderBanners();
+  if(n==='finishes')renderFinishes();if(n==='drawings'){try{renderDrawings();}catch(e){}}if(n==='issues')renderSiteIssues();if(n==='notes')renderNotesDoc();if(n==='summary')renderSummary();if(n==='hardware'||n==='closetrod')renderHardware();if(n==='glassdoor')renderGlassDoors();if(n==='stecca')renderStecca();if(n==='kickboard')renderKickboard();updateReminderBanners();
   if(n==='qc'){setTimeout(focusQcScanBox,60);}
 }
 
@@ -7694,7 +7699,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v268 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v269 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9118,13 +9123,13 @@ async function drOpen(id,name){
   document.body.appendChild(o);document.getElementById('dr-x').onclick=function(){o.remove();setTimeout(function(){URL.revokeObjectURL(url);},2000);};}
 var _drBusy=false;
 async function renderDrawings(){
-  var j=siJob();var adm=window.SESSION&&SESSION.role==='admin';var missing=false,allList=j?(j.drawings||[]):[];
+  var j=siJob();var adm=window.SESSION&&(SESSION.role==='admin'||SESSION.role==='designer');var missing=false,allList=j?(j.drawings||[]):[];
   var loc={};for(var i=0;i<allList.length;i++){try{var r=await window.storage.get('cbkph:'+allList[i].id);loc[allList[i].id]=!!(r&&r.value);}catch(e){}}
   ['prod','arch'].forEach(function(k){
     var box=document.getElementById('dr-list-'+k);if(!box)return;
     var up=document.getElementById('dr-up-'+k);if(up)up.style.display=adm?'':'none';
     var list=allList.filter(function(x){return drKind(x)===k;});
-    if(!list.length){box.innerHTML='<div style="color:#94a3b8;font-size:13px;padding:8px 0;">'+(j?'No '+(k==='arch'?'architectural':'production')+' drawings uploaded yet.':'Open a project first.')+'</div>';return;}
+    if(!list.length){box.innerHTML='<div style="color:#94a3b8;font-size:13px;padding:8px 0;">'+(j?'No '+(k==='arch'?'architectural':'installation')+' drawings uploaded yet.':'Open a project first.')+'</div>';return;}
     box.innerHTML=list.map(function(x){var has=loc[x.id];if(!has)missing=true;
       return '<div class="card" style="margin:6px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-left:4px solid '+(k==='arch'?'#7c3aed':'#0284c7')+';">'+
        '<div style="flex:1;min-width:150px;"><div style="font-weight:800;">📄 '+esc(x.name)+'</div><div style="font-size:11px;color:#94a3b8;">'+drMB(x.size||0)+' · '+esc(x.date||'')+(x.by?' · '+esc(x.by):'')+'</div>'+
@@ -9146,7 +9151,7 @@ function renderInstFin(){var tabs=document.getElementById('if-tabs'),body=docume
     else if(/https?:\/\/\S+/i.test(t)){td.innerHTML=esc(t).replace(/(https?:\/\/[^\s<]+)/gi,function(u){return '<a href="'+u+'" target="_blank" rel="noopener" style="color:#0369a1;font-weight:700;word-break:break-all;">'+u+'</a>';});}});
   body.querySelectorAll('input,select,textarea,button').forEach(function(i){i.disabled=true;});}
 var _drwTab='prod';
-var DRW_TABS=[['prod','📐 Production Drawings','inst-drawings-prod'],['arch','🏛 Architectural Drawings','inst-drawings-arch'],['iss','⚠️ Installation Issues & Notes','inst-issues']];
+var DRW_TABS=[['prod','📐 Installation Drawings','inst-drawings-prod'],['arch','🏛 Architectural Drawings','inst-drawings-arch'],['iss','⚠️ Installation Issues & Notes','inst-issues']];
 function drTab(k){_drwTab=k;var t=document.getElementById('drw-tabs');if(!t)return;
   t.innerHTML=DRW_TABS.map(function(x){return '<button class="btn '+(x[0]===k?'':'btn-outline')+'" onclick="drTab(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');
   DRW_TABS.forEach(function(x){var el=document.getElementById(x[2]);if(el)el.style.display=(x[0]===k||!document.getElementById('drw-host').contains(el))?'':'none';});
@@ -9156,7 +9161,7 @@ function drPlace(){   // installer: these 3 sections live in the Drawings tab. E
   var ids=DRW_TABS.map(function(x){return x[2];}),els=ids.map(function(i){return document.getElementById(i);});
   var badge=document.getElementById('vb-ii-badge');
   if(inst){els.forEach(function(el){if(el)host.appendChild(el);});var bd=document.getElementById('vb-drawings');if(badge&&bd)bd.appendChild(badge);}
-  else{var first=view.firstChild;els.forEach(function(el){if(el){el.style.display='';view.insertBefore(el,first);}});var bi=document.getElementById('vb-installation');if(badge&&bi)bi.appendChild(badge);}
+  else{var first=view.firstChild,dh=document.getElementById('dr-host-designer');els.forEach(function(el,i){if(!el)return;el.style.display='';if(i<2&&dh)dh.appendChild(el);else view.insertBefore(el,first);});var bi=document.getElementById('vb-installation');if(badge&&bi)bi.appendChild(badge);}
   var b=document.getElementById('vb-drawings');if(b)b.style.display=inst?'':'none';}
 var _ris=renderInstallStats;renderInstallStats=function(){_ris.apply(this,arguments);try{renderDrawings();renderInstFin();}catch(e){}};
 
@@ -9527,7 +9532,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=268;
+var APP_VERSION=269;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
