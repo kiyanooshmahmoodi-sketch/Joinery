@@ -1038,12 +1038,13 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v252 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v253 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
     <span class="save-msg" id="save-msg">✓ Saved</span>
     <span id="proj-count" title="Total projects currently in the workspace — should grow as you add new projects" style="font-size:11px;color:#64748b;font-weight:800;align-self:center;background:#eef2ff;padding:4px 9px;border-radius:999px;border:1px solid #c7d2fe;white-space:nowrap;">📂 0</span>
+    <span id="up-stat" style="font-size:11px;font-weight:800;align-self:center;white-space:nowrap;"></span>
     <button class="tbtn" id="cloud-btn" onclick="cloudBtn()" title="Shared projects (cloud sync)" style="font-weight:700;">☁ …</button>
     <button class="tbtn jobs-btn" onclick="openJobs()">📋 Jobs</button>
     <input class="proj-input" id="proj-input" spellcheck="true" placeholder="Project name..."
@@ -6208,7 +6209,7 @@ async function siStorePhoto(data){
   var id='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
   _siCache[id]=data;
   try{await window.storage.set('cbkph:'+id,data);}catch(e){}
-  try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('photos').doc(id).set({d:data,job:currentJobId||'',at:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(){});}catch(e){}
+  try{upEnqueue(id,currentJobId||'');}catch(e){}
   return id;}
 async function siGetPhoto(id){
   if(_siCache[id])return _siCache[id];
@@ -6230,7 +6231,7 @@ function siRenderNewThumbs(){
   el.innerHTML=_siNew.map(function(id,i){return '<div style="position:relative;"><img data-pid="'+id+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;"><span onclick="siMarkNew('+i+')" title="Write on photo" style="position:absolute;bottom:2px;left:2px;background:#7c3aed;color:#fff;border-radius:6px;padding:1px 5px;cursor:pointer;font-size:12px;">✏️</span><span onclick="_siNew.splice('+i+',1);siRenderNewThumbs()" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:50%;width:20px;height:20px;text-align:center;line-height:20px;cursor:pointer;font-size:12px;">×</span></div>';}).join('');
   siHydrate(el);}
 function siHydrate(root){(root||document).querySelectorAll('img[data-pid]').forEach(function(im){
-  var id=im.getAttribute('data-pid');siGetPhoto(id).then(function(d){if(d)im.src=d;else im.alt='photo not available';});});}
+  var id=im.getAttribute('data-pid');siGetPhoto(id).then(function(d){if(d)im.src=d;else im.alt='photo not uploaded yet — it is still on the phone/tablet that took it';});});}
 function siAdd(){
   var j=siJob();if(!j){alert('Open or create a project first.');return;}
   var t=document.getElementById('si-title').value.trim();
@@ -7641,7 +7642,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v252 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v253 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8926,7 +8927,7 @@ function cloudInit(){
     cloud.auth=firebase.auth();cloud.db=firebase.firestore();
     try{cloud.db.enablePersistence({synchronizeTabs:true}).catch(function(){});}catch(e){}
     cloud.auth.onAuthStateChanged(function(u){
-      if(u){cloud.user=u;cloud.ready=true;cloudStart();if(typeof rcOnCloudReady==='function')rcOnCloudReady();}
+      if(u){cloud.user=u;cloud.ready=true;cloudStart();try{upKick();}catch(e){}if(typeof rcOnCloudReady==='function')rcOnCloudReady();}
       else{cloud.user=null;cloud.ready=false;cloud.auth.signInAnonymously().catch(function(e){console.error('anon sign-in',e);_cstat('☁ Enable Anonymous sign-in','#b91c1c');});}
     });
   }catch(e){console.error('cloudInit',e);_cstat('☁ Error','#b91c1c');}
@@ -8948,6 +8949,7 @@ function cloudStop(){if(cloud.unsub){cloud.unsub();cloud.unsub=null;}}
 async function cloudStart(){
   _cstat('☁ Syncing…','#b45309');
   cloudStop();
+  try{var _r=await window.storage.get('cbk-cloudsig');cloud.sigH=(_r&&_r.value)?JSON.parse(_r.value):(cloud.sigH||{});}catch(e){cloud.sigH=cloud.sigH||{};}
   var first=true;
   cloud.unsub=cloud.db.collection('jobs').onSnapshot(async function(snap){
     var changedCur=false;
@@ -8961,7 +8963,16 @@ async function cloudStart(){
       try{
         var str=await _unpack(ch.doc.data());
         if(cloud.sig[id]===str)continue;
-        cloud.sig[id]=str;allJobs[id]=JSON.parse(str);
+        cloud.sigH=cloud.sigH||{};
+        var loc=allJobs[id],ls=loc?JSON.stringify(loc):null;
+        if(loc&&ls!==str){
+          // local copy differs from the cloud: keep what was done offline on this device, add what others added
+          var localChanged=cloud.sigH[id]?(_hs(ls)!==cloud.sigH[id]):false;
+          var remote=JSON.parse(str);
+          var merged=localChanged?mergeJobs(loc,remote):mergeJobs(remote,loc);
+          cloud.sig[id]=str;allJobs[id]=merged;
+          if(JSON.stringify(merged)!==str){setTimeout(function(){cloudPushJob(id);},200);}else{cloud.sigH[id]=_hs(str);sigSave();}
+        }else{cloud.sig[id]=str;allJobs[id]=JSON.parse(str);cloud.sigH[id]=_hs(str);sigSave();}
         if(id===currentJobId)changedCur=true;
       }catch(e){console.error('cloud pull',id,e);}
     }
@@ -8969,6 +8980,7 @@ async function cloudStart(){
       first=false;
       var have={};snap.forEach(function(d){have[d.id]=1;});
       Object.keys(allJobs).forEach(function(id){if(!have[id])cloudPushJob(id);});
+      setTimeout(function(){_cloudFirstDone=true;try{cloudFlush();}catch(e){}},1500);
     }
     if(changedCur)cloudReloadCurrent();
     updateProjectCount();
@@ -8998,6 +9010,7 @@ async function cloudPushJob(id){
     p.name=allJobs[id].name||'';p.updatedAt=firebase.firestore.FieldValue.serverTimestamp();p.updatedBy=(window.SESSION&&SESSION.name)||'';
     cloud.sig[id]=str;
     await cloud.db.collection('jobs').doc(id).set(p);
+    cloud.sigH=cloud.sigH||{};cloud.sigH[id]=_hs(str);sigSave();
     _cstat('☁ Synced','#15803d');
   }catch(e){console.error('cloud push',e);delete cloud.sig[id];_cstat('☁ Not synced','#b91c1c');}
 }
@@ -9011,6 +9024,56 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
+// ===== v253: SAFE UPLOAD QUEUE — photos & voice are kept on this device and uploaded automatically whenever there is internet =====
+var _upQ=[],_upOK={},_upBusy=false,_upFail={},_upLoaded=false,_upScanT=0,_upToast=false;
+async function upLoad(){if(_upLoaded)return;_upLoaded=true;
+  try{var r=await window.storage.get('cbk-upq');if(r&&r.value)_upQ=JSON.parse(r.value)||[];}catch(e){}
+  try{var r2=await window.storage.get('cbk-upok');if(r2&&r2.value)(JSON.parse(r2.value)||[]).forEach(function(i){_upOK[i]=1;});}catch(e){}}
+function upSave(){try{window.storage.set('cbk-upq',JSON.stringify(_upQ));window.storage.set('cbk-upok',JSON.stringify(Object.keys(_upOK)));}catch(e){}}
+function upStat(){var el=document.getElementById('up-stat');if(!el)return;var n=_upQ.length,f=Object.keys(_upFail).length;
+  if(f){el.textContent='⚠ '+f+' file(s) too big to upload';el.style.color='#b91c1c';el.title='These photos/voice clips could not be uploaded';return;}
+  if(n){el.textContent='📤 '+n+' photo/voice waiting to upload'+(navigator.onLine?'…':' (no internet)');el.style.color='#b45309';el.title='Saved on this device. They upload by themselves as soon as there is internet — keep the app open.';}
+  else{el.textContent='✓ Photos & voice uploaded';el.style.color='#15803d';el.title='Everything is uploaded — other people can see it';}}
+async function upEnqueue(id,job){await upLoad();if(!_upQ.some(function(q){return q.id===id;})){_upQ.push({id:id,job:job||''});upSave();}_upToast=true;upStat();upKick();}
+function upIds(job){var out={};try{var s=JSON.stringify(job);var re=/\\?"(p[a-z0-9]{13})\\?"/g,m;while((m=re.exec(s)))out[m[1]]=1;}catch(e){}return Object.keys(out);}
+async function upScan(){await upLoad();var have={};_upQ.forEach(function(q){have[q.id]=1;});
+  Object.keys(allJobs||{}).forEach(function(jid){upIds(allJobs[jid]).forEach(function(id){if(!_upOK[id]&&!have[id]&&!_upFail[id]){have[id]=1;_upQ.push({id:id,job:jid});}});});}
+async function upKick(){
+  await upLoad();if(Date.now()-_upScanT>30000){_upScanT=Date.now();await upScan();}
+  if(_upBusy)return;
+  if(!_upQ.length){upStat();return;}
+  if(!navigator.onLine||!(window.cloud&&cloud.db&&cloud.user)){upStat();return;}
+  _upBusy=true;
+  try{
+    while(_upQ.length){
+      var q=_upQ[0],id=q.id,d=_siCache[id];
+      if(!d){try{var r=await window.storage.get('cbkph:'+id);d=r&&r.value;}catch(e){}}
+      if(!d){_upOK[id]=1;_upQ.shift();upSave();continue;}      // not stored on this device (already online elsewhere)
+      try{
+        await Promise.race([cloud.db.collection('photos').doc(id).set({d:d,job:q.job||'',at:firebase.firestore.FieldValue.serverTimestamp()}),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},25000);})]);
+        _upOK[id]=1;_upQ.shift();upSave();upStat();
+      }catch(e){
+        if(e&&(e.code==='invalid-argument'||/exceeds|too large|size/i.test(e.message||''))){_upFail[id]=1;_upQ.shift();upSave();continue;}
+        break;}  // no internet / server busy — try again later
+    }
+  }finally{_upBusy=false;}
+  upStat();
+  if(!_upQ.length&&_upToast){_upToast=false;try{showMsg('☁ Photos & voice uploaded ✓');}catch(e){}}}
+window.addEventListener('online',function(){upKick();try{cloudFlush();}catch(e){}});
+window.addEventListener('offline',upStat);
+setInterval(function(){upKick();try{cloudFlush();}catch(e){}},45000);
+setTimeout(function(){upLoad().then(function(){upStat();upKick();});},4000);
+// ----- projects: never lose changes made offline -----
+function _hs(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return h+':'+s.length;}
+var _SYNC_ARR=['siteIssues','installIssues','notesList','sketches'];
+function mergeJobs(base,other){var m=JSON.parse(JSON.stringify(base));
+  _SYNC_ARR.forEach(function(k){var a=Array.isArray(m[k])?m[k]:[];var have={};a.forEach(function(x){if(x&&x.id)have[x.id]=1;});
+    (Array.isArray(other[k])?other[k]:[]).forEach(function(x){if(x&&x.id&&!have[x.id])a.push(x);});m[k]=a;});return m;}
+function sigSave(){try{window.storage.set('cbk-cloudsig',JSON.stringify(cloud.sigH||{}));}catch(e){}}
+var _cloudFirstDone=false;
+function cloudFlush(){if(!_cloudFirstDone||!window.cloud||!cloud.db||!cloud.user||!navigator.onLine)return;cloud.sigH=cloud.sigH||{};
+  Object.keys(allJobs||{}).forEach(function(id){try{if(cloud.sigH[id]!==_hs(JSON.stringify(allJobs[id])))cloudPushJob(id);}catch(e){}});}
+
 window.addEventListener('load',function(){setTimeout(cloudInit,300);});
 </script>
 
@@ -9299,7 +9362,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=252;
+var APP_VERSION=253;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
