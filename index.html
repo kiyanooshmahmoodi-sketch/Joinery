@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v274 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v275 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -3227,9 +3227,8 @@ function renderCabinetCategories(){
 
   html+='<div style="font-size:10px;color:#94a3b8;letter-spacing:.5px;font-weight:700;margin-bottom:8px;">INDEPENDENT TAGS (can overlap any type above)</div>';
   html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;">'+
-    (hwCount?card('Hardware',hwCount,'#92400e',"openCabDetail('HW')",'🔧'):'')+
     (curveCount?card('Curve',curveCount,'#6d28d9',"openCabDetail('CURVE')",'〰️'):'')+
-    (!hwCount&&!curveCount?'<div style="color:#94a3b8;font-size:12px;padding:8px;">None in this project</div>':'')+
+    (!curveCount?'<div style="color:#94a3b8;font-size:12px;padding:8px;">None in this project</div>':'')+
   '</div>';
 
   box.innerHTML=html;
@@ -3627,7 +3626,7 @@ function filterDetail(q){
         '<td style="font-size:11px;color:var(--gray);">'+u.parts.length+' parts<div style="font-size:10px;color:#94a3b8;margin-top:2px;">'+pnames+'</div></td>'+
         '<td style="text-align:center;">'+([(u.isPTO?'<span style="font-size:10px;background:#fce7f3;color:#ec4899;padding:2px 7px;border-radius:5px;font-weight:700;">🔘 PTO</span>':''),(hasHW(u)?'<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:5px;font-weight:700;">🔧 Hardware</span>':''),(hasCurve(u)?'<span style="font-size:10px;background:#ede9fe;color:#6d28d9;padding:2px 7px;border-radius:5px;font-weight:700;">〰️ Curve</span>':'')].filter(Boolean).join(' ')||'—')+'</td>'+
         hwCell+
-        '<td style="font-size:11px;color:var(--blue);max-width:180px;">'+(comments?'💬 '+comments:'—')+'</td>'+
+        _cmCell(u,comments)+
         '<td>'+_qcCell(u)+'</td>'+
       '</tr>';
     }).join('');
@@ -3936,6 +3935,24 @@ function getHWModelDisplay(unit){
 }
 // Per-cabinet override — independent of the shared rename above. Clearing
 // the override (empty string) falls back to the shared rename / raw text.
+// Editable hardware comment (e.g. "110 Hinge (2)" -> "110 Hinge (3)"). It is the comment on the cabinet's plain "Bottom" part —
+// the one the Hardware totals count — so the change flows into Hardware, "Total to order" and the model name.
+function _bottomPart(u){var b=null;(u.parts||[]).forEach(function(p){if(typeof p==='object'&&String(p.name||'').trim().toLowerCase()==='bottom'&&!b)b=p;});return b;}
+function _cmCell(u,allComments){
+  var b=_bottomPart(u);
+  if(!b)return '<td style="font-size:11px;color:var(--blue);max-width:180px;">'+(allComments?'💬 '+esc(allComments):'—')+'</td>';
+  var others=(u.parts||[]).filter(function(p){return typeof p==='object'&&p!==b&&p.comment;}).map(function(p){return p.comment;}).join('; ');
+  return '<td style="max-width:220px;"><input value="'+qe(b.comment||'')+'" placeholder="Hardware comment…" onchange="setBottomComment(\''+String(u.id).replace(/'/g,"\\'")+'\',this.value)" spellcheck="false" '+
+    'style="width:100%;min-width:140px;padding:5px 7px;font-size:11px;font-weight:600;color:var(--blue);border:1px solid #93c5fd;border-radius:5px;font-family:inherit;background:#eff6ff;" title="Edit the hardware comment (e.g. change (2) to (3))">'+
+    (others?'<div style="font-size:10px;color:#94a3b8;margin-top:2px;">💬 '+esc(others)+'</div>':'')+'</td>';
+}
+function setBottomComment(unitId,val){
+  var u=units.find(function(x){return x.id===unitId;});if(!u)return;var b=_bottomPart(u);if(!b)return;
+  b.comment=String(val||'').trim();saveData();
+  try{refresh();}catch(e){}try{renderHardware();}catch(e){}
+  if(typeof filterDetail==='function'){var q=document.getElementById('d-search');filterDetail(q?q.value:'');}
+  showMsg('✓ Hardware comment updated for '+unitId);
+}
 function setHwModelOverride(unitId,newName){
   var u=units.find(function(x){return x.id===unitId;});
   if(!u)return;
@@ -7702,7 +7719,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v274 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v275 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9535,7 +9552,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=274;
+var APP_VERSION=275;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
