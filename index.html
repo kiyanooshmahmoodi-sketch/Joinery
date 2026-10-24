@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v263 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v264 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1453,16 +1453,17 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     <div class="rbox r-wait" id="r-inst" style="margin-top:8px;">Waiting...</div>
   </div>
   <div class="card">
-    <div class="card-title" style="color:var(--yellow);margin:0 0 4px;">⏳ Still Needs Installing</div>
-    <div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Grouped by room — cabinets and independent parts both shown. Colorless until scanned as installed; tap any cabinet with a ⚠️ QC badge to see why it was rejected.</div>
-    <div id="inst-pending-list"><div style="text-align:center;color:var(--green);padding:20px;">✅ All units installed!</div></div>
+    <div class="card-title" style="color:var(--yellow);margin:0 0 4px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="colToggle('inst-pend-body')"><span>⏳ Still Needs Installing</span><span id="inst-pend-body-arr" class="btn btn-outline btn-sm" style="pointer-events:none;">▼ Hide</span></div>
+    <div id="inst-pend-body"><div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Grouped by room — cabinets and independent parts both shown. Colorless until scanned as installed; tap any cabinet with a ⚠️ QC badge to see why it was rejected.</div>
+    <div id="inst-pending-list"><div style="text-align:center;color:var(--green);padding:20px;">✅ All units installed!</div></div></div>
   </div>
   <div class="card">
     <div class="flex ai-c jb" style="margin-bottom:10px;">
-      <div class="card-title" style="margin:0;">📋 Installation Log</div>
+      <div class="card-title" style="margin:0;cursor:pointer;flex:1;" onclick="colToggle('inst-log-body')">📋 Installation Log</div>
+      <span id="inst-log-body-arr" class="btn btn-outline btn-sm" style="cursor:pointer;margin-right:6px;" onclick="colToggle('inst-log-body')">▼ Hide</span>
       <button class="btn btn-ghost btn-sm" onclick="if(confirm('Clear the installation log? This does not un-install any cabinet.'))clearInstallLog();">Clear</button>
     </div>
-    <div id="inst-log"><div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">No installs yet</div></div>
+    <div id="inst-log-body"><div id="inst-log"><div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">No installs yet</div></div></div>
   </div>
 </div>
 
@@ -7681,7 +7682,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v263 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v264 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9117,6 +9118,9 @@ async function renderDrawings(){
   if(!_drBusy&&navigator.onLine&&missing){_drBusy=true;try{var got=false;for(var k=0;k<allList.length;k++){if(!loc[allList[k].id]){var d=await siGetPhoto(allList[k].id);if(d)got=true;}}if(got){_drBusy=false;renderDrawings();return;}}catch(e){}_drBusy=false;}}
 var _ris=renderInstallStats;renderInstallStats=function(){_ris.apply(this,arguments);try{renderDrawings();}catch(e){}};
 
+function colApply(id){var b=document.getElementById(id),a=document.getElementById(id+'-arr');if(!b)return;var c=false;try{c=localStorage.getItem('cbk-col-'+id)==='1';}catch(e){}b.style.display=c?'none':'';if(a)a.textContent=c?'▶ Show':'▼ Hide';}
+function colToggle(id){var c=false;try{c=localStorage.getItem('cbk-col-'+id)==='1';localStorage.setItem('cbk-col-'+id,c?'0':'1');}catch(e){var b=document.getElementById(id);c=b&&b.style.display==='none';b.style.display=c?'':'none';var a=document.getElementById(id+'-arr');if(a)a.textContent=c?'▼ Hide':'▶ Show';return;}colApply(id);}
+setTimeout(function(){colApply('inst-pend-body');colApply('inst-log-body');},800);
 // ===== v253: SAFE UPLOAD QUEUE — photos & voice are kept on this device and uploaded automatically whenever there is internet =====
 var _upDone={},_upProg={},_upMsg='';
 function upNotify(){var k=Object.keys(_upDone);if(!k.length)return;var box=document.getElementById('up-toast');if(!box){box=document.createElement('div');box.id='up-toast';box.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:99999;max-width:92vw;display:flex;flex-direction:column;gap:6px;pointer-events:none;';document.body.appendChild(box);}
@@ -9483,7 +9487,7 @@ roleInit();
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
-var APP_VERSION=263;
+var APP_VERSION=264;
 function checkForUpdate(){
   if(!/^https?:$/.test(location.protocol))return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
