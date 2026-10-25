@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v289 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v290 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1091,7 +1091,6 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <div class="tabs">
   <div class="tab" onclick="showTab('finishes',this)">📋 Finishes &amp; Appliances</div>
   <div class="tab active" onclick="showTab('units',this)">📦 Cabinet & Part List <span class="tbadge" id="tb-rem">0</span></div>
-  <div class="tab" onclick="showTab('summary',this)">📊 Summary</div>
   <div class="tab" onclick="showTab('hardware',this)">🔧 Hardware</div>
   <div class="tab" onclick="showTab('kickboard',this)">🦶 Kickboard</div>
   <div class="tab" onclick="showTab('closetrod',this)">🪧 Closet Rod</div>
@@ -7889,7 +7888,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v289 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v290 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9069,6 +9068,7 @@ function openSectionFromPM(jobId,sectionKey){
   switchView('tracker');
   setTimeout(function(){
     var name=tabMap[sectionKey];if(!name)return;
+    if(name==='summary'){showTab('summary',document.body);return;}   // v290: Summary now lives inside the Cabinet & Part List tab
     // Find the matching tab and trigger its onclick
     var tabs=document.querySelectorAll('.tab');
     for(var i=0;i<tabs.length;i++){
