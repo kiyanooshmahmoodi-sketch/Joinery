@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v291 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v292 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1716,7 +1716,7 @@ var IND=['door','cbk-door','base door','drawer face','drw face','dwr face','cbk-
   'shadowline','shadow line','cbk-shadowline','cbk-shadow'];
 
 // FORCED INDEPENDENT - these words anywhere in name = always panel, no exceptions
-var FORCE_IND=['kick','filler','bulkhead','underpanel','under panel','shadowline','shadow line','barback','bar back','finger rail','fingerpull','finger pull','shelf support','blind panel'];
+var FORCE_IND=['pnl','kick','filler','bulkhead','underpanel','under panel','shadowline','shadow line','barback','bar back','finger rail','fingerpull','finger pull','shelf support','blind panel'];
 
 function classify(name){
   var n=name.toLowerCase().trim();
@@ -1779,7 +1779,7 @@ function isUBack(name){
 //
 // PARTS (scanned individually) — names containing any of these, with ANY
 // prefix/suffix/separator:
-//   door · base door · drawer face (Drawer Front = cabinet, v284) · panel · finished/exterior/linden
+//   pnl (any prefix/suffix, = panel) · door · base door · drawer face (Drawer Front = cabinet, v284) · panel · finished/exterior/linden
 //   panel · blind panel · filler (all kinds) · finished end (fend) ·
 //   finger / fingerpull / finger pull / finger rail · kick / kickface /
 //   kickboard · shadowline · underpanel · bulkhead · barback · bench/benchtop
@@ -1797,7 +1797,7 @@ function _selfCheckRules(){
   try{
     var fails=[];
     var mustCab=['UBack','U Back','U-Back','U_Back','U/Back','CBK-UBack','1UBack','WHITE HMR UBACK'];
-    var mustPart=['Door','Drawer Face','DRW Face','DWR_Face','Drawer-Face','Drawer','DRW','DWR','drw','DRW1','Drawer2','Drawer 3','DWR-4','FP-DWR','FP DRW','CBK-Drawer','DWR 2','Drawer Panel','Shadowline','Shadow-Line','Fingerpull','Finger-Pull','Finger Rail','Kick','Filler','Appliance Filler','Tray Face','CBK-Tray Face'];
+    var mustPart=['B-PNL','B-PNL (Colour E)','PNL','FP-PNL 2','Door','Drawer Face','DRW Face','DWR_Face','Drawer-Face','Drawer','DRW','DWR','drw','DRW1','Drawer2','Drawer 3','DWR-4','FP-DWR','FP DRW','CBK-Drawer','DWR 2','Drawer Panel','Shadowline','Shadow-Line','Fingerpull','Finger-Pull','Finger Rail','Kick','Filler','Appliance Filler','Tray Face','CBK-Tray Face'];
     var mustNotUback=['Back','Drawer Back','Door Back','Aluminium Backing'];
     var mustCabPart=['Drw L Side','Drw R Side','Drw Bottom','Drw Back','Dwr Left Side','Drawer Right Side','Drawer Front','CBK-Drawer Front','DRW Front','DWR Front','Drawer Front 2','Drawer Left Side','Drawer Right Side','Drw Front','Dwr Front','Drw Back','Drw Side','Drw Bottom','Drawer Side','Drawer Bottom','Drawer Back','Drw1 Front'];
     var trayCab=['Tray Bottom','Tray Side','Tray Back','Tray Runner','Tray Panel','Cutlery Tray'];
@@ -2178,7 +2178,7 @@ function getCat(name){var n=name.toLowerCase();
   if(n.indexOf('blind panel')!==-1)return'Blind Panel';
   if(n.indexOf('fend')!==-1||n.indexOf('cbk-fend')!==-1||n.indexOf('finished end')!==-1)return'Finished End';
   if(n.indexOf('linden')!==-1||n.indexOf('lindon')!==-1)return'Linden Panel';
-  if(n.indexOf('panel')!==-1)return'Panel';
+  if(n.indexOf('panel')!==-1||n.indexOf('pnl')!==-1)return'Panel';   // v292: PNL (any prefix/suffix) = Panel
   if(n.indexOf('stile')!==-1)return'Stile';
   return'Other';}
 
@@ -7888,7 +7888,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v291 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v292 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
