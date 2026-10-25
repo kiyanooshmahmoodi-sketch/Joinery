@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v295 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v296 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1190,17 +1190,19 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
       <button class="btn btn-outline btn-sm" onclick="printPTOOnly()" title="Print PTO list only">🖨️ Print PTO</button>
     </div>
   </div>
+  <div class="card" style="margin-bottom:14px;">
+    <div class="flex ai-c jb" style="margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+      <div class="card-title" style="margin:0;">Hardware Items</div>
+      <button class="btn btn-primary btn-sm" onclick="printHwItems()">🖨️ Print Hardware List</button>
+    </div>
+    <div class="card-sub" style="margin-bottom:10px;">Use ▲ ▼ to set the order and the tick to choose which items go on the printed list.</div>
+    <div id="hw-list"></div>
+  </div>
   <div id="hw-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px;"></div>
   <div class="card" style="margin-bottom:14px;">
     <div class="card-title">🔧 Hardware Models — rename before printing</div>
     <div class="card-sub">Every distinct model text found on "Bottom" parts (e.g. raw Hafele/Häfele text from Mozaik) is listed below. Rename one and every cabinet using that exact text — everywhere in the app (cards, QC, prints, the Hardware Summary) — shows your new name instead.</div>
     <div id="hw-aliases"></div>
-  </div>
-  <div class="card">
-    <div class="flex ai-c jb" style="margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-      <div class="card-title" style="margin:0;">Hardware Items</div>
-    </div>
-    <div id="hw-list"></div>
   </div>
 </div>
 
@@ -4521,6 +4523,59 @@ function colorTagHTML(color){
   return'<span class="color-tag '+color+'">'+_railColorMap[color].label+'</span>';
 }
 
+// ===== v296: Hardware Items — managed order + include-in-print =====
+function _hwLay(){var l=hwAliases['__hwlayout'];if(!l||typeof l!=='object')l=hwAliases['__hwlayout']={order:[],hidden:{}};if(!Array.isArray(l.order))l.order=[];if(!l.hidden)l.hidden={};return l;}
+function hwItems(){
+  var items=[{key:'pto',title:'🔘 PTO Mechanisms',total:getPTOCount(),subs:[],note:getPTOCount()>0?'One mechanism per PTO cabinet — to be sent from warehouse':'No PTO cabinets in this job'}];
+  var tot=buildHWTotals();
+  if(tot.length){tot.forEach(function(f){var multi=f.items.length>1;items.push({key:'hw:'+f.family,title:multi?f.family+' — total':f.items[0].model,total:f.total,subs:multi?f.items.map(function(r){return{name:r.model,n:r.count};}):[]});});}
+  else{buildHWSummary().forEach(function(r){items.push({key:'hws:'+r.model,title:r.model,total:r.count,subs:[],note:'cabinets with exactly this set'});});}
+  var lay=_hwLay(),pos={};lay.order.forEach(function(k,i){pos[k]=i;});
+  return items.map(function(it,i){return{it:it,i:i};}).sort(function(a,b){var pa=pos[a.it.key]!==undefined?pos[a.it.key]:1000+a.i,pb=pos[b.it.key]!==undefined?pos[b.it.key]:1000+b.i;return pa-pb;}).map(function(x){return x.it;});
+}
+function hwItemsHTML(){
+  var its=hwItems(),lay=_hwLay();
+  return its.map(function(it,i){
+    var off=!!lay.hidden[it.key],k=qe(it.key).replace(/'/g,"&#39;");
+    return '<div style="display:flex;gap:12px;align-items:flex-start;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-left:4px solid '+(it.key==='pto'?'#a3506b':'#2f7d5b')+';border-radius:8px;padding:10px 14px;margin-bottom:8px;'+(off?'opacity:.45;':'')+'">'+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;"><span style="font-size:14px;font-weight:700;color:#1f2937;">'+esc(it.title)+'</span><span style="font-size:20px;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:#2f4b8f;">'+it.total+'</span></div>'+
+        (it.note?'<div style="font-size:12px;color:#6b7280;margin-top:3px;">'+esc(it.note)+'</div>':'')+
+        it.subs.map(function(r){return '<div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-top:4px;padding-left:10px;"><span>'+esc(r.name)+'</span><b>'+r.n+'</b></div>';}).join('')+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;">'+
+        '<div style="display:flex;gap:4px;"><button class="btn btn-outline btn-sm" style="padding:2px 8px;" '+(i===0?'disabled ':'')+'onclick="hwMove(\''+k+'\',-1)" title="Move up">▲</button><button class="btn btn-outline btn-sm" style="padding:2px 8px;" '+(i===its.length-1?'disabled ':'')+'onclick="hwMove(\''+k+'\',1)" title="Move down">▼</button></div>'+
+        '<label style="font-size:11px;color:#4b5563;display:flex;gap:4px;align-items:center;cursor:pointer;"><input type="checkbox" '+(off?'':'checked ')+'onchange="hwToggle(\''+k+'\')"/> Print</label>'+
+      '</div></div>';
+  }).join('');
+}
+function hwMove(key,dir){
+  key=String(key).replace(/&#39;/g,"'");var lay=_hwLay(),keys=hwItems().map(function(x){return x.key;});
+  var i=keys.indexOf(key),j=i+dir;if(i<0||j<0||j>=keys.length)return;
+  var t=keys[i];keys[i]=keys[j];keys[j]=t;lay.order=keys;saveData();renderHardware();
+}
+function hwToggle(key){key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();if(lay.hidden[key])delete lay.hidden[key];else lay.hidden[key]=1;saveData();renderHardware();}
+function printHwItems(){
+  var lay=_hwLay(),its=hwItems().filter(function(x){return !lay.hidden[x.key];});
+  if(!its.length){showMsg('Nothing selected to print — tick at least one item');return;}
+  var proj=(document.getElementById('proj-input')||{}).value||'Project';
+  var date=new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});
+  var rows=its.map(function(it,i){
+    return '<div class="it"><div class="hd"><span class="nm">'+(i+1)+'. '+esc(it.title.replace(/^[^\w(]+/,''))+'</span><span class="tt">'+it.total+'</span></div>'+
+      (it.note?'<div class="nt">'+esc(it.note)+'</div>':'')+
+      (it.subs.length?'<table>'+it.subs.map(function(r){return '<tr><td>'+esc(r.name)+'</td><td class="q">'+r.n+'</td></tr>';}).join('')+'</table>':'')+'</div>';
+  }).join('');
+  var w=window.open('','_blank');if(!w){showMsg('Allow pop-ups to print');return;}
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Hardware List — '+esc(proj)+'</title><style>'+
+    'body{font-family:Arial,sans-serif;padding:24px;color:#1f2937;max-width:800px;margin:0 auto;font-size:13px;}'+
+    'h1{font-size:22px;margin-bottom:4px;}.meta{color:#6b7280;margin-bottom:16px;}'+
+    '.it{border:1px solid #d1d5db;border-radius:6px;padding:10px 14px;margin-bottom:10px;page-break-inside:avoid;}'+
+    '.hd{display:flex;justify-content:space-between;align-items:baseline;}.nm{font-size:15px;font-weight:700;}.tt{font-size:20px;font-weight:700;font-family:monospace;}'+
+    '.nt{color:#6b7280;font-size:12px;margin-top:3px;}table{width:100%;border-collapse:collapse;margin-top:6px;}td{padding:4px 8px;border-top:1px solid #e5e7eb;font-size:12px;}td.q{text-align:right;font-weight:700;font-family:monospace;}'+
+    'button{padding:9px 18px;background:#1f2937;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-bottom:14px;}@media print{button{display:none!important;}body{padding:10px;}}'+
+    '</style></head><body><h1>🔧 Hardware List</h1><div class="meta">Project: <b>'+esc(proj)+'</b> · '+date+'</div><button onclick="window.print()">🖨️ Print</button>'+rows+'</body></html>');
+  w.document.close();
+}
 function renderHardware(){
   var ptoCount=getPTOCount();
   var rails=hangingRails.slice();
@@ -4672,7 +4727,7 @@ function renderHardware(){
   }
   railsSection+='</div>';
 
-  list.innerHTML=ptoSection+(hwTotSection||hwSection);
+  list.innerHTML=hwItemsHTML();
   var rl=document.getElementById('rod-list');if(rl)rl.innerHTML=railsSection;
 }
 
@@ -7891,7 +7946,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v295 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v296 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
