@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v297 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v298 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4596,13 +4596,17 @@ function renderHardware(){
     ];
     var _stFn=function(s){return'<div style="background:#fff;border-radius:12px;box-shadow:var(--shadow-sm);padding:14px;text-align:center;border-top:3px solid '+s.c+';"><div style="font-size:22px;font-weight:700;color:'+s.c+';font-family:\'JetBrains Mono\',monospace;">'+s.n+'</div><div style="font-size:10px;color:var(--gray);margin-top:5px;letter-spacing:1px;font-weight:700;text-transform:uppercase;">'+s.l+'</div></div>';};
     st.innerHTML=statBlocks.map(_stFn).join('');
-    var rst=document.getElementById('rod-stats');
-    if(rst)rst.innerHTML=[
+
+  }
+
+  // Closet Rod stats — belongs to the Closet Rod tab only (independent of Hardware)
+  (function(){var rst=document.getElementById('rod-stats');if(!rst)return;
+    var _f=function(s){return'<div style="background:#fff;border-radius:12px;box-shadow:var(--shadow-sm);padding:14px;text-align:center;border-top:3px solid '+s.c+';"><div style="font-size:22px;font-weight:700;color:'+s.c+';font-family:\'JetBrains Mono\',monospace;">'+s.n+'</div><div style="font-size:10px;color:var(--gray);margin-top:5px;letter-spacing:1px;font-weight:700;text-transform:uppercase;">'+s.l+'</div></div>';};
+    rst.innerHTML=[
       {n:rails.length,l:'🪧 Closet Rods',c:'#3a8f90'},
       {n:totalRailLength?(totalRailLength+'mm'):'—',l:'Total Rod Length',c:'#7d62a3'},
       {n:unsetRails,l:'⚠️ Color Not Set',c:unsetRails>0?'#c0503f':'#3d8f6a'}
-    ].map(_stFn).join('');
-  }
+    ].map(_f).join('');})();
 
   var list=document.getElementById('hw-list');
   if(!list)return;
@@ -7946,7 +7950,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v297 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v298 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
