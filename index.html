@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v290 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v291 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -3662,7 +3662,7 @@ function filterDetail(q){
       }
       return'<tr id="drow-'+u.id.replace(/[^a-z0-9]/gi,'_')+'">'+
         '<td style="color:#94a3b8;font-size:11px;">'+(i+1)+'</td>'+
-        '<td><span class="drow-id">'+u.id+'</span></td>'+
+        '<td><span class="drow-id" title="'+qe(u.id)+'">'+esc(u.cabId||u.id)+'</span></td>'+
         '<td><span class="drow-room">🏠 '+(u.room||'—')+'</span></td>'+
         typeCell+
         '<td class="drow-mat">'+(u.mat?matL(u.mat):'—')+edgeTag(u)+'</td>'+
@@ -3706,7 +3706,7 @@ function filterDetail(q){
       }
       return'<tr id="drow-'+u.id.replace(/[^a-z0-9]/gi,'_')+'">'+
         '<td style="color:#94a3b8;font-size:11px;">'+(i+1)+'</td>'+
-        '<td><span class="drow-id">'+u.id+'</span></td>'+
+        '<td><span class="drow-id" title="'+qe(u.id)+'">'+esc(u.cabId||u.id)+'</span></td>'+
         '<td><span class="drow-room">🏠 '+(u.room||'—')+'</span></td>'+
         catCell+
         '<td class="drow-part">'+(isGlass?'<span style="color:#0284c7;font-weight:600;">🔲 '+pname+'</span>':isDoor?'<span style="color:#ef4444;font-weight:600;">🚪 '+pname+'</span>':pname)+'</td>'+
@@ -7888,7 +7888,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v290 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v291 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
