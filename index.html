@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v300 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v301 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4516,7 +4516,7 @@ function colorTagHTML(color){
 }
 
 // ===== v296: Hardware Items — managed order + include-in-print =====
-function _hwLay(){var l=hwAliases['__hwlayout'];if(!l||typeof l!=='object')l=hwAliases['__hwlayout']={order:[],hidden:{}};if(!Array.isArray(l.order))l.order=[];if(!l.hidden)l.hidden={};return l;}
+function _hwLay(){var l=hwAliases['__hwlayout'];if(!l||typeof l!=='object')l=hwAliases['__hwlayout']={order:[],hidden:{}};if(!Array.isArray(l.order))l.order=[];if(!l.hidden)l.hidden={};if(!l.comments)l.comments={};return l;}
 function hwItems(){
   var items=[{key:'pto',title:'🔘 PTO Mechanisms',total:getPTOCount(),subs:[],note:getPTOCount()>0?'One mechanism per PTO cabinet — to be sent from warehouse':'No PTO cabinets in this job'}];
   var tot=buildHWTotals();
@@ -4534,6 +4534,7 @@ function hwItemsHTML(){
         '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;"><span style="font-size:14px;font-weight:700;color:#1f2937;">'+esc(it.title)+'</span><span style="font-size:20px;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:#2f4b8f;">'+it.total+'</span></div>'+
         (it.note?'<div style="font-size:12px;color:#6b7280;margin-top:3px;">'+esc(it.note)+'</div>':'')+
         it.subs.map(function(r){return '<div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-top:4px;padding-left:10px;"><span>'+esc(r.name)+'</span><b>'+r.n+'</b></div>';}).join('')+
+        '<input value="'+qe(lay.comments[it.key]||'')+'" placeholder="Comment / model (printed on the list)…" spellcheck="false" onchange="hwComment(\''+k+'\',this.value)" style="width:100%;margin-top:8px;padding:6px 9px;font-size:12px;font-weight:600;color:#2f4b8f;border:1px solid #c3d0ec;border-radius:6px;background:#eaeff9;font-family:inherit;"/>'+
       '</div>'+
       '<div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;">'+
         '<div style="display:flex;gap:4px;"><button class="btn btn-outline btn-sm" style="padding:2px 8px;" '+(i===0?'disabled ':'')+'onclick="hwMove(\''+k+'\',-1)" title="Move up">▲</button><button class="btn btn-outline btn-sm" style="padding:2px 8px;" '+(i===its.length-1?'disabled ':'')+'onclick="hwMove(\''+k+'\',1)" title="Move down">▼</button></div>'+
@@ -4546,6 +4547,7 @@ function hwMove(key,dir){
   var i=keys.indexOf(key),j=i+dir;if(i<0||j<0||j>=keys.length)return;
   var t=keys[i];keys[i]=keys[j];keys[j]=t;lay.order=keys;saveData();renderHardware();
 }
+function hwComment(key,val){key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();val=String(val||'').trim();if(val)lay.comments[key]=val;else delete lay.comments[key];saveData();showMsg('✓ Comment saved');}
 function hwToggle(key){key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();if(lay.hidden[key])delete lay.hidden[key];else lay.hidden[key]=1;saveData();renderHardware();}
 function printHwItems(){
   var lay=_hwLay(),its=hwItems().filter(function(x){return !lay.hidden[x.key];});
@@ -4555,6 +4557,7 @@ function printHwItems(){
   var rows=its.map(function(it,i){
     return '<div class="it"><div class="hd"><span class="nm">'+(i+1)+'. '+esc(it.title.replace(/^[^\w(]+/,''))+'</span><span class="tt">'+it.total+'</span></div>'+
       (it.note?'<div class="nt">'+esc(it.note)+'</div>':'')+
+      (lay.comments[it.key]?'<div class="cm">'+esc(lay.comments[it.key])+'</div>':'')+
       (it.subs.length?'<table>'+it.subs.map(function(r){return '<tr><td>'+esc(r.name)+'</td><td class="q">'+r.n+'</td></tr>';}).join('')+'</table>':'')+'</div>';
   }).join('');
   var w=window.open('','_blank');if(!w){showMsg('Allow pop-ups to print');return;}
@@ -4563,7 +4566,7 @@ function printHwItems(){
     'h1{font-size:22px;margin-bottom:4px;}.meta{color:#6b7280;margin-bottom:16px;}'+
     '.it{border:1px solid #d1d5db;border-radius:6px;padding:10px 14px;margin-bottom:10px;page-break-inside:avoid;}'+
     '.hd{display:flex;justify-content:space-between;align-items:baseline;}.nm{font-size:15px;font-weight:700;}.tt{font-size:20px;font-weight:700;font-family:monospace;}'+
-    '.nt{color:#6b7280;font-size:12px;margin-top:3px;}table{width:100%;border-collapse:collapse;margin-top:6px;}td{padding:4px 8px;border-top:1px solid #e5e7eb;font-size:12px;}td.q{text-align:right;font-weight:700;font-family:monospace;}'+
+    '.nt{color:#6b7280;font-size:12px;margin-top:3px;}.cm{margin-top:6px;padding:5px 9px;background:#f1f2f5;border-left:3px solid #2f4b8f;font-size:13px;font-weight:700;}table{width:100%;border-collapse:collapse;margin-top:6px;}td{padding:4px 8px;border-top:1px solid #e5e7eb;font-size:12px;}td.q{text-align:right;font-weight:700;font-family:monospace;}'+
     'button{padding:9px 18px;background:#1f2937;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-bottom:14px;}@media print{button{display:none!important;}body{padding:10px;}}'+
     '</style></head><body><h1>🔧 Hardware List</h1><div class="meta">Project: <b>'+esc(proj)+'</b> · '+date+'</div><button onclick="window.print()">🖨️ Print</button>'+rows+'</body></html>');
   w.document.close();
@@ -7942,7 +7945,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v300 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v301 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
