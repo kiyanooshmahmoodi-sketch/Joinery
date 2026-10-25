@@ -1044,7 +1044,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v288 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v289 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1119,6 +1119,10 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 
 <!-- ALL UNITS -->
 <div class="panel active" id="panel-units">
+  <div id="units-sub" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <button id="us-list" class="btn" onclick="unitsView('list')">📦 Cabinets &amp; Parts</button>
+    <button id="us-sum" class="btn btn-outline" onclick="unitsView('sum')">📊 Summary</button>
+  </div>
   <div class="card">
     <div class="card-title">📦 By Material — rename before printing</div>
     <div class="card-sub">Each material Excel gets detected with a generic name (e.g. "White Satin 18mm") — type in the real name here (e.g. "WV White", "Boston Oak") and every print for that material uses your name instead.</div>
@@ -4046,6 +4050,25 @@ function reapplyRules(){
   units=units.filter(function(u){return !removeIds[u.id];}).concat(newUnits);
   saveData();try{refresh();}catch(e){}
   showMsg('✓ Rules re-applied: '+split+' part(s) split out of cabinets, '+merged+' part(s) moved into cabinets'+(busy?' · '+busy+' already-scanned item(s) left alone':''));
+}
+
+// v289: Summary as a sub-view of the Cabinet & Part List tab
+(function(){
+  var pu=document.getElementById('panel-units'),ps=document.getElementById('panel-summary');
+  if(pu&&ps){pu.appendChild(ps);ps.classList.remove('panel');ps.style.display='none';}
+})();
+function unitsView(v){
+  var pu=document.getElementById('panel-units');if(!pu)return;
+  var sum=(v==='sum');
+  Array.prototype.forEach.call(pu.children,function(c){
+    if(c.id==='units-sub')return;
+    if(c.id==='panel-summary'){c.style.display=sum?'':'none';return;}
+    if(sum){if(c.dataset.usd===undefined){c.dataset.usd=c.style.display;}c.style.display='none';}
+    else if(c.dataset.usd!==undefined){c.style.display=c.dataset.usd;delete c.dataset.usd;}
+  });
+  var a=document.getElementById('us-list'),b=document.getElementById('us-sum');
+  if(a)a.className='btn'+(sum?' btn-outline':'');if(b)b.className='btn'+(sum?'':' btn-outline');
+  if(sum){try{renderSummary();}catch(e){}}
 }
 function setBottomComment(unitId,val){
   var u=units.find(function(x){return x.id===unitId;});if(!u)return;var b=_bottomPart(u);if(!b)return;
@@ -7118,6 +7141,9 @@ function finPrint(){
 
 // TABS
 function showTab(n,el){
+  // v289: Summary now lives inside the Cabinet & Part List tab — the old Summary tab is a shortcut to it
+  if(n==='summary'){var _ut=document.querySelector(".tabs .tab[onclick*=\"'units'\"]");if(_ut){showTab('units',_ut);setTimeout(function(){unitsView('sum');},1);return;}}
+  if(n==='units'&&typeof unitsView==='function')setTimeout(function(){unitsView('list');},0);
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
   document.getElementById('panel-'+n).classList.add('active');el.classList.add('active');
@@ -7863,7 +7889,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v288 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v289 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
