@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v333 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v334 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1270,7 +1270,11 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
         <label style="cursor:pointer;display:flex;gap:5px;align-items:center;"><input type="checkbox" id="gdm-hr" onchange="if(this.checked)document.getElementById('gdm-hl').checked=false"/> Right</label>
       </div>
       <datalist id="gh-types"></datalist>
-      <input id="gdm-holes" placeholder="Hinge holes from top (mm) e.g. 100, 400, 300" style="padding:8px 10px;font-size:13px;grid-column:span 2;"/>
+      <div style="display:flex;gap:10px;align-items:flex-start;grid-column:span 2;">
+        <div style="font-size:12px;font-weight:700;color:#4b5563;line-height:1.3;padding-top:6px;width:90px;">Hinge holes<br>from top (mm)</div>
+        <div style="width:110px;"><div id="gdm-hbox"></div>
+          <button type="button" onclick="ghFormMore()" title="Add another hinge hole" style="margin-top:4px;width:100%;padding:3px;font-size:18px;font-weight:700;border:1px dashed #9ca3af;border-radius:4px;background:none;cursor:pointer;color:#235f60;">+</button></div>
+      </div>
     </div>
     <div style="margin-top:10px;text-align:right;">
       <button class="btn btn-primary btn-sm" onclick="addManualGlassDoor()">➕ Add Glass Door</button>
@@ -5408,18 +5412,21 @@ function ghParse(t){return String(t||'').split(/[,;\s]+/).map(function(x){return
 function ghType(id,v){var d=glassDoors.find(function(x){return x.id===id;});if(!d)return;d.hingeType=String(v||'').trim();saveData();ghTypesList();}
 function ghTypesList(){var dl=document.getElementById('gh-types');if(!dl)return;var seen={};glassDoors.forEach(function(g){if(g.hingeType)seen[g.hingeType]=1;});dl.innerHTML=Object.keys(seen).map(function(t){return '<option value="'+t.replace(/"/g,'&quot;')+'"></option>';}).join('');}
 function ghSide(id,side){var d=glassDoors.find(function(x){return x.id===id;});if(!d)return;d.hingeSide=(d.hingeSide===side?null:side);saveData();renderGlassDoors();}
-function ghAdd(id){var el=document.getElementById('gh-in-'+id);if(!el)return;var n=ghParse(el.value);if(!n.length)return;var d=glassDoors.find(function(x){return x.id===id;});if(!d)return;d.hingeHoles=(d.hingeHoles||[]).concat(n);saveData();renderGlassDoors();var e2=document.getElementById('gh-in-'+id);if(e2)e2.focus();}
-function ghDel(id,i){var d=glassDoors.find(function(x){return x.id===id;});if(!d||!d.hingeHoles)return;d.hingeHoles.splice(i,1);saveData();renderGlassDoors();}
-function ghEdit(id,i,v){var d=glassDoors.find(function(x){return x.id===id;});if(!d||!d.hingeHoles)return;var n=parseInt(v)||0;if(n>0)d.hingeHoles[i]=n;else d.hingeHoles.splice(i,1);saveData();renderGlassDoors();}
+function ghFormBox(){var d=document.createElement('input');d.type='number';d.min='0';d.placeholder='mm';d.style.cssText='width:100%;box-sizing:border-box;padding:6px 8px;font-size:13px;font-weight:700;text-align:center;border:1px solid #9ca3af;border-radius:4px;margin-bottom:4px;display:block;';return d;}
+function ghFormReset(){var b=document.getElementById('gdm-hbox');if(!b)return;b.innerHTML='';for(var i=0;i<4;i++)b.appendChild(ghFormBox());}
+function ghFormMore(){var b=document.getElementById('gdm-hbox');if(b){var e=ghFormBox();b.appendChild(e);e.focus();}}
+function ghSet(id,i,v){var d=glassDoors.find(function(x){return x.id===id;});if(!d)return;if(!d.hingeHoles)d.hingeHoles=[];while(d.hingeHoles.length<=i)d.hingeHoles.push(0);d.hingeHoles[i]=parseInt(v)||0;saveData();var c=document.getElementById('gh-cnt-'+id);if(c)c.textContent=ghCount(d);}
+function ghCount(d){var n=(d.hingeHoles||[]).filter(function(x){return x>0;}).length;return n?n+' hinge'+(n>1?'s':'')+', from top':'';}
+function ghMore(id){var d=glassDoors.find(function(x){return x.id===id;});if(!d)return;d.hingeBoxes=Math.max(4,d.hingeBoxes||0,(d.hingeHoles||[]).length)+1;saveData();renderGlassDoors();}
 function ghHTML(d){
   var sb=function(sd){var on=d.hingeSide===sd;return '<button onclick="ghSide(\''+d.id+'\',\''+sd+'\')" style="padding:4px 9px;font-size:11px;font-weight:700;border-radius:5px;cursor:pointer;border:1px solid '+(on?'#3a8f90':'#d1d5db')+';background:'+(on?'#3a8f90':'#fff')+';color:'+(on?'#fff':'#4b5563')+';">'+sd+'</button>';};
-  var chips=(d.hingeHoles||[]).map(function(n,i){return '<span style="display:inline-flex;align-items:center;gap:2px;background:#eef3f8;border-radius:5px;padding:2px 3px;"><input type="number" value="'+n+'" min="0" onchange="ghEdit(\''+d.id+'\','+i+',this.value)" style="width:54px;padding:3px;font-size:12px;font-weight:700;text-align:center;border:1px solid #d1d5db;border-radius:4px;"/><button onclick="ghDel(\''+d.id+'\','+i+')" title="Remove hole" style="border:none;background:none;color:#b4412f;cursor:pointer;font-weight:700;">×</button></span>';}).join('');
+  var n=Math.max(4,d.hingeBoxes||0,(d.hingeHoles||[]).length),boxes='';
+  for(var k=0;k<n;k++){var v=(d.hingeHoles||[])[k];boxes+='<input type="number" min="0" value="'+(v>0?v:'')+'" placeholder="mm" onchange="ghSet(\''+d.id+'\','+k+',this.value)" style="'+'width:100%;box-sizing:border-box;padding:6px 8px;font-size:13px;font-weight:700;text-align:center;border:1px solid #9ca3af;border-radius:4px;margin-bottom:4px;display:block;"/>';}
   return '<input list="gh-types" value="'+String(d.hingeType||'').replace(/"/g,'&quot;')+'" placeholder="Hinge type (e.g. Hinge 110)" onchange="ghType(\''+d.id+'\',this.value)" style="width:100%;box-sizing:border-box;padding:5px 7px;font-size:12px;font-weight:700;border:1px solid #d1d5db;border-radius:5px;margin-bottom:5px;"/>'+
-    '<div style="display:flex;gap:4px;margin-bottom:5px;">'+sb('Left')+sb('Right')+'</div>'+
-    '<div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;">'+chips+
-    '<input id="gh-in-'+d.id+'" placeholder="from top mm" onkeydown="if(event.key===\'Enter\')ghAdd(\''+d.id+'\')" style="width:90px;padding:4px 6px;font-size:12px;border:1px dashed #9ca3af;border-radius:5px;"/>'+
-    '<button onclick="ghAdd(\''+d.id+'\')" style="padding:4px 8px;font-size:12px;font-weight:700;border:none;border-radius:5px;background:#e3eef0;color:#235f60;cursor:pointer;">+ Hole</button></div>'+
-    ((d.hingeHoles||[]).length?'<div style="font-size:9px;color:#6b7280;margin-top:2px;">'+d.hingeHoles.length+' hinges, from top</div>':'');
+    '<div style="display:flex;gap:4px;margin-bottom:6px;">'+sb('Left')+sb('Right')+'</div>'+
+    '<div style="font-size:11px;font-weight:700;color:#4b5563;margin-bottom:3px;">Hinge holes from top (mm)</div>'+
+    '<div style="width:110px;">'+boxes+'<button onclick="ghMore(\''+d.id+'\')" title="Add another hinge hole" style="width:100%;padding:2px;font-size:18px;font-weight:700;border:1px dashed #9ca3af;border-radius:4px;background:none;cursor:pointer;color:#235f60;">+</button></div>'+
+    '<div id="gh-cnt-'+d.id+'" style="font-size:9px;color:#6b7280;margin-top:2px;">'+ghCount(d)+'</div>';
 }
 function setGlassDim(doorId,which,val){
   var d=glassDoors.find(function(x){return x.id===doorId;});
@@ -5510,7 +5517,7 @@ function addManualGlassDoor(){
   var name='Glass Door';
   var hside=document.getElementById('gdm-hl').checked?'Left':(document.getElementById('gdm-hr').checked?'Right':'');
   var htype=document.getElementById('gdm-htype').value.trim();
-  var holes=ghParse(document.getElementById('gdm-holes').value);
+  var holes=[].map.call(document.querySelectorAll('#gdm-hbox input'),function(e){return parseInt(e.value)||0;});while(holes.length&&!holes[holes.length-1])holes.pop();
   var _rm=/^(R\d+)/i.exec(cabId);var room=_rm?_rm[1].toUpperCase():'';
   var w=parseInt(document.getElementById('gdm-w').value)||0;
   var h=parseInt(document.getElementById('gdm-h').value)||0;
@@ -5526,7 +5533,7 @@ function addManualGlassDoor(){
     source:'manual'
   });
   // Clear the form
-  ['gdm-cabid','gdm-w','gdm-h','gdm-htype','gdm-holes'].forEach(function(id){
+  ghFormReset();['gdm-cabid','gdm-w','gdm-h','gdm-htype'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.value='';
   });
   ['gdm-hl','gdm-hr'].forEach(function(id){var el=document.getElementById(id);if(el)el.checked=false;});
@@ -5559,7 +5566,7 @@ function toughenedTogglerHTML(doorId,isTough){
 }
 
 function renderGlassDoors(){
-  try{ghTypesList();}catch(e){}
+  try{ghTypesList();var _hb=document.getElementById('gdm-hbox');if(_hb&&!_hb.children.length)ghFormReset();}catch(e){}
   var doors=glassDoors.slice();
   var filtered=_gdSearchQ?doors.filter(function(d){
     var s=((d.room||'')+' '+(d.cabId||'')+' '+(d.width||'')+' '+(d.height||'')+' '+(d.profileColor||'')+' '+(d.glassType||'')+' '+(d.thickness||'')+'mm '+(d.toughened?'toughened':'standard')).toLowerCase();
@@ -8298,7 +8305,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v333 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v334 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
