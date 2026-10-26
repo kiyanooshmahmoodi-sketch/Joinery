@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v321 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v322 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4737,13 +4737,13 @@ function thermoHTML(){
   var bar='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;padding:10px 12px;border:1px dashed #9fb2dc;border-radius:8px;background:#f6f7fb;">'+
     '<label class="btn btn-primary btn-sm" style="cursor:pointer;margin:0;">📥 Load Excel file<input type="file" accept=".xlsx,.xls" multiple style="display:none;" onchange="thLoad(this.files);this.value=\'\'"/></label>'+
     '<span style="font-size:12px;color:#4b5563;">then fill the empty cells:</span>'+
-    '<input id="th-all-profile" placeholder="Profile (e.g. Ascot)" list="th-prof-list" spellcheck="false" style="flex:1;min-width:150px;padding:6px 9px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/><button type="button" class="btn btn-outline btn-sm" onclick="thGallery(\'\')" title="Pick a profile with pictures">🖼 Profiles</button>'+
+    '<input id="th-all-profile" placeholder="Click to choose a profile…" readonly onclick="thGallery(\'\')" style="flex:1;min-width:150px;padding:6px 9px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;cursor:pointer;font-weight:700;"/>'+
     '<input id="th-all-finish" placeholder="Material / finish (e.g. Bonlex White Matt)" spellcheck="false" style="flex:1;min-width:170px;padding:6px 9px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/>'+
     '<button class="btn btn-outline btn-sm" onclick="thFillAll()">Apply to empty rows</button></div>';
   var tb=L.rows.map(function(r){return '<tr style="border-bottom:1px solid #e5e7eb;'+(r.print===false?'opacity:.45;':'')+(r.src?'background:#f1f8f4;':'')+'"><td style="padding:3px;white-space:nowrap;vertical-align:top;"><button class="btn btn-outline btn-sm" style="padding:2px 7px;color:#b3261e;" onclick="thDel(\''+qe(r.id)+'\')" title="Delete this row">🗑</button> <input type="checkbox" title="Include in print" '+(r.print===false?'':'checked ')+'onchange="thSet(\''+qe(r.id)+'\',\'print\',this.checked)"/></td>'+cell(r,'cab','Cabinet')+thTypeCell(r)+cell(r,'name','Door name')+thProfCell(r)+cell(r,'finish','Material / finish')+cell(r,'h','H',true)+cell(r,'w','W',true)+cell(r,'qty','Qty',true,'text-align:center;font-weight:700;')+thSharkCell(r)+cell(r,'comment','Comments')+
     '</tr>';}).join('');
   if(!L.rows.length)tb='<tr><td colspan="12" style="text-align:center;color:#6b7280;font-size:13px;padding:14px;">No doors yet — load the thermolaminate Excel file above, or add a row below.</td></tr>';
-  return thProfList()+bar+'<div style="overflow-x:auto;"><table style="width:100%;min-width:1250px;border-collapse:collapse;"><thead><tr>'+th('',64)+th('CABINET',90)+th('TYPE',90)+th('NAME',140)+th('PROFILE',190)+th('MATERIAL / FINISH')+th('H',70)+th('W',70)+th('QTY',60)+th('SHARKNOSE',170)+th('COMMENTS',150)+'</tr></thead><tbody>'+tb+'</tbody></table></div>'+
+  return bar+'<div style="overflow-x:auto;"><table style="width:100%;min-width:1250px;border-collapse:collapse;"><thead><tr>'+th('',64)+th('CABINET',90)+th('TYPE',90)+th('NAME',140)+th('PROFILE',190)+th('MATERIAL / FINISH')+th('H',70)+th('W',70)+th('QTY',60)+th('SHARKNOSE',170)+th('COMMENTS',150)+'</tr></thead><tbody>'+tb+'</tbody></table></div>'+
     '<div style="margin-top:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><button class="btn btn-outline btn-sm" onclick="thAdd()">➕ Add door row</button>'+(L.rows.length?'<button class="btn btn-outline btn-sm" style="color:#b3261e;" onclick="thClear()">🗑 Delete all rows</button>':'')+'<b style="font-size:13px;color:#2f4b8f;">Total to print: '+tot+'</b></div>';
 }
 function thTypeCell(r){var t=r.type||'Door';return '<td style="padding:3px;vertical-align:top;"><select onchange="thSet(\''+qe(r.id)+'\',\'type\',this.value)" style="padding:5px 6px;font-size:12px;font-weight:700;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;width:100%;">'+['Door','Drawer'].map(function(o){return '<option'+(o===t?' selected':'')+'>'+o+'</option>';}).join('')+'</select></td>';}
@@ -4768,12 +4768,11 @@ function thImg(n,big){return 'https://www.polytec.com.au/img/products-custom/'+(
 function thPage(n){return 'https://www.polytec.com.au/product-custom/'+thSlug(n)+'/';}
 function thFindProfile(name){var q=String(name||'').trim().toLowerCase();if(!q)return null;var f=null;TH_STYLES.forEach(function(st){st.n.forEach(function(x){if(x.toLowerCase()===q)f={name:x,style:st.k,title:st.t};});});return f;}
 function thProfCell(r){
-  var inp='padding:5px 7px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;box-sizing:border-box;';
+  var inp='padding:6px 8px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;box-sizing:border-box;';
   var f=thFindProfile(r.profile);
-  return '<td style="padding:3px;vertical-align:top;"><div style="display:flex;gap:4px;align-items:center;">'+
-   (f?'<img src="'+qe(thImg(f.name))+'" alt="" onclick="thZoom(\''+qe(f.name)+'\')" onerror="this.style.display=\'none\'" title="Click to enlarge" style="width:34px;height:34px;object-fit:cover;border-radius:5px;border:1px solid #d1d5db;cursor:zoom-in;flex-shrink:0;"/>':'')+
-   '<input value="'+qe(r.profile||'')+'" placeholder="Profile" list="th-prof-list" onfocus="matFocus(this)" onblur="matBlur(this)" spellcheck="false" onchange="thSet(\''+qe(r.id)+'\',\'profile\',this.value)" style="'+inp+'flex:1;min-width:0;width:100%;"/>'+
-   '<button type="button" class="btn btn-outline btn-sm" style="padding:2px 6px;flex-shrink:0;" title="Pick a profile with pictures" onclick="thGallery(\''+qe(r.id)+'\')">🖼</button></div>'+(f?'<div style="font-size:10px;color:#6b7280;margin:2px 0 0 2px;">'+esc(f.style+' · '+f.title)+'</div>':'')+'</td>';}
+  return '<td style="padding:3px;vertical-align:top;"><div style="display:flex;gap:6px;align-items:center;">'+
+   (f?'<img src="'+qe(thImg(f.name))+'" alt="" onclick="thZoom(\''+qe(f.name)+'\')" onerror="this.style.display=\'none\'" title="Click to enlarge" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #d1d5db;cursor:zoom-in;flex-shrink:0;"/>':'')+
+   '<input value="'+qe(r.profile||'')+'" placeholder="Click to choose a profile…" readonly onclick="thGallery(\''+qe(r.id)+'\')" style="'+inp+'flex:1;min-width:0;width:100%;cursor:pointer;font-weight:700;"/></div>'+(f?'<div style="font-size:10px;color:#6b7280;margin:2px 0 0 2px;">'+esc(f.style+' · '+f.title)+'</div>':'')+'</td>';}
 function thProfList(){return '<datalist id="th-prof-list">'+TH_STYLES.map(function(st){return st.n.map(function(x){return '<option value="'+qe(x)+'">'+esc(st.k+' '+st.t)+'</option>';}).join('');}).join('')+'</datalist>';}
 var _thTarget=null;
 function thGallery(target){
@@ -4781,15 +4780,15 @@ function thGallery(target){
   var d=document.createElement('div');d.id='th-gal';
   d.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9000;display:flex;align-items:center;justify-content:center;padding:14px;';
   d.innerHTML='<div style="background:#fff;border-radius:12px;max-width:1100px;width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.3);">'+
-   '<div style="display:flex;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;"><b style="font-size:16px;flex:1;min-width:180px;">Polytec thermolaminated door profiles</b><input id="th-gal-q" placeholder="Search profile…" oninput="thGalFilter(this.value)" spellcheck="false" style="padding:7px 10px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;min-width:160px;"/><button class="btn btn-outline btn-sm" onclick="thGalClose()">✕ Close</button></div>'+
+   '<div style="display:flex;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;"><b style="font-size:16px;flex:1;min-width:180px;">Polytec thermolaminated door profiles</b><input id="th-gal-q" placeholder="Search profile…" oninput="thGalFilter(this.value)" spellcheck="false" style="padding:7px 10px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;min-width:160px;"/><input id="th-gal-own" placeholder="or type your own profile…" spellcheck="false" style="padding:7px 10px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;min-width:170px;"/><button class="btn btn-primary btn-sm" onclick="var v=document.getElementById(\'th-gal-own\').value.trim();if(v)thPick(v);">Use mine</button><button class="btn btn-outline btn-sm" onclick="thGalClose()">✕ Close</button></div>'+
    '<div id="th-gal-body" style="overflow:auto;padding:12px 16px 18px;"></div></div>';
   d.addEventListener('click',function(e){if(e.target===d)thGalClose();});
   document.body.appendChild(d);thGalFilter('');}
 function thGalClose(){var d=document.getElementById('th-gal');if(d)d.remove();var z=document.getElementById('th-zoom');if(z)z.remove();}
 function thGalFilter(q){q=String(q||'').toLowerCase().trim();var b=document.getElementById('th-gal-body');if(!b)return;
   b.innerHTML=TH_STYLES.map(function(st){var items=st.n.filter(function(x){return !q||x.toLowerCase().indexOf(q)>-1||st.t.toLowerCase().indexOf(q)>-1||st.k.toLowerCase()===q;});if(!items.length)return '';
-   return '<div style="font-weight:800;color:#2f4b8f;margin:14px 0 8px;font-size:13px;letter-spacing:.4px;">'+esc(st.k.toUpperCase()+' · '+st.t.toUpperCase())+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;">'+
-    items.map(function(x){return '<div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff;"><div onclick="thZoom(\''+qe(x)+'\')" style="cursor:zoom-in;background:#f3f4f6;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;"><img src="'+qe(thImg(x))+'" alt="'+qe(x)+'" loading="lazy" onerror="this.outerHTML=\'<span style=&quot;font-size:11px;color:#9ca3af;padding:6px;text-align:center;&quot;>no picture<br>(tap to open on Polytec)</span>\'" style="width:100%;height:100%;object-fit:cover;"/></div><div style="padding:7px 8px;"><div style="font-size:12px;font-weight:700;margin-bottom:5px;">'+esc(x)+'</div><button class="btn btn-primary btn-sm" style="width:100%;padding:3px;font-size:11px;" onclick="thPick(\''+qe(x)+'\')">Use</button></div></div>';}).join('')+'</div>';}).join('')||'<div style="text-align:center;color:#6b7280;padding:30px;">No profile matches — close this and type your own profile name in the box.</div>';}
+   return '<div style="font-weight:800;color:#2f4b8f;margin:14px 0 8px;font-size:13px;letter-spacing:.4px;">'+esc(st.k.toUpperCase()+' · '+st.t.toUpperCase())+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">'+
+    items.map(function(x){return '<div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff;"><div onclick="thZoom(\''+qe(x)+'\')" style="cursor:zoom-in;background:#f3f4f6;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;"><img src="'+qe(thImg(x))+'" alt="'+qe(x)+'" loading="lazy" onerror="this.outerHTML=\'<span style=&quot;font-size:11px;color:#9ca3af;padding:6px;text-align:center;&quot;>no picture<br>(tap to open on Polytec)</span>\'" style="width:100%;height:100%;object-fit:cover;"/></div><div style="padding:7px 8px;"><div style="font-size:14px;font-weight:700;margin-bottom:6px;">'+esc(x)+'</div><button class="btn btn-primary btn-sm" style="width:100%;padding:6px;font-size:13px;" onclick="thPick(\''+qe(x)+'\')">Use</button><a href="'+qe(thPage(x))+'" target="_blank" rel="noopener" style="display:block;text-align:center;font-size:11px;margin-top:5px;color:#2f4b8f;">View on Polytec ↗</a></div></div>';}).join('')+'</div>';}).join('')||'<div style="text-align:center;color:#6b7280;padding:30px;">No profile matches — close this and type your own profile name in the box.</div>';}
 function thZoom(n){var z=document.getElementById('th-zoom');if(z)z.remove();var f=thFindProfile(n)||{name:n,style:'',title:''};
   z=document.createElement('div');z.id='th-zoom';z.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;flex-direction:column;gap:10px;';
   z.innerHTML='<img src="'+qe(thImg(f.name,true))+'" alt="" onerror="this.outerHTML=\'<div style=&quot;color:#fff;font-size:14px;&quot;>No picture available</div>\'" style="max-width:min(92vw,900px);max-height:72vh;object-fit:contain;border-radius:10px;background:#fff;"/>'+
@@ -8231,7 +8230,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v321 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v322 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
