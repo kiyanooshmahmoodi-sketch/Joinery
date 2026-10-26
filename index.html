@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v335 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v336 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1249,7 +1249,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <button class="btn btn-outline btn-sm" onclick="printGlassDoors()">🖨️ Print List</button>
   </div>
-  <div id="gd-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px;"></div>
+  <div id="gd-stats" style="display:none;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px;"></div>
 
   <!-- MANUAL ENTRY FORM — only basics; thickness/colour/type are set later via the row pickers -->
   <div class="card" style="background:linear-gradient(135deg,#e8f4f4,#fff);border-left:4px solid #3a6ea5;margin-bottom:14px;">
@@ -5582,7 +5582,7 @@ function renderGlassDoors(){
   var totalSqm=Math.round(totalArea/10000)/100;
   var incomplete=noColor+noType+noThk;
 
-  var st=document.getElementById('gd-stats');
+  var st=null; // v336: summary cards removed
   if(st){
     var statBlocks=[
       {n:doors.length,l:'🪟 Total Doors',c:'#4b86b8'},
@@ -8186,7 +8186,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v335 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v336 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
