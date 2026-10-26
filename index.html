@@ -1048,7 +1048,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v337 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v338 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1195,6 +1195,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     <button id="pur-b-mat" class="btn btn-outline" onclick="purView('mat')">📦 Material</button>
     <button id="pur-b-thermo" class="btn btn-outline" onclick="purView('thermo')">🚪 Thermolaminate Door</button>
     <button class="btn btn-outline" onclick="purView('glass')">🪟 Glass Door</button>
+    <button id="pur-b-gm" class="btn btn-outline" onclick="purView('gm')">🪞 Glass / Mirror</button>
   </div>
   <div id="pur-hw" class="card" style="margin-bottom:14px;">
     <div class="flex ai-c jb" style="margin-bottom:6px;flex-wrap:wrap;gap:8px;">
@@ -1220,6 +1221,14 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     <div class="card-sub" style="margin-bottom:10px;">Load the thermolaminate Excel file — the doors and drawer faces in it are listed with size and quantity. Then type the profile and the material / finish. You can also add rows by hand.</div>
     <div id="thermo-list"></div>
   </div>
+  <div id="pur-gm" class="card" style="margin-bottom:14px;display:none;">
+    <div class="flex ai-c jb" style="margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+      <div class="card-title" style="margin:0;">Glass / Mirror</div>
+      <button class="btn btn-primary btn-sm" onclick="printGlassMirror()">🖨️ Print Glass / Mirror List</button>
+    </div>
+    <div class="card-sub" style="margin-bottom:10px;">Loose glass and mirror pieces (not in a door frame). For each row choose Glass or Mirror, then type the cabinet ID, size, thickness, glass type / colour, toughened and cut type.</div>
+    <div id="gm-list"></div>
+  </div>
   <div id="hw-stats" style="display:none;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px;"></div>
 </div>
 
@@ -1244,6 +1253,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     <button class="btn btn-outline" onclick="purGo('mat')">📦 Material</button>
     <button class="btn btn-outline" onclick="purGo('thermo')">🚪 Thermolaminate Door</button>
     <button class="btn">🪟 Glass Door</button>
+    <button class="btn btn-outline" onclick="purGo('gm')">🪞 Glass / Mirror</button>
   </div>
   <div class="flex ai-c jb" style="margin-bottom:14px;flex-wrap:wrap;gap:8px;">
     <div>
@@ -4746,6 +4756,53 @@ function printMatItems(){
   w.document.close();
 }
 
+
+/* ===== Glass / Mirror (Purchasing) — v338 ===== */
+function _gmLay(){var l=hwAliases['__glassmirror'];if(!l||typeof l!=='object')l=hwAliases['__glassmirror']={rows:[]};if(!Array.isArray(l.rows))l.rows=[];return l;}
+function gmSet(id,f,v){var r=_gmLay().rows.find(function(x){return x.id===id;});if(!r)return;if(f==='w'||f==='h'||f==='thk')r[f]=parseInt(v)||0;else if(f==='tough')r[f]=!!v;else r[f]=String(v==null?'':v).trim();saveData();if(f==='kind'||f==='w'||f==='h'||f==='thk'||f==='tough'||f==='cut')renderGlassMirror();}
+function gmAdd(kind){_gmLay().rows.push({id:'gm_'+Date.now()+'_'+Math.random().toString(36).substr(2,5),kind:kind||'Glass',cab:'',w:0,h:0,thk:0,type:'',tough:false,cut:''});saveData();renderGlassMirror();}
+function gmDel(id){var L=_gmLay();L.rows=L.rows.filter(function(x){return x.id!==id;});saveData();renderGlassMirror();}
+function gmClear(){if(!_gmLay().rows.length)return;if(!confirm('Delete all Glass / Mirror rows?'))return;_gmLay().rows=[];saveData();renderGlassMirror();}
+function renderGlassMirror(){var el=document.getElementById('gm-list');if(el)el.innerHTML=gmHTML();}
+function gmHTML(){
+  var L=_gmLay(),inp='padding:5px 7px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;width:100%;box-sizing:border-box;';
+  var th=function(t,w){return '<th style="text-align:left;padding:7px 6px;font-size:11px;letter-spacing:.4px;background:#4b5563;color:#fff;'+(w?'width:'+w+'px;':'')+'">'+t+'</th>';};
+  var nG=L.rows.filter(function(r){return r.kind!=='Mirror';}).length,nM=L.rows.length-nG;
+  var bar='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">'+
+    '<button class="btn btn-primary btn-sm" onclick="gmAdd(\'Glass\')">➕ Add Glass</button>'+
+    '<button class="btn btn-primary btn-sm" onclick="gmAdd(\'Mirror\')">➕ Add Mirror</button>'+
+    '<button class="btn btn-outline btn-sm" onclick="gmClear()">🗑 Delete all rows</button>'+
+    '<span style="font-size:12px;color:#4b5563;margin-left:auto;">'+nG+' glass · '+nM+' mirror</span></div>'+
+    '<datalist id="gm-types">'+GLASS_TYPES.map(function(t){return '<option value="'+t+'"></option>';}).join('')+'</datalist>'+
+    '<datalist id="gm-thk">'+[3,4,5,6,8,10].map(function(t){return '<option value="'+t+'"></option>';}).join('')+'</datalist>';
+  if(!L.rows.length)return bar+'<div style="text-align:center;color:#6b7280;padding:30px;background:#f6f7f9;border-radius:10px;border:1px dashed #d1d5db;">No glass or mirror yet — press ➕ Add Glass or ➕ Add Mirror.</div>';
+  var rows=L.rows.map(function(r,i){
+    var id=qe(r.id),tb=function(k){var on=(r.kind==='Mirror')===(k==='Mirror');return '<button onclick="gmSet(\''+id+'\',\'kind\',\''+k+'\')" style="padding:4px 8px;font-size:11px;font-weight:700;border-radius:5px;cursor:pointer;border:1px solid '+(on?'#3a6ea5':'#d1d5db')+';background:'+(on?'#3a6ea5':'#fff')+';color:'+(on?'#fff':'#4b5563')+';">'+k+'</button>';};
+    return '<tr style="'+(r.kind==='Mirror'?'background:#f3f6fb;':'')+'">'+
+      '<td style="padding:3px;"><button onclick="gmDel(\''+id+'\')" title="Delete row" style="background:#f6e0dc;color:#b4412f;border:none;padding:5px 9px;border-radius:5px;cursor:pointer;font-weight:700;">×</button></td>'+
+      '<td style="padding:3px;color:#6b7280;">'+(i+1)+'</td>'+
+      '<td style="padding:3px;"><div style="display:flex;gap:3px;">'+tb('Glass')+tb('Mirror')+'</div></td>'+
+      '<td style="padding:3px;"><input value="'+qe(r.cab)+'" placeholder="R1C107" onchange="gmSet(\''+id+'\',\'cab\',this.value)" style="'+inp+'font-weight:700;"/></td>'+
+      '<td style="padding:3px;"><div style="display:flex;gap:3px;align-items:center;"><input type="number" min="0" value="'+(r.w||'')+'" placeholder="W" onchange="gmSet(\''+id+'\',\'w\',this.value)" style="'+inp+'width:68px;text-align:center;font-weight:700;"/>×<input type="number" min="0" value="'+(r.h||'')+'" placeholder="H" onchange="gmSet(\''+id+'\',\'h\',this.value)" style="'+inp+'width:68px;text-align:center;font-weight:700;"/></div></td>'+
+      '<td style="padding:3px;"><input type="number" list="gm-thk" min="0" value="'+(r.thk||'')+'" placeholder="mm" onchange="gmSet(\''+id+'\',\'thk\',this.value)" style="'+inp+'width:64px;text-align:center;font-weight:700;"/></td>'+
+      '<td style="padding:3px;"><input list="gm-types" value="'+qe(r.type)+'" placeholder="Glass type / colour" onchange="gmSet(\''+id+'\',\'type\',this.value)" style="'+inp+'"/></td>'+
+      '<td style="padding:3px;text-align:center;"><label style="cursor:pointer;font-size:12px;font-weight:700;"><input type="checkbox" '+(r.tough?'checked ':'')+'onchange="gmSet(\''+id+'\',\'tough\',this.checked)"/> Toughened</label></td>'+
+      '<td style="padding:3px;"><select onchange="gmSet(\''+id+'\',\'cut\',this.value)" style="'+inp+'"><option value="">— Cut —</option>'+GLASS_CUTS.map(function(c){return '<option'+(r.cut===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select></td></tr>';
+  }).join('');
+  return bar+'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;min-width:820px;"><thead><tr>'+th('',34)+th('#',28)+th('TYPE',120)+th('CABINET ID',100)+th('W × H (mm)',170)+th('THICK',76)+th('GLASS TYPE / COLOUR','')+th('TOUGHENED',110)+th('CUT TYPE',140)+'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+function printGlassMirror(){
+  var rows=_gmLay().rows;if(!rows.length){showMsg('Nothing to print yet');return;}
+  var proj=esc((document.getElementById('proj-input')||{}).value||'Project');
+  var date=new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});
+  var sect=function(kind){var rs=rows.filter(function(r){return (r.kind==='Mirror')===(kind==='Mirror');});if(!rs.length)return '';
+    return '<h2>'+kind.toUpperCase()+' — '+rs.length+' piece'+(rs.length>1?'s':'')+'</h2><table><thead><tr><th>#</th><th>CABINET ID</th><th>SIZE W × H (mm)</th><th>THICKNESS</th><th>GLASS TYPE / COLOUR</th><th>TOUGHENED</th><th>CUT TYPE</th></tr></thead><tbody>'+
+      rs.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td class="cab">'+esc(r.cab||'—')+'</td><td class="big">'+(r.w||0)+' × '+(r.h||0)+'</td><td class="big">'+(r.thk?r.thk+'mm':'—')+'</td><td>'+esc(r.type||'—')+'</td><td><b>'+(r.tough?'TOUGHENED':'Standard')+'</b></td><td>'+esc(r.cut||'—')+'</td></tr>';}).join('')+'</tbody></table>';};
+  var win=window.open('','_blank');
+  win.document.write('<!DOCTYPE html><html><head><title>Glass / Mirror — '+proj+'</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#0f172a;}h1{font-size:22px;margin:0 0 4px;}.meta{font-size:12px;color:#475569;margin-bottom:14px;}h2{font-size:13px;margin:16px 0 6px;padding:5px 10px;background:#e8eef7;border-radius:4px;}table{width:100%;border-collapse:collapse;margin-bottom:8px;}th{background:#f1f5f9;border:1px solid #94a3b8;padding:6px;font-size:10px;text-align:center;}td{border:1px solid #94a3b8;padding:7px 6px;font-size:12px;text-align:center;}.cab{font-weight:800;font-family:monospace;font-size:13px;}.big{font-weight:800;font-family:monospace;font-size:13px;white-space:nowrap;}button{padding:9px 18px;background:#0ea5e9;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-bottom:14px;font-size:13px;font-weight:600;}@media print{button{display:none!important;}body{padding:8px;}tr{page-break-inside:avoid;}}</style></head><body><h1>Glass / Mirror List</h1><div class="meta">Project: <b>'+proj+'</b> &nbsp;|&nbsp; '+date+' &nbsp;|&nbsp; '+rows.length+' pieces</div><button onclick="window.print()">Print This List</button>'+sect('Glass')+sect('Mirror')+'</body></html>');
+  win.document.close();
+}
+
 /* ===== Thermolaminate doors (Purchasing) — loaded from an Excel file ===== */
 function _thLay(){var l=hwAliases['__thermo'];if(!l||typeof l!=='object')l=hwAliases['__thermo']={rows:[]};if(!Array.isArray(l.rows))l.rows=[];
   l.rows.forEach(function(r){if(r.name===undefined){r.name=r.name||'';r.cab=r.cab||'';r.profile=r.profile!==undefined?r.profile:(r.style||'');r.finish=r.finish!==undefined?r.finish:((r.supplier||'')+' '+(r.colour||'')).trim();}});
@@ -4872,11 +4929,13 @@ function printThermo(){
   w.document.close();
 }
 function purGo(v){var t=document.querySelector('.tabs .tab[onclick*="\'hardware\'"]');if(t)showTab('hardware',t);purView(v);}
+/*GM*/
 function purView(v){
   if(v==='glass'){showTab('glassdoor',null);return;}
-  var h=document.getElementById('pur-hw'),m=document.getElementById('pur-mat'),t=document.getElementById('pur-thermo');
+  var h=document.getElementById('pur-hw'),m=document.getElementById('pur-mat'),t=document.getElementById('pur-thermo'),gm=document.getElementById('pur-gm');
+  if(gm){gm.style.display=(v==='gm')?'':'none';if(v==='gm')renderGlassMirror();}
   if(h)h.style.display=(v==='hw')?'':'none';if(m)m.style.display=(v==='mat')?'':'none';if(t)t.style.display=(v==='thermo')?'':'none';
-  [['hw','pur-b-hw'],['mat','pur-b-mat'],['thermo','pur-b-thermo']].forEach(function(x){var e=document.getElementById(x[1]);if(e)e.className='btn'+(v===x[0]?'':' btn-outline');});
+  [['hw','pur-b-hw'],['mat','pur-b-mat'],['thermo','pur-b-thermo'],['gm','pur-b-gm']].forEach(function(x){var e=document.getElementById(x[1]);if(e)e.className='btn'+(v===x[0]?'':' btn-outline');});
   try{window._purV=v;}catch(e){}
 }
 function renderHardware(){
@@ -5037,6 +5096,7 @@ function renderHardware(){
   list.innerHTML=hwItemsHTML();
   var ml=document.getElementById('mat-list');if(ml)ml.innerHTML=matItemsHTML();
   var tl=document.getElementById('thermo-list');if(tl)tl.innerHTML=thermoHTML();
+  try{renderGlassMirror();}catch(e){}
   var rl=document.getElementById('rod-list');if(rl)rl.innerHTML=railsSection;
 }
 
@@ -8193,7 +8253,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v337 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v338 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
