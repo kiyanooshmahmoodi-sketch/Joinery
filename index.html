@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v316 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v317 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1190,6 +1190,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div id="pur-sub" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
     <button id="pur-b-hw" class="btn" onclick="purView('hw')">🔧 Hardware</button>
     <button id="pur-b-mat" class="btn btn-outline" onclick="purView('mat')">📦 Material</button>
+    <button id="pur-b-thermo" class="btn btn-outline" onclick="purView('thermo')">🚪 Thermolaminate Door</button>
     <button class="btn btn-outline" onclick="purView('glass')">🪟 Glass Door</button>
   </div>
   <div id="pur-hw" class="card" style="margin-bottom:14px;">
@@ -1207,6 +1208,14 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div class="card-sub" style="margin-bottom:10px;">Matches Finishes &amp; Appliances ▸ Material Schedule automatically (green rows: vendor + colour + finish). You set category, size, UOM, quantity and comments. Add your own rows for edge tape, glue and anything else.</div>
     <div id="mat-list"></div>
+  </div>
+  <div id="pur-thermo" class="card" style="margin-bottom:14px;display:none;">
+    <div class="flex ai-c jb" style="margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+      <div class="card-title" style="margin:0;">Thermolaminate Doors</div>
+      <button class="btn btn-primary btn-sm" onclick="printThermo()">🖨️ Print Thermolaminate List</button>
+    </div>
+    <div class="card-sub" style="margin-bottom:10px;">Order list for thermolaminated (vinyl-wrapped) doors and panels. Add a row for each door size / colour you need to order.</div>
+    <div id="thermo-list"></div>
   </div>
   <div id="hw-stats" style="display:none;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px;"></div>
 </div>
@@ -1230,6 +1239,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
     <button class="btn btn-outline" onclick="purGo('hw')">🔧 Hardware</button>
     <button class="btn btn-outline" onclick="purGo('mat')">📦 Material</button>
+    <button class="btn btn-outline" onclick="purGo('thermo')">🚪 Thermolaminate Door</button>
     <button class="btn">🪟 Glass Door</button>
   </div>
   <div class="flex ai-c jb" style="margin-bottom:14px;flex-wrap:wrap;gap:8px;">
@@ -4715,13 +4725,37 @@ function printMatItems(){
   w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Materials — '+esc(proj)+'</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#1f2937;font-size:12px;}h1{font-size:20px;margin-bottom:4px;}.meta{color:#6b7280;margin-bottom:14px;}table{width:100%;border-collapse:collapse;}th{background:#4b5563;color:#fff;text-align:left;padding:6px 8px;font-size:11px;}td{padding:6px 8px;border:1px solid #d1d5db;vertical-align:top;}td.q{text-align:center;font-weight:700;font-family:monospace;font-size:14px;}button{padding:9px 18px;background:#1f2937;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-bottom:14px;}@media print{button{display:none!important;}body{padding:10px;}}</style></head><body><h1>📦 Materials</h1><div class="meta">Project: <b>'+esc(proj)+'</b> · '+date+'</div><button onclick="window.print()">🖨️ Print</button><table><thead><tr><th>Category</th><th>Vendor</th><th>Material Description</th><th>Specifications</th><th>UOM</th><th>Qty</th><th>Comments</th></tr></thead><tbody>'+tr+'</tbody></table></body></html>');
   w.document.close();
 }
+
+/* ===== Thermolaminate doors (Purchasing) ===== */
+function _thLay(){var l=hwAliases['__thermo'];if(!l||typeof l!=='object')l=hwAliases['__thermo']={rows:[]};if(!Array.isArray(l.rows))l.rows=[];return l;}
+function thermoHTML(){
+  var L=_thLay(),inp='padding:5px 7px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;width:100%;box-sizing:border-box;';
+  var th=function(t,w){return '<th style="text-align:left;padding:7px 6px;font-size:11px;letter-spacing:.4px;background:#4b5563;color:#fff;'+(w?'width:'+w+'px;':'')+'">'+t+'</th>';};
+  var cell=function(r,f,ph,num,extra){return '<td style="padding:3px;vertical-align:top;"><input '+(num?'type="number" min="0" ':'')+'value="'+qe(r[f]===undefined?'':r[f])+'" placeholder="'+ph+'" spellcheck="false" onchange="thSet(\''+qe(r.id)+'\',\''+f+'\',this.value)" style="'+inp+(extra||'')+'"/></td>';};
+  var tb=L.rows.map(function(r){return '<tr style="border-bottom:1px solid #e5e7eb;'+(r.print===false?'opacity:.45;':'')+'">'+cell(r,'supplier','Supplier')+cell(r,'style','Door style / profile')+cell(r,'colour','Colour / finish')+cell(r,'h','Height',true)+cell(r,'w','Width',true)+cell(r,'qty','Qty',true,'text-align:center;font-weight:700;')+cell(r,'comment','Comments')+
+    '<td style="padding:3px;white-space:nowrap;vertical-align:top;"><label style="font-size:11px;cursor:pointer;"><input type="checkbox" '+(r.print===false?'':'checked ')+'onchange="thSet(\''+qe(r.id)+'\',\'print\',this.checked)"/> Print</label> <button class="btn btn-outline btn-sm" style="padding:1px 6px;" onclick="thDel(\''+qe(r.id)+'\')" title="Delete this row">🗑</button></td></tr>';}).join('');
+  if(!L.rows.length)tb='<tr><td colspan="8" style="text-align:center;color:#6b7280;font-size:13px;padding:14px;">No doors yet — add the first row below.</td></tr>';
+  return '<div style="overflow-x:auto;"><table style="width:100%;min-width:900px;border-collapse:collapse;"><thead><tr>'+th('SUPPLIER',120)+th('DOOR STYLE / PROFILE')+th('COLOUR / FINISH')+th('HEIGHT',80)+th('WIDTH',80)+th('QTY',70)+th('COMMENTS',170)+th('',100)+'</tr></thead><tbody>'+tb+'</tbody></table></div><div style="margin-top:10px;"><button class="btn btn-outline btn-sm" onclick="thAdd()">➕ Add door row</button></div>';
+}
+function thAdd(){_thLay().rows.push({id:_matId(),supplier:'',style:'',colour:'',h:'',w:'',qty:1,comment:'',print:true});saveData();renderHardware();}
+function thSet(id,f,v){var r=_thLay().rows.find(function(x){return x.id===id;});if(!r)return;if(f==='print')r.print=!!v;else if(f==='qty'||f==='h'||f==='w')r[f]=(v===''?'':Number(v));else r[f]=String(v||'').trim();saveData();renderHardware();}
+function thDel(id){if(!confirm('Delete this row?'))return;var L=_thLay();L.rows=L.rows.filter(function(x){return x.id!==id;});saveData();renderHardware();}
+function printThermo(){
+  var rows=_thLay().rows.filter(function(r){return r.print!==false;});
+  if(!rows.length){showMsg('Nothing to print yet');return;}
+  var proj=(document.getElementById('proj-input')||{}).value||'Project';
+  var date=new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});
+  var tr=rows.map(function(r){return '<tr><td>'+esc(r.supplier)+'</td><td>'+esc(r.style)+'</td><td><b>'+esc(r.colour)+'</b></td><td class="q">'+esc(r.h)+'</td><td class="q">'+esc(r.w)+'</td><td class="q">'+esc(r.qty)+'</td><td>'+esc(r.comment)+'</td></tr>';}).join('');
+  var w=window.open('','_blank');if(!w){showMsg('Allow pop-ups to print');return;}
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Thermolaminate Doors — '+esc(proj)+'</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#1f2937;font-size:12px;}h1{font-size:20px;margin-bottom:4px;}.meta{color:#6b7280;margin-bottom:14px;}table{width:100%;border-collapse:collapse;}th{background:#4b5563;color:#fff;text-align:left;padding:6px 8px;font-size:11px;}td{padding:6px 8px;border:1px solid #d1d5db;vertical-align:top;}td.q{text-align:center;font-weight:700;font-family:monospace;}button{padding:9px 18px;background:#1f2937;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-bottom:14px;}@media print{button{display:none!important;}body{padding:10px;}}</style></head><body><h1>🚪 Thermolaminate Doors</h1><div class="meta">Project: <b>'+esc(proj)+'</b> · '+date+'</div><button onclick="window.print()">🖨️ Print</button><table><thead><tr><th>Supplier</th><th>Door style / profile</th><th>Colour / finish</th><th>Height</th><th>Width</th><th>Qty</th><th>Comments</th></tr></thead><tbody>'+tr+'</tbody></table></body></html>');
+  w.document.close();
+}
 function purGo(v){var t=document.querySelector('.tabs .tab[onclick*="\'hardware\'"]');if(t)showTab('hardware',t);purView(v);}
 function purView(v){
   if(v==='glass'){showTab('glassdoor',null);return;}
-  var mat=(v==='mat'),h=document.getElementById('pur-hw'),m=document.getElementById('pur-mat');
-  if(h)h.style.display=mat?'none':'';if(m)m.style.display=mat?'':'none';
-  var a=document.getElementById('pur-b-hw'),b=document.getElementById('pur-b-mat');
-  if(a)a.className='btn'+(mat?' btn-outline':'');if(b)b.className='btn'+(mat?'':' btn-outline');
+  var h=document.getElementById('pur-hw'),m=document.getElementById('pur-mat'),t=document.getElementById('pur-thermo');
+  if(h)h.style.display=(v==='hw')?'':'none';if(m)m.style.display=(v==='mat')?'':'none';if(t)t.style.display=(v==='thermo')?'':'none';
+  [['hw','pur-b-hw'],['mat','pur-b-mat'],['thermo','pur-b-thermo']].forEach(function(x){var e=document.getElementById(x[1]);if(e)e.className='btn'+(v===x[0]?'':' btn-outline');});
   try{window._purV=v;}catch(e){}
 }
 function renderHardware(){
@@ -4881,6 +4915,7 @@ function renderHardware(){
 
   list.innerHTML=hwItemsHTML();
   var ml=document.getElementById('mat-list');if(ml)ml.innerHTML=matItemsHTML();
+  var tl=document.getElementById('thermo-list');if(tl)tl.innerHTML=thermoHTML();
   var rl=document.getElementById('rod-list');if(rl)rl.innerHTML=railsSection;
 }
 
@@ -8100,7 +8135,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v316 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v317 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
