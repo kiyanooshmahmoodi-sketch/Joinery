@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v315 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v316 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4650,7 +4650,7 @@ function printHwItems(){
 }
 
 /* ===== Material order list (Purchasing) — auto-synced from Finishes ▸ Material Schedule ===== */
-var MAT_CATS=['Board','Laminated Board','Steccawood','Splash','Edge Tape','Other'];
+var MAT_CATS=['HMR Board','MDF Board','Laminate','Edge Tape','Steccawood'];
 var MAT_VENDORS=['Polytec','Laminex','Formica','Egger','Wilsonart','Urban Republic','Arborite','Plyco','EGR Decor'];
 var MAT_UOMS=['Sheets','Pieces','m','Rolls','Boxes','Litres'];
 function _matLay(){var l=hwAliases['__matlayout'];if(!l||typeof l!=='object')l=hwAliases['__matlayout']={items:[]};if(!Array.isArray(l.items))l.items=[];if(!l.ov)l.ov={};if(!Array.isArray(l.man))l.man=[];
@@ -4675,7 +4675,7 @@ function _matAutoRows(){
 function matRows(){
   var L=_matLay(),rows=[];
   _matAutoRows().forEach(function(r){var o=L.ov[r.key]||{};
-    rows.push({key:r.key,auto:true,spaces:r.spaces,autoVendor:r.vendor,autoDesc:r.desc,cat:o.cat!==undefined?o.cat:(/laminex|formica/i.test(r.vendor)?'Laminated Board':'Board'),vendor:o.vendor!==undefined?o.vendor:r.vendor,desc:o.desc!==undefined?o.desc:r.desc,spec:o.spec||'',uom:o.uom!==undefined?o.uom:'Sheets',qty:o.qty!==undefined?o.qty:0,comment:o.comment||'',print:o.print!==false,edited:o.vendor!==undefined||o.desc!==undefined});});
+    rows.push({key:r.key,auto:true,spaces:r.spaces,autoVendor:r.vendor,autoDesc:r.desc,cat:o.cat!==undefined?o.cat:(/\bmdf\b/i.test(r.desc)?'MDF Board':(/\bhmr\b/i.test(r.desc)?'HMR Board':(/laminex|formica/i.test(r.vendor)?'Laminate':''))),vendor:o.vendor!==undefined?o.vendor:r.vendor,desc:o.desc!==undefined?o.desc:r.desc,spec:o.spec||'',uom:o.uom!==undefined?o.uom:'Sheets',qty:o.qty!==undefined?o.qty:0,comment:o.comment||'',print:o.print!==false,edited:o.vendor!==undefined||o.desc!==undefined});});
   L.man.forEach(function(m){rows.push({key:'m:'+m.id,auto:false,spaces:[],cat:m.cat||'',vendor:m.vendor||'',desc:m.desc||'',spec:m.spec||'',uom:m.uom||'Sheets',qty:m.qty,comment:m.comment||'',print:m.print!==false});});
   return rows;}
 function matItemsHTML(){
@@ -8100,7 +8100,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v315 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v316 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
