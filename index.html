@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v328 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v329 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -5325,11 +5325,13 @@ function toggleOrderStage(arrayName,itemId,stage){
   var it=arr.find(function(x){return x.id===itemId;});
   if(!it)return;
   if(!it.workflow)it.workflow={ordered:null,arrived:null,shipped:null};
-  // Toggle: if already set, clear it; if not, set timestamp
+  // v329: stages follow each other (Ordered → At Factory → To Site).
+  // Ticking a later stage also ticks the earlier ones; un-ticking an earlier stage clears the later ones.
+  var _ord=['ordered','arrived','shipped'],_i=_ord.indexOf(stage),_now=new Date().toISOString();
   if(it.workflow[stage]){
-    it.workflow[stage]=null;
+    for(var _k=_i;_k<_ord.length;_k++)it.workflow[_ord[_k]]=null;
   } else {
-    it.workflow[stage]=new Date().toISOString();
+    for(var _j=0;_j<=_i;_j++)if(!it.workflow[_ord[_j]])it.workflow[_ord[_j]]=_now;
   }
   saveData();
   if(arrayName==='glass')renderGlassDoors();
@@ -8268,7 +8270,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v328 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v329 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
