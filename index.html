@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v323 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v324 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4780,15 +4780,15 @@ function thGallery(target){
   var d=document.createElement('div');d.id='th-gal';
   d.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9000;display:flex;align-items:center;justify-content:center;padding:14px;';
   d.innerHTML='<div style="background:#fff;border-radius:12px;max-width:1100px;width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.3);">'+
-   '<div style="display:flex;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;"><b style="font-size:16px;flex:1;min-width:180px;">Polytec thermolaminated door profiles</b><input id="th-gal-q" placeholder="Search profile…" oninput="thGalFilter(this.value)" spellcheck="false" style="padding:7px 10px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;min-width:160px;"/><input id="th-gal-own" placeholder="or type your own profile…" spellcheck="false" style="padding:7px 10px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;min-width:170px;"/><button class="btn btn-primary btn-sm" onclick="var v=document.getElementById(\'th-gal-own\').value.trim();if(v)thPick(v);">Use mine</button><button class="btn btn-outline btn-sm" onclick="thGalClose()">✕ Close</button></div>'+
-   '<div id="th-gal-body" style="overflow:auto;padding:12px 16px 18px;"></div></div>';
+   '<div style="display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;"><b style="font-size:14px;width:100%;">Polytec thermolaminated door profiles</b><input id="th-gal-q" placeholder="Search profile…" oninput="thGalFilter(this.value)" spellcheck="false" style="padding:6px 9px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;flex:1;min-width:120px;"/><input id="th-gal-own" placeholder="or type your own profile…" spellcheck="false" style="padding:6px 9px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;flex:1;min-width:140px;"/><button class="btn btn-primary btn-sm" onclick="var v=document.getElementById(\'th-gal-own\').value.trim();if(v)thPick(v);">Use mine</button><button class="btn btn-outline btn-sm" onclick="thGalClose()">✕ Close</button></div>'+
+   '<div id="th-gal-body" style="overflow:auto;padding:4px 12px 14px;"></div></div>';
   d.addEventListener('click',function(e){if(e.target===d)thGalClose();});
   document.body.appendChild(d);thGalFilter('');}
 function thGalClose(){var d=document.getElementById('th-gal');if(d)d.remove();var z=document.getElementById('th-zoom');if(z)z.remove();}
 function thGalFilter(q){q=String(q||'').toLowerCase().trim();var b=document.getElementById('th-gal-body');if(!b)return;
   b.innerHTML=TH_STYLES.map(function(st){var items=st.n.filter(function(x){return !q||x.toLowerCase().indexOf(q)>-1||st.t.toLowerCase().indexOf(q)>-1||st.k.toLowerCase()===q;});if(!items.length)return '';
-   return '<div style="font-weight:800;color:#2f4b8f;margin:14px 0 8px;font-size:13px;letter-spacing:.4px;">'+esc(st.k.toUpperCase()+' · '+st.t.toUpperCase())+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;">'+
-    items.map(function(x){return '<div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff;"><div onclick="thZoom(\''+qe(x)+'\')" style="cursor:zoom-in;background:#f3f4f6;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;"><img src="'+qe(thImg(x))+'" alt="'+qe(x)+'" loading="lazy" onerror="this.outerHTML=\'<span style=&quot;font-size:11px;color:#9ca3af;padding:6px;text-align:center;&quot;>no picture<br>(tap to open on Polytec)</span>\'" style="width:100%;height:100%;object-fit:contain;"/></div><div style="padding:7px 8px;"><div style="font-size:14px;font-weight:700;margin-bottom:6px;">'+esc(x)+'</div><button class="btn btn-primary btn-sm" style="width:100%;padding:6px;font-size:13px;" onclick="thPick(\''+qe(x)+'\')">Use</button><a href="'+qe(thPage(x))+'" target="_blank" rel="noopener" style="display:block;text-align:center;font-size:11px;margin-top:5px;color:#2f4b8f;">View on Polytec ↗</a></div></div>';}).join('')+'</div>';}).join('')||'<div style="text-align:center;color:#6b7280;padding:30px;">No profile matches — close this and type your own profile name in the box.</div>';}
+   return '<div style="font-weight:800;color:#2f4b8f;margin:10px 0 6px;font-size:12px;letter-spacing:.4px;">'+esc(st.k.toUpperCase()+' · '+st.t.toUpperCase())+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">'+
+    items.map(function(x){return '<div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff;"><div onclick="thZoom(\''+qe(x)+'\')" style="cursor:zoom-in;background:#f3f4f6;aspect-ratio:3/4;max-height:200px;display:flex;align-items:center;justify-content:center;"><img src="'+qe(thImg(x))+'" alt="'+qe(x)+'" loading="lazy" onerror="this.outerHTML=\'<span style=&quot;font-size:11px;color:#9ca3af;padding:6px;text-align:center;&quot;>no picture<br>(tap to open on Polytec)</span>\'" style="width:100%;height:100%;object-fit:contain;"/></div><div style="padding:5px 6px;"><div style="font-size:12px;font-weight:700;margin-bottom:4px;">'+esc(x)+'</div><button class="btn btn-primary btn-sm" style="width:100%;padding:3px;font-size:11px;" onclick="thPick(\''+qe(x)+'\')">Use</button><a href="'+qe(thPage(x))+'" target="_blank" rel="noopener" style="display:block;text-align:center;font-size:11px;margin-top:3px;color:#2f4b8f;">View on Polytec ↗</a></div></div>';}).join('')+'</div>';}).join('')||'<div style="text-align:center;color:#6b7280;padding:30px;">No profile matches — close this and type your own profile name in the box.</div>';}
 function thZoom(n){var z=document.getElementById('th-zoom');if(z)z.remove();var f=thFindProfile(n)||{name:n,style:'',title:''};
   z=document.createElement('div');z.id='th-zoom';z.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;flex-direction:column;gap:10px;';
   z.innerHTML='<img src="'+qe(thImg(f.name,true))+'" alt="" onerror="this.outerHTML=\'<div style=&quot;color:#fff;font-size:14px;&quot;>No picture available</div>\'" style="max-width:min(94vw,1000px);max-height:78vh;object-fit:contain;border-radius:10px;background:#fff;"/>'+
@@ -8230,7 +8230,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v323 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v324 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
