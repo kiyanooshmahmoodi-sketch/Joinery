@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v305 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v306 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1092,7 +1092,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <div class="tabs">
   <div class="tab" onclick="showTab('finishes',this)">📋 Finishes &amp; Appliances</div>
   <div class="tab active" onclick="showTab('units',this)">📦 Cabinet & Part List <span class="tbadge" id="tb-rem">0</span></div>
-  <div class="tab" onclick="showTab('hardware',this)">🔧 Hardware</div>
+  <div class="tab" onclick="showTab('hardware',this)">🔧 Hardware &amp; Material</div>
   <div class="tab" onclick="showTab('kickboard',this)">🦶 Kickboard</div>
   <div class="tab" onclick="showTab('closetrod',this)">🪧 Closet Rod</div>
   <div class="tab" onclick="showTab('glassdoor',this)">🪟 Glass Door</div>
@@ -1183,8 +1183,8 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <div class="panel" id="panel-hardware">
   <div class="flex ai-c jb" style="margin-bottom:14px;flex-wrap:wrap;gap:8px;">
     <div>
-      <div style="font-size:18px;font-weight:700;">🔧 Hardware</div>
-      <div style="font-size:12px;color:var(--gray);">Hardware items list — count-based, no barcode required</div>
+      <div style="font-size:18px;font-weight:700;">🔧 Hardware &amp; Material</div>
+      <div style="font-size:12px;color:var(--gray);">Hardware and material item lists — count-based, no barcode required</div>
     </div>
   </div>
   <div class="card" style="margin-bottom:14px;">
@@ -1194,6 +1194,14 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div class="card-sub" style="margin-bottom:10px;">Every name and number is editable — just type in the box. Use ▲ ▼ for the order and the tick to choose what goes on the printed list.</div>
     <div id="hw-list"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px;">
+    <div class="flex ai-c jb" style="margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+      <div class="card-title" style="margin:0;">Material Items</div>
+      <button class="btn btn-primary btn-sm" onclick="printMatItems()">🖨️ Print Material List</button>
+    </div>
+    <div class="card-sub" style="margin-bottom:10px;">Your own material list (edge tape, glue, screws, sheets…). Add items, split them into size / model rows, set the order and choose what goes on the printed list.</div>
+    <div id="mat-list"></div>
   </div>
   <div id="hw-stats" style="display:none;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px;"></div>
 </div>
@@ -4630,6 +4638,47 @@ function printHwItems(){
     '</style></head><body><h1>🔧 Hardware List</h1><div class="meta">Project: <b>'+esc(proj)+'</b> · '+date+'</div><button onclick="window.print()">🖨️ Print</button>'+rows+'</body></html>');
   w.document.close();
 }
+
+/* ===== Material Items (manual list under Hardware) ===== */
+function _matLay(){var l=hwAliases['__matlayout'];if(!l||typeof l!=='object')l=hwAliases['__matlayout']={items:[]};if(!Array.isArray(l.items))l.items=[];return l;}
+function _matId(){return Date.now().toString(36)+Math.floor(Math.random()*100000).toString(36);}
+function matTotal(m){return (m.rows&&m.rows.length)?m.rows.reduce(function(a,r){return a+(Number(r.qty)||0);},0):(Number(m.qty)||0);}
+function matItemsHTML(){
+  var L=_matLay(),sty='padding:6px 9px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;';
+  var h=L.items.map(function(m,i){
+    var off=m.print===false,id=qe(m.id),rows=m.rows||[];
+    return '<div style="display:flex;gap:12px;align-items:flex-start;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-left:4px solid #b7791f;border-radius:8px;padding:10px 14px;margin-bottom:8px;'+(off?'opacity:.45;':'')+'"><div style="flex:1;min-width:0;">'+
+      '<div style="font-size:10px;font-weight:700;color:#6b7280;margin-bottom:3px;">MATERIAL NAME · TOTAL</div>'+
+      '<div style="display:flex;gap:8px;align-items:center;"><input value="'+qe(m.name)+'" placeholder="Material name" spellcheck="false" onchange="matSet(\''+id+'\',\'name\',this.value)" style="flex:1;min-width:0;font-weight:700;'+sty+'"/><input type="number" min="0" value="'+qe(matTotal(m))+'" '+(rows.length?'readonly title="Sum of the rows below" ':'')+'onchange="matSet(\''+id+'\',\'qty\',this.value)" style="width:80px;font-size:15px;font-weight:700;text-align:center;'+(rows.length?'background:#f3f4f6;':'')+'border:1px solid #d1d5db;border-radius:6px;font-family:\'JetBrains Mono\',monospace;padding:6px 8px;"/></div>'+
+      rows.map(function(r){var rid=qe(r.id);return '<div style="display:flex;gap:6px;align-items:center;margin-top:5px;padding-left:10px;flex-wrap:wrap;"><input value="'+qe(r.name)+'" placeholder="Size / name" spellcheck="false" onchange="matRowSet(\''+id+'\',\''+rid+'\',\'name\',this.value)" style="flex:2;min-width:120px;padding:4px 8px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/><input value="'+qe(r.model||'')+'" placeholder="Model / brand" spellcheck="false" onchange="matRowSet(\''+id+'\',\''+rid+'\',\'model\',this.value)" style="flex:1.5;min-width:90px;color:#2f4b8f;font-weight:600;padding:4px 8px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/><input type="number" min="0" value="'+qe(r.qty)+'" onchange="matRowSet(\''+id+'\',\''+rid+'\',\'qty\',this.value)" style="width:64px;padding:4px 6px;font-size:13px;font-weight:700;text-align:center;border:1px solid #d1d5db;border-radius:6px;font-family:\'JetBrains Mono\',monospace;"/><button class="btn btn-outline btn-sm" style="padding:2px 7px;" onclick="matRowDel(\''+id+'\',\''+rid+'\')" title="Remove this row">🗑</button></div>';}).join('')+
+      '<button class="btn btn-outline btn-sm" style="margin-top:8px;padding:3px 10px;font-size:12px;" onclick="matRowAdd(\''+id+'\')">➕ Add size / model row</button>'+
+      '</div><div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;">'+
+      '<div style="display:flex;gap:4px;"><button class="btn btn-outline btn-sm" style="padding:2px 8px;" '+(i===0?'disabled ':'')+'onclick="matMove(\''+id+'\',-1)">▲</button><button class="btn btn-outline btn-sm" style="padding:2px 8px;" '+(i===L.items.length-1?'disabled ':'')+'onclick="matMove(\''+id+'\',1)">▼</button></div>'+
+      '<label style="font-size:11px;color:#4b5563;display:flex;gap:4px;align-items:center;cursor:pointer;"><input type="checkbox" '+(off?'':'checked ')+'onchange="matToggle(\''+id+'\')"/> Print</label>'+
+      '<button class="btn btn-outline btn-sm" style="padding:2px 8px;" onclick="matDel(\''+id+'\')" title="Delete this item">🗑</button></div></div>';
+  }).join('');
+  if(!L.items.length)h='<div style="text-align:center;color:#6b7280;font-size:13px;padding:14px;">No material items yet — add the first one below.</div>';
+  return h+'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;padding:10px 12px;border:1px dashed #9fb2dc;border-radius:8px;background:#f6f7fb;"><b style="font-size:12px;color:#2f4b8f;">➕ Add material item</b><input id="mat-add-name" placeholder="Name (e.g. Edge tape White 22mm)" spellcheck="false" style="flex:1;min-width:180px;padding:7px 10px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/><input id="mat-add-qty" type="number" min="0" placeholder="Qty" style="width:80px;padding:7px 8px;font-size:13px;text-align:center;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/><button class="btn btn-primary btn-sm" onclick="matAdd()">Add</button></div>';
+}
+function _matFind(id){id=String(id).replace(/&#39;/g,"'");return _matLay().items.find(function(x){return x.id===id;});}
+function matAdd(){var n=document.getElementById('mat-add-name'),q=document.getElementById('mat-add-qty');var name=(n&&n.value||'').trim();if(!name){showMsg('Type the material name first');if(n)n.focus();return;}_matLay().items.push({id:_matId(),name:name,qty:(q&&q.value!=='')?Number(q.value):1,rows:[],print:true});saveData();renderHardware();showMsg('✓ Material item added');}
+function matSet(id,f,v){var m=_matFind(id);if(!m)return;if(f==='name')m.name=String(v||'').trim();else m.qty=(v===''?0:Number(v));saveData();renderHardware();}
+function matRowAdd(id){var m=_matFind(id);if(!m)return;(m.rows=m.rows||[]).push({id:_matId(),name:'',model:'',qty:0});saveData();renderHardware();}
+function matRowSet(id,rid,f,v){var m=_matFind(id);if(!m)return;var r=(m.rows||[]).find(function(x){return x.id===rid;});if(!r)return;if(f==='qty')r.qty=(v===''?0:Number(v));else r[f]=String(v||'').trim();saveData();renderHardware();}
+function matRowDel(id,rid){var m=_matFind(id);if(!m)return;m.rows=(m.rows||[]).filter(function(x){return x.id!==rid;});saveData();renderHardware();}
+function matDel(id){var m=_matFind(id);if(!m||!confirm('Delete this material item?'))return;var L=_matLay();L.items=L.items.filter(function(x){return x!==m;});saveData();renderHardware();}
+function matMove(id,d){var L=_matLay(),i=L.items.findIndex(function(x){return x.id===String(id);}),j=i+d;if(i<0||j<0||j>=L.items.length)return;var t=L.items[i];L.items[i]=L.items[j];L.items[j]=t;saveData();renderHardware();}
+function matToggle(id){var m=_matFind(id);if(!m)return;m.print=(m.print===false);saveData();renderHardware();}
+function printMatItems(){
+  var its=_matLay().items.filter(function(x){return x.print!==false;});
+  if(!its.length){showMsg('Nothing selected to print — tick at least one item');return;}
+  var proj=(document.getElementById('proj-input')||{}).value||'Project';
+  var date=new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});
+  var rows=its.map(function(m,i){return '<div class="it"><div class="hd"><span class="nm">'+(i+1)+'. '+esc(m.name||'(unnamed)')+'</span><span class="tt">'+matTotal(m)+'</span></div>'+((m.rows&&m.rows.length)?'<table>'+m.rows.map(function(r){return '<tr><td>'+esc(r.name)+(r.model?' <span class="md">· '+esc(r.model)+'</span>':'')+'</td><td class="q">'+(Number(r.qty)||0)+'</td></tr>';}).join('')+'</table>':'')+'</div>';}).join('');
+  var w=window.open('','_blank');if(!w){showMsg('Allow pop-ups to print');return;}
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Material List — '+esc(proj)+'</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#1f2937;max-width:800px;margin:0 auto;font-size:13px;}h1{font-size:22px;margin-bottom:4px;}.meta{color:#6b7280;margin-bottom:16px;}.it{border:1px solid #d1d5db;border-radius:6px;padding:10px 14px;margin-bottom:10px;page-break-inside:avoid;}.hd{display:flex;justify-content:space-between;align-items:baseline;}.nm{font-size:15px;font-weight:700;}.tt{font-size:20px;font-weight:700;font-family:monospace;}table{width:100%;border-collapse:collapse;margin-top:6px;}td{padding:4px 8px;border-top:1px solid #e5e7eb;font-size:12px;}span.md{color:#2f4b8f;font-weight:700;}td.q{text-align:right;font-weight:700;font-family:monospace;}button{padding:9px 18px;background:#1f2937;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-bottom:14px;}@media print{button{display:none!important;}body{padding:10px;}}</style></head><body><h1>📦 Material List</h1><div class="meta">Project: <b>'+esc(proj)+'</b> · '+date+'</div><button onclick="window.print()">🖨️ Print</button>'+rows+'</body></html>');
+  w.document.close();
+}
 function renderHardware(){
   var ptoCount=getPTOCount();
   var rails=hangingRails.slice();
@@ -4786,6 +4835,7 @@ function renderHardware(){
   railsSection+='</div>';
 
   list.innerHTML=hwItemsHTML();
+  var ml=document.getElementById('mat-list');if(ml)ml.innerHTML=matItemsHTML();
   var rl=document.getElementById('rod-list');if(rl)rl.innerHTML=railsSection;
 }
 
@@ -8004,7 +8054,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v305 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v306 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
