@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v324 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v325 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4787,8 +4787,8 @@ function thGallery(target){
 function thGalClose(){var d=document.getElementById('th-gal');if(d)d.remove();var z=document.getElementById('th-zoom');if(z)z.remove();}
 function thGalFilter(q){q=String(q||'').toLowerCase().trim();var b=document.getElementById('th-gal-body');if(!b)return;
   b.innerHTML=TH_STYLES.map(function(st){var items=st.n.filter(function(x){return !q||x.toLowerCase().indexOf(q)>-1||st.t.toLowerCase().indexOf(q)>-1||st.k.toLowerCase()===q;});if(!items.length)return '';
-   return '<div style="font-weight:800;color:#2f4b8f;margin:10px 0 6px;font-size:12px;letter-spacing:.4px;">'+esc(st.k.toUpperCase()+' · '+st.t.toUpperCase())+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">'+
-    items.map(function(x){return '<div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff;"><div onclick="thZoom(\''+qe(x)+'\')" style="cursor:zoom-in;background:#f3f4f6;aspect-ratio:3/4;max-height:200px;display:flex;align-items:center;justify-content:center;"><img src="'+qe(thImg(x))+'" alt="'+qe(x)+'" loading="lazy" onerror="this.outerHTML=\'<span style=&quot;font-size:11px;color:#9ca3af;padding:6px;text-align:center;&quot;>no picture<br>(tap to open on Polytec)</span>\'" style="width:100%;height:100%;object-fit:contain;"/></div><div style="padding:5px 6px;"><div style="font-size:12px;font-weight:700;margin-bottom:4px;">'+esc(x)+'</div><button class="btn btn-primary btn-sm" style="width:100%;padding:3px;font-size:11px;" onclick="thPick(\''+qe(x)+'\')">Use</button><a href="'+qe(thPage(x))+'" target="_blank" rel="noopener" style="display:block;text-align:center;font-size:11px;margin-top:3px;color:#2f4b8f;">View on Polytec ↗</a></div></div>';}).join('')+'</div>';}).join('')||'<div style="text-align:center;color:#6b7280;padding:30px;">No profile matches — close this and type your own profile name in the box.</div>';}
+   return '<div style="font-weight:800;color:#2f4b8f;margin:10px 0 6px;font-size:12px;letter-spacing:.4px;">'+esc(st.k.toUpperCase()+' · '+st.t.toUpperCase())+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:8px;">'+
+    items.map(function(x){return '<div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff;"><div onclick="thZoom(\''+qe(x)+'\')" style="cursor:zoom-in;background:#f3f4f6;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;"><img src="'+qe(thImg(x))+'" alt="'+qe(x)+'" loading="lazy" onerror="this.outerHTML=\'<span style=&quot;font-size:11px;color:#9ca3af;padding:6px;text-align:center;&quot;>no picture<br>(tap to open on Polytec)</span>\'" style="width:100%;height:100%;object-fit:contain;"/></div><div style="padding:4px 5px;"><div style="font-size:11px;font-weight:700;margin-bottom:3px;">'+esc(x)+'</div><button class="btn btn-primary btn-sm" style="width:100%;padding:2px;font-size:10px;" onclick="thPick(\''+qe(x)+'\')">Use</button><a href="'+qe(thPage(x))+'" target="_blank" rel="noopener" style="display:block;text-align:center;font-size:10px;margin-top:2px;color:#2f4b8f;">View on Polytec ↗</a></div></div>';}).join('')+'</div>';}).join('')||'<div style="text-align:center;color:#6b7280;padding:30px;">No profile matches — close this and type your own profile name in the box.</div>';}
 function thZoom(n){var z=document.getElementById('th-zoom');if(z)z.remove();var f=thFindProfile(n)||{name:n,style:'',title:''};
   z=document.createElement('div');z.id='th-zoom';z.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;flex-direction:column;gap:10px;';
   z.innerHTML='<img src="'+qe(thImg(f.name,true))+'" alt="" onerror="this.outerHTML=\'<div style=&quot;color:#fff;font-size:14px;&quot;>No picture available</div>\'" style="max-width:min(94vw,1000px);max-height:78vh;object-fit:contain;border-radius:10px;background:#fff;"/>'+
@@ -8230,7 +8230,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v324 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v325 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
