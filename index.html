@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v326 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v327 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1254,6 +1254,10 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <!-- MANUAL ENTRY FORM — only basics; thickness/colour/type are set later via the row pickers -->
   <div class="card" style="background:linear-gradient(135deg,#e8f4f4,#fff);border-left:4px solid #3a6ea5;margin-bottom:14px;">
     <div class="card-title" style="color:#3a6ea5;">➕ Add Glass Door manually</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;padding:8px 10px;border:1px dashed #9fb2dc;border-radius:8px;background:#f6f7fb;">
+      <label class="btn btn-primary btn-sm" style="cursor:pointer;margin:0;">📥 Load Excel file<input type="file" accept=".xlsx,.xls" multiple style="display:none;" onchange="gdLoadExcel(this.files);this.value=''"/></label>
+      <span style="font-size:12px;color:#4b5563;">Load the glass-door Excel file — every door / glass-door row is added with its size and quantity. Then set the thickness, colour and glass type on each row.</span>
+    </div>
     <div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Set the thickness, frame colour, glass type, and toughened state using the buttons on the row after adding.</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;">
       <input id="gdm-name" placeholder="Part name (required)" style="padding:8px 10px;font-size:13px;"/>
@@ -5448,6 +5452,34 @@ function toggleGlassToughened(doorId){
 
 function filterGlassDoors(q){_gdSearchQ=(q||'').toLowerCase();renderGlassDoors();}
 
+
+// Load glass doors from an Excel file (same Mozaik layout as the main import); structure of the Glass Door list is unchanged
+function gdLoadExcel(files){
+  if(!files||!files.length)return;var arr=Array.from(files),done=0,found=[];
+  arr.forEach(function(file){var rd=new FileReader();
+    rd.onload=function(e){
+      try{var wb=XLSX.read(e.target.result,{type:'array'});
+        wb.SheetNames.forEach(function(sn){XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''}).forEach(function(row){
+          if(!row||row.length<4)return;var nm=String(row[3]||'').trim().replace(/\s+/g,' '),cr=String(row[4]||'').trim();
+          if(!nm||!cr||isUBack(nm))return;if(!(/glass/i.test(nm)||/\bdoor\b|door$|^door|[-_ ]door/i.test(nm)))return;
+          var q=parseInt(row[0])||1,h=parseFloat(row[1])||0,w=parseFloat(row[2])||0,cabs=[];try{cabs=parseCabRef(cr);}catch(x){}
+          if(!cabs.length)cabs=[{id:cr,room:(cr.match(/R\d+/i)||[''])[0]}];
+          cabs.forEach(function(cab){for(var i=0;i<q;i++)found.push({src:file.name,room:cab.room||null,cabId:cab.id,partName:nm,width:w,height:h});});
+        });});
+      }catch(err){console.error('gdLoadExcel',file.name,err);showMsg('⚠️ Could not read '+file.name);}
+      done++;
+      if(done===arr.length){
+        var srcs={};found.forEach(function(f){srcs[f.src]=1;});
+        var old={};glassDoors.forEach(function(g){if(g.srcFile&&srcs[g.srcFile]){var k=g.srcFile+'|'+g.cabId+'|'+g.partName+'|'+g.width+'|'+g.height;(old[k]=old[k]||[]).push(g);}});
+        glassDoors=glassDoors.filter(function(g){return !(g.srcFile&&srcs[g.srcFile]);});
+        found.forEach(function(f){var k=f.src+'|'+f.cabId+'|'+f.partName+'|'+f.width+'|'+f.height;var o=(old[k]||[]).shift()||{};
+          glassDoors.push({id:'gd_'+Date.now()+'_'+Math.random().toString(36).substr(2,6),room:f.room,cabId:f.cabId,partName:f.partName,width:f.width,height:f.height,
+            profileColor:o.profileColor||null,glassType:o.glassType||null,thickness:o.thickness||null,toughened:!!o.toughened,cutType:o.cutType||null,source:'import',srcFile:f.src});});
+        renderGlassDoors();saveData();
+        showMsg(found.length?('✓ '+found.length+' glass door'+(found.length===1?'':'s')+' loaded — set thickness / colour / glass type on each row'):'No door or glass-door rows found in that file');
+      }
+    };rd.readAsArrayBuffer(file);});
+}
 function addManualGlassDoor(){
   var name=document.getElementById('gdm-name').value.trim();
   var room=document.getElementById('gdm-room').value.trim();
@@ -8235,7 +8267,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v326 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v327 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
