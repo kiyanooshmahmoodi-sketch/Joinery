@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v306 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v307 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1092,7 +1092,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <div class="tabs">
   <div class="tab" onclick="showTab('finishes',this)">📋 Finishes &amp; Appliances</div>
   <div class="tab active" onclick="showTab('units',this)">📦 Cabinet & Part List <span class="tbadge" id="tb-rem">0</span></div>
-  <div class="tab" onclick="showTab('hardware',this)">🔧 Hardware &amp; Material</div>
+  <div class="tab" onclick="showTab('hardware',this)">🛒 Purchasing</div>
   <div class="tab" onclick="showTab('kickboard',this)">🦶 Kickboard</div>
   <div class="tab" onclick="showTab('closetrod',this)">🪧 Closet Rod</div>
   <div class="tab" onclick="showTab('glassdoor',this)">🪟 Glass Door</div>
@@ -1183,11 +1183,15 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <div class="panel" id="panel-hardware">
   <div class="flex ai-c jb" style="margin-bottom:14px;flex-wrap:wrap;gap:8px;">
     <div>
-      <div style="font-size:18px;font-weight:700;">🔧 Hardware &amp; Material</div>
-      <div style="font-size:12px;color:var(--gray);">Hardware and material item lists — count-based, no barcode required</div>
+      <div style="font-size:18px;font-weight:700;">🛒 Purchasing</div>
+      <div style="font-size:12px;color:var(--gray);">Order lists for hardware and material — count-based, no barcode required</div>
     </div>
   </div>
-  <div class="card" style="margin-bottom:14px;">
+  <div id="pur-sub" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <button id="pur-b-hw" class="btn" onclick="purView('hw')">🔧 Hardware</button>
+    <button id="pur-b-mat" class="btn btn-outline" onclick="purView('mat')">📦 Material</button>
+  </div>
+  <div id="pur-hw" class="card" style="margin-bottom:14px;">
     <div class="flex ai-c jb" style="margin-bottom:6px;flex-wrap:wrap;gap:8px;">
       <div class="card-title" style="margin:0;">Hardware Items</div>
       <button class="btn btn-primary btn-sm" onclick="printHwItems()">🖨️ Print Hardware List</button>
@@ -1195,7 +1199,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     <div class="card-sub" style="margin-bottom:10px;">Every name and number is editable — just type in the box. Use ▲ ▼ for the order and the tick to choose what goes on the printed list.</div>
     <div id="hw-list"></div>
   </div>
-  <div class="card" style="margin-bottom:14px;">
+  <div id="pur-mat" class="card" style="margin-bottom:14px;display:none;">
     <div class="flex ai-c jb" style="margin-bottom:6px;flex-wrap:wrap;gap:8px;">
       <div class="card-title" style="margin:0;">Material Items</div>
       <button class="btn btn-primary btn-sm" onclick="printMatItems()">🖨️ Print Material List</button>
@@ -4679,6 +4683,13 @@ function printMatItems(){
   w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Material List — '+esc(proj)+'</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#1f2937;max-width:800px;margin:0 auto;font-size:13px;}h1{font-size:22px;margin-bottom:4px;}.meta{color:#6b7280;margin-bottom:16px;}.it{border:1px solid #d1d5db;border-radius:6px;padding:10px 14px;margin-bottom:10px;page-break-inside:avoid;}.hd{display:flex;justify-content:space-between;align-items:baseline;}.nm{font-size:15px;font-weight:700;}.tt{font-size:20px;font-weight:700;font-family:monospace;}table{width:100%;border-collapse:collapse;margin-top:6px;}td{padding:4px 8px;border-top:1px solid #e5e7eb;font-size:12px;}span.md{color:#2f4b8f;font-weight:700;}td.q{text-align:right;font-weight:700;font-family:monospace;}button{padding:9px 18px;background:#1f2937;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-bottom:14px;}@media print{button{display:none!important;}body{padding:10px;}}</style></head><body><h1>📦 Material List</h1><div class="meta">Project: <b>'+esc(proj)+'</b> · '+date+'</div><button onclick="window.print()">🖨️ Print</button>'+rows+'</body></html>');
   w.document.close();
 }
+function purView(v){
+  var mat=(v==='mat'),h=document.getElementById('pur-hw'),m=document.getElementById('pur-mat');
+  if(h)h.style.display=mat?'none':'';if(m)m.style.display=mat?'':'none';
+  var a=document.getElementById('pur-b-hw'),b=document.getElementById('pur-b-mat');
+  if(a)a.className='btn'+(mat?' btn-outline':'');if(b)b.className='btn'+(mat?'':' btn-outline');
+  try{window._purV=v;}catch(e){}
+}
 function renderHardware(){
   var ptoCount=getPTOCount();
   var rails=hangingRails.slice();
@@ -8054,7 +8065,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v306 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v307 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
