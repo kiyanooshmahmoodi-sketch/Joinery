@@ -1048,7 +1048,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v338 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v339 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1226,7 +1226,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
       <div class="card-title" style="margin:0;">Glass / Mirror</div>
       <button class="btn btn-primary btn-sm" onclick="printGlassMirror()">🖨️ Print Glass / Mirror List</button>
     </div>
-    <div class="card-sub" style="margin-bottom:10px;">Loose glass and mirror pieces (not in a door frame). For each row choose Glass or Mirror, then type the cabinet ID, size, thickness, glass type / colour, toughened and cut type.</div>
+    <div class="card-sub" style="margin-bottom:10px;">Loose glass and mirror pieces (not in a door frame). Press ➕ Add Glass or ➕ Add Mirror, then fill the cabinet ID, size, thickness (4mm / 6mm, or type another), glass type / colour (pick one, or choose ✎ Other and type it), toughened and cut type.</div>
     <div id="gm-list"></div>
   </div>
   <div id="hw-stats" style="display:none;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px;"></div>
@@ -4759,11 +4759,17 @@ function printMatItems(){
 
 /* ===== Glass / Mirror (Purchasing) — v338 ===== */
 function _gmLay(){var l=hwAliases['__glassmirror'];if(!l||typeof l!=='object')l=hwAliases['__glassmirror']={rows:[]};if(!Array.isArray(l.rows))l.rows=[];return l;}
-function gmSet(id,f,v){var r=_gmLay().rows.find(function(x){return x.id===id;});if(!r)return;if(f==='w'||f==='h'||f==='thk')r[f]=parseInt(v)||0;else if(f==='tough')r[f]=!!v;else r[f]=String(v==null?'':v).trim();saveData();if(f==='kind'||f==='w'||f==='h'||f==='thk'||f==='tough'||f==='cut')renderGlassMirror();}
+function gmSet(id,f,v){var r=_gmLay().rows.find(function(x){return x.id===id;});if(!r)return;
+  if(f==='w'||f==='h'||f==='thk')r[f]=parseInt(v)||0;
+  else if(f==='tough')r[f]=!!v;
+  else if(f==='typeSel'){if(v==='__other'){r.typeOther=true;r.type='';}else{r.typeOther=false;r.type=v;}}
+  else r[f]=String(v==null?'':v).trim();
+  saveData();if(f==='typeSel'||f==='thk'||f==='tough'||f==='cut')renderGlassMirror();}
 function gmAdd(kind){_gmLay().rows.push({id:'gm_'+Date.now()+'_'+Math.random().toString(36).substr(2,5),kind:kind||'Glass',cab:'',w:0,h:0,thk:0,type:'',tough:false,cut:''});saveData();renderGlassMirror();}
 function gmDel(id){var L=_gmLay();L.rows=L.rows.filter(function(x){return x.id!==id;});saveData();renderGlassMirror();}
 function gmClear(){if(!_gmLay().rows.length)return;if(!confirm('Delete all Glass / Mirror rows?'))return;_gmLay().rows=[];saveData();renderGlassMirror();}
 function renderGlassMirror(){var el=document.getElementById('gm-list');if(el)el.innerHTML=gmHTML();}
+function gmTypeOpts(kind){return GLASS_TYPES.filter(function(t){return (/mirror/i.test(t))===(kind==='Mirror');});}
 function gmHTML(){
   var L=_gmLay(),inp='padding:5px 7px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;width:100%;box-sizing:border-box;';
   var th=function(t,w){return '<th style="text-align:left;padding:7px 6px;font-size:11px;letter-spacing:.4px;background:#4b5563;color:#fff;'+(w?'width:'+w+'px;':'')+'">'+t+'</th>';};
@@ -4772,24 +4778,31 @@ function gmHTML(){
     '<button class="btn btn-primary btn-sm" onclick="gmAdd(\'Glass\')">➕ Add Glass</button>'+
     '<button class="btn btn-primary btn-sm" onclick="gmAdd(\'Mirror\')">➕ Add Mirror</button>'+
     '<button class="btn btn-outline btn-sm" onclick="gmClear()">🗑 Delete all rows</button>'+
-    '<span style="font-size:12px;color:#4b5563;margin-left:auto;">'+nG+' glass · '+nM+' mirror</span></div>'+
-    '<datalist id="gm-types">'+GLASS_TYPES.map(function(t){return '<option value="'+t+'"></option>';}).join('')+'</datalist>'+
-    '<datalist id="gm-thk">'+[3,4,5,6,8,10].map(function(t){return '<option value="'+t+'"></option>';}).join('')+'</datalist>';
+    '<span style="font-size:12px;color:#4b5563;margin-left:auto;">'+nG+' glass · '+nM+' mirror</span></div>';
   if(!L.rows.length)return bar+'<div style="text-align:center;color:#6b7280;padding:30px;background:#f6f7f9;border-radius:10px;border:1px dashed #d1d5db;">No glass or mirror yet — press ➕ Add Glass or ➕ Add Mirror.</div>';
-  var rows=L.rows.map(function(r,i){
-    var id=qe(r.id),tb=function(k){var on=(r.kind==='Mirror')===(k==='Mirror');return '<button onclick="gmSet(\''+id+'\',\'kind\',\''+k+'\')" style="padding:4px 8px;font-size:11px;font-weight:700;border-radius:5px;cursor:pointer;border:1px solid '+(on?'#3a6ea5':'#d1d5db')+';background:'+(on?'#3a6ea5':'#fff')+';color:'+(on?'#fff':'#4b5563')+';">'+k+'</button>';};
-    return '<tr style="'+(r.kind==='Mirror'?'background:#f3f6fb;':'')+'">'+
-      '<td style="padding:3px;"><button onclick="gmDel(\''+id+'\')" title="Delete row" style="background:#f6e0dc;color:#b4412f;border:none;padding:5px 9px;border-radius:5px;cursor:pointer;font-weight:700;">×</button></td>'+
-      '<td style="padding:3px;color:#6b7280;">'+(i+1)+'</td>'+
-      '<td style="padding:3px;"><div style="display:flex;gap:3px;">'+tb('Glass')+tb('Mirror')+'</div></td>'+
-      '<td style="padding:3px;"><input value="'+qe(r.cab)+'" placeholder="R1C107" onchange="gmSet(\''+id+'\',\'cab\',this.value)" style="'+inp+'font-weight:700;"/></td>'+
-      '<td style="padding:3px;"><div style="display:flex;gap:3px;align-items:center;"><input type="number" min="0" value="'+(r.w||'')+'" placeholder="W" onchange="gmSet(\''+id+'\',\'w\',this.value)" style="'+inp+'width:68px;text-align:center;font-weight:700;"/>×<input type="number" min="0" value="'+(r.h||'')+'" placeholder="H" onchange="gmSet(\''+id+'\',\'h\',this.value)" style="'+inp+'width:68px;text-align:center;font-weight:700;"/></div></td>'+
-      '<td style="padding:3px;"><input type="number" list="gm-thk" min="0" value="'+(r.thk||'')+'" placeholder="mm" onchange="gmSet(\''+id+'\',\'thk\',this.value)" style="'+inp+'width:64px;text-align:center;font-weight:700;"/></td>'+
-      '<td style="padding:3px;"><input list="gm-types" value="'+qe(r.type)+'" placeholder="Glass type / colour" onchange="gmSet(\''+id+'\',\'type\',this.value)" style="'+inp+'"/></td>'+
-      '<td style="padding:3px;text-align:center;"><label style="cursor:pointer;font-size:12px;font-weight:700;"><input type="checkbox" '+(r.tough?'checked ':'')+'onchange="gmSet(\''+id+'\',\'tough\',this.checked)"/> Toughened</label></td>'+
-      '<td style="padding:3px;"><select onchange="gmSet(\''+id+'\',\'cut\',this.value)" style="'+inp+'"><option value="">— Cut —</option>'+GLASS_CUTS.map(function(c){return '<option'+(r.cut===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select></td></tr>';
-  }).join('');
-  return bar+'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;min-width:820px;"><thead><tr>'+th('',34)+th('#',28)+th('TYPE',120)+th('CABINET ID',100)+th('W × H (mm)',170)+th('THICK',76)+th('GLASS TYPE / COLOUR','')+th('TOUGHENED',110)+th('CUT TYPE',140)+'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+  var sec=function(kind){
+    var rs=L.rows.filter(function(r){return (r.kind==='Mirror')===(kind==='Mirror');});if(!rs.length)return '';
+    var opts=gmTypeOpts(kind);
+    var body=rs.map(function(r,i){
+      var id=qe(r.id),isOther=r.typeOther||(r.type&&opts.indexOf(r.type)<0);
+      var thkBtn=function(n){var on=r.thk===n;return '<button onclick="gmSet(\''+id+'\',\'thk\','+(on?0:n)+')" style="padding:4px 9px;font-size:12px;font-weight:700;border-radius:5px;cursor:pointer;border:1px solid '+(on?'#3a8f90':'#d1d5db')+';background:'+(on?'#3a8f90':'#fff')+';color:'+(on?'#fff':'#374151')+';">'+n+'mm</button>';};
+      var thkOther=(r.thk&&r.thk!==4&&r.thk!==6)?r.thk:'';
+      var sel='<select onchange="gmSet(\''+id+'\',\'typeSel\',this.value)" style="'+inp+'"><option value="">— Select —</option>'+opts.map(function(t){return '<option'+(r.type===t&&!isOther?' selected':'')+'>'+t+'</option>';}).join('')+'<option value="__other"'+(isOther?' selected':'')+'>✎ Other (type it)</option></select>'+
+        (isOther?'<input value="'+qe(r.type)+'" placeholder="Type name + colour" onchange="gmSet(\''+id+'\',\'type\',this.value)" style="'+inp+'margin-top:4px;font-weight:700;"/>':'');
+      return '<tr>'+
+        '<td style="padding:3px;"><button onclick="gmDel(\''+id+'\')" title="Delete row" style="background:#f6e0dc;color:#b4412f;border:none;padding:5px 9px;border-radius:5px;cursor:pointer;font-weight:700;">×</button></td>'+
+        '<td style="padding:3px;color:#6b7280;">'+(i+1)+'</td>'+
+        '<td style="padding:3px;"><input value="'+qe(r.cab)+'" placeholder="R1C107" onchange="gmSet(\''+id+'\',\'cab\',this.value)" style="'+inp+'font-weight:700;"/></td>'+
+        '<td style="padding:3px;"><div style="display:flex;gap:3px;align-items:center;"><input type="number" min="0" value="'+(r.w||'')+'" placeholder="W" onchange="gmSet(\''+id+'\',\'w\',this.value)" style="'+inp+'width:68px;text-align:center;font-weight:700;"/>×<input type="number" min="0" value="'+(r.h||'')+'" placeholder="H" onchange="gmSet(\''+id+'\',\'h\',this.value)" style="'+inp+'width:68px;text-align:center;font-weight:700;"/></div></td>'+
+        '<td style="padding:3px;"><div style="display:flex;gap:4px;align-items:center;">'+thkBtn(4)+thkBtn(6)+'<input type="number" min="0" value="'+thkOther+'" placeholder="other" onchange="gmSet(\''+id+'\',\'thk\',this.value)" style="'+inp+'width:62px;text-align:center;"/></div></td>'+
+        '<td style="padding:3px;">'+sel+'</td>'+
+        '<td style="padding:3px;text-align:center;"><label style="cursor:pointer;font-size:12px;font-weight:700;"><input type="checkbox" '+(r.tough?'checked ':'')+'onchange="gmSet(\''+id+'\',\'tough\',this.checked)"/> Toughened</label></td>'+
+        '<td style="padding:3px;"><select onchange="gmSet(\''+id+'\',\'cut\',this.value)" style="'+inp+'"><option value="">— Cut —</option>'+GLASS_CUTS.map(function(c){return '<option'+(r.cut===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select></td></tr>';
+    }).join('');
+    return '<div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#1e40af;background:#eff6ff;padding:6px 10px;border-radius:6px;margin:10px 0 4px;">'+kind.toUpperCase()+' — '+rs.length+'</div>'+
+      '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;min-width:900px;"><thead><tr>'+th('',34)+th('#',28)+th('CABINET ID',100)+th('W × H (mm)',170)+th('THICKNESS',200)+th('GLASS TYPE / COLOUR',190)+th('TOUGHENED',110)+th('CUT TYPE',140)+'</tr></thead><tbody>'+body+'</tbody></table></div>';
+  };
+  return bar+sec('Glass')+sec('Mirror');
 }
 function printGlassMirror(){
   var rows=_gmLay().rows;if(!rows.length){showMsg('Nothing to print yet');return;}
@@ -8253,7 +8266,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v338 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v339 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
