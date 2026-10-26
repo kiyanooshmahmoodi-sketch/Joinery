@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v312 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v313 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4650,7 +4650,7 @@ function printHwItems(){
 }
 
 /* ===== Material order list (Purchasing) — auto-synced from Finishes ▸ Material Schedule ===== */
-var MAT_CATS=['Board','Laminated Board','Stecca Board','Edge Tape','Other'];
+var MAT_CATS=['Board','Laminated Board','Steccawood','Edge Tape','Other'];
 var MAT_UOMS=['Sheets','Pieces','m','Rolls','Boxes','Litres'];
 function _matLay(){var l=hwAliases['__matlayout'];if(!l||typeof l!=='object')l=hwAliases['__matlayout']={items:[]};if(!Array.isArray(l.items))l.items=[];if(!l.ov)l.ov={};if(!Array.isArray(l.man))l.man=[];
   if(l.items.length){ /* migrate the v306 manual list into rows */
@@ -8097,7 +8097,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v312 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v313 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
