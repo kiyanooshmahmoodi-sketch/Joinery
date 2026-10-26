@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v331 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v332 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1264,6 +1264,8 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
       <input id="gdm-cabid" placeholder="Cabinet ID (e.g., R1C107)" style="padding:8px 10px;font-size:13px;"/>
       <input id="gdm-w" type="number" placeholder="Width (mm)" style="padding:8px 10px;font-size:13px;"/>
       <input id="gdm-h" type="number" placeholder="Height (mm)" style="padding:8px 10px;font-size:13px;"/>
+      <select id="gdm-hside" style="padding:8px 10px;font-size:13px;"><option value="">Hinge type…</option><option value="Left">Left hinge</option><option value="Right">Right hinge</option></select>
+      <input id="gdm-holes" placeholder="Hinge holes from top (mm) e.g. 100, 400, 300" style="padding:8px 10px;font-size:13px;grid-column:span 2;"/>
     </div>
     <div style="margin-top:10px;text-align:right;">
       <button class="btn btn-primary btn-sm" onclick="addManualGlassDoor()">➕ Add Glass Door</button>
@@ -5397,6 +5399,20 @@ function workflowButtonsHTML(arrayName,itemId,wf){
   }).join('')+'</div>';
 }
 
+function ghParse(t){return String(t||'').split(/[,;\s]+/).map(function(x){return parseInt(x);}).filter(function(n){return n>0;});}
+function ghSide(id,side){var d=glassDoors.find(function(x){return x.id===id;});if(!d)return;d.hingeSide=(d.hingeSide===side?null:side);saveData();renderGlassDoors();}
+function ghAdd(id){var el=document.getElementById('gh-in-'+id);if(!el)return;var n=ghParse(el.value);if(!n.length)return;var d=glassDoors.find(function(x){return x.id===id;});if(!d)return;d.hingeHoles=(d.hingeHoles||[]).concat(n);saveData();renderGlassDoors();var e2=document.getElementById('gh-in-'+id);if(e2)e2.focus();}
+function ghDel(id,i){var d=glassDoors.find(function(x){return x.id===id;});if(!d||!d.hingeHoles)return;d.hingeHoles.splice(i,1);saveData();renderGlassDoors();}
+function ghEdit(id,i,v){var d=glassDoors.find(function(x){return x.id===id;});if(!d||!d.hingeHoles)return;var n=parseInt(v)||0;if(n>0)d.hingeHoles[i]=n;else d.hingeHoles.splice(i,1);saveData();renderGlassDoors();}
+function ghHTML(d){
+  var sb=function(sd){var on=d.hingeSide===sd;return '<button onclick="ghSide(\''+d.id+'\',\''+sd+'\')" style="padding:4px 9px;font-size:11px;font-weight:700;border-radius:5px;cursor:pointer;border:1px solid '+(on?'#3a8f90':'#d1d5db')+';background:'+(on?'#3a8f90':'#fff')+';color:'+(on?'#fff':'#4b5563')+';">'+sd+' hinge</button>';};
+  var chips=(d.hingeHoles||[]).map(function(n,i){return '<span style="display:inline-flex;align-items:center;gap:2px;background:#eef3f8;border-radius:5px;padding:2px 3px;"><input type="number" value="'+n+'" min="0" onchange="ghEdit(\''+d.id+'\','+i+',this.value)" style="width:54px;padding:3px;font-size:12px;font-weight:700;text-align:center;border:1px solid #d1d5db;border-radius:4px;"/><button onclick="ghDel(\''+d.id+'\','+i+')" title="Remove hole" style="border:none;background:none;color:#b4412f;cursor:pointer;font-weight:700;">×</button></span>';}).join('');
+  return '<div style="display:flex;gap:4px;margin-bottom:5px;">'+sb('Left')+sb('Right')+'</div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;">'+chips+
+    '<input id="gh-in-'+d.id+'" placeholder="from top mm" onkeydown="if(event.key===\'Enter\')ghAdd(\''+d.id+'\')" style="width:90px;padding:4px 6px;font-size:12px;border:1px dashed #9ca3af;border-radius:5px;"/>'+
+    '<button onclick="ghAdd(\''+d.id+'\')" style="padding:4px 8px;font-size:12px;font-weight:700;border:none;border-radius:5px;background:#e3eef0;color:#235f60;cursor:pointer;">+ Hole</button></div>'+
+    ((d.hingeHoles||[]).length?'<div style="font-size:9px;color:#6b7280;margin-top:2px;">'+d.hingeHoles.length+' hinges, from top</div>':'');
+}
 function setGlassDim(doorId,which,val){
   var d=glassDoors.find(function(x){return x.id===doorId;});
   if(!d)return;
@@ -5484,6 +5500,8 @@ function gdLoadExcel(files,mode){
 function addManualGlassDoor(){
   var cabId=document.getElementById('gdm-cabid').value.trim();
   var name='Glass Door';
+  var hside=document.getElementById('gdm-hside').value;
+  var holes=ghParse(document.getElementById('gdm-holes').value);
   var _rm=/^(R\d+)/i.exec(cabId);var room=_rm?_rm[1].toUpperCase():'';
   var w=parseInt(document.getElementById('gdm-w').value)||0;
   var h=parseInt(document.getElementById('gdm-h').value)||0;
@@ -5495,10 +5513,11 @@ function addManualGlassDoor(){
     room:room||null,cabId:cabId||null,partName:name,
     width:w,height:h,
     profileColor:null,glassType:null,thickness:null,toughened:false,cutType:null,
+    hingeSide:hside||null,hingeHoles:holes,
     source:'manual'
   });
   // Clear the form
-  ['gdm-cabid','gdm-w','gdm-h'].forEach(function(id){
+  ['gdm-cabid','gdm-w','gdm-h','gdm-hside','gdm-holes'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.value='';
   });
   renderGlassDoors();saveData();
@@ -5596,6 +5615,7 @@ function renderGlassDoors(){
           '<th style="width:170px;">GLASS TYPE</th>'+
           '<th style="width:170px;">CUT TYPE</th>'+
           '<th style="width:130px;">TOUGHENED</th>'+
+          '<th style="width:230px;">HINGE · HOLES FROM TOP (mm)</th>'+
           '<th style="width:50px;text-align:center;">⛌</th>'+
         '</tr></thead><tbody>'+
         ds.map(function(d,i){
@@ -5622,6 +5642,7 @@ function renderGlassDoors(){
             '<td>'+glassTypePickerHTML(d.id,d.glassType)+'</td>'+
             '<td>'+cutPickerHTML(d.id,d.cutType)+(d.cutType?'':'<div style="font-size:10px;color:#9a6618;font-weight:700;margin-top:4px;">⚠ Pick cut</div>')+'</td>'+
             '<td>'+toughenedTogglerHTML(d.id,d.toughened)+'</td>'+
+            '<td>'+ghHTML(d)+'</td>'+
             '<td style="text-align:center;"><button onclick="deleteGlassDoor(\''+d.id+'\')" style="background:#f6e0dc;color:#b4412f;border:none;padding:5px 10px;border-radius:5px;font-size:13px;cursor:pointer;font-weight:700;" title="Delete this glass door">×</button></td>'+
           '</tr>';
         }).join('')+
@@ -8266,7 +8287,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v331 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v332 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
