@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v302 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v303 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1192,7 +1192,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
       <div class="card-title" style="margin:0;">Hardware Items</div>
       <button class="btn btn-primary btn-sm" onclick="printHwItems()">🖨️ Print Hardware List</button>
     </div>
-    <div class="card-sub" style="margin-bottom:10px;">Use ▲ ▼ to set the order and the tick to choose which items go on the printed list.</div>
+    <div class="card-sub" style="margin-bottom:10px;">Every name and number is editable — just type in the box. Use ▲ ▼ for the order and the tick to choose what goes on the printed list.</div>
     <div id="hw-list"></div>
   </div>
   <div id="hw-stats" style="display:none;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px;"></div>
@@ -4521,10 +4521,10 @@ var _hwEd={};
 function hwItems(){
   var items=[{key:'pto',title:'🔘 PTO Mechanisms',total:getPTOCount(),subs:[],note:getPTOCount()>0?'One mechanism per PTO cabinet — to be sent from warehouse':'No PTO cabinets in this job'}];
   var tot=buildHWTotals();
-  if(tot.length){tot.forEach(function(f){var multi=f.items.length>1;items.push({key:'hw:'+f.family,title:multi?f.family+' — total':f.items[0].model,total:f.total,subs:multi?f.items.map(function(r){return{name:r.model,n:r.count};}):[]});});}
+  if(tot.length){tot.forEach(function(f){var multi=f.items.length>1;items.push({key:'hw:'+f.family,title:multi?f.family+' — total':f.items[0].model,total:f.total,subs:multi?f.items.map(function(r){return{name:r.model,n:r.count,orig:r.model};}):[]});});}
   else{buildHWSummary().forEach(function(r){items.push({key:'hws:'+r.model,title:r.model,total:r.count,subs:[],note:'cabinets with exactly this set'});});}
   var lay0=_hwLay();
-  items.forEach(function(it){var ov=lay0.over[it.key];if(ov){if(ov.name){it.origTitle=it.title;it.title=ov.name;it.edited=true;}if(ov.qty!==undefined&&ov.qty!==''){it.origTotal=it.total;it.total=ov.qty;it.edited=true;}}});
+  items.forEach(function(it){var ov=lay0.over[it.key];if(ov){if(ov.name){it.origTitle=it.title;it.title=ov.name;it.edited=true;}if(ov.qty!==undefined&&ov.qty!==''){it.origTotal=it.total;it.total=ov.qty;it.edited=true;}if(ov.subs){it.subs.forEach(function(r){var o=ov.subs[r.orig];if(o){if(o.name)r.name=o.name;if(o.n!==undefined)r.n=o.n;it.edited=true;}});}}});
   lay0.custom.forEach(function(c){items.push({key:'c:'+c.id,title:c.name||'(new item)',total:c.qty===undefined?1:c.qty,subs:[],custom:true});});
   var lay=_hwLay(),pos={};lay.order.forEach(function(k,i){pos[k]=i;});
   return items.map(function(it,i){return{it:it,i:i};}).sort(function(a,b){var pa=pos[a.it.key]!==undefined?pos[a.it.key]:1000+a.i,pb=pos[b.it.key]!==undefined?pos[b.it.key]:1000+b.i;return pa-pb;}).map(function(x){return x.it;});
@@ -4535,11 +4535,11 @@ function hwItemsHTML(){
     var off=!!lay.hidden[it.key],k=qe(it.key).replace(/'/g,"&#39;");
     return '<div style="display:flex;gap:12px;align-items:flex-start;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-left:4px solid '+(it.key==='pto'?'#a3506b':'#2f7d5b')+';border-radius:8px;padding:10px 14px;margin-bottom:8px;'+(off?'opacity:.45;':'')+'">'+
       '<div style="flex:1;min-width:0;">'+
-        ((_hwEd[it.key]||it.custom)
+        (true
           ?'<div style="display:flex;gap:8px;align-items:center;"><input value="'+qe(it.title)+'" placeholder="Item name / model" spellcheck="false" onchange="hwSet(\''+k+'\',\'name\',this.value)" style="flex:1;min-width:0;padding:6px 9px;font-size:13px;font-weight:700;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/><input type="number" min="0" value="'+qe(it.total)+'" onchange="hwSet(\''+k+'\',\'qty\',this.value)" style="width:80px;padding:6px 8px;font-size:15px;font-weight:700;text-align:center;border:1px solid #d1d5db;border-radius:6px;font-family:\'JetBrains Mono\',monospace;"/></div>'
           :'<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;"><span style="font-size:14px;font-weight:700;color:#1f2937;">'+esc(it.title)+(it.edited?' <span style="font-size:10px;font-weight:700;color:#b7791f;background:#f6ecd5;border-radius:4px;padding:1px 5px;">edited</span>':'')+'</span><span style="font-size:20px;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:#2f4b8f;">'+it.total+'</span></div>')+
         (it.note?'<div style="font-size:12px;color:#6b7280;margin-top:3px;">'+esc(it.note)+'</div>':'')+
-        it.subs.map(function(r){return '<div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-top:4px;padding-left:10px;"><span>'+esc(r.name)+'</span><b>'+r.n+'</b></div>';}).join('')+
+        it.subs.map(function(r,j){return '<div style="display:flex;gap:8px;align-items:center;margin-top:5px;padding-left:10px;"><input value="'+qe(r.name)+'" spellcheck="false" onchange="hwSet(\''+k+'\',\'subname\',this.value,'+j+')" style="flex:1;min-width:0;padding:4px 8px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/><input type="number" min="0" value="'+qe(r.n)+'" onchange="hwSet(\''+k+'\',\'subqty\',this.value,'+j+')" style="width:64px;padding:4px 6px;font-size:13px;font-weight:700;text-align:center;border:1px solid #d1d5db;border-radius:6px;font-family:\'JetBrains Mono\',monospace;"/></div>';}).join('')+
         '<input value="'+qe(lay.comments[it.key]||'')+'" placeholder="Comment / model (printed on the list)…" spellcheck="false" onchange="hwComment(\''+k+'\',this.value)" style="width:100%;margin-top:8px;padding:6px 9px;font-size:12px;font-weight:600;color:#2f4b8f;border:1px solid #c3d0ec;border-radius:6px;background:#eaeff9;font-family:inherit;"/>'+
       '</div>'+
       '<div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;">'+
@@ -4547,7 +4547,7 @@ function hwItemsHTML(){
         '<label style="font-size:11px;color:#4b5563;display:flex;gap:4px;align-items:center;cursor:pointer;"><input type="checkbox" '+(off?'':'checked ')+'onchange="hwToggle(\''+k+'\')"/> Print</label>'+
         '<div style="display:flex;gap:4px;">'+(it.custom
           ?'<button class="btn btn-outline btn-sm" style="padding:2px 8px;" onclick="hwDelCustom(\''+k+'\')" title="Delete this item">🗑</button>'
-          :'<button class="btn btn-outline btn-sm" style="padding:2px 8px;" onclick="hwEditToggle(\''+k+'\')" title="Edit name / quantity">'+(_hwEd[it.key]?'✔':'✏️')+'</button>'+(it.edited?'<button class="btn btn-outline btn-sm" style="padding:2px 8px;" onclick="hwReset(\''+k+'\')" title="Back to the automatic value">↺</button>':''))+'</div>'+
+          :(it.edited?'<button class="btn btn-outline btn-sm" style="padding:2px 8px;" onclick="hwReset(\''+k+'\')" title="Back to the automatic value">↺</button>':''))+'</div>'+
       '</div></div>';
   }).join('')+
   '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;padding:10px 12px;border:1px dashed #9fb2dc;border-radius:8px;background:#f6f7fb;">'+
@@ -4557,8 +4557,16 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-function hwSet(key,field,val){
+function hwSet(key,field,val,j){
   key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();
+  if(field==='subname'||field==='subqty'){
+    var it=hwItems().find(function(x){return x.key===key;});if(!it||!it.subs[j])return;
+    var o0=it.subs[j].orig,ov0=lay.over[key]=lay.over[key]||{};ov0.subs=ov0.subs||{};var so=ov0.subs[o0]=ov0.subs[o0]||{};
+    if(field==='subname'){var nn=String(val||'').trim();if(nn&&nn!==o0)so.name=nn;else delete so.name;}
+    else{if(val===''||val===null||Number(val)===it.subs[j].orig_n)delete so.n;else so.n=Number(val);}
+    if(!Object.keys(so).length)delete ov0.subs[o0];if(!Object.keys(ov0.subs).length)delete ov0.subs;if(!Object.keys(ov0).length)delete lay.over[key];
+    saveData();renderHardware();return;
+  }
   if(key.indexOf('c:')===0){var c=lay.custom.find(function(x){return 'c:'+x.id===key;});if(!c)return;if(field==='name')c.name=String(val||'').trim();else c.qty=(val===''?0:Number(val));}
   else{var ov=lay.over[key]=lay.over[key]||{};if(field==='name'){var n=String(val||'').trim();if(n)ov.name=n;else delete ov.name;}else{if(val===''||val===null)delete ov.qty;else ov.qty=Number(val);}if(!Object.keys(ov).length)delete lay.over[key];}
   saveData();renderHardware();
@@ -7979,7 +7987,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v302 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v303 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
