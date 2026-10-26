@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v313 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v314 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4651,6 +4651,7 @@ function printHwItems(){
 
 /* ===== Material order list (Purchasing) — auto-synced from Finishes ▸ Material Schedule ===== */
 var MAT_CATS=['Board','Laminated Board','Steccawood','Edge Tape','Other'];
+var MAT_VENDORS=['Polytec','Laminex','Formica','Egger','Wilsonart','Urban Republic','Arborite','Plyco','EGR Decor'];
 var MAT_UOMS=['Sheets','Pieces','m','Rolls','Boxes','Litres'];
 function _matLay(){var l=hwAliases['__matlayout'];if(!l||typeof l!=='object')l=hwAliases['__matlayout']={items:[]};if(!Array.isArray(l.items))l.items=[];if(!l.ov)l.ov={};if(!Array.isArray(l.man))l.man=[];
   if(l.items.length){ /* migrate the v306 manual list into rows */
@@ -4679,7 +4680,7 @@ function matRows(){
   return rows;}
 function matItemsHTML(){
   var rows=matRows(),inp='padding:5px 7px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;width:100%;box-sizing:border-box;';
-  var dl='<datalist id="mat-cats">'+MAT_CATS.map(function(c){return '<option value="'+qe(c)+'">';}).join('')+'</datalist><datalist id="mat-uoms">'+MAT_UOMS.map(function(c){return '<option value="'+qe(c)+'">';}).join('')+'</datalist><datalist id="mat-vend">'+cpBrands().map(function(c){return '<option value="'+qe(c)+'">';}).join('')+'</datalist>';
+  var dl='<datalist id="mat-cats">'+MAT_CATS.map(function(c){return '<option value="'+qe(c)+'">';}).join('')+'</datalist><datalist id="mat-uoms">'+MAT_UOMS.map(function(c){return '<option value="'+qe(c)+'">';}).join('')+'</datalist><datalist id="mat-vend">'+MAT_VENDORS.concat(cpBrands()).filter(function(c,i,a){return a.indexOf(c)===i;}).map(function(c){return '<option value="'+qe(c)+'">';}).join('')+'</datalist>';
   var th=function(t,w){return '<th style="text-align:left;padding:7px 6px;font-size:11px;letter-spacing:.4px;background:#4b5563;color:#fff;'+(w?'width:'+w+'px;':'')+'">'+t+'</th>';};
   var tb=rows.map(function(r){
     var k=encodeURIComponent(r.key),cell=function(f,ph,list,w,extra){return '<td style="padding:3px;vertical-align:top;"><input value="'+qe(r[f])+'" placeholder="'+ph+'" '+(list?'list="'+list+'" ':'')+'spellcheck="false" onchange="matCell(\''+k+'\',\''+f+'\',this.value)" style="'+inp+(extra||'')+'"/></td>';};
@@ -8097,7 +8098,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v313 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v314 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
