@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v314 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v315 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4650,7 +4650,7 @@ function printHwItems(){
 }
 
 /* ===== Material order list (Purchasing) — auto-synced from Finishes ▸ Material Schedule ===== */
-var MAT_CATS=['Board','Laminated Board','Steccawood','Edge Tape','Other'];
+var MAT_CATS=['Board','Laminated Board','Steccawood','Splash','Edge Tape','Other'];
 var MAT_VENDORS=['Polytec','Laminex','Formica','Egger','Wilsonart','Urban Republic','Arborite','Plyco','EGR Decor'];
 var MAT_UOMS=['Sheets','Pieces','m','Rolls','Boxes','Litres'];
 function _matLay(){var l=hwAliases['__matlayout'];if(!l||typeof l!=='object')l=hwAliases['__matlayout']={items:[]};if(!Array.isArray(l.items))l.items=[];if(!l.ov)l.ov={};if(!Array.isArray(l.man))l.man=[];
@@ -4683,7 +4683,7 @@ function matItemsHTML(){
   var dl='<datalist id="mat-cats">'+MAT_CATS.map(function(c){return '<option value="'+qe(c)+'">';}).join('')+'</datalist><datalist id="mat-uoms">'+MAT_UOMS.map(function(c){return '<option value="'+qe(c)+'">';}).join('')+'</datalist><datalist id="mat-vend">'+MAT_VENDORS.concat(cpBrands()).filter(function(c,i,a){return a.indexOf(c)===i;}).map(function(c){return '<option value="'+qe(c)+'">';}).join('')+'</datalist>';
   var th=function(t,w){return '<th style="text-align:left;padding:7px 6px;font-size:11px;letter-spacing:.4px;background:#4b5563;color:#fff;'+(w?'width:'+w+'px;':'')+'">'+t+'</th>';};
   var tb=rows.map(function(r){
-    var k=encodeURIComponent(r.key),cell=function(f,ph,list,w,extra){return '<td style="padding:3px;vertical-align:top;"><input value="'+qe(r[f])+'" placeholder="'+ph+'" '+(list?'list="'+list+'" ':'')+'spellcheck="false" onchange="matCell(\''+k+'\',\''+f+'\',this.value)" style="'+inp+(extra||'')+'"/></td>';};
+    var k=encodeURIComponent(r.key),cell=function(f,ph,list,w,extra){return '<td style="padding:3px;vertical-align:top;"><input value="'+qe(r[f])+'" placeholder="'+ph+'" '+(list?'list="'+list+'" onfocus="matFocus(this)" onblur="matBlur(this)" ':'')+'spellcheck="false" onchange="matCell(\''+k+'\',\''+f+'\',this.value)" style="'+inp+(extra||'')+'"/></td>';};
     return '<tr style="border-bottom:1px solid #e5e7eb;'+(r.print?'':'opacity:.45;')+'background:'+(r.auto?'#f1f8f4':'#fff')+';">'+
       cell('cat','Category','mat-cats')+cell('vendor','Vendor','mat-vend')+
       '<td style="padding:3px;vertical-align:top;"><input value="'+qe(r.desc)+'" placeholder="Material description" spellcheck="false" onchange="matCell(\''+k+'\',\'desc\',this.value)" style="'+inp+'font-weight:700;"/>'+(r.spaces.length?'<div style="font-size:10px;color:#6b7280;margin:2px 0 0 2px;">from Finishes · '+esc(r.spaces.join(', '))+'</div>':'')+'</td>'+
@@ -4696,6 +4696,8 @@ function matItemsHTML(){
   return dl+'<div style="overflow-x:auto;"><table style="width:100%;min-width:960px;border-collapse:collapse;"><thead><tr>'+th('CATEGORY',120)+th('VENDOR',110)+th('MATERIAL DESCRIPTION')+th('SPECIFICATIONS',130)+th('UOM',80)+th('QTY',70)+th('COMMENTS',180)+th('',90)+'</tr></thead><tbody>'+tb+'</tbody></table></div>'+
    '<div style="margin-top:10px;"><button class="btn btn-outline btn-sm" onclick="matAddRow()">➕ Add row (edge tape, glue, other…)</button></div>';
 }
+function matFocus(el){el.dataset.v=el.value;el.value='';}
+function matBlur(el){if(el.value===''&&el.dataset.v!==undefined)el.value=el.dataset.v;delete el.dataset.v;}
 function matCell(k,f,v){k=decodeURIComponent(k);var L=_matLay();
   if(k.indexOf('m:')===0){var m=L.man.find(function(x){return 'm:'+x.id===k;});if(!m)return;m[f]=(f==='qty')?(v===''?0:Number(v)):(f==='print'?!!v:String(v||'').trim());}
   else{var o=L.ov[k]=L.ov[k]||{};if(f==='qty')o.qty=(v===''?0:Number(v));else if(f==='print'){if(v)delete o.print;else o.print=false;}else o[f]=String(v||'').trim();}
@@ -8098,7 +8100,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v314 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v315 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
