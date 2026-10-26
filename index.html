@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v304 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v305 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4530,7 +4530,20 @@ function hwItems(){
   var lay=_hwLay(),pos={};lay.order.forEach(function(k,i){pos[k]=i;});
   return items.map(function(it,i){return{it:it,i:i};}).sort(function(a,b){var pa=pos[a.it.key]!==undefined?pos[a.it.key]:1000+a.i,pb=pos[b.it.key]!==undefined?pos[b.it.key]:1000+b.i;return pa-pb;}).map(function(x){return x.it;});
 }
+function hwMigrateComments(){
+  var lay=_hwLay(),ch=false;
+  hwItems().forEach(function(it){
+    var c=(lay.comments[it.key]||'').trim();if(!c)return;
+    var auto=it.subs.filter(function(r){return !r.manual;});
+    if(!it.subs.length){(lay.msubs[it.key]=lay.msubs[it.key]||[]).push({id:Date.now().toString(36)+Math.floor(Math.random()*1000).toString(36),name:it.title,model:c,qty:Number(it.total)||0});}
+    else if(auto.length){var ov=lay.over[it.key]=lay.over[it.key]||{};ov.subs=ov.subs||{};var so=ov.subs[auto[0].orig]=ov.subs[auto[0].orig]||{};if(!so.model)so.model=c;}
+    else return;
+    delete lay.comments[it.key];ch=true;
+  });
+  if(ch)saveData();
+}
 function hwItemsHTML(){
+  hwMigrateComments();
   var its=hwItems(),lay=_hwLay();
   return its.map(function(it,i){
     var off=!!lay.hidden[it.key],k=qe(it.key).replace(/'/g,"&#39;");
@@ -4542,9 +4555,7 @@ function hwItemsHTML(){
         (it.note?'<div style="font-size:12px;color:#6b7280;margin-top:3px;">'+esc(it.note)+'</div>':'')+
         it.subs.map(function(r,j){var sty='padding:4px 8px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;';return '<div style="display:flex;gap:6px;align-items:center;margin-top:5px;padding-left:10px;flex-wrap:wrap;"><input value="'+qe(r.name)+'" placeholder="Size / name (e.g. Hinge 110)" spellcheck="false" onchange="hwSet(\''+k+'\',\'subname\',this.value,'+j+')" style="flex:2;min-width:120px;'+sty+'"/><input value="'+qe(r.model||'')+'" placeholder="Model (e.g. Blum)" spellcheck="false" onchange="hwSet(\''+k+'\',\'submodel\',this.value,'+j+')" style="flex:1.5;min-width:90px;color:#2f4b8f;font-weight:600;'+sty+'"/><input type="number" min="0" value="'+qe(r.n)+'" onchange="hwSet(\''+k+'\',\'subqty\',this.value,'+j+')" style="width:64px;padding:4px 6px;font-size:13px;font-weight:700;text-align:center;border:1px solid #d1d5db;border-radius:6px;font-family:\'JetBrains Mono\',monospace;"/>'+(r.manual?'<button class="btn btn-outline btn-sm" style="padding:2px 7px;" onclick="hwDelSub(\''+k+'\','+j+')" title="Remove this row">🗑</button>':'')+'</div>';}).join('')+
         '<button class="btn btn-outline btn-sm" style="margin-top:8px;padding:3px 10px;font-size:12px;" onclick="hwAddSub(\''+k+'\')">➕ Add size / model row</button>'+
-        '<div style="font-size:10px;font-weight:700;color:#6b7280;margin-top:8px;">HARDWARE MODEL</div>'+
-        '<input value="'+qe(lay.comments[it.key]||'')+'" placeholder="Hardware model, e.g. Blum (printed on the list)…" spellcheck="false" onchange="hwComment(\''+k+'\',this.value)" style="width:100%;margin-top:8px;padding:6px 9px;font-size:12px;font-weight:600;color:#2f4b8f;border:1px solid #c3d0ec;border-radius:6px;background:#eaeff9;font-family:inherit;"/>'+
-      '</div>'+
+        '</div>'+
       '<div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;">'+
         '<div style="display:flex;gap:4px;"><button class="btn btn-outline btn-sm" style="padding:2px 8px;" '+(i===0?'disabled ':'')+'onclick="hwMove(\''+k+'\',-1)" title="Move up">▲</button><button class="btn btn-outline btn-sm" style="padding:2px 8px;" '+(i===its.length-1?'disabled ':'')+'onclick="hwMove(\''+k+'\',1)" title="Move down">▼</button></div>'+
         '<label style="font-size:11px;color:#4b5563;display:flex;gap:4px;align-items:center;cursor:pointer;"><input type="checkbox" '+(off?'':'checked ')+'onchange="hwToggle(\''+k+'\')"/> Print</label>'+
@@ -7993,7 +8004,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v304 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v305 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
