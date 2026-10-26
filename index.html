@@ -778,6 +778,9 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 .cb-white::before{background:#fff;border-color:#d1d5db;}
 .cb-gold::before{background:linear-gradient(135deg,#f4cf60,#c9a04e);}
 .cb-silver::before{background:linear-gradient(135deg,#d1d5db,#9ca3af);}
+.cb-mdf::before{background:linear-gradient(135deg,#d9b88f,#b08a5a);}
+.color-btn.cb-mdf.active{background:linear-gradient(135deg,#d9b88f,#b08a5a);border-color:#8a6a3f;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.25);}
+.color-btn.cb-mdf.active::before{border-color:rgba(255,255,255,.5);}
 
 .color-btn.cb-black.active{background:#1f2937;border-color:#1f2937;color:#fff;box-shadow:0 2px 8px rgba(15,23,42,.3);}
 .color-btn.cb-black.active::before{border-color:rgba(255,255,255,.3);}
@@ -1045,7 +1048,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v336 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v337 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4543,14 +4546,18 @@ function filterHardware(q){_hwSearchQ=(q||'').toLowerCase();renderHardware();}
 function colorPickerHTML(itemId,currentColor,setterFn){
   var setter=setterFn||'setRailColor';
   var colors=['black','white','gold','silver'];
+  if(setter==='setGlassProfileColor')colors.push('mdf');
   return'<div style="display:flex;gap:5px;flex-wrap:wrap;" onclick="event.stopPropagation();">'+
     colors.map(function(c){
       var cls='color-btn cb-'+c+(currentColor===c?' active':'');
-      var label=c.charAt(0).toUpperCase()+c.slice(1);
+      var label=c==='mdf'?'MDF':c.charAt(0).toUpperCase()+c.slice(1);
       return'<button class="'+cls+'" onclick="'+setter+'(\''+itemId+'\',\''+c+'\')">'+label+'</button>';
     }).join('')+
-  '</div>';
+  '</div>'+
+  (setter==='setGlassProfileColor'&&currentColor==='mdf'?(function(){var d=glassDoors.find(function(x){return x.id===itemId;})||{};return'<input value="'+String(d.mdfColour||'').replace(/"/g,'&quot;')+'" placeholder="MDF colour (e.g. Florentine)" onclick="event.stopPropagation();" onchange="setGlassMdfColour(\''+itemId+'\',this.value)" style="margin-top:5px;width:100%;box-sizing:border-box;padding:5px 7px;font-size:12px;font-weight:700;border:1px solid #b08a5a;border-radius:5px;"/>';})():'');
 }
+
+function setGlassMdfColour(id,v){var d=glassDoors.find(function(x){return x.id===id;});if(!d)return;d.mdfColour=String(v||'').trim();saveData();}
 
 function colorTagHTML(color){
   if(!color)return'<span class="color-tag none">⚠ Not set</span>';
@@ -5569,7 +5576,7 @@ function renderGlassDoors(){
   try{ghTypesList();var _hb=document.getElementById('gdm-hbox');if(_hb&&!_hb.children.length)ghFormReset();}catch(e){}
   var doors=glassDoors.slice();
   var filtered=_gdSearchQ?doors.filter(function(d){
-    var s=((d.room||'')+' '+(d.cabId||'')+' '+(d.width||'')+' '+(d.height||'')+' '+(d.profileColor||'')+' '+(d.glassType||'')+' '+(d.thickness||'')+'mm '+(d.toughened?'toughened':'standard')).toLowerCase();
+    var s=((d.room||'')+' '+(d.cabId||'')+' '+(d.width||'')+' '+(d.height||'')+' '+(d.profileColor||'')+' '+(d.mdfColour||'')+' '+(d.glassType||'')+' '+(d.thickness||'')+'mm '+(d.toughened?'toughened':'standard')).toLowerCase();
     return s.indexOf(_gdSearchQ)!==-1;
   }):doors;
 
@@ -5877,7 +5884,7 @@ function printGlassDoors(){
       '<table><thead><tr><th style="width:26px;">#</th><th>CABINET ID</th><th>SIZE W × H (mm)</th><th>PROFILE COLOUR</th><th>THICKNESS</th><th>GLASS TYPE / COLOUR</th><th>TOUGHENED</th><th>HINGE TYPE</th><th>L / R</th><th>HINGE HOLES FROM TOP (mm)</th></tr></thead><tbody>'+
       ds.map(function(d,i){
         var holes=(d.hingeHoles||[]).filter(function(x){return x>0;});
-        var pc=d.profileColor?d.profileColor.charAt(0).toUpperCase()+d.profileColor.slice(1):'—';
+        var pc=d.profileColor==='mdf'?('MDF'+(d.mdfColour?' — '+esc(d.mdfColour):'')):(d.profileColor?d.profileColor.charAt(0).toUpperCase()+d.profileColor.slice(1):'—');
         return '<tr><td>'+(i+1)+'</td><td class="cab">'+esc(d.cabId||'—')+'</td>'+
           '<td class="big">'+(d.width||0)+' × '+(d.height||0)+'</td>'+
           '<td>'+pc+'</td>'+
@@ -8186,7 +8193,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v336 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v337 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
