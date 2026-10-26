@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v318 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v319 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4695,15 +4695,14 @@ function matItemsHTML(){
   var tb=rows.map(function(r){
     var k=encodeURIComponent(r.key),cell=function(f,ph,list,w,extra){return '<td style="padding:3px;vertical-align:top;"><input value="'+qe(r[f])+'" placeholder="'+ph+'" '+(list?'list="'+list+'" onfocus="matFocus(this)" onblur="matBlur(this)" ':'')+'spellcheck="false" onchange="matCell(\''+k+'\',\''+f+'\',this.value)" style="'+inp+(extra||'')+'"/></td>';};
     return '<tr style="border-bottom:1px solid #e5e7eb;'+(r.print?'':'opacity:.45;')+'background:'+(r.auto?'#f1f8f4':'#fff')+';">'+
-      cell('cat','Category','mat-cats')+cell('vendor','Vendor','mat-vend')+
+      '<td style="padding:3px;vertical-align:top;white-space:nowrap;">'+(r.auto?(r.edited?'<button class="btn btn-outline btn-sm" style="padding:2px 7px;" onclick="matReset(\''+k+'\')" title="Back to the Finishes value">↺</button> ':''):'<button class="btn btn-outline btn-sm" style="padding:2px 7px;color:#b3261e;" onclick="matDelRow(\''+k+'\')" title="Delete this row">🗑</button> ')+'<input type="checkbox" title="Include in print" '+(r.print?'checked ':'')+'onchange="matCell(\''+k+'\',\'print\',this.checked)"/></td>'+cell('cat','Category','mat-cats')+cell('vendor','Vendor','mat-vend')+
       '<td style="padding:3px;vertical-align:top;"><input value="'+qe(r.desc)+'" placeholder="Material description" spellcheck="false" onchange="matCell(\''+k+'\',\'desc\',this.value)" style="'+inp+'font-weight:700;"/>'+(r.spaces.length?'<div style="font-size:10px;color:#6b7280;margin:2px 0 0 2px;">from Finishes · '+esc(r.spaces.join(', '))+'</div>':'')+'</td>'+
       cell('spec','e.g. 2400 x 1800')+'<td style="padding:3px;vertical-align:top;"><select onchange="matCell(\''+k+'\',\'uom\',this.value)" style="'+inp+'font-weight:700;">'+['Sheets','Pieces'].concat(['Sheets','Pieces'].indexOf(r.uom)<0&&r.uom?[r.uom]:[]).map(function(o){return '<option value="'+qe(o)+'"'+(o===r.uom?' selected':'')+'>'+esc(o)+'</option>';}).join('')+'</select></td>'+
       '<td style="padding:3px;vertical-align:top;"><input type="number" min="0" value="'+qe(r.qty)+'" onchange="matCell(\''+k+'\',\'qty\',this.value)" style="'+inp+'text-align:center;font-weight:700;font-family:\'JetBrains Mono\',monospace;"/></td>'+
       cell('comment','Comments')+
-      '<td style="padding:3px;vertical-align:top;white-space:nowrap;"><label style="font-size:11px;cursor:pointer;"><input type="checkbox" '+(r.print?'checked ':'')+'onchange="matCell(\''+k+'\',\'print\',this.checked)"/> Print</label> '+
-      (r.auto?(r.edited?'<button class="btn btn-outline btn-sm" style="padding:1px 6px;" onclick="matReset(\''+k+'\')" title="Back to the Finishes value">↺</button>':''):'<button class="btn btn-outline btn-sm" style="padding:1px 6px;" onclick="matDelRow(\''+k+'\')" title="Delete this row">🗑</button>')+'</td></tr>';}).join('');
-  if(!rows.length)tb='<tr><td colspan="8" style="text-align:center;color:#6b7280;font-size:13px;padding:14px;">No materials yet — add them in Finishes &amp; Appliances ▸ Material Schedule (they appear here automatically) or add a row below.</td></tr>';
-  return dl+'<div style="overflow-x:auto;"><table style="width:100%;min-width:960px;border-collapse:collapse;"><thead><tr>'+th('CATEGORY',120)+th('VENDOR',110)+th('MATERIAL DESCRIPTION')+th('SPECIFICATIONS',130)+th('UOM',80)+th('QTY',70)+th('COMMENTS',180)+th('',90)+'</tr></thead><tbody>'+tb+'</tbody></table></div>'+
+      '</tr>';}).join('');
+  if(!rows.length)tb='<tr><td colspan="9" style="text-align:center;color:#6b7280;font-size:13px;padding:14px;">No materials yet — add them in Finishes &amp; Appliances ▸ Material Schedule (they appear here automatically) or add a row below.</td></tr>';
+  return dl+'<div style="overflow-x:auto;"><table style="width:100%;min-width:960px;border-collapse:collapse;"><thead><tr>'+th('',64)+th('CATEGORY',120)+th('VENDOR',110)+th('MATERIAL DESCRIPTION')+th('SPECIFICATIONS',130)+th('UOM',80)+th('QTY',70)+th('COMMENTS',180)+'</tr></thead><tbody>'+tb+'</tbody></table></div>'+
    '<div style="margin-top:10px;"><button class="btn btn-outline btn-sm" onclick="matAddRow()">➕ Add row (edge tape, glue, other…)</button></div>';
 }
 function matFocus(el){el.dataset.v=el.value;el.value='';}
@@ -4741,15 +4740,16 @@ function thermoHTML(){
     '<input id="th-all-profile" placeholder="Profile (e.g. Shaker 70)" spellcheck="false" style="flex:1;min-width:150px;padding:6px 9px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/>'+
     '<input id="th-all-finish" placeholder="Material / finish (e.g. Bonlex White Matt)" spellcheck="false" style="flex:1;min-width:170px;padding:6px 9px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/>'+
     '<button class="btn btn-outline btn-sm" onclick="thFillAll()">Apply to empty rows</button></div>';
-  var tb=L.rows.map(function(r){return '<tr style="border-bottom:1px solid #e5e7eb;'+(r.print===false?'opacity:.45;':'')+(r.src?'background:#f1f8f4;':'')+'">'+cell(r,'cab','Cabinet')+cell(r,'name','Door')+cell(r,'profile','Profile')+cell(r,'finish','Material / finish')+cell(r,'h','H',true)+cell(r,'w','W',true)+cell(r,'qty','Qty',true,'text-align:center;font-weight:700;')+cell(r,'comment','Comments')+
-    '<td style="padding:3px;white-space:nowrap;vertical-align:top;"><label style="font-size:11px;cursor:pointer;"><input type="checkbox" '+(r.print===false?'':'checked ')+'onchange="thSet(\''+qe(r.id)+'\',\'print\',this.checked)"/> Print</label> <button class="btn btn-outline btn-sm" style="padding:1px 6px;" onclick="thDel(\''+qe(r.id)+'\')" title="Delete this row">🗑</button></td></tr>';}).join('');
-  if(!L.rows.length)tb='<tr><td colspan="9" style="text-align:center;color:#6b7280;font-size:13px;padding:14px;">No doors yet — load the thermolaminate Excel file above, or add a row below.</td></tr>';
-  return bar+'<div style="overflow-x:auto;"><table style="width:100%;min-width:980px;border-collapse:collapse;"><thead><tr>'+th('CABINET',90)+th('DOOR',150)+th('PROFILE',140)+th('MATERIAL / FINISH')+th('H',70)+th('W',70)+th('QTY',60)+th('COMMENTS',150)+th('',100)+'</tr></thead><tbody>'+tb+'</tbody></table></div>'+
-    '<div style="margin-top:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><button class="btn btn-outline btn-sm" onclick="thAdd()">➕ Add door row</button><b style="font-size:13px;color:#2f4b8f;">Total to print: '+tot+'</b></div>';
+  var tb=L.rows.map(function(r){return '<tr style="border-bottom:1px solid #e5e7eb;'+(r.print===false?'opacity:.45;':'')+(r.src?'background:#f1f8f4;':'')+'"><td style="padding:3px;white-space:nowrap;vertical-align:top;"><button class="btn btn-outline btn-sm" style="padding:2px 7px;color:#b3261e;" onclick="thDel(\''+qe(r.id)+'\')" title="Delete this row">🗑</button> <input type="checkbox" title="Include in print" '+(r.print===false?'':'checked ')+'onchange="thSet(\''+qe(r.id)+'\',\'print\',this.checked)"/></td>'+cell(r,'cab','Cabinet')+cell(r,'name','Door')+cell(r,'profile','Profile')+cell(r,'finish','Material / finish')+cell(r,'h','H',true)+cell(r,'w','W',true)+cell(r,'qty','Qty',true,'text-align:center;font-weight:700;')+cell(r,'comment','Comments')+
+    '</tr>';}).join('');
+  if(!L.rows.length)tb='<tr><td colspan="10" style="text-align:center;color:#6b7280;font-size:13px;padding:14px;">No doors yet — load the thermolaminate Excel file above, or add a row below.</td></tr>';
+  return bar+'<div style="overflow-x:auto;"><table style="width:100%;min-width:980px;border-collapse:collapse;"><thead><tr>'+th('',64)+th('CABINET',90)+th('DOOR',150)+th('PROFILE',140)+th('MATERIAL / FINISH')+th('H',70)+th('W',70)+th('QTY',60)+th('COMMENTS',150)+'</tr></thead><tbody>'+tb+'</tbody></table></div>'+
+    '<div style="margin-top:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><button class="btn btn-outline btn-sm" onclick="thAdd()">➕ Add door row</button>'+(L.rows.length?'<button class="btn btn-outline btn-sm" style="color:#b3261e;" onclick="thClear()">🗑 Delete all rows</button>':'')+'<b style="font-size:13px;color:#2f4b8f;">Total to print: '+tot+'</b></div>';
 }
 function thAdd(){_thLay().rows.push({id:_matId(),cab:'',name:'',profile:'',finish:'',h:'',w:'',qty:1,comment:'',print:true});saveData();renderHardware();}
 function thSet(id,f,v){var r=_thLay().rows.find(function(x){return x.id===id;});if(!r)return;if(f==='print')r.print=!!v;else if(f==='qty'||f==='h'||f==='w')r[f]=(v===''?'':Number(v));else r[f]=String(v||'').trim();saveData();renderHardware();}
 function thDel(id){if(!confirm('Delete this row?'))return;var L=_thLay();L.rows=L.rows.filter(function(x){return x.id!==id;});saveData();renderHardware();}
+function thClear(){var L=_thLay();if(!L.rows.length||!confirm('Delete ALL '+L.rows.length+' door rows?'))return;L.rows=[];saveData();renderHardware();}
 function thFillAll(){var p=(document.getElementById('th-all-profile')||{}).value||'',f=(document.getElementById('th-all-finish')||{}).value||'';p=p.trim();f=f.trim();
   if(!p&&!f){showMsg('Type a profile and/or a material first');return;}var n=0;
   _thLay().rows.forEach(function(r){var c=false;if(p&&!r.profile){r.profile=p;c=true;}if(f&&!r.finish){r.finish=f;c=true;}if(c)n++;});
@@ -8178,7 +8178,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v318 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v319 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
