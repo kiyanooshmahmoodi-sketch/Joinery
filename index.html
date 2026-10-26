@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v334 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v335 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -5849,165 +5849,46 @@ function printStecca(){
 
 function printGlassDoors(){
   var doors=glassDoors.slice();
-  var noColor=doors.filter(function(d){return!d.profileColor;}).length;
-  var noType=doors.filter(function(d){return!d.glassType;}).length;
-  var noThk=doors.filter(function(d){return!d.thickness;}).length;
-  var toughCount=doors.filter(function(d){return d.toughened;}).length;
-  var totalArea=doors.reduce(function(s,d){return s+((parseInt(d.width)||0)*(parseInt(d.height)||0));},0);
-  var totalSqm=Math.round(totalArea/10000)/100;
-  var incomplete=noColor+noType+noThk;
-  var proj=document.getElementById('proj-input').value||'Project';
+  var esc=function(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+  var proj=esc(document.getElementById('proj-input').value||'Project');
   var date=new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});
-  var time=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
-
-  // Group by room
   var byRoom={};
-  doors.forEach(function(d){var room=d.room||'No Room';if(!byRoom[room])byRoom[room]=[];byRoom[room].push(d);});
-
-  // Group by color
-  var byColor={black:[],white:[],gold:[],silver:[],none:[]};
-  doors.forEach(function(d){var c=d.profileColor||'none';if(byColor[c])byColor[c].push(d);});
-
-  // Group by glass type
-  var byType={};
-  doors.forEach(function(d){var t=d.glassType||'⚠ Unset';if(!byType[t])byType[t]={count:0,tough:0};byType[t].count++;if(d.toughened)byType[t].tough++;});
-
-  // Group by thickness
-  var byThk={4:0,6:0,unset:0};
-  doors.forEach(function(d){if(d.thickness===4)byThk[4]++;else if(d.thickness===6)byThk[6]++;else byThk.unset++;});
-
+  doors.forEach(function(d){var r=d.room||'No Room';(byRoom[r]=byRoom[r]||[]).push(d);});
+  var rk=Object.keys(byRoom).sort(function(a,b){return (parseInt(String(a).replace(/\D/g,''))||0)-(parseInt(String(b).replace(/\D/g,''))||0);});
   var win=window.open('','_blank');
   var html='<!DOCTYPE html><html><head><title>Glass Doors — '+proj+'</title><style>'+
-    'body{font-family:Arial,sans-serif;padding:24px;color:#0f172a;max-width:1100px;margin:0 auto;}'+
-    'h1{color:#0ea5e9;margin-bottom:4px;font-size:24px;}'+
-    'h2{color:#1e293b;margin:22px 0 8px;font-size:14px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid #e2e8f0;padding-bottom:6px;display:flex;justify-content:space-between;align-items:center;}'+
-    'h3{color:#475569;margin:14px 0 6px;font-size:12px;letter-spacing:1px;font-weight:700;}'+
-    '.cat-total{font-family:monospace;font-size:13px;color:#8b5cf6;font-weight:800;text-transform:none;}'+
-    '.meta{font-size:13px;color:#64748b;margin-bottom:18px;}'+
-    '.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}'+
-    '.sbox{padding:14px;border:1px solid #e2e8f0;border-radius:10px;text-align:center;border-top:3px solid;background:#fff;}'+
-    '.sbox-n{font-size:24px;font-weight:800;font-family:monospace;line-height:1;}'+
-    '.sbox-l{font-size:10px;color:#64748b;margin-top:5px;letter-spacing:1px;font-weight:700;text-transform:uppercase;}'+
-    'table{width:100%;border-collapse:collapse;margin-bottom:14px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;}'+
-    'th{background:#f8fafc;padding:9px 10px;text-align:left;font-size:10px;letter-spacing:1px;color:#64748b;border-bottom:2px solid #e2e8f0;font-weight:700;}'+
-    'td{padding:8px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;}'+
-    'tr:last-child td{border-bottom:none;}'+
-    '.cabid{font-weight:800;color:#0ea5e9;font-family:monospace;}'+
-    '.dim{font-weight:800;font-family:monospace;text-align:center;font-size:13px;}'+
-    '.thk{font-weight:800;font-family:monospace;text-align:center;color:#0e7490;background:#ecfeff;padding:3px 9px;border-radius:6px;display:inline-block;font-size:11px;}'+
-    '.thk.unset{color:#991b1b;background:#fef2f2;}'+
-    '.color-tag{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;}'+
-    '.color-tag::before{content:"";width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15);}'+
-    '.ct-black{background:#1f2937;color:#fff;}.ct-black::before{background:#1f2937;border-color:#475569;}'+
-    '.ct-white{background:#f1f5f9;color:#0f172a;border:1px solid #cbd5e1;}.ct-white::before{background:#fff;}'+
-    '.ct-gold{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#78350f;}.ct-gold::before{background:linear-gradient(135deg,#f4cf60,#c9a04e);}'+
-    '.ct-silver{background:#f1f5f9;color:#334155;}.ct-silver::before{background:linear-gradient(135deg,#d1d5db,#9ca3af);}'+
-    '.ct-none{background:#fef2f2;color:#991b1b;font-weight:700;}.ct-none::before{display:none;}'+
-    '.type-tag{background:#ecfeff;color:#0e7490;padding:2px 9px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;display:inline-block;}'+
-    '.type-tag.unset{background:#fef2f2;color:#991b1b;}'+
-    '.tough-tag{padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;display:inline-block;}'+
-    '.tough-yes{background:#dcfce7;color:#15803d;border:1px solid #86efac;}'+
-    '.tough-no{background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;}'+
-    '.empty{text-align:center;padding:50px 20px;color:#94a3b8;background:#fff;border:1px dashed #cbd5e1;border-radius:10px;}'+
-    '.warn{background:#fef3c7;border:1px solid #fde68a;color:#78350f;padding:9px 14px;border-radius:8px;font-size:12px;margin-bottom:14px;font-weight:600;}'+
-    '.color-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px;}'+
-    '.csum{padding:10px;border-radius:8px;text-align:center;border:1px solid #e2e8f0;background:#fff;}'+
-    '.csum-n{font-size:20px;font-weight:800;font-family:monospace;line-height:1;}'+
-    '.csum-l{font-size:9px;letter-spacing:.5px;font-weight:700;text-transform:uppercase;color:#64748b;margin-top:4px;}'+
-    'button{padding:10px 20px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;cursor:pointer;margin-bottom:18px;font-size:13px;font-weight:600;}'+
-    'button:hover{background:#0284c7;}'+
-    '@media print{button{display:none!important;}body{padding:14px;max-width:100%;}h1{font-size:20px;}table{page-break-inside:auto;font-size:11px;}tr{page-break-inside:avoid;}}'+
+    'body{font-family:Arial,sans-serif;padding:20px;color:#0f172a;}'+
+    'h1{font-size:22px;margin:0 0 4px;}.meta{font-size:12px;color:#475569;margin-bottom:14px;}'+
+    'h2{font-size:13px;margin:16px 0 6px;padding:5px 10px;background:#e8eef7;border-radius:4px;letter-spacing:.5px;}'+
+    'table{width:100%;border-collapse:collapse;margin-bottom:8px;}'+
+    'th{background:#f1f5f9;border:1px solid #94a3b8;padding:6px 6px;font-size:10px;letter-spacing:.5px;text-align:center;}'+
+    'td{border:1px solid #94a3b8;padding:7px 6px;font-size:12px;text-align:center;vertical-align:middle;}'+
+    '.cab{font-weight:800;font-size:13px;font-family:monospace;}.big{font-weight:800;font-family:monospace;font-size:13px;white-space:nowrap;}'+
+    '.tough{font-weight:800;}.holes{font-family:monospace;font-weight:800;font-size:13px;}'+
+    'button{padding:9px 18px;background:#0ea5e9;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-bottom:14px;font-size:13px;font-weight:600;}'+
+    '@media print{button{display:none!important;}body{padding:8px;}tr{page-break-inside:avoid;}}'+
     '</style></head><body>'+
-    '<h1>🪟 Glass Door List</h1>'+
-    '<div class="meta">Project: <b>'+proj+'</b> &nbsp;|&nbsp; Date: '+date+' '+time+'</div>'+
-    '<button onclick="window.print()">🖨️ Print This List</button>';
-
-  // Top stats
-  html+='<div class="summary">'+
-    '<div class="sbox" style="border-color:#0ea5e9;"><div class="sbox-n" style="color:#0ea5e9;">'+doors.length+'</div><div class="sbox-l">Total Doors</div></div>'+
-    '<div class="sbox" style="border-color:#8b5cf6;"><div class="sbox-n" style="color:#8b5cf6;">'+totalSqm+'m²</div><div class="sbox-l">Glass Area</div></div>'+
-    '<div class="sbox" style="border-color:#10b981;"><div class="sbox-n" style="color:#10b981;">'+toughCount+'</div><div class="sbox-l">🛡️ Toughened</div></div>'+
-    '<div class="sbox" style="border-color:'+(incomplete>0?'#ef4444':'#22c55e')+';"><div class="sbox-n" style="color:'+(incomplete>0?'#ef4444':'#22c55e')+';">'+incomplete+'</div><div class="sbox-l">Incomplete</div></div>'+
-  '</div>';
-
-  if(!doors.length){
-    html+='<div class="empty"><div style="font-size:48px;margin-bottom:14px;">🪟</div><div style="font-size:15px;font-weight:700;color:#64748b;">No glass doors</div></div>';
-  }else{
-    if(incomplete>0){
-      var bits=[];
-      if(noColor>0)bits.push(noColor+' missing profile color');
-      if(noThk>0)bits.push(noThk+' missing thickness');
-      if(noType>0)bits.push(noType+' missing glass type');
-      html+='<div class="warn">⚠️ '+bits.join(' · ')+' — please complete before printing.</div>';
-    }
-
-    // Profile color summary
-    html+='<h3>Profile Color Summary</h3><div class="color-summary">';
-    ['black','white','gold','silver','none'].forEach(function(c){
-      var n=byColor[c].length;
-      var lbl=c==='none'?'⚠ Unset':c.charAt(0).toUpperCase()+c.slice(1);
-      var col=c==='none'?'#ef4444':(c==='black'?'#1f2937':(c==='white'?'#64748b':(c==='gold'?'#c9a04e':'#9ca3af')));
-      html+='<div class="csum" style="border-color:'+col+';"><div class="csum-n" style="color:'+col+';">'+n+'</div><div class="csum-l">'+lbl+'</div></div>';
-    });
-    html+='</div>';
-
-    // Thickness summary
-    html+='<h3>Thickness Summary</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;">'+
-      '<div class="csum" style="border-color:#06b6d4;"><div class="csum-n" style="color:#06b6d4;">'+byThk[4]+'</div><div class="csum-l">4mm</div></div>'+
-      '<div class="csum" style="border-color:#0e7490;"><div class="csum-n" style="color:#0e7490;">'+byThk[6]+'</div><div class="csum-l">6mm</div></div>'+
-      '<div class="csum" style="border-color:'+(byThk.unset>0?'#ef4444':'#22c55e')+';"><div class="csum-n" style="color:'+(byThk.unset>0?'#ef4444':'#22c55e')+';">'+byThk.unset+'</div><div class="csum-l">⚠ Unset</div></div>'+
-    '</div>';
-
-    // Glass type summary
-    html+='<h3>Glass Type Summary</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:18px;">';
-    Object.keys(byType).sort().forEach(function(t){
-      var d=byType[t];
-      var unset=t.indexOf('Unset')!==-1;
-      var col=unset?'#ef4444':'#06b6d4';
-      var sub=d.tough>0?'<div style="font-size:9px;color:#10b981;margin-top:2px;font-weight:700;">🛡️ '+d.tough+' toughened</div>':'';
-      html+='<div class="csum" style="border-color:'+col+';"><div class="csum-n" style="color:'+col+';">'+d.count+'</div><div class="csum-l">'+t+'</div>'+sub+'</div>';
-    });
-    html+='</div>';
-
-    // Detail by room
-    html+='<h3>Detail List by Room</h3>';
-    Object.keys(byRoom).sort().forEach(function(room){
-      var ds=byRoom[room];
-      var roomArea=ds.reduce(function(s,d){return s+((parseInt(d.width)||0)*(parseInt(d.height)||0));},0);
-      var roomSqm=Math.round(roomArea/10000)/100;
-      html+='<h3 style="background:#eff6ff;color:#1e40af;padding:7px 12px;border-radius:6px;display:flex;justify-content:space-between;"><span>🏠 Room '+room.replace('R','')+' — '+ds.length+' doors</span><span style="color:#8b5cf6;font-family:monospace;">'+roomSqm+'m²</span></h3>'+
-        '<table><thead><tr>'+
-          '<th style="width:30px;">#</th>'+
-          '<th>CABINET</th>'+
-          '<th style="width:115px;text-align:center;">W × H</th>'+
-          '<th style="width:90px;text-align:center;">THICK</th>'+
-          '<th>PROFILE</th>'+
-          '<th>GLASS TYPE</th>'+
-          '<th style="width:130px;">CUT TYPE</th>'+
-          '<th style="width:115px;text-align:center;">TOUGHENED</th>'+
-        '</tr></thead><tbody>'+
-        ds.map(function(d,i){
-          var ctag=d.profileColor?'<span class="color-tag ct-'+d.profileColor+'">'+d.profileColor.charAt(0).toUpperCase()+d.profileColor.slice(1)+'</span>':'<span class="color-tag ct-none">⚠ Not Set</span>';
-          var ttag=d.glassType?'<span class="type-tag">'+d.glassType+'</span>':'<span class="type-tag unset">⚠ Not Set</span>';
-          var thkTag=d.thickness?'<span class="thk">'+d.thickness+'mm</span>':'<span class="thk unset">⚠ Unset</span>';
-          var cutTag=d.cutType?'<span class="type-tag" style="background:#0284c7;color:#fff;">'+d.cutType+'</span>':'<span class="type-tag unset">⚠ Not Set</span>';
-          var toughTag=d.toughened?'<span class="tough-tag tough-yes">✓ Toughened</span>':'<span class="tough-tag tough-no">Standard</span>';
-          var dim=(d.width||0)+'×'+(d.height||0)+'mm';
-          return'<tr>'+
-            '<td style="color:#94a3b8;font-family:monospace;">'+(i+1)+'</td>'+
-            '<td class="cabid">'+(d.cabId||'—')+'</td>'+
-            '<td class="dim">'+dim+'</td>'+
-            '<td style="text-align:center;">'+thkTag+'</td>'+
-            '<td>'+ctag+'</td>'+
-            '<td>'+ttag+'</td>'+
-            '<td>'+cutTag+'</td>'+
-            '<td style="text-align:center;">'+toughTag+'</td>'+
-          '</tr>';
-        }).join('')+
-      '</tbody></table>';
-    });
-  }
-
+    '<h1>Glass Door List</h1><div class="meta">Project: <b>'+proj+'</b> &nbsp;|&nbsp; '+date+' &nbsp;|&nbsp; '+doors.length+' doors</div>'+
+    '<button onclick="window.print()">Print This List</button>';
+  if(!doors.length)html+='<p>No glass doors.</p>';
+  rk.forEach(function(room){
+    var ds=byRoom[room];
+    html+='<h2>ROOM '+esc(String(room).replace(/^R/i,''))+' — '+ds.length+' door'+(ds.length>1?'s':'')+'</h2>'+
+      '<table><thead><tr><th style="width:26px;">#</th><th>CABINET ID</th><th>SIZE W × H (mm)</th><th>PROFILE COLOUR</th><th>THICKNESS</th><th>GLASS TYPE / COLOUR</th><th>TOUGHENED</th><th>HINGE TYPE</th><th>L / R</th><th>HINGE HOLES FROM TOP (mm)</th></tr></thead><tbody>'+
+      ds.map(function(d,i){
+        var holes=(d.hingeHoles||[]).filter(function(x){return x>0;});
+        var pc=d.profileColor?d.profileColor.charAt(0).toUpperCase()+d.profileColor.slice(1):'—';
+        return '<tr><td>'+(i+1)+'</td><td class="cab">'+esc(d.cabId||'—')+'</td>'+
+          '<td class="big">'+(d.width||0)+' × '+(d.height||0)+'</td>'+
+          '<td>'+pc+'</td>'+
+          '<td class="big">'+(d.thickness?d.thickness+'mm':'—')+'</td>'+
+          '<td>'+esc(d.glassType||'—')+'</td>'+
+          '<td class="tough">'+(d.toughened?'TOUGHENED':'Standard')+'</td>'+
+          '<td>'+esc(d.hingeType||'—')+'</td>'+
+          '<td class="big">'+(d.hingeSide?d.hingeSide.toUpperCase():'—')+'</td>'+
+          '<td class="holes">'+(holes.length?holes.join(' · ')+'<div style="font-size:9px;color:#64748b;font-weight:400;font-family:Arial;">'+holes.length+' hinge'+(holes.length>1?'s':'')+'</div>':'—')+'</td></tr>';
+      }).join('')+'</tbody></table>';
+  });
   html+='</body></html>';
   win.document.write(html);
   win.document.close();
@@ -8305,7 +8186,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v334 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v335 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
