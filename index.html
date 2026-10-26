@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v329 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v330 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -5598,7 +5598,6 @@ function renderGlassDoors(){
           '<th style="width:170px;">GLASS TYPE</th>'+
           '<th style="width:170px;">CUT TYPE</th>'+
           '<th style="width:130px;">TOUGHENED</th>'+
-          '<th style="width:140px;">📋 ORDER STATUS</th>'+
           '<th style="width:50px;text-align:center;">⛌</th>'+
         '</tr></thead><tbody>'+
         ds.map(function(d,i){
@@ -5625,7 +5624,6 @@ function renderGlassDoors(){
             '<td>'+glassTypePickerHTML(d.id,d.glassType)+'</td>'+
             '<td>'+cutPickerHTML(d.id,d.cutType)+(d.cutType?'':'<div style="font-size:10px;color:#9a6618;font-weight:700;margin-top:4px;">⚠ Pick cut</div>')+'</td>'+
             '<td>'+toughenedTogglerHTML(d.id,d.toughened)+'</td>'+
-            '<td>'+workflowButtonsHTML('glass',d.id,d.workflow)+'</td>'+
             '<td style="text-align:center;"><button onclick="deleteGlassDoor(\''+d.id+'\')" style="background:#f6e0dc;color:#b4412f;border:none;padding:5px 10px;border-radius:5px;font-size:13px;cursor:pointer;font-weight:700;" title="Delete this glass door">×</button></td>'+
           '</tr>';
         }).join('')+
@@ -8270,7 +8268,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v329 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v330 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
