@@ -1045,7 +1045,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v330 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v331 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1261,8 +1261,6 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Set the thickness, frame colour, glass type, and toughened state using the buttons on the row after adding.</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;">
-      <input id="gdm-name" placeholder="Part name (required)" style="padding:8px 10px;font-size:13px;"/>
-      <input id="gdm-room" placeholder="Room (e.g., R1)" style="padding:8px 10px;font-size:13px;"/>
       <input id="gdm-cabid" placeholder="Cabinet ID (e.g., R1C107)" style="padding:8px 10px;font-size:13px;"/>
       <input id="gdm-w" type="number" placeholder="Width (mm)" style="padding:8px 10px;font-size:13px;"/>
       <input id="gdm-h" type="number" placeholder="Height (mm)" style="padding:8px 10px;font-size:13px;"/>
@@ -5484,12 +5482,12 @@ function gdLoadExcel(files,mode){
     };rd.readAsArrayBuffer(file);});
 }
 function addManualGlassDoor(){
-  var name=document.getElementById('gdm-name').value.trim();
-  var room=document.getElementById('gdm-room').value.trim();
   var cabId=document.getElementById('gdm-cabid').value.trim();
+  var name='Glass Door';
+  var _rm=/^(R\d+)/i.exec(cabId);var room=_rm?_rm[1].toUpperCase():'';
   var w=parseInt(document.getElementById('gdm-w').value)||0;
   var h=parseInt(document.getElementById('gdm-h').value)||0;
-  if(!name){alert('Part name is required');return;}
+  if(!cabId){alert('Cabinet ID is required');return;}
   // Thickness, frame colour, glass type, and toughened are all set later
   // via the existing row pickers (same UI as imported glass doors).
   glassDoors.push({
@@ -5500,7 +5498,7 @@ function addManualGlassDoor(){
     source:'manual'
   });
   // Clear the form
-  ['gdm-name','gdm-room','gdm-cabid','gdm-w','gdm-h'].forEach(function(id){
+  ['gdm-cabid','gdm-w','gdm-h'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.value='';
   });
   renderGlassDoors();saveData();
@@ -8268,7 +8266,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v330 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v331 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
