@@ -1048,7 +1048,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v339 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v340 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4604,12 +4604,12 @@ function hwMigrateComments(){
 function hwItemsHTML(){
   hwMigrateComments();
   var its=hwItems(),lay=_hwLay();
-  return its.map(function(it,i){
+  return hwNamesDL()+its.map(function(it,i){
     var off=!!lay.hidden[it.key],k=qe(it.key).replace(/'/g,"&#39;");
     return '<div style="display:flex;gap:12px;align-items:flex-start;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-left:4px solid '+(it.key==='pto'?'#a3506b':'#2f7d5b')+';border-radius:8px;padding:10px 14px;margin-bottom:8px;'+(off?'opacity:.45;':'')+'">'+
       '<div style="flex:1;min-width:0;">'+
         (true
-          ?'<div style="font-size:10px;font-weight:700;color:#6b7280;margin-bottom:3px;">HARDWARE NAME &nbsp;·&nbsp; TOTAL</div><div style="display:flex;gap:8px;align-items:center;"><input value="'+qe(it.title)+'" placeholder="Hardware name" spellcheck="false" onchange="hwSet(\''+k+'\',\'name\',this.value)" style="flex:1;min-width:0;padding:6px 9px;font-size:13px;font-weight:700;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/><input type="number" min="0" value="'+qe(it.total)+'" onchange="hwSet(\''+k+'\',\'qty\',this.value)" style="width:80px;padding:6px 8px;font-size:15px;font-weight:700;text-align:center;border:1px solid #d1d5db;border-radius:6px;font-family:\'JetBrains Mono\',monospace;"/></div>'
+          ?'<div style="font-size:10px;font-weight:700;color:#6b7280;margin-bottom:3px;">HARDWARE NAME &nbsp;·&nbsp; PURCHASE LINK &nbsp;·&nbsp; TOTAL</div><div style="display:flex;gap:8px;align-items:center;"><input value="'+qe(it.title)+'" list="hw-names-dl" placeholder="Hardware name ▾" title="Pick from the list or type your own" spellcheck="false" onfocus="hwNameFocus(this)" onblur="hwNameBlur(this)" onchange="hwSet(\''+k+'\',\'name\',this.value)" style="flex:1;min-width:0;padding:6px 9px;font-size:13px;font-weight:700;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/><input type="url" value="'+qe((lay.links&&lay.links[it.key])||'')+'" placeholder="🔗 Paste purchase link" spellcheck="false" onchange="hwSetLink(\''+k+'\',this.value)" style="flex:1;min-width:0;padding:6px 9px;font-size:12px;color:#2f4b8f;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/>'+((lay.links&&lay.links[it.key])||''?'<button class="btn btn-outline btn-sm" style="padding:3px 7px;" onclick="hwCopyLink(\''+k+'\')" title="Copy link">📋</button><button class="btn btn-outline btn-sm" style="padding:3px 7px;" onclick="hwOpenLink(\''+k+'\')" title="Open link">↗</button>':'')+'<input type="number" min="0" value="'+qe(it.total)+'" onchange="hwSet(\''+k+'\',\'qty\',this.value)" style="width:80px;padding:6px 8px;font-size:15px;font-weight:700;text-align:center;border:1px solid #d1d5db;border-radius:6px;font-family:\'JetBrains Mono\',monospace;"/></div>'
           :'<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;"><span style="font-size:14px;font-weight:700;color:#1f2937;">'+esc(it.title)+(it.edited?' <span style="font-size:10px;font-weight:700;color:#b7791f;background:#f6ecd5;border-radius:4px;padding:1px 5px;">edited</span>':'')+'</span><span style="font-size:20px;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:#2f4b8f;">'+it.total+'</span></div>')+
         (it.note?'<div style="font-size:12px;color:#6b7280;margin-top:3px;">'+esc(it.note)+'</div>':'')+
         it.subs.map(function(r,j){var sty='padding:4px 8px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;';return '<div style="display:flex;gap:6px;align-items:center;margin-top:5px;padding-left:10px;flex-wrap:wrap;"><input value="'+qe(r.name)+'" placeholder="Size / name (e.g. Hinge 110)" spellcheck="false" onchange="hwSet(\''+k+'\',\'subname\',this.value,'+j+')" style="flex:2;min-width:120px;'+sty+'"/><input value="'+qe(r.model||'')+'" placeholder="Model (e.g. Blum)" spellcheck="false" onchange="hwSet(\''+k+'\',\'submodel\',this.value,'+j+')" style="flex:1.5;min-width:90px;color:#2f4b8f;font-weight:600;'+sty+'"/><input type="number" min="0" value="'+qe(r.n)+'" onchange="hwSet(\''+k+'\',\'subqty\',this.value,'+j+')" style="width:64px;padding:4px 6px;font-size:13px;font-weight:700;text-align:center;border:1px solid #d1d5db;border-radius:6px;font-family:\'JetBrains Mono\',monospace;"/>'+(r.manual?'<button class="btn btn-outline btn-sm" style="padding:2px 7px;" onclick="hwDelSub(\''+k+'\','+j+')" title="Remove this row">🗑</button>':'')+'</div>';}).join('')+
@@ -4625,13 +4625,38 @@ function hwItemsHTML(){
   }).join('')+
   '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;padding:10px 12px;border:1px dashed #9fb2dc;border-radius:8px;background:#f6f7fb;">'+
     '<b style="font-size:12px;color:#2f4b8f;">➕ Add hardware item</b>'+
-    '<input id="hw-add-name" placeholder="Name / model (e.g. Handle 128)" spellcheck="false" style="flex:1;min-width:180px;padding:7px 10px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/>'+
+    '<input id="hw-add-name" list="hw-names-dl" placeholder="Pick ▾ or type a name (e.g. Handle 128)" spellcheck="false" style="flex:1;min-width:180px;padding:7px 10px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/>'+
     '<input id="hw-add-qty" type="number" min="0" placeholder="Qty" style="width:80px;padding:7px 8px;font-size:13px;text-align:center;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/>'+
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
+// ===== v340: Hardware name defaults list + purchase link =====
+var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
+var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
+function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
+function hwNamesDL(){if(!_hwNamesLoaded){_hwNamesLoaded=true;hwNamesLoad();}return '<datalist id="hw-names-dl">'+hwNamesAll().map(function(n){return '<option value="'+qe(n)+'">';}).join('')+'</datalist>';}
+function hwNamesRefreshDL(){var d=document.getElementById('hw-names-dl');if(d)d.innerHTML=hwNamesAll().map(function(n){return '<option value="'+qe(n)+'">';}).join('');}
+function hwNamesLoad(){
+  try{window.storage.get('cbk-hw-names').then(function(r){if(r&&r.value){try{var o=JSON.parse(r.value);if(Array.isArray(o))HW_NAME_CUSTOM=o;}catch(e){}hwNamesRefreshDL();}});}catch(e){}
+  try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('settings').doc('hwnames').get().then(function(d){if(d.exists&&Array.isArray(d.data().list)){HW_NAME_CUSTOM=d.data().list;try{window.storage.set('cbk-hw-names',JSON.stringify(HW_NAME_CUSTOM));}catch(e){}hwNamesRefreshDL();}}).catch(function(){});}catch(e){}}
+function hwNameRemember(v){v=String(v||'').trim().replace(/^🔘\s*/,'');if(!v)return;var l=v.toLowerCase();if(hwNamesAll().some(function(n){return n.toLowerCase()===l;}))return;HW_NAME_CUSTOM.push(v);
+  try{window.storage.set('cbk-hw-names',JSON.stringify(HW_NAME_CUSTOM));}catch(e){}
+  try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('settings').doc('hwnames').set({list:HW_NAME_CUSTOM}).catch(function(){});}catch(e){}
+  hwNamesRefreshDL();}
+// show the full list on tap (a filled box would otherwise only suggest matching names)
+function hwNameFocus(el){el.dataset.v=el.value;el.placeholder=el.value||'Hardware name ▾';el.value='';}
+function hwNameBlur(el){if(el.value===''&&el.dataset.v!==undefined)el.value=el.dataset.v;}
+function hwSetLink(key,val){key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();if(!lay.links)lay.links={};val=String(val||'').trim();if(val&&!/^https?:\/\//i.test(val))val='https://'+val;if(val)lay.links[key]=val;else delete lay.links[key];saveData();renderHardware();if(val)showMsg('✓ Link saved');}
+function hwGetLink(key){key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();return (lay.links&&lay.links[key])||'';}
+function hwCopyLink(key){var u=hwGetLink(key);if(!u)return;
+  var done=function(){showMsg('✓ Link copied');};
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(done,function(){hwCopyFallback(u);done();});return;}}catch(e){}
+  hwCopyFallback(u);done();}
+function hwCopyFallback(u){var t=document.createElement('textarea');t.value=u;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(t);}
+function hwOpenLink(key){var u=hwGetLink(key);if(u)window.open(u,'_blank','noopener');}
 function hwSet(key,field,val,j){
   key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();
+  if(field==='name')hwNameRemember(val);
   if(field==='subname'||field==='subqty'||field==='submodel'){
     var it=hwItems().find(function(x){return x.key===key;});if(!it||!it.subs[j])return;
     if(it.subs[j].manual){var m=(lay.msubs[key]||[]).find(function(x){return x.id===it.subs[j].mid;});if(m){if(field==='subname')m.name=String(val||'').trim();else if(field==='submodel')m.model=String(val||'').trim();else m.qty=(val===''?0:Number(val));saveData();renderHardware();}return;}
@@ -4652,12 +4677,12 @@ function hwReset(key){key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();del
 function hwAddCustom(){
   var n=document.getElementById('hw-add-name'),q=document.getElementById('hw-add-qty');var name=(n&&n.value||'').trim();
   if(!name){showMsg('Type the item name first');if(n)n.focus();return;}
-  var lay=_hwLay();lay.custom.push({id:Date.now().toString(36)+Math.floor(Math.random()*1000).toString(36),name:name,qty:(q&&q.value!=='')?Number(q.value):1});
+  hwNameRemember(name);  var lay=_hwLay();lay.custom.push({id:Date.now().toString(36)+Math.floor(Math.random()*1000).toString(36),name:name,qty:(q&&q.value!=='')?Number(q.value):1});
   saveData();renderHardware();showMsg('✓ Hardware item added');
 }
 function hwDelCustom(key){
   key=String(key).replace(/&#39;/g,"'");if(!confirm('Delete this hardware item?'))return;var lay=_hwLay();
-  lay.custom=lay.custom.filter(function(x){return 'c:'+x.id!==key;});lay.order=lay.order.filter(function(x){return x!==key;});delete lay.hidden[key];delete lay.comments[key];
+  lay.custom=lay.custom.filter(function(x){return 'c:'+x.id!==key;});lay.order=lay.order.filter(function(x){return x!==key;});delete lay.hidden[key];delete lay.comments[key];if(lay.links)delete lay.links[key];
   saveData();renderHardware();
 }
 function hwMove(key,dir){
@@ -8266,7 +8291,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v339 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v340 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
