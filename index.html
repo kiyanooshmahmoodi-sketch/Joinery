@@ -1048,7 +1048,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v342 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v343 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1105,7 +1105,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="tab" onclick="showTab('drawings',this)">📐 Drawings</div>
 </div>
 <div class="content" id="cabinetlist-content">
-<!-- v342: JOBS HOME — every job, its stage and client details -->
+<!-- v343: JOBS HOME — every job, its stage and client details -->
 <div class="panel active" id="panel-jobs">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
     <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every project from interior design to completed. The stage moves by itself when QC, Dispatch or Installation start scanning.</div></div>
@@ -4642,7 +4642,7 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-// ===== v342: Hardware name defaults list + purchase link =====
+// ===== v343: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
 function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
@@ -8305,7 +8305,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v342 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v343 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9692,9 +9692,9 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
-// ===== v342: JOBS HOME =====
-var JH_STAGES=[{k:'design',t:'Interior Design',i:'🎨',c:'#6b4c93'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qc',t:'QC',i:'✅',c:'#0e7c86'},{k:'dispatch',t:'Dispatch',i:'📦',c:'#9a5b13'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
-// v342: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
+// ===== v343: JOBS HOME =====
+var JH_STAGES=[{k:'design',t:'Interior Design',i:'🎨',c:'#6b4c93'},{k:'drafting',t:'Drafting',i:'📐',c:'#a3506b'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qc',t:'QC',i:'✅',c:'#0e7c86'},{k:'dispatch',t:'Dispatch',i:'📦',c:'#9a5b13'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
+// v343: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
 function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
 function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'complete';if(c.ins)return 'installation';if(c.dis)return 'dispatch';if(c.qc)return 'qc';return 'production';}
 var _jhFilter='all';
