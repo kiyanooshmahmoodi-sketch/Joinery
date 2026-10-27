@@ -1046,7 +1046,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v352 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v353 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1080,6 +1080,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 
 <!-- TOP-LEVEL VIEW SWITCHER -->
 <div class="view-switch">
+  <button class="view-btn" id="vb-jobs" onclick="switchView('jobs')" style="display:none;">🏠 Jobs</button>
   <button class="view-btn active" id="vb-cabinetlist" onclick="switchView('cabinetlist')">📋 Designer (Cabinet List)</button>
   <button class="view-btn" id="vb-tracker" onclick="switchView(SESSION.role==='dispatch'?'dispatch':'tracker')">✅ QC &amp; Dispatch</button>
   <button class="view-btn" id="vb-dispatch" onclick="switchView('dispatch')">📦 Dispatch / Shipping</button>
@@ -1088,23 +1089,11 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <button class="view-btn" id="vb-admin" onclick="switchView('admin')" style="display:none;">⚙️ Admin</button>
 </div>
 
-<!-- VIEW: CABINET LIST (Cabinet & Part List, Glass Door, Steccawood & Laminate, Kickboard, Import) -->
-<div id="view-cabinetlist">
-<div class="tabs">
-  <div class="tab active" onclick="showTab('jobs',this)">🏠 Jobs</div>
-  <div class="tab" onclick="showTab('finishes',this)">📋 Finishes &amp; Appliances</div>
-  <div class="tab" onclick="showTab('units',this)">📦 Cabinet & Part List <span class="tbadge" id="tb-rem">0</span></div>
-  <div class="tab" onclick="showTab('hardware',this)">🛒 Purchasing</div>
-  <div class="tab" onclick="showTab('kickboard',this)">🦶 Kickboard</div>
-  <div class="tab" onclick="showTab('closetrod',this)">🪧 Closet Rod</div>
-  <div class="tab" style="display:none;" onclick="showTab('glassdoor',this)">🪟 Glass Door</div>
-  <div class="tab" onclick="showTab('issues',this)">⚠️ Site Issues <span class="tbadge" id="tb-iss" style="display:none">0</span></div>
-  <div class="tab" onclick="showTab('notes',this)">📝 Notes</div>
-  <div class="tab" onclick="showTab('drawings',this)">📐 Drawings</div>
-</div>
-<div class="content" id="cabinetlist-content">
-<!-- v352: JOBS HOME — every job, its stage and client details -->
-<div class="panel active" id="panel-jobs">
+<!-- VIEW: JOBS (v353: own top-level page, first in the menu) -->
+<div id="view-jobs" style="display:none;">
+<div class="content">
+<!-- v353: JOBS HOME — every job, its stage and client details -->
+<div id="panel-jobs">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
     <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every job from waiting to start to completed. The stage moves by itself when QC & Dispatch or Installation start scanning.</div></div>
     <button class="btn btn-blue btn-sm" onclick="jhNew()">+ New Job</button>
@@ -1115,6 +1104,23 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <input type="file" id="jh-file" accept="application/pdf,.pdf" multiple style="display:none" onchange="jhUpload(this)"/>
   <input type="file" id="jh-file3" multiple style="display:none" onchange="jhUpload(this,'d3')"/>
 </div>
+</div>
+</div>
+
+<!-- VIEW: CABINET LIST (Cabinet & Part List, Glass Door, Steccawood & Laminate, Kickboard, Import) -->
+<div id="view-cabinetlist">
+<div class="tabs">
+  <div class="tab" onclick="showTab('finishes',this)">📋 Finishes &amp; Appliances</div>
+  <div class="tab active" onclick="showTab('units',this)">📦 Cabinet & Part List <span class="tbadge" id="tb-rem">0</span></div>
+  <div class="tab" onclick="showTab('hardware',this)">🛒 Purchasing</div>
+  <div class="tab" onclick="showTab('kickboard',this)">🦶 Kickboard</div>
+  <div class="tab" onclick="showTab('closetrod',this)">🪧 Closet Rod</div>
+  <div class="tab" style="display:none;" onclick="showTab('glassdoor',this)">🪟 Glass Door</div>
+  <div class="tab" onclick="showTab('issues',this)">⚠️ Site Issues <span class="tbadge" id="tb-iss" style="display:none">0</span></div>
+  <div class="tab" onclick="showTab('notes',this)">📝 Notes</div>
+  <div class="tab" onclick="showTab('drawings',this)">📐 Drawings</div>
+</div>
+<div class="content" id="cabinetlist-content">
 <!-- FINISHES & APPLIANCES CHECKLIST -->
 <div class="panel" id="panel-drawings">
   <div style="margin-bottom:10px;"><div style="font-size:18px;font-weight:700;">📐 Drawings — upload PDF plans</div><div style="font-size:12px;color:var(--gray);">Upload the Installation Drawings, Architectural Drawings and 3D / Design files here (files added on the Jobs page appear here too). The installer sees them in his Drawings tab (view only).</div></div>
@@ -1132,7 +1138,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 </div>
 
 <!-- ALL UNITS -->
-<div class="panel" id="panel-units">
+<div class="panel active" id="panel-units">
   <div id="units-sub" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
     <button id="us-list" class="btn" onclick="unitsView('list')">📦 Cabinets &amp; Parts</button>
     <button id="us-sum" class="btn btn-outline" onclick="unitsView('sum')">📊 Summary</button>
@@ -2820,7 +2826,7 @@ function updateHeader(){
 function updateTopbarImportButton(){
   var btn=document.getElementById('topbar-import-btn');
   if(!btn)return;
-  btn.style.display='none';   // v352: Excel import now lives on each job card (Designer › Jobs)
+  btn.style.display='none';   // v353: Excel import now lives on each job card (Designer › Jobs)
   btn.textContent=units.length===0?'📋 Import':'📋 Import ▾';
 }
 
@@ -4653,7 +4659,7 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-// ===== v352: Hardware name defaults list + purchase link =====
+// ===== v353: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
 function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
@@ -8317,7 +8323,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v352 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v353 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8353,6 +8359,8 @@ function switchView(view){
   // Always persist current state before switching, so PM reads fresh data
   if(currentJobId)saveCurrentJob();
   document.getElementById('view-cabinetlist').style.display=(view==='cabinetlist'?'block':'none');
+  var _vj=document.getElementById('view-jobs');if(_vj)_vj.style.display=(view==='jobs'?'block':'none');
+  var _bj=document.getElementById('vb-jobs');if(_bj)_bj.classList.toggle('active',view==='jobs');
   document.getElementById('view-tracker').style.display=(view==='tracker'?'block':'none');
   document.getElementById('view-installation').style.display=(view==='installation'?'block':'none');
   var _vd=document.getElementById('view-drawings');if(_vd)_vd.style.display=(view==='drawings'?'block':'none');
@@ -8388,6 +8396,7 @@ function switchView(view){
     renderAllTabs();
   }
   if(view==='admin'){ensureViewActivePanel('view-admin','users');}
+  if(view==='jobs'){try{renderJobsHome();}catch(e){}}
   if(view==='dispatch'){
     renderDispatchStats();renderDispatchPendingList();renderDispatchLog();
     setTimeout(focusDispScanBox,60);
@@ -9704,15 +9713,15 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
-// ===== v352: JOBS HOME =====
+// ===== v353: JOBS HOME =====
 var JH_STAGES=[{k:'design',t:'Waiting to Start',i:'📥',c:'#6b4c93'},{k:'drafting',t:'Drafting',i:'📐',c:'#a3506b'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qcd',t:'QC & Dispatch',i:'✅',c:'#0e7c86'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
-// v352: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
+// v353: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
 function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
 function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'complete';if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
 var _jhFilter='all';
 function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
 function jhStage(j){return jhManual(j)||jhAutoStage(j);}
-// v352: date stamp every stage change (auto from scans, or set by hand)
+// v353: date stamp every stage change (auto from scans, or set by hand)
 function jhParseDate(t){if(!t)return null;var m=String(t).match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ap]m)?/i);
   if(m){var h=+m[4];if(m[7]){var pm=/p/i.test(m[7]);if(pm&&h<12)h+=12;if(!pm&&h===12)h=0;}var d=new Date(+m[3],+m[2]-1,+m[1],h,+m[5],+(m[6]||0));return isNaN(d)?null:d;}
   var d2=new Date(t);return isNaN(d2)?null:d2;}
@@ -9737,7 +9746,7 @@ function jhSave(id){
   if(id===currentJobId){saveData();return;}
   saveAllJobs();try{if(window.cloud&&cloud.user&&typeof cloudPushJob==='function')cloudPushJob(id);}catch(e){}}
 function jhSet(id,field,val){var j=allJobs[id];if(!j)return;val=String(val||'').trim();
-  // v352: a job only goes into Production (or later) once its Excel files are uploaded
+  // v353: a job only goes into Production (or later) once its Excel files are uploaded
   if(field==='stage'&&(val==='production'||val==='qcd'||val==='installation')&&!((j.units||[]).length)){
     renderJobsHome();showMsg('📊 Upload the Excel files first — the job moves to Production once they are added');jhImport(id);return;}
   if(field==='name'){j.name=val||'Unnamed Job';if(id===currentJobId){document.getElementById('proj-input').value=j.name;document.getElementById('proj-display').textContent=j.name;}}
@@ -9749,7 +9758,7 @@ function jhSet(id,field,val){var j=allJobs[id];if(!j)return;val=String(val||'').
 function jhFactories(){var m={};Object.values(allJobs||{}).forEach(function(j){var i=j.info||{};if(i.factory){var k=i.factory.toLowerCase();if(!m[k]||(!m[k].a&&i.factoryAddr))m[k]={n:i.factory,a:i.factoryAddr||''};}});return Object.values(m);}
 function jhFilterSet(k){_jhFilter=k;renderJobsHome();}
 function jhGo(id,view){if(id!==currentJobId)selectJob(id);switchView(view);}
-function jhOpen(id){if(id!==currentJobId)selectJob(id);var t=document.querySelector(".tabs .tab[onclick*=\"'finishes'\"]");if(t)showTab('finishes',t);}
+function jhOpen(id){if(id!==currentJobId)selectJob(id);switchView('cabinetlist');var t=document.querySelector(".tabs .tab[onclick*=\"'finishes'\"]");if(t)showTab('finishes',t);}
 async function jhNew(){await newJob();try{var nj=allJobs[currentJobId];if(nj){jhInfo(nj).stageLog=[];jhTrack(nj);saveData();}}catch(e){}
   _jhFilter='all';var se=document.getElementById('jh-search');if(se)se.value='';renderJobsHome();
   setTimeout(function(){var el=document.querySelector('[data-jh-name="'+currentJobId+'"]');if(el){el.scrollIntoView({block:'center'});el.focus();el.select();}},80);}
@@ -9804,7 +9813,7 @@ function renderJobsHome(){
     if(!g.length)return '';
     return '<div style="display:flex;align-items:center;gap:10px;margin:14px 0 8px;"><span style="font-size:14px;font-weight:700;color:'+S.c+';letter-spacing:.5px;">'+S.i+' '+S.t.toUpperCase()+'</span><span style="font-size:11px;color:#6b7280;font-weight:700;">'+g.length+'</span><div style="flex:1;height:2px;background:'+S.c+';opacity:.25;"></div></div>'+
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">'+g.map(jhCard).join('')+'</div>';}).join('');}
-(function(){var _rf=refresh;refresh=function(){var r=_rf.apply(this,arguments);try{var p=document.getElementById('panel-jobs');if(p&&p.classList.contains('active'))renderJobsHome();}catch(e){}return r;};})();
+(function(){var _rf=refresh;refresh=function(){var r=_rf.apply(this,arguments);try{var p=document.getElementById('view-jobs');if(p&&p.style.display!=='none')renderJobsHome();}catch(e){}return r;};})();
 // ===== v259: PRODUCTION DRAWINGS (PDF) in Installation =====
 function tomb(id){var j=siJob();if(!j)return;j.deleted=j.deleted||[];if(j.deleted.indexOf(id)<0)j.deleted.push(id);}
 function drMB(n){return (n/1048576).toFixed(1)+' MB';}
@@ -10041,8 +10050,8 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
 </div>
 <script>
 // ROLES (v207): choose who you are when the app opens. Each role only sees its own sections.
-var ROLE_VIEWS={admin:['cabinetlist','tracker','dispatch','installation','admin'],designer:['cabinetlist'],qc:['tracker','dispatch'],dispatch:['dispatch','tracker'],installer:['installation','drawings','tracker','dispatch']};
-var ROLE_HOME={admin:'cabinetlist',designer:'cabinetlist',qc:'tracker',dispatch:'dispatch',installer:'installation'};
+var ROLE_VIEWS={admin:['jobs','cabinetlist','tracker','dispatch','installation','admin'],designer:['jobs','cabinetlist'],qc:['tracker','dispatch'],dispatch:['dispatch','tracker'],installer:['installation','drawings','tracker','dispatch']};
+var ROLE_HOME={admin:'jobs',designer:'jobs',qc:'tracker',dispatch:'dispatch',installer:'installation'};
 var ROLE_LABEL={admin:'Admin',designer:'Designer',qc:'QC Checker',dispatch:'Dispatch / Shipping',installer:'Installer'};
 var SESSION={role:'',name:''};
 function _adminCode(){try{return localStorage.getItem('cbk-admin-code')||'1773';}catch(e){return '1773';}}
@@ -10082,8 +10091,8 @@ function applyRole(r,nm,em){
   b.classList.toggle('no-qc-edit',r!=='admin'&&r!=='qc');
   b.classList.toggle('no-settings',r!=='admin');
   var allowed=ROLE_VIEWS[r];
-  ['cabinetlist','tracker','dispatch','installation','admin'].forEach(function(v){
-    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v352: Dispatch lives inside the QC & Dispatch page
+  ['jobs','cabinetlist','tracker','dispatch','installation','admin'].forEach(function(v){
+    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v353: Dispatch lives inside the QC & Dispatch page
   });
   var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=(r==='admin'||r==='qc')?'':'none';
   var ds=document.getElementById('disp-scan-box');var dcard=ds&&ds.closest('.card');if(dcard)dcard.style.display=(r==='admin'||r==='dispatch')?'':'none';
@@ -10092,8 +10101,8 @@ function applyRole(r,nm,em){
   if(!chip){chip=document.createElement('button');chip.id='user-chip';chip.className='tbtn';chip.onclick=function(){roleInit();};chip.style.fontWeight='700';
     var cb=document.getElementById('cloud-btn');cb.parentNode.insertBefore(chip,cb);}
   chip.textContent='👤 '+nm+' · '+ROLE_LABEL[r]+' ⇄';
-  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v352: renamed on the Jobs page only
-  // v352: Admin / Designer pick and create jobs on the Designer › 🏠 Jobs page, so the top Jobs button + name box are hidden for them.
+  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v353: renamed on the Jobs page only
+  // v353: Admin / Designer pick and create jobs on the Designer › 🏠 Jobs page, so the top Jobs button + name box are hidden for them.
   // QC / Dispatch / Installer still use them, because they don't see the Jobs page.
   var topJobs=(r==='admin'||r==='designer');var jb=document.querySelector('.topbar-right .jobs-btn');if(jb)jb.style.display=topJobs?'none':'';if(pin)pin.style.display=topJobs?'none':'';
   var re=document.getElementById('admin-rec-email');if(re&&!re.value)re.value=_adminEmail();var acs=document.getElementById('admin-code-card');if(acs)acs.style.display=r==='admin'?'':'none';
