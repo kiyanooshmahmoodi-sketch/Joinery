@@ -1048,7 +1048,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v343 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v344 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1083,7 +1083,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <!-- TOP-LEVEL VIEW SWITCHER -->
 <div class="view-switch">
   <button class="view-btn active" id="vb-cabinetlist" onclick="switchView('cabinetlist')">📋 Designer (Cabinet List)</button>
-  <button class="view-btn" id="vb-tracker" onclick="switchView('tracker')">✅ QC</button>
+  <button class="view-btn" id="vb-tracker" onclick="switchView(SESSION.role==='dispatch'?'dispatch':'tracker')">✅ QC &amp; Dispatch</button>
   <button class="view-btn" id="vb-dispatch" onclick="switchView('dispatch')">📦 Dispatch / Shipping</button>
   <button class="view-btn" id="vb-installation" onclick="switchView('installation')">🚚 Installation <span class="tbadge" id="vb-ii-badge" style="display:none">0</span></button>
   <button class="view-btn" id="vb-drawings" onclick="switchView('drawings')" style="display:none;">📐 Drawings</button>
@@ -1105,10 +1105,10 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="tab" onclick="showTab('drawings',this)">📐 Drawings</div>
 </div>
 <div class="content" id="cabinetlist-content">
-<!-- v343: JOBS HOME — every job, its stage and client details -->
+<!-- v344: JOBS HOME — every job, its stage and client details -->
 <div class="panel active" id="panel-jobs">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
-    <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every project from interior design to completed. The stage moves by itself when QC, Dispatch or Installation start scanning.</div></div>
+    <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every project from interior design to completed. The stage moves by itself when QC & Dispatch or Installation start scanning.</div></div>
     <button class="btn btn-blue btn-sm" onclick="jhNew()">+ New Job</button>
   </div>
   <input id="jh-search" placeholder="🔍 Search job, client, phone or address…" oninput="renderJobsHome()" style="width:100%;box-sizing:border-box;padding:10px 12px;font-size:14px;border:1px solid #d1d5db;border-radius:8px;margin-bottom:10px;"/>
@@ -1549,6 +1549,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 </div>
 
 <div id="view-dispatch" style="display:none;">
+  <div class="qd-sub" style="display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap;"><button class="btn" style="background:#fff;color:#374151;border:1px solid #d1d5db;font-weight:700;" onclick="switchView('tracker')">✅ Quality Check</button><button class="btn" style="background:#2f4b8f;color:#fff;border:1px solid #2f4b8f;font-weight:700;" onclick="switchView('dispatch')">📦 Dispatch / Shipping</button></div>
   <div class="alert alert-info">💡 Scan a cabinet or part when it is loaded to be sent to site. If it was never QC-approved, you'll see a warning with the reason so you know what to check.</div>
   <div class="stats-row" style="margin-bottom:14px;">
     <div class="stat"><div class="stat-n" style="color:var(--blue)" id="disp-total">0</div><div class="stat-l">TOTAL</div></div>
@@ -1582,6 +1583,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 
 <!-- VIEW: TRACKER (existing app) -->
 <div id="view-tracker" style="display:none;">
+  <div class="qd-sub" style="display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap;"><button class="btn" style="background:#2f4b8f;color:#fff;border:1px solid #2f4b8f;font-weight:700;" onclick="switchView('tracker')">✅ Quality Check</button><button class="btn" style="background:#fff;color:#374151;border:1px solid #d1d5db;font-weight:700;" onclick="switchView('dispatch')">📦 Dispatch / Shipping</button></div>
 
 <!-- PROGRESS -->
 <div class="prog-wrap">
@@ -4642,7 +4644,7 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-// ===== v343: Hardware name defaults list + purchase link =====
+// ===== v344: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
 function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
@@ -8305,7 +8307,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v343 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v344 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8350,7 +8352,7 @@ function switchView(view){
   var vmEl=document.getElementById('view-manager');
   if(vmEl)vmEl.style.display=(view==='manager'?'block':'none');
   document.getElementById('vb-cabinetlist').classList.toggle('active',view==='cabinetlist');
-  document.getElementById('vb-tracker').classList.toggle('active',view==='tracker');
+  document.getElementById('vb-tracker').classList.toggle('active',view==='tracker'||view==='dispatch');
   document.getElementById('vb-installation').classList.toggle('active',view==='installation');
   document.getElementById('vb-dispatch').classList.toggle('active',view==='dispatch');
   var _vb=document.getElementById('vb-admin');if(_vb)_vb.classList.toggle('active',view==='admin');
@@ -9692,11 +9694,11 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
-// ===== v343: JOBS HOME =====
-var JH_STAGES=[{k:'design',t:'Interior Design',i:'🎨',c:'#6b4c93'},{k:'drafting',t:'Drafting',i:'📐',c:'#a3506b'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qc',t:'QC',i:'✅',c:'#0e7c86'},{k:'dispatch',t:'Dispatch',i:'📦',c:'#9a5b13'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
-// v343: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
+// ===== v344: JOBS HOME =====
+var JH_STAGES=[{k:'design',t:'Interior Design',i:'🎨',c:'#6b4c93'},{k:'drafting',t:'Drafting',i:'📐',c:'#a3506b'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qcd',t:'QC & Dispatch',i:'✅',c:'#0e7c86'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
+// v344: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
 function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
-function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'complete';if(c.ins)return 'installation';if(c.dis)return 'dispatch';if(c.qc)return 'qc';return 'production';}
+function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'complete';if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
 var _jhFilter='all';
 function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
 function jhStage(j){return jhManual(j)||jhAutoStage(j);}
@@ -9977,7 +9979,7 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
 </div>
 <script>
 // ROLES (v207): choose who you are when the app opens. Each role only sees its own sections.
-var ROLE_VIEWS={admin:['cabinetlist','tracker','dispatch','installation','admin'],designer:['cabinetlist'],qc:['tracker'],dispatch:['dispatch','tracker'],installer:['installation','drawings','tracker']};
+var ROLE_VIEWS={admin:['cabinetlist','tracker','dispatch','installation','admin'],designer:['cabinetlist'],qc:['tracker','dispatch'],dispatch:['dispatch','tracker'],installer:['installation','drawings','tracker','dispatch']};
 var ROLE_HOME={admin:'cabinetlist',designer:'cabinetlist',qc:'tracker',dispatch:'dispatch',installer:'installation'};
 var ROLE_LABEL={admin:'Admin',designer:'Designer',qc:'QC Checker',dispatch:'Dispatch / Shipping',installer:'Installer'};
 var SESSION={role:'',name:''};
@@ -10019,9 +10021,11 @@ function applyRole(r,nm,em){
   b.classList.toggle('no-settings',r!=='admin');
   var allowed=ROLE_VIEWS[r];
   ['cabinetlist','tracker','dispatch','installation','admin'].forEach(function(v){
-    var el=document.getElementById('vb-'+v);if(el)el.style.display=allowed.indexOf(v)>-1?'':'none';
+    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v344: Dispatch lives inside the QC & Dispatch page
   });
   var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=(r==='admin'||r==='qc')?'':'none';
+  var ds=document.getElementById('disp-scan-box');var dcard=ds&&ds.closest('.card');if(dcard)dcard.style.display=(r==='admin'||r==='dispatch')?'':'none';
+  var dcl=document.querySelector('#view-dispatch button[onclick*="clearDispatchLog"]');if(dcl)dcl.style.display=(r==='admin'||r==='dispatch')?'':'none';
   var chip=document.getElementById('user-chip');
   if(!chip){chip=document.createElement('button');chip.id='user-chip';chip.className='tbtn';chip.onclick=function(){roleInit();};chip.style.fontWeight='700';
     var cb=document.getElementById('cloud-btn');cb.parentNode.insertBefore(chip,cb);}
