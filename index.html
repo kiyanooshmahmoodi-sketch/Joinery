@@ -1056,7 +1056,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v362 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v363 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1092,17 +1092,17 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <div class="view-switch">
   <button class="view-btn" id="vb-jobs" onclick="switchView('jobs')" style="display:none;">🏠 Jobs</button>
   <button class="view-btn active" id="vb-cabinetlist" onclick="switchView('cabinetlist')">📋 Designer (Cabinet List)</button>
-  <button class="view-btn" id="vb-tracker" onclick="switchView(SESSION.role==='dispatch'?'dispatch':'tracker')">✅ QC &amp; Dispatch</button>
+  <button class="view-btn" id="vb-tracker" onclick="switchView(hasRole('dispatch')&&!hasRole('qc')?'dispatch':'tracker')">✅ QC &amp; Dispatch</button>
   <button class="view-btn" id="vb-dispatch" onclick="switchView('dispatch')">📦 Dispatch / Shipping</button>
   <button class="view-btn" id="vb-installation" onclick="switchView('installation')">🚚 Installation <span class="tbadge" id="vb-ii-badge" style="display:none">0</span></button>
   <button class="view-btn" id="vb-drawings" onclick="switchView('drawings')" style="display:none;">📐 Drawings</button>
   <button class="view-btn" id="vb-admin" onclick="switchView('admin')" style="display:none;">⚙️ Admin</button>
 </div>
 
-<!-- VIEW: JOBS (v362: own top-level page, first in the menu) -->
+<!-- VIEW: JOBS (v363: own top-level page, first in the menu) -->
 <div id="view-jobs" style="display:none;">
 <div class="content">
-<!-- v362: JOBS HOME — every job, its stage and client details -->
+<!-- v363: JOBS HOME — every job, its stage and client details -->
 <div id="panel-jobs">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
     <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every job from waiting to start to completed. The stage moves by itself when QC & Dispatch or Installation start scanning.</div></div>
@@ -2836,7 +2836,7 @@ function updateHeader(){
 function updateTopbarImportButton(){
   var btn=document.getElementById('topbar-import-btn');
   if(!btn)return;
-  btn.style.display='none';   // v362: Excel import now lives on each job card (Designer › Jobs)
+  btn.style.display='none';   // v363: Excel import now lives on each job card (Designer › Jobs)
   btn.textContent=units.length===0?'📋 Import':'📋 Import ▾';
 }
 
@@ -4669,7 +4669,7 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-// ===== v362: Hardware name defaults list + purchase link =====
+// ===== v363: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
 function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
@@ -8333,7 +8333,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v362 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v363 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9723,15 +9723,15 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
-// ===== v362: JOBS HOME =====
+// ===== v363: JOBS HOME =====
 var JH_STAGES=[{k:'design',t:'Waiting to Start',i:'📥',c:'#6b4c93'},{k:'drafting',t:'Drafting',i:'📐',c:'#a3506b'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qcd',t:'QC & Dispatch',i:'✅',c:'#0e7c86'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
-// v362: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
+// v363: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
 function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
 function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'complete';if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
 var _jhFilter='all';
 function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
 function jhStage(j){return jhManual(j)||jhAutoStage(j);}
-// v362: date stamp every stage change (auto from scans, or set by hand)
+// v363: date stamp every stage change (auto from scans, or set by hand)
 function jhParseDate(t){if(!t)return null;var m=String(t).match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ap]m)?/i);
   if(m){var h=+m[4];if(m[7]){var pm=/p/i.test(m[7]);if(pm&&h<12)h+=12;if(!pm&&h===12)h=0;}var d=new Date(+m[3],+m[2]-1,+m[1],h,+m[5],+(m[6]||0));return isNaN(d)?null:d;}
   var d2=new Date(t);return isNaN(d2)?null:d2;}
@@ -9756,33 +9756,33 @@ function jhSave(id){
   if(id===currentJobId){saveData();return;}
   saveAllJobs();try{if(window.cloud&&cloud.user&&typeof cloudPushJob==='function')cloudPushJob(id);}catch(e){}}
 function jhSet(id,field,val,noDraw){var j=allJobs[id];if(!j)return;val=String(val||'').trim();
-  // v362: a job only goes into Production (or later) once its Excel files are uploaded
+  // v363: a job only goes into Production (or later) once its Excel files are uploaded
   if(field==='stage'&&(val==='production'||val==='qcd'||val==='installation')&&!((j.units||[]).length)){
     renderJobsHome();showMsg('📊 Upload the Excel files first — the job moves to Production once they are added');jhImport(id);return;}
   if(field==='name'){j.name=val||'Unnamed Job';if(id===currentJobId){document.getElementById('proj-input').value=j.name;document.getElementById('proj-display').textContent=j.name;}}
   else if(field==='site'){j.finishes=(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}};j.finishes.site=val;}
   else if(field==='stage'){var inf=jhInfo(j);delete inf.stage;if(!val||val==='auto'||val===jhAutoStage(j)){delete inf.stageManual;delete inf.stageAutoAt;}else{inf.stageManual=val;inf.stageAutoAt=jhAutoStage(j);}jhTrack(j,true);}
   else jhInfo(j)[field]=val;
-  // v362: the countdown starts the FIRST time a delivery date is set; changing the date later keeps that start,
+  // v363: the countdown starts the FIRST time a delivery date is set; changing the date later keeps that start,
   // so the colour moves to wherever the new date puts it (it does not restart at blue).
   if(field==='dueDate'){var _i=jhInfo(j);if(val&&!_i.dueSetAt){var _t=new Date();_i.dueSetAt=_t.getFullYear()+'-'+String(_t.getMonth()+1).padStart(2,'0')+'-'+String(_t.getDate()).padStart(2,'0');}else if(!val)delete _i.dueSetAt;}
   if(field==='factory'&&val&&!jhInfo(j).factoryAddr){var prev=jhFactories().filter(function(f){return f.n.toLowerCase()===val.toLowerCase()&&f.a;})[0];if(prev)jhInfo(j).factoryAddr=prev.a;}
   jhSave(id);if(noDraw)return;try{var _ae=document.activeElement;if(_ae&&_ae.blur&&document.getElementById('panel-jobs').contains(_ae))_ae.blur();}catch(e){}renderJobsHome();showMsg('✓ Saved');}
 function jhFactories(){var m={};Object.values(allJobs||{}).forEach(function(j){var i=j.info||{};if(i.factory){var k=i.factory.toLowerCase();if(!m[k]||(!m[k].a&&i.factoryAddr))m[k]={n:i.factory,a:i.factoryAddr||''};}});return Object.values(m);}
-// v362: delivery-date colour. The time from the day the date was set to the delivery date is split into 4 equal parts:
-// v362: split into 3 equal parts: blue → yellow → red, shown as the card's frame. Once the delivery date has passed the whole card turns purple. Completed jobs are not coloured.
+// v363: delivery-date colour. The time from the day the date was set to the delivery date is split into 4 equal parts:
+// v363: split into 3 equal parts: blue → yellow → red, shown as the card's frame. Once the delivery date has passed the whole card turns purple. Completed jobs are not coloured.
 var JH_DUE_COL=[{k:'blue',bg:'#dbeafe',bd:'#3b82f6',fg:'#1e40af'},{k:'yellow',bg:'#fef9c3',bd:'#eab308',fg:'#854d0e'},{k:'red',bg:'#fee2e2',bd:'#ef4444',fg:'#991b1b'},{k:'purple',bg:'#f3e8ff',bd:'#a855f7',fg:'#6b21a8'}];
 function jhDueCol(j){var inf=j.info||{};if(!inf.dueDate||jhStage(j)==='complete')return null;
   var due=new Date(inf.dueDate+'T00:00:00'),st=new Date((inf.dueSetAt||inf.dueDate)+'T00:00:00'),n=new Date();n.setHours(0,0,0,0);if(isNaN(due))return null;
   if(n>due)return JH_DUE_COL[3];
-  // v362: 7 days or less before delivery = always red (even if the date was just set).
+  // v363: 7 days or less before delivery = always red (even if the date was just set).
   // More than 7 days: the time until the last week starts is split in half — blue, then yellow.
   var left=Math.round((due-n)/86400000);if(left<=7)return JH_DUE_COL[2];
   var redStart=new Date(due);redStart.setDate(redStart.getDate()-7);
   var tot=(redStart-st)/86400000,el=(n-st)/86400000;if(!(tot>0))return JH_DUE_COL[1];
   return JH_DUE_COL[el/tot<0.5?0:1];}
 function jhFrame(dc,S){return !dc?'border-left:5px solid '+S.c+';':(dc.k==='purple'?'border:4px solid #7e22ce;background:#c084fc;':'border:4px solid '+dc.bd+';');}
-// v362: while the date box is being used, save and recolour the card in place (a full redraw would interrupt typing)
+// v363: while the date box is being used, save and recolour the card in place (a full redraw would interrupt typing)
 function jhDueLive(el,id){var v=el.value||'';if(v===(el.dataset.last||el.defaultValue))return;el.dataset.last=v;
   var j=allJobs[id];if(!j)return;jhSet(id,'dueDate',v,true);
   var card=el.closest('.card');if(!card)return;var dc=jhDueCol(j),st=jhStage(j),S=JH_STAGES.filter(function(x){return x.k===st;})[0];
@@ -9838,7 +9838,7 @@ function jhCard(j){
   '</div>';}
 function renderJobsHome(){
   var list=document.getElementById('jh-list'),fl=document.getElementById('jh-filter');if(!list||!fl)return;
-  var pn=document.getElementById('panel-jobs');var _ae=document.activeElement;if(pn&&_ae&&pn.contains(_ae)&&_ae.id!=='jh-search'&&_ae.tagName==='INPUT'&&/^(text|tel|url|search|)$/i.test(_ae.type||''))return;   // v362: only hold the redraw while typing in a text box (not for dropdowns / dates)
+  var pn=document.getElementById('panel-jobs');var _ae=document.activeElement;if(pn&&_ae&&pn.contains(_ae)&&_ae.id!=='jh-search'&&_ae.tagName==='INPUT'&&/^(text|tel|url|search|)$/i.test(_ae.type||''))return;   // v363: only hold the redraw while typing in a text box (not for dropdowns / dates)
   var q=((document.getElementById('jh-search')||{}).value||'').toLowerCase().trim();
   var all=Object.values(allJobs||{}),cnt={all:all.length};var _ch=false;all.forEach(function(j){try{var had=j.info&&Array.isArray(j.info.stageLog);if(jhTrack(j)||!had)_ch=true;}catch(e){}});if(_ch){clearTimeout(renderJobsHome._t);renderJobsHome._t=setTimeout(function(){try{saveAllJobs();}catch(e){}},1500);}all.forEach(function(j){var s=jhStage(j);cnt[s]=(cnt[s]||0)+1;});
   fl.innerHTML=[{k:'all',t:'All',i:'📂',c:'#374151'}].concat(JH_STAGES).map(function(x){var on=_jhFilter===x.k;return '<button class="btn btn-sm" style="border:1px solid '+(on?x.c:'#d1d5db')+';background:'+(on?x.c:'#fff')+';color:'+(on?'#fff':'#374151')+';" onclick="jhFilterSet(\''+x.k+'\')">'+x.i+' '+x.t+' ('+(cnt[x.k]||0)+')</button>';}).join('');
@@ -9902,7 +9902,7 @@ async function drOpen(id,name){
   document.body.appendChild(o);document.getElementById('dr-x').onclick=function(){o.remove();setTimeout(function(){URL.revokeObjectURL(url);},2000);};}
 var _drBusy=false;
 async function renderDrawings(){
-  var j=siJob();var adm=window.SESSION&&(SESSION.role==='admin'||SESSION.role==='designer');var missing=false,allList=j?(j.drawings||[]):[];
+  var j=siJob();var adm=window.SESSION&&hasRole('designer');var missing=false,allList=j?(j.drawings||[]):[];
   var loc={};for(var i=0;i<allList.length;i++){try{var r=await window.storage.get('cbkph:'+allList[i].id);loc[allList[i].id]=!!(r&&r.value);}catch(e){}}
   ['prod','arch','d3'].forEach(function(k){
     var box=document.getElementById('dr-list-'+k);if(!box)return;
@@ -9929,7 +9929,7 @@ function renderInstFin(){var tabs=document.getElementById('if-tabs'),body=docume
     if(m){var u=/^www\./i.test(t)?'https://'+t:t;td.innerHTML='<a href="'+qe(u)+'" target="_blank" rel="noopener" style="color:#2c5a87;font-weight:700;word-break:break-all;">🔗 Open link</a>';}
     else if(/https?:\/\/\S+/i.test(t)){td.innerHTML=esc(t).replace(/(https?:\/\/[^\s<]+)/gi,function(u){return '<a href="'+u+'" target="_blank" rel="noopener" style="color:#2c5a87;font-weight:700;word-break:break-all;">'+u+'</a>';});}});
   body.querySelectorAll('input,select,textarea,button').forEach(function(i){i.disabled=true;});
-  // v362: clear layout for the installer — every space/room in its own box, proper table lines, empty spaces hidden
+  // v363: clear layout for the installer — every space/room in its own box, proper table lines, empty spaces hidden
   try{body.classList.add('inst-fin');
     var hs=Array.prototype.slice.call(body.querySelectorAll('h3')),shown=0;
     hs.forEach(function(h){var t=h.nextElementSibling;if(!t||t.tagName!=='TABLE')return;
@@ -9946,7 +9946,7 @@ function drTab(k){_drwTab=k;var t=document.getElementById('drw-tabs');if(!t)retu
   DRW_TABS.forEach(function(x){var el=document.getElementById(x[2]);if(el)el.style.display=(x[0]===k||!document.getElementById('drw-host').contains(el))?'':'none';});
   try{renderDrawings();renderInstIssues();}catch(e){}}
 function drPlace(){   // installer: these 3 sections live in the Drawings tab. Everyone else: they stay on the Installation page (admin uploads there).
-  var inst=window.SESSION&&SESSION.role==='installer',host=document.getElementById('drw-host'),view=document.getElementById('view-installation');if(!host||!view)return;
+  var inst=window.SESSION&&hasRole('installer')&&!hasRole('designer'),host=document.getElementById('drw-host'),view=document.getElementById('view-installation');if(!host||!view)return;
   var ids=DRW_TABS.map(function(x){return x[2];}),els=ids.map(function(i){return document.getElementById(i);});
   var badge=document.getElementById('vb-ii-badge');
   if(inst){els.forEach(function(el){if(el)host.appendChild(el);});var bd=document.getElementById('vb-drawings');if(badge&&bd)bd.appendChild(badge);}
@@ -10101,7 +10101,11 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
 var ROLE_VIEWS={admin:['jobs','cabinetlist','tracker','dispatch','installation','admin'],designer:['jobs','cabinetlist'],qc:['tracker','dispatch'],dispatch:['dispatch','tracker'],installer:['installation','drawings','tracker','dispatch']};
 var ROLE_HOME={admin:'jobs',designer:'jobs',qc:'tracker',dispatch:'dispatch',installer:'installation'};
 var ROLE_LABEL={admin:'Admin',designer:'Designer',qc:'QC Checker',dispatch:'Dispatch / Shipping',installer:'Installer'};
-var SESSION={role:'',name:''};
+var SESSION={role:'',name:'',roles:[]};
+// v363: a person can hold several sections; they get all of them at once (no "Enter as" question). Admin has everything.
+function hasRole(x){var R=(SESSION.roles&&SESSION.roles.length)?SESSION.roles:(SESSION.role?[SESSION.role]:[]);return R.indexOf('admin')>-1||R.indexOf(x)>-1;}
+var ROLE_ORDER=['admin','designer','installer','dispatch','qc'];
+function roleViews(){var R=(SESSION.roles&&SESSION.roles.length)?SESSION.roles:[SESSION.role],v=[];R.forEach(function(r){(ROLE_VIEWS[r]||[]).forEach(function(x){if(v.indexOf(x)<0)v.push(x);});});return v;}
 function _adminCode(){try{return localStorage.getItem('cbk-admin-code')||'1773';}catch(e){return '1773';}}
 function _who(){return SESSION.name||'';}
 function roleInit(){
@@ -10129,31 +10133,34 @@ function submitAdminCode(){
   var nm=(document.getElementById('role-name').value.trim()||'Admin');
   applyRole('admin',nm);
 }
-function applyRole(r,nm,em){
-  SESSION.role=r;SESSION.name=nm;SESSION.email=em||'';
+function applyRole(r,nm,em,roles){
+  roles=(roles&&roles.length)?roles.slice():[r];
+  r=ROLE_ORDER.filter(function(x){return roles.indexOf(x)>-1;})[0]||r;   // main section = where the app opens
+  SESSION.role=r;SESSION.roles=roles;SESSION.name=nm;SESSION.email=em||'';
+  var H=function(x){return roles.indexOf('admin')>-1||roles.indexOf(x)>-1;};
   try{localStorage.setItem('cbk-user-name',nm);}catch(e){}
   document.getElementById('role-ov').style.display='none';
   document.getElementById('role-code').value='';document.getElementById('role-admin-box').style.display='none';
   var b=document.body;
-  b.classList.toggle('role-limited',r!=='admin'&&r!=='designer');
-  b.classList.toggle('no-qc-edit',r!=='admin'&&r!=='qc');
-  b.classList.toggle('no-settings',r!=='admin');
-  var allowed=ROLE_VIEWS[r];
+  b.classList.toggle('role-limited',!H('designer'));
+  b.classList.toggle('no-qc-edit',!H('qc'));
+  b.classList.toggle('no-settings',!H('admin'));
+  var allowed=roleViews();
   ['jobs','cabinetlist','tracker','dispatch','installation','admin'].forEach(function(v){
-    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v362: Dispatch lives inside the QC & Dispatch page
+    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v363: Dispatch lives inside the QC & Dispatch page
   });
-  var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=(r==='admin'||r==='qc')?'':'none';
-  var ds=document.getElementById('disp-scan-box');var dcard=ds&&ds.closest('.card');if(dcard)dcard.style.display=(r==='admin'||r==='dispatch')?'':'none';
-  var dcl=document.querySelector('#view-dispatch button[onclick*="clearDispatchLog"]');if(dcl)dcl.style.display=(r==='admin'||r==='dispatch')?'':'none';
+  var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=H('qc')?'':'none';
+  var ds=document.getElementById('disp-scan-box');var dcard=ds&&ds.closest('.card');if(dcard)dcard.style.display=H('dispatch')?'':'none';
+  var dcl=document.querySelector('#view-dispatch button[onclick*="clearDispatchLog"]');if(dcl)dcl.style.display=H('dispatch')?'':'none';
   var chip=document.getElementById('user-chip');
   if(!chip){chip=document.createElement('button');chip.id='user-chip';chip.className='tbtn';chip.onclick=function(){roleInit();};chip.style.fontWeight='700';
     var cb=document.getElementById('cloud-btn');cb.parentNode.insertBefore(chip,cb);}
-  chip.textContent='👤 '+nm+' · '+ROLE_LABEL[r]+' ⇄';
-  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v362: renamed on the Jobs page only
-  // v362: Admin / Designer pick and create jobs on the Designer › 🏠 Jobs page, so the top Jobs button + name box are hidden for them.
+  chip.textContent='👤 '+nm+' · '+(H('admin')?ROLE_LABEL.admin:ROLE_ORDER.filter(function(x){return roles.indexOf(x)>-1;}).map(function(x){return ROLE_LABEL[x];}).join(' + '))+' ⇄';
+  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v363: renamed on the Jobs page only
+  // v363: Admin / Designer pick and create jobs on the Designer › 🏠 Jobs page, so the top Jobs button + name box are hidden for them.
   // QC / Dispatch / Installer still use them, because they don't see the Jobs page.
-  var topJobs=(r==='admin'||r==='designer');var jb=document.querySelector('.topbar-right .jobs-btn');if(jb)jb.style.display=topJobs?'none':'';if(pin)pin.style.display=topJobs?'none':'';
-  var re=document.getElementById('admin-rec-email');if(re&&!re.value)re.value=_adminEmail();var acs=document.getElementById('admin-code-card');if(acs)acs.style.display=r==='admin'?'':'none';
+  var topJobs=H('designer');var jb=document.querySelector('.topbar-right .jobs-btn');if(jb)jb.style.display=topJobs?'none':'';if(pin)pin.style.display=topJobs?'none':'';
+  var re=document.getElementById('admin-rec-email');if(re&&!re.value)re.value=_adminEmail();var acs=document.getElementById('admin-code-card');if(acs)acs.style.display=H('admin')?'':'none';
   switchView(ROLE_HOME[r]);
   if(typeof _presence==='function')setTimeout(_presence,500);
 }
@@ -10161,13 +10168,13 @@ function applyRole(r,nm,em){
 (function(){
   var _ar=applyRole;applyRole=function(){var r=_ar.apply(this,arguments);try{drPlace();}catch(e){}return r;};
   var _sv=switchView;switchView=function(v){
-    if(SESSION.role&&ROLE_VIEWS[SESSION.role].indexOf(v)<0)v=ROLE_HOME[SESSION.role];
+    if(SESSION.role&&roleViews().indexOf(v)<0)v=ROLE_HOME[SESSION.role];
     return _sv(v);};
-  var _q=doQcScan;doQcScan=function(x){if(SESSION.role!=='admin'&&SESSION.role!=='qc')return;return _q(x);};
-  var _i=doInstallScan;doInstallScan=function(x){if(SESSION.role!=='admin'&&SESSION.role!=='installer')return;return _i(x);};
-  var _d=doDispatchScan;doDispatchScan=function(x){if(SESSION.role!=='admin'&&SESSION.role!=='dispatch')return;return _d(x);};
-  var _qa=qcApprove;qcApprove=function(){if(SESSION.role!=='admin'&&SESSION.role!=='qc')return;return _qa();};
-  var _qr=qcSubmitReject;qcSubmitReject=function(){if(SESSION.role!=='admin'&&SESSION.role!=='qc')return;return _qr();};
+  var _q=doQcScan;doQcScan=function(x){if(!hasRole('qc'))return;return _q(x);};
+  var _i=doInstallScan;doInstallScan=function(x){if(!hasRole('installer'))return;return _i(x);};
+  var _d=doDispatchScan;doDispatchScan=function(x){if(!hasRole('dispatch'))return;return _d(x);};
+  var _qa=qcApprove;qcApprove=function(){if(!hasRole('qc'))return;return _qa();};
+  var _qr=qcSubmitReject;qcSubmitReject=function(){if(!hasRole('qc'))return;return _qr();};
 })();
 function saveAdminCode(){
   var v=document.getElementById('admin-code-in').value.trim(),m=document.getElementById('admin-code-msg');
@@ -10247,7 +10254,7 @@ function rcSubmitCode(){
   try{localStorage.setItem('cbk-code-fails','{"n":0,"until":0}');}catch(e){}
   var roles=(u.roles||[]).filter(function(r){return ROLE_VIEWS[r];});
   if(!roles.length){er.textContent='The admin has not given you a section yet.';return;}
-  if(roles.length===1){applyRole(roles[0],u.name||u.email,u.email);return;}
+  applyRole(roles[0],u.name||u.email,u.email,roles);return;   // v363: all of this person's sections at once — no "Enter as" question
   var box=document.getElementById('rc-roles');
   box.innerHTML='<div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:8px;">Enter as</div>'+roles.map(function(r){return '<button class="rbtn" data-r="'+r+'">'+ROLE_LABEL[r]+'</button>';}).join('');
   box.querySelectorAll('button').forEach(function(b){b.onclick=function(){applyRole(b.getAttribute('data-r'),u.name||u.email,u.email);};});
