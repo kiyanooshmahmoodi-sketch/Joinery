@@ -1056,7 +1056,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v374 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v375 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1100,15 +1100,16 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <button class="view-btn" id="vb-admin" onclick="switchView('admin')" style="display:none;">⚙️ Admin</button>
 </div>
 
-<!-- VIEW: JOBS (v374: own top-level page, first in the menu) -->
+<!-- VIEW: JOBS (v375: own top-level page, first in the menu) -->
 <div id="view-jobs" style="display:none;">
 <div class="content">
-<!-- v374: JOBS HOME — every job, its stage and client details -->
+<!-- v375: JOBS HOME — every job, its stage and client details -->
 <div id="panel-jobs">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
     <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every job from waiting to start to completed. The stage moves by itself when QC & Dispatch or Installation start scanning.</div></div>
     <button class="btn btn-blue btn-sm" onclick="jhNew()">+ New Job</button>
   </div>
+  <div style="display:flex;gap:6px;justify-content:flex-end;margin:-4px 0 6px;"><button class="btn btn-outline btn-sm" onclick="jhColAll(true)">▸ Minimise all</button><button class="btn btn-outline btn-sm" onclick="jhColAll(false)">▾ Open all</button></div>
   <input id="jh-search" placeholder="🔍 Search job, client, phone, address or factory…" oninput="renderJobsHome()" style="width:100%;box-sizing:border-box;padding:10px 12px;font-size:14px;border:1px solid #d1d5db;border-radius:8px;margin-bottom:10px;"/>
   <div id="jh-filter" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
   <div id="jh-list"></div>
@@ -1680,7 +1681,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 </div><!-- /#view-tracker -->
 
 <!-- VIEW: ADMIN (only visible to the admin) -->
-<!-- VIEW: MAINTENANCE (v374) — jobs that are installed and now in Maintenance -->
+<!-- VIEW: MAINTENANCE (v375) — jobs that are installed and now in Maintenance -->
 <div id="view-maint" style="display:none;"><div class="content">
   <div style="margin-bottom:10px;"><div style="font-size:18px;font-weight:700;">🔧 Maintenance</div><div style="font-size:12px;color:var(--gray);">Installed jobs that are now in Maintenance. Log each call-out or fix; mark the job Completed when nothing is left.</div></div>
   <div style="display:flex;justify-content:flex-end;margin:-6px 0 8px;"><button class="btn btn-outline btn-sm" onclick="mtPrint()">🖨️ Print all maintenance</button></div>
@@ -2844,7 +2845,7 @@ function updateHeader(){
 function updateTopbarImportButton(){
   var btn=document.getElementById('topbar-import-btn');
   if(!btn)return;
-  btn.style.display='none';   // v374: Excel import now lives on each job card (Designer › Jobs)
+  btn.style.display='none';   // v375: Excel import now lives on each job card (Designer › Jobs)
   btn.textContent=units.length===0?'📋 Import':'📋 Import ▾';
 }
 
@@ -4677,7 +4678,7 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-// ===== v374: Hardware name defaults list + purchase link =====
+// ===== v375: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
 function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
@@ -8341,7 +8342,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v374 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v375 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9734,15 +9735,15 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
-// ===== v374: JOBS HOME =====
+// ===== v375: JOBS HOME =====
 var JH_STAGES=[{k:'design',t:'Waiting to Start',i:'📥',c:'#6b4c93'},{k:'drafting',t:'Drafting',i:'📐',c:'#a3506b'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qcd',t:'QC & Dispatch',i:'✅',c:'#0e7c86'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'maintenance',t:'Maintenance',i:'🔧',c:'#b45309'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
-// v374: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
+// v375: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
 function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
-function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'maintenance';/* v374: everything installed → Maintenance; Completed is chosen by hand */if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
+function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'maintenance';/* v375: everything installed → Maintenance; Completed is chosen by hand */if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
 var _jhFilter='all';
 function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
 function jhStage(j){return jhManual(j)||jhAutoStage(j);}
-// v374: date stamp every stage change (auto from scans, or set by hand)
+// v375: date stamp every stage change (auto from scans, or set by hand)
 function jhParseDate(t){if(!t)return null;var m=String(t).match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ap]m)?/i);
   if(m){var h=+m[4];if(m[7]){var pm=/p/i.test(m[7]);if(pm&&h<12)h+=12;if(!pm&&h===12)h=0;}var d=new Date(+m[3],+m[2]-1,+m[1],h,+m[5],+(m[6]||0));return isNaN(d)?null:d;}
   var d2=new Date(t);return isNaN(d2)?null:d2;}
@@ -9767,33 +9768,33 @@ function jhSave(id){
   if(id===currentJobId){saveData();return;}
   saveAllJobs();try{if(window.cloud&&cloud.user&&typeof cloudPushJob==='function')cloudPushJob(id);}catch(e){}}
 function jhSet(id,field,val,noDraw){var j=allJobs[id];if(!j)return;val=String(val||'').trim();
-  // v374: a job only goes into Production (or later) once its Excel files are uploaded
+  // v375: a job only goes into Production (or later) once its Excel files are uploaded
   if(field==='stage'&&(val==='production'||val==='qcd'||val==='installation')&&!((j.units||[]).length)){
     renderJobsHome();showMsg('📊 Upload the Excel files first — the job moves to Production once they are added');jhImport(id);return;}
   if(field==='name'){j.name=val||'Unnamed Job';if(id===currentJobId){document.getElementById('proj-input').value=j.name;document.getElementById('proj-display').textContent=j.name;}}
   else if(field==='site'){j.finishes=(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}};j.finishes.site=val;}
   else if(field==='stage'){var inf=jhInfo(j);delete inf.stage;if(!val||val==='auto'||val===jhAutoStage(j)){delete inf.stageManual;delete inf.stageAutoAt;}else{inf.stageManual=val;inf.stageAutoAt=jhAutoStage(j);}jhTrack(j,true);}
   else jhInfo(j)[field]=val;
-  // v374: the countdown starts the FIRST time a delivery date is set; changing the date later keeps that start,
+  // v375: the countdown starts the FIRST time a delivery date is set; changing the date later keeps that start,
   // so the colour moves to wherever the new date puts it (it does not restart at blue).
   if(field==='dueDate'){var _i=jhInfo(j);if(val&&!_i.dueSetAt){var _t=new Date();_i.dueSetAt=_t.getFullYear()+'-'+String(_t.getMonth()+1).padStart(2,'0')+'-'+String(_t.getDate()).padStart(2,'0');}else if(!val)delete _i.dueSetAt;}
   if(field==='factory'&&val&&!jhInfo(j).factoryAddr){var prev=jhFactories().filter(function(f){return f.n.toLowerCase()===val.toLowerCase()&&f.a;})[0];if(prev)jhInfo(j).factoryAddr=prev.a;}
   jhSave(id);if(noDraw)return;try{var _ae=document.activeElement;if(_ae&&_ae.blur&&document.getElementById('panel-jobs').contains(_ae))_ae.blur();}catch(e){}renderJobsHome();showMsg('✓ Saved');}
 function jhFactories(){var m={};Object.values(allJobs||{}).forEach(function(j){var i=j.info||{};if(i.factory){var k=i.factory.toLowerCase();if(!m[k]||(!m[k].a&&i.factoryAddr))m[k]={n:i.factory,a:i.factoryAddr||''};}});return Object.values(m);}
-// v374: delivery-date colour. The time from the day the date was set to the delivery date is split into 4 equal parts:
-// v374: split into 3 equal parts: blue → yellow → red, shown as the card's frame. Once the delivery date has passed the whole card turns purple. Completed jobs are not coloured.
+// v375: delivery-date colour. The time from the day the date was set to the delivery date is split into 4 equal parts:
+// v375: split into 3 equal parts: blue → yellow → red, shown as the card's frame. Once the delivery date has passed the whole card turns purple. Completed jobs are not coloured.
 var JH_DUE_COL=[{k:'blue',bg:'#dbeafe',bd:'#3b82f6',fg:'#1e40af'},{k:'yellow',bg:'#fef9c3',bd:'#eab308',fg:'#854d0e'},{k:'red',bg:'#fee2e2',bd:'#ef4444',fg:'#991b1b'},{k:'purple',bg:'#f3e8ff',bd:'#a855f7',fg:'#6b21a8'}];
-function jhDueCol(j){var inf=j.info||{};if(!inf.dueDate||jhStage(j)==='complete'||jhStage(j)==='maintenance')return null;   // v374: no deadline colour once in Maintenance / Completed
+function jhDueCol(j){var inf=j.info||{};if(!inf.dueDate||jhStage(j)==='complete'||jhStage(j)==='maintenance')return null;   // v375: no deadline colour once in Maintenance / Completed
   var due=new Date(inf.dueDate+'T00:00:00'),st=new Date((inf.dueSetAt||inf.dueDate)+'T00:00:00'),n=new Date();n.setHours(0,0,0,0);if(isNaN(due))return null;
   if(n>due)return JH_DUE_COL[3];
-  // v374: 7 days or less before delivery = always red (even if the date was just set).
+  // v375: 7 days or less before delivery = always red (even if the date was just set).
   // More than 7 days: the time until the last week starts is split in half — blue, then yellow.
   var left=Math.round((due-n)/86400000);if(left<=7)return JH_DUE_COL[2];
   var redStart=new Date(due);redStart.setDate(redStart.getDate()-7);
   var tot=(redStart-st)/86400000,el=(n-st)/86400000;if(!(tot>0))return JH_DUE_COL[1];
   return JH_DUE_COL[el/tot<0.5?0:1];}
 function jhFrame(dc,S){return !dc?'border-left:5px solid '+S.c+';':(dc.k==='purple'?'border:4px solid #7e22ce;background:#c084fc;':'border:4px solid '+dc.bd+';');}
-// v374: while the date box is being used, save and recolour the card in place (a full redraw would interrupt typing)
+// v375: while the date box is being used, save and recolour the card in place (a full redraw would interrupt typing)
 function jhDueLive(el,id){var v=el.value||'';if(v===(el.dataset.last||el.defaultValue))return;el.dataset.last=v;
   var j=allJobs[id];if(!j)return;jhSet(id,'dueDate',v,true);
   var card=el.closest('.card');if(!card)return;var dc=jhDueCol(j),st=jhStage(j),S=JH_STAGES.filter(function(x){return x.k===st;})[0];
@@ -9816,7 +9817,7 @@ function jhDelete(id){var j=allJobs[id];if(!j)return;
     saveAllJobs();try{updateProjectCount();}catch(e){}showMsg('🗑 Job deleted');}
   renderJobsHome();}
 function jhImport(id,clear){if(id!==currentJobId)selectJob(id);renderJobsHome();if(clear){importMenuClear();}else goToImport();}
-// v374: Orders & invoices per job — material order PDFs, payments, tax invoices we paid or were paid. Only on the Jobs page (Admin / Designer).
+// v375: Orders & invoices per job — material order PDFs, payments, tax invoices we paid or were paid. Only on the Jobs page (Admin / Designer).
 var JH_DOC_TYPES=[['order','🧾 Material order','#1d4ed8'],['paid','💸 Tax invoice — we paid','#b91c1c'],['recv','💰 Tax invoice — paid to us','#15803d'],['pay','🏦 Payment / receipt','#7c3aed'],['other','📄 Other','#4b5563']];
 function jhDocT(k){return JH_DOC_TYPES.filter(function(t){return t[0]===k;})[0]||JH_DOC_TYPES[4];}
 function jhAddDoc(id){var sel=document.getElementById('jh-doct-'+id);var t=sel&&sel.value;if(!t){showMsg('Pick what kind of document first');if(sel)sel.focus();return;}
@@ -9827,12 +9828,29 @@ function jhDelDoc(id,did){var j=allJobs[id];if(!j||!confirm('Delete this documen
   jhSave(id);renderJobsHome();showMsg('🗑 Document deleted');}
 function jhFinHTML(j){var id=j.id,L=(j.drawings||[]).filter(function(x){return x.kind==='fin';});
   return '<div style="border:1px solid #e5e7eb;border-left:3px solid #b7791f;border-radius:6px;padding:6px 8px;margin-bottom:6px;background:#fffdf7;">'+
-    '<b style="font-size:12px;color:#92400e;">💼 Orders &amp; invoices'+(L.length?' ('+L.length+')':'')+'</b> <span style="font-size:10px;color:#9ca3af;">— only you see these, not installers</span>'+
+    '<div style="display:flex;align-items:center;gap:6px;"><span style="flex:1;font-size:10px;color:#9ca3af;">Admin only</span><button class="btn btn-outline btn-sm" style="padding:1px 8px;font-size:11px;" onclick="jhFinLock()">🔒 Lock</button></div>'+
     '<div style="display:flex;gap:6px;margin:5px 0 3px;flex-wrap:wrap;"><select id="jh-doct-'+id+'" style="flex:1;min-width:150px;padding:4px 6px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;"><option value="">— what is it? —</option>'+JH_DOC_TYPES.map(function(t){return '<option value="'+t[0]+'">'+t[1]+'</option>';}).join('')+'</select>'+
     '<button class="btn btn-outline btn-sm" style="padding:2px 8px;font-size:11px;" onclick="jhAddDoc(\''+id+'\')">📎 Add file</button></div>'+
     (L.length?L.map(function(x){var T=jhDocT(x.docType);return '<div style="display:flex;gap:6px;align-items:center;margin-top:4px;"><span style="font-size:10px;font-weight:700;color:#fff;background:'+T[2]+';border-radius:4px;padding:1px 5px;white-space:nowrap;">'+T[1]+'</span><span title="'+qe(drName(x))+(x.date?' · '+qe(x.date):'')+'" style="flex:1;min-width:0;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(drName(x))+'</span><button class="btn btn-outline btn-sm" style="padding:2px 9px;" onclick="drOpenAny(\''+x.id+'\')">Open</button><button class="btn btn-outline btn-sm" style="padding:2px 7px;color:#b4412f;" title="Delete" onclick="jhDelDoc(\''+id+'\',\''+x.id+'\')">🗑</button></div>';}).join(''):'<div style="font-size:11px;color:#9ca3af;">Nothing saved yet</div>')+'</div>';}
 function jhAddPlan(id,kind){if(id!==currentJobId)selectJob(id);renderJobsHome();var f=document.getElementById(kind==='d3'?'jh-file3':'jh-file');f.dataset.kind=kind||'arch';f.click();}   /* d3 also resets jh-file3 to d3 */
 async function jhUpload(inp,kind){try{await drUpload(inp,kind||'arch');}catch(e){}try{var _a=document.activeElement;if(_a&&_a.blur)_a.blur();}catch(e){}renderJobsHome();}
+// v375: job card sections can be minimised (name + stage always stay open); state is remembered on this device
+var _jhCol={};try{_jhCol=JSON.parse(localStorage.getItem('cbk-jh-col')||'{}')||{};}catch(e){_jhCol={};}
+function jhColSave(){try{localStorage.setItem('cbk-jh-col',JSON.stringify(_jhCol));}catch(e){}}
+function jhIsCol(id,k){return !!(_jhCol[id]&&_jhCol[id][k]);}
+function jhToggle(id,k){_jhCol[id]=_jhCol[id]||{};if(_jhCol[id][k])delete _jhCol[id][k];else _jhCol[id][k]=1;jhColSave();try{var _a=document.activeElement;if(_a&&_a.blur)_a.blur();}catch(e){}renderJobsHome();}
+function jhColAll(on){Object.keys(allJobs||{}).forEach(function(id){_jhCol[id]=on?{client:1,factory:1,due:1,files:1,fin:1}:{};});jhColSave();renderJobsHome();}
+function jhSec(id,k,title,summ,html){var c=jhIsCol(id,k);
+  return '<div style="border-top:1px solid #eef0f3;margin-top:8px;padding-top:4px;"><div onclick="jhToggle(\''+id+'\',\''+k+'\')" style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;padding:3px 0;">'+
+    '<span style="font-size:11px;color:#6b7280;width:12px;">'+(c?'▸':'▾')+'</span><b style="font-size:12px;color:#374151;white-space:nowrap;">'+title+'</b>'+
+    (c&&summ?'<span style="flex:1;min-width:0;font-size:11px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">· '+esc(String(summ))+'</span>':'<span style="flex:1"></span>')+'</div>'+
+    (c?'':'<div>'+html+'</div>')+'</div>';}
+function jhFileSumm(j){var L=j.drawings||[],n=function(k){return L.filter(function(x){return drKind(x)===k;}).length;};return '🏛 '+n('arch')+' · 🧊 '+n('d3')+' · 📐 '+n('prod');}
+// v375: Orders & invoices — Admin only, and locked with the admin code (unlocks until the app is closed)
+var _jhFinOpen=false;
+function jhFinLockHTML(){return '<div style="display:flex;gap:6px;align-items:center;margin:4px 0;"><input type="password" inputmode="numeric" placeholder="Admin code" onkeydown="if(event.key===\'Enter\')jhFinUnlock(this)" style="width:120px;padding:5px 8px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;"/><button class="btn btn-outline btn-sm" onclick="jhFinUnlock(this.previousElementSibling)">🔓 Unlock</button></div>';}
+function jhFinUnlock(inp){var v=(inp&&inp.value||'').trim();if(v&&v===_adminCode()){_jhFinOpen=true;try{inp.blur();}catch(e){}renderJobsHome();showMsg('🔓 Orders & invoices unlocked');}else{if(inp){inp.value='';inp.focus();}showMsg('Wrong code');}}
+function jhFinLock(){_jhFinOpen=false;renderJobsHome();}
 function jhCard(j){
   var inf=j.info||{},id=j.id,cur=id===currentJobId,st=jhStage(j),auto=jhAutoStage(j),man=jhManual(j),cn=jhCounts(j),dc=jhDueCol(j),S=JH_STAGES.filter(function(x){return x.k===st;})[0];
   var site=(j.finishes&&j.finishes.site)||'',arch=(j.drawings||[]).filter(function(x){return x.kind==='arch'||x.kind==='d3';});
@@ -9852,24 +9870,28 @@ function jhCard(j){
       '<div style="display:flex;gap:6px;margin-top:6px;"><button class="btn btn-outline btn-sm" style="flex:1;font-size:11px;" onclick="jhImport(\''+id+'\')">📊 Add more Excel</button><button class="btn btn-outline btn-sm" style="flex:1;font-size:11px;color:#b4412f;" onclick="jhImport(\''+id+'\',1)">🗑 Clear &amp; re-import</button></div>')+
     (st==='maintenance'&&mtSince(j)?'<div style="margin-top:6px;font-size:12px;font-weight:700;color:#b45309;">⏱ '+mtDaysTxt(mtDays(j))+' in maintenance</div>':'')+
     jhHistHTML(j)+
-    lab('CLIENT NAME')+q('client',inf.client,'Client name')+
+    jhSec(id,'client','👤 Client &amp; site',[inf.client,inf.phone,site].filter(Boolean).join(' · '),(lab('CLIENT NAME')+q('client',inf.client,'Client name')+
     lab('CLIENT PHONE')+'<div style="display:flex;gap:6px;">'+q('phone',inf.phone,'Phone number','tel')+(inf.phone?'<a class="btn btn-outline btn-sm" style="text-decoration:none;padding:5px 9px;" href="tel:'+qe(String(inf.phone).replace(/[^\d+]/g,''))+'" title="Call">📞</a>':'')+'</div>'+
     lab('ADDRESS')+'<div style="display:flex;gap:6px;">'+q('site',site,'Site address')+(site?'<a class="btn btn-outline btn-sm" style="text-decoration:none;padding:5px 9px;" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(site)+'" title="Open in Maps">📍</a>':'')+'</div>'+
-    lab('FACTORY (PRODUCTION)')+'<input value="'+qe(inf.factory||'')+'" list="jh-fac-dl" placeholder="Factory name" spellcheck="false" onchange="jhSet(\''+id+'\',\'factory\',this.value)" style="'+ist+'"/>'+
+    ''))+
+    jhSec(id,'factory','🏭 Factory',[inf.factory,inf.factoryAddr].filter(Boolean).join(' · '),(lab('FACTORY (PRODUCTION)')+'<input value="'+qe(inf.factory||'')+'" list="jh-fac-dl" placeholder="Factory name" spellcheck="false" onchange="jhSet(\''+id+'\',\'factory\',this.value)" style="'+ist+'"/>'+
     lab('FACTORY ADDRESS')+'<div style="display:flex;gap:6px;">'+q('factoryAddr',inf.factoryAddr,'Factory address')+(inf.factoryAddr?'<a class="btn btn-outline btn-sm" style="text-decoration:none;padding:5px 9px;" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(inf.factoryAddr)+'" title="Open in Maps">📍</a>':'')+'</div>'+
-    lab('PROJECT DELIVERY DATE')+'<div style="display:flex;gap:8px;align-items:center;"><input type="date" value="'+qe(inf.dueDate||'')+'" oninput="jhDueLive(this,\''+id+'\')" onblur="renderJobsHome()" onchange="jhDueLive(this,\''+id+'\')" style="'+ist+'flex:1;font-weight:700;'+'"/>'+(inf.dueDate?'<span class="jh-due-t" style="font-size:11px;font-weight:700;color:'+(dc?(dc.k==='purple'?'#3b0764':dc.fg):'#4b5563')+';white-space:nowrap;">'+jhDueText(inf.dueDate)+'</span>':'')+'</div>'+
-    // v374: the job's three file groups — the same files as Designer › Drawings and the installer's Drawings (one list, so an upload anywhere shows everywhere)
+    ''))+
+    jhSec(id,'due','📅 Delivery date',(inf.dueDate?jhFmt(inf.dueDate+'T00:00:00')+' · '+jhDueText(inf.dueDate):''),(lab('PROJECT DELIVERY DATE')+'<div style="display:flex;gap:8px;align-items:center;"><input type="date" value="'+qe(inf.dueDate||'')+'" oninput="jhDueLive(this,\''+id+'\')" onblur="renderJobsHome()" onchange="jhDueLive(this,\''+id+'\')" style="'+ist+'flex:1;font-weight:700;'+'"/>'+(inf.dueDate?'<span class="jh-due-t" style="font-size:11px;font-weight:700;color:'+(dc?(dc.k==='purple'?'#3b0764':dc.fg):'#4b5563')+';white-space:nowrap;">'+jhDueText(inf.dueDate)+'</span>':'')+'</div>'+
+''))+
+    jhSec(id,'files','📁 Drawings &amp; files',jhFileSumm(j),(    // v375: the job's three file groups — the same files as Designer › Drawings and the installer's Drawings (one list, so an upload anywhere shows everywhere)
     lab('DRAWINGS &amp; FILES')+
     [['arch','🏛 Architectural plans','📎 Add plan (PDF)','#6b4c93'],['d3','🧊 3D / design files','🧊 Add 3D / design file','#15803d'],['prod','📐 Installation drawings','📎 Add drawing (PDF)','#3a6ea5']].map(function(g){
       var L=(j.drawings||[]).filter(function(x){return drKind(x)===g[0];});
       return '<div style="border:1px solid #e5e7eb;border-left:3px solid '+g[3]+';border-radius:6px;padding:6px 8px;margin-bottom:6px;"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;"><b style="flex:1;font-size:12px;color:'+g[3]+';">'+g[1]+(L.length?' ('+L.length+')':'')+'</b><button class="btn btn-outline btn-sm" style="padding:2px 8px;font-size:11px;" onclick="jhAddPlan(\''+id+'\',\''+g[0]+'\')">'+g[2]+'</button></div>'+
         (L.length?L.map(function(x){return '<div style="display:flex;gap:6px;align-items:center;margin-top:3px;"><span title="'+qe(drName(x))+'" style="flex:1;min-width:0;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+drIcon(x)+' '+esc(drName(x))+'</span><button class="btn btn-outline btn-sm" style="padding:2px 9px;" onclick="drOpenAny(\''+x.id+'\')">Open</button></div>';}).join(''):'<div style="font-size:11px;color:#9ca3af;">Nothing uploaded yet</div>')+'</div>';}).join('')+
-    jhFinHTML(j)+
+    ''))+
+    (hasRole('admin')?jhSec(id,'fin','💼 Orders &amp; invoices',(j.drawings||[]).filter(function(x){return x.kind==='fin';}).length+' file(s)',(_jhFinOpen?jhFinHTML(j):jhFinLockHTML())):'')+
     '<div style="margin-top:10px;display:flex;gap:8px;align-items:center;"><button class="btn btn-blue btn-sm" style="flex:1;" onclick="jhOpen(\''+id+'\')">📂 Open job</button><span style="font-size:11px;color:#6b7280;">'+(cn.n?(cn.n+' items'):'no cabinet list yet')+'</span></div>'+
   '</div>';}
 function renderJobsHome(){
   var list=document.getElementById('jh-list'),fl=document.getElementById('jh-filter');if(!list||!fl)return;
-  var pn=document.getElementById('panel-jobs');var _ae=document.activeElement;if(pn&&_ae&&pn.contains(_ae)&&_ae.id!=='jh-search'&&_ae.tagName==='INPUT'&&/^(text|tel|url|search|)$/i.test(_ae.type||''))return;   // v374: only hold the redraw while typing in a text box (not for dropdowns / dates)
+  var pn=document.getElementById('panel-jobs');var _ae=document.activeElement;if(pn&&_ae&&pn.contains(_ae)&&_ae.id!=='jh-search'&&_ae.tagName==='INPUT'&&/^(text|tel|url|search|)$/i.test(_ae.type||''))return;   // v375: only hold the redraw while typing in a text box (not for dropdowns / dates)
   var q=((document.getElementById('jh-search')||{}).value||'').toLowerCase().trim();
   var all=Object.values(allJobs||{}),cnt={all:all.length};var _ch=false;all.forEach(function(j){try{var had=j.info&&Array.isArray(j.info.stageLog);if(jhTrack(j)||!had)_ch=true;}catch(e){}});if(_ch){clearTimeout(renderJobsHome._t);renderJobsHome._t=setTimeout(function(){try{saveAllJobs();}catch(e){}},1500);}all.forEach(function(j){var s=jhStage(j);cnt[s]=(cnt[s]||0)+1;});
   fl.innerHTML=[{k:'all',t:'All',i:'📂',c:'#374151'}].concat(JH_STAGES).map(function(x){var on=_jhFilter===x.k;return '<button class="btn btn-sm" style="border:1px solid '+(on?x.c:'#d1d5db')+';background:'+(on?x.c:'#fff')+';color:'+(on?'#fff':'#374151')+';" onclick="jhFilterSet(\''+x.k+'\')">'+x.i+' '+x.t+' ('+(cnt[x.k]||0)+')</button>';}).join('');
@@ -9883,18 +9905,18 @@ function renderJobsHome(){
     return '<div style="display:flex;align-items:center;gap:10px;margin:14px 0 8px;"><span style="font-size:14px;font-weight:700;color:'+S.c+';letter-spacing:.5px;">'+S.i+' '+S.t.toUpperCase()+'</span><span style="font-size:11px;color:#6b7280;font-weight:700;">'+g.length+'</span><div style="flex:1;height:2px;background:'+S.c+';opacity:.25;"></div></div>'+
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">'+g.map(jhCard).join('')+'</div>';}).join('');}
 (function(){var _rf=refresh;refresh=function(){var r=_rf.apply(this,arguments);try{var p=document.getElementById('view-jobs');if(p&&p.style.display!=='none')renderJobsHome();}catch(e){}return r;};})();
-// ===== v374: MAINTENANCE page =====
+// ===== v375: MAINTENANCE page =====
 function mtId(){return 'mt'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-// v374: how many days a job has been in Maintenance (counted from the day it moved there)
+// v375: how many days a job has been in Maintenance (counted from the day it moved there)
 function mtSince(j){var e=(((j.info||{}).stageLog)||[]).filter(function(x){return x.s==='maintenance';}).pop();return e?e.t:'';}
 function mtDays(j){var t=mtSince(j);if(!t)return 0;var a=new Date(t);a.setHours(0,0,0,0);var n=new Date();n.setHours(0,0,0,0);return Math.max(0,Math.round((n-a)/86400000));}
 function mtDaysTxt(d){return d===0?'today':(d===1?'1 day':d+' days');}
 function mtJobs(){return Object.values(allJobs||{}).filter(function(j){return jhStage(j)==='maintenance';});}
-// v374: each maintenance item = Room → Cabinet no. (if known) → Colour → what is needed → optional note + photos
+// v375: each maintenance item = Room → Cabinet no. (if known) → Colour → what is needed → optional note + photos
 var _mtDraft={};
 function mtD(id){return _mtDraft[id]=_mtDraft[id]||{room:'',cab:'',colour:'',text:'',note:'',photos:[]};}
 function mtDraftSet(id,k,v){mtD(id)[k]=v;}
-// v374: rooms and cabinets come from the imported Excel; colours from Designer › Finishes › Material Schedule
+// v375: rooms and cabinets come from the imported Excel; colours from Designer › Finishes › Material Schedule
 function mtNat(a,b){return String(a).localeCompare(String(b),undefined,{numeric:true,sensitivity:'base'});}
 function mtRooms(j){var r=[];(j.units||[]).forEach(function(u){if(u&&u.room&&r.indexOf(u.room)<0)r.push(u.room);});return r.sort(mtNat);}
 function mtCabs(j,room){return (j.units||[]).filter(function(u){return u&&(!room||u.room===room);}).map(function(u){return u.cabId||u.id;}).filter(function(x,i,a){return x&&a.indexOf(x)===i;}).sort(mtNat);}
@@ -9944,7 +9966,7 @@ function renderMaint(force){mtBadge();var list=document.getElementById('mt-list'
   var q=((document.getElementById('mt-search')||{}).value||'').toLowerCase().trim();
   var jobs=mtJobs().filter(function(j){if(!q)return true;var i=j.info||{};return [j.name,i.client,i.phone,j.finishes&&j.finishes.site].join(' ').toLowerCase().indexOf(q)>=0;}).sort(function(a,b){return mtDays(b)-mtDays(a)||String(a.name||'').localeCompare(String(b.name||''));});   // longest in maintenance first
   var canDone=hasRole('designer');
-  // v374: add any job to Maintenance by hand from here (e.g. an older job that was installed before the app tracked it)
+  // v375: add any job to Maintenance by hand from here (e.g. an older job that was installed before the app tracked it)
   var others=Object.values(allJobs||{}).filter(function(j){var st=jhStage(j);return st!=='maintenance';}).sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''));});
   var adder=false?'<div class="card" style="margin:0 0 12px;border-left:4px solid #b45309;"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><b style="font-size:13px;">➕ Add a job to Maintenance:</b>'+
     '<select id="mt-pick" style="flex:1;min-width:200px;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;"><option value="">— pick a job —</option>'+others.map(function(j){var S=JH_STAGES.filter(function(x){return x.k===jhStage(j);})[0]||{};return '<option value="'+j.id+'">'+esc(j.name||'Job')+' ('+esc(S.t||'')+')</option>';}).join('')+'</select>'+
@@ -9973,7 +9995,7 @@ function renderMaint(force){mtBadge();var list=document.getElementById('mt-list'
     '</div>';}).join('')+'</div>';
   siHydrate(list);}
 (function(){var _rf=refresh;refresh=function(){var r=_rf.apply(this,arguments);try{mtBadge();var v=document.getElementById('view-maint');if(v&&v.style.display!=='none')renderMaint();}catch(e){}return r;};})();
-// v374: print the maintenance list (one job, or every job in Maintenance)
+// v375: print the maintenance list (one job, or every job in Maintenance)
 async function mtPrint(onlyId){
   var jobs=onlyId?[allJobs[onlyId]].filter(Boolean):mtJobs().sort(function(a,b){return mtDays(b)-mtDays(a);});
   if(!jobs.length){showMsg('No maintenance to print');return;}
@@ -9992,7 +10014,7 @@ async function mtPrint(onlyId){
   w.document.write('<!DOCTYPE html><html><head><title>Maintenance — '+esc(window._printProjName)+'</title><style>body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:18px}h1{font-size:20px;margin:0 0 10px}h2{font-size:16px;margin:0 0 4px}.job{margin-bottom:22px;page-break-inside:auto}.meta{font-size:12px;color:#333;margin-bottom:8px;line-height:1.6}table{border-collapse:collapse;width:100%}th,td{border:1px solid #cbd5e1;padding:6px;text-align:left;vertical-align:top}th{background:#f1f5f9;font-size:11px;text-transform:uppercase}tr.done td{color:#6b7280}.sm{font-size:10.5px;color:#555}.ph img{width:90px;height:90px;object-fit:cover;margin:4px 4px 0 0;border:1px solid #ccc}button{padding:8px 14px;margin-bottom:12px}@media print{button{display:none}}</style></head><body>'+
     '<h1>🔧 Maintenance list</h1><button onclick="window.print()">🖨️ Print</button>'+body+'</body></html>');
   w.document.close();window._printProjName='';}
-// v374: EVERY print window gets the project name + the date and time it was printed, at the top
+// v375: EVERY print window gets the project name + the date and time it was printed, at the top
 (function(){var _wo=window.open;window.open=function(){var w=_wo.apply(window,arguments);
   try{if(w&&!arguments[0]){var proj=window._printProjName;var stamp=function(){try{var d=w.document;if(!d||!d.body||d.getElementById('cbk-print-stamp'))return;if(!d.body.innerHTML.trim()||/Preparing…/.test(d.body.textContent))return;
       var nm=window._printProjName||proj||((typeof siJob==='function'&&siJob())?siJob().name:'')||'—';var t=new Date();
@@ -10022,9 +10044,9 @@ async function drUpload(inp,kind){kind=kind||'prod';
     }catch(e){alert('Could not save '+f.name+' on this device.');}
   }
   if(pe)pe.textContent='';renderDrawings();}
-// v374: always show the real file name, including the extension (older PDFs were saved without ".pdf")
+// v375: always show the real file name, including the extension (older PDFs were saved without ".pdf")
 function drName(x){var n=String((x&&x.name)||'');if(!/\.[a-z0-9]{2,5}$/i.test(n)&&drIsPdf(x))n+='.pdf';return n;}
-function drKind(x){return x.kind==='arch'?'arch':(x.kind==='d3'?'d3':(x.kind==='fin'?'fin':'prod'));}   // v374: 'fin' = orders & invoices (Jobs page only, never shown to installers)
+function drKind(x){return x.kind==='arch'?'arch':(x.kind==='d3'?'d3':(x.kind==='fin'?'fin':'prod'));}   // v375: 'fin' = orders & invoices (Jobs page only, never shown to installers)
 function drIsPdf(x){return (x.kind!=='d3'&&x.kind!=='fin')||/pdf/i.test(x.mime||'')||/\.pdf$/i.test(x.name||'');}
 function drIcon(x){if(drIsPdf(x))return '📄';var n=(x.name||'')+' '+(x.mime||'');if(/image|\.(jpe?g|png|gif|webp|heic)/i.test(n))return '🖼';if(/video|\.(mp4|mov|avi)/i.test(n))return '🎬';return '🧊';}
 async function drOpenAny(id){var j=siJob(),x=null;Object.values(allJobs||{}).some(function(jj){return (jj.drawings||[]).some(function(d){if(d.id===id){x=d;return true;}});});if(!x)return;
@@ -10081,7 +10103,7 @@ function renderInstFin(){var tabs=document.getElementById('if-tabs'),body=docume
     if(m){var u=/^www\./i.test(t)?'https://'+t:t;td.innerHTML='<a href="'+qe(u)+'" target="_blank" rel="noopener" style="color:#2c5a87;font-weight:700;word-break:break-all;">🔗 Open link</a>';}
     else if(/https?:\/\/\S+/i.test(t)){td.innerHTML=esc(t).replace(/(https?:\/\/[^\s<]+)/gi,function(u){return '<a href="'+u+'" target="_blank" rel="noopener" style="color:#2c5a87;font-weight:700;word-break:break-all;">'+u+'</a>';});}});
   body.querySelectorAll('input,select,textarea,button').forEach(function(i){i.disabled=true;});
-  // v374: clear layout for the installer — every space/room in its own box, proper table lines, empty spaces hidden
+  // v375: clear layout for the installer — every space/room in its own box, proper table lines, empty spaces hidden
   try{body.classList.add('inst-fin');
     var hs=Array.prototype.slice.call(body.querySelectorAll('h3')),shown=0;
     hs.forEach(function(h){var t=h.nextElementSibling;if(!t||t.tagName!=='TABLE')return;
@@ -10254,7 +10276,7 @@ var ROLE_VIEWS={admin:['jobs','cabinetlist','tracker','dispatch','installation',
 var ROLE_HOME={admin:'jobs',designer:'jobs',qc:'tracker',dispatch:'dispatch',installer:'installation'};
 var ROLE_LABEL={admin:'Admin',designer:'Designer',qc:'QC Checker',dispatch:'Dispatch / Shipping',installer:'Installer'};
 var SESSION={role:'',name:'',roles:[]};
-// v374: a person can hold several sections; they get all of them at once (no "Enter as" question). Admin has everything.
+// v375: a person can hold several sections; they get all of them at once (no "Enter as" question). Admin has everything.
 function hasRole(x){var R=(SESSION.roles&&SESSION.roles.length)?SESSION.roles:(SESSION.role?[SESSION.role]:[]);return R.indexOf('admin')>-1||R.indexOf(x)>-1;}
 var ROLE_ORDER=['admin','designer','installer','dispatch','qc'];
 function roleViews(){var R=(SESSION.roles&&SESSION.roles.length)?SESSION.roles:[SESSION.role],v=[];R.forEach(function(r){(ROLE_VIEWS[r]||[]).forEach(function(x){if(v.indexOf(x)<0)v.push(x);});});return v;}
@@ -10299,7 +10321,7 @@ function applyRole(r,nm,em,roles){
   b.classList.toggle('no-settings',!H('admin'));
   var allowed=roleViews();
   ['jobs','cabinetlist','tracker','dispatch','installation','maint','admin'].forEach(function(v){
-    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v374: Dispatch lives inside the QC & Dispatch page
+    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v375: Dispatch lives inside the QC & Dispatch page
   });
   var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=H('qc')?'':'none';
   var ds=document.getElementById('disp-scan-box');var dcard=ds&&ds.closest('.card');if(dcard)dcard.style.display=H('dispatch')?'':'none';
@@ -10308,8 +10330,8 @@ function applyRole(r,nm,em,roles){
   if(!chip){chip=document.createElement('button');chip.id='user-chip';chip.className='tbtn';chip.onclick=function(){roleInit();};chip.style.fontWeight='700';
     var cb=document.getElementById('cloud-btn');cb.parentNode.insertBefore(chip,cb);}
   chip.textContent='👤 '+nm+' · '+(H('admin')?ROLE_LABEL.admin:ROLE_ORDER.filter(function(x){return roles.indexOf(x)>-1;}).map(function(x){return ROLE_LABEL[x];}).join(' + '))+' ⇄';
-  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v374: renamed on the Jobs page only
-  // v374: Admin / Designer pick and create jobs on the Designer › 🏠 Jobs page, so the top Jobs button + name box are hidden for them.
+  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v375: renamed on the Jobs page only
+  // v375: Admin / Designer pick and create jobs on the Designer › 🏠 Jobs page, so the top Jobs button + name box are hidden for them.
   // QC / Dispatch / Installer still use them, because they don't see the Jobs page.
   var topJobs=H('designer');var jb=document.querySelector('.topbar-right .jobs-btn');if(jb)jb.style.display=topJobs?'none':'';if(pin)pin.style.display=topJobs?'none':'';
   var re=document.getElementById('admin-rec-email');if(re&&!re.value)re.value=_adminEmail();var acs=document.getElementById('admin-code-card');if(acs)acs.style.display=H('admin')?'':'none';
@@ -10406,7 +10428,7 @@ function rcSubmitCode(){
   try{localStorage.setItem('cbk-code-fails','{"n":0,"until":0}');}catch(e){}
   var roles=(u.roles||[]).filter(function(r){return ROLE_VIEWS[r];});
   if(!roles.length){er.textContent='The admin has not given you a section yet.';return;}
-  applyRole(roles[0],u.name||u.email,u.email,roles);return;   // v374: all of this person's sections at once — no "Enter as" question
+  applyRole(roles[0],u.name||u.email,u.email,roles);return;   // v375: all of this person's sections at once — no "Enter as" question
   var box=document.getElementById('rc-roles');
   box.innerHTML='<div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:8px;">Enter as</div>'+roles.map(function(r){return '<button class="rbtn" data-r="'+r+'">'+ROLE_LABEL[r]+'</button>';}).join('');
   box.querySelectorAll('button').forEach(function(b){b.onclick=function(){applyRole(b.getAttribute('data-r'),u.name||u.email,u.email);};});
