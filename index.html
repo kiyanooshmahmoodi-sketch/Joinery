@@ -947,8 +947,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
         <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:8px;" id="xl-res-t"></div>
         <div id="xl-res-l" style="max-height:320px;overflow-y:auto;margin-bottom:12px;"></div>
         <div class="flex gap-8" style="flex-wrap:wrap;">
-          <button class="btn btn-blue" onclick="confirmImportAsNewProject()" style="background:#2f4b8f;">➕ Create New Project from File</button>
-          <button class="btn btn-outline" onclick="confirmImport()" title="Merge into the currently-open project instead">📥 Add to Current Project</button>
+          <button class="btn btn-blue" onclick="confirmImport()" style="background:#2f4b8f;" id="xl-add-btn">📥 Add to this job</button>
           <button class="btn btn-outline" onclick="closeXlModal();pendingUnits=[];">Cancel</button>
         </div>
       </div>
@@ -1009,7 +1008,6 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div class="jmodal-search">
       <input id="jsearch" placeholder="🔍 Search job name..." oninput="renderJobs(this.value)"/>
-      <button class="btn btn-blue btn-sm" onclick="newJob()">+ New Job</button>
     </div>
     <div class="jcols">
       <span onclick="sortJ('name')">JOB NAME ↕</span>
@@ -1048,7 +1046,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v347 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v348 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1057,7 +1055,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     <span id="up-stat" style="font-size:11px;font-weight:700;align-self:center;white-space:nowrap;"></span>
     <button class="tbtn" id="cloud-btn" onclick="cloudBtn()" title="Shared projects (cloud sync)" style="font-weight:700;">☁ …</button>
     <button class="tbtn jobs-btn" onclick="openJobs()">📋 Jobs</button>
-    <input class="proj-input" id="proj-input" spellcheck="true" placeholder="Project name..."
+    <input class="proj-input" id="proj-input" readonly title="Rename the job on the Designer › 🏠 Jobs page" spellcheck="true" placeholder="Pick a job (📋 Jobs)"
       oninput="document.getElementById('proj-display').textContent=this.value||'—';autoSave()"/>
     <button class="tbtn" onclick="saveProject()" title="Overwrite the current file">💾 Save</button>
     <div style="position:relative;display:inline-block;">
@@ -1105,7 +1103,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="tab" onclick="showTab('drawings',this)">📐 Drawings</div>
 </div>
 <div class="content" id="cabinetlist-content">
-<!-- v347: JOBS HOME — every job, its stage and client details -->
+<!-- v348: JOBS HOME — every job, its stage and client details -->
 <div class="panel active" id="panel-jobs">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
     <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every job from waiting to start to completed. The stage moves by itself when QC & Dispatch or Installation start scanning.</div></div>
@@ -2538,10 +2536,11 @@ function showXLPreview(filenames){
   }).join('');
   // Results now show right inside the import modal — no view/tab switch needed.
 }
-function openXlModal(){document.getElementById('xl-modal-bg').classList.add('show');}
+function openXlModal(){var b=document.getElementById('xl-add-btn');var j=currentJobId&&allJobs[currentJobId];if(b)b.textContent='📥 Add to “'+((j&&j.name)||'this job')+'”';document.getElementById('xl-modal-bg').classList.add('show');}
 function closeXlModal(){document.getElementById('xl-modal-bg').classList.remove('show');}
 
 function confirmImport(){
+  if(!currentJobId){alert('Open a job first — Excel files are added from the job card on the Designer › 🏠 Jobs page.');return;}
   var added=0,skipped=0;
   var merged=0;
   pendingUnits.forEach(function(u){var ex=units.find(function(x){return x.id===u.id;});
@@ -2573,6 +2572,7 @@ function confirmImport(){
   // Re-render EVERY tab — not just All Units. Otherwise the Summary /
   // Hardware / Glass / Stecca tabs keep showing the previous project's data.
   renderAllTabs();
+  try{saveData();renderJobsHome();}catch(e){}
   // After import, check which manual sections still have no data and prompt
   setTimeout(checkOrderReminders,500);
 }
@@ -2820,7 +2820,7 @@ function updateHeader(){
 function updateTopbarImportButton(){
   var btn=document.getElementById('topbar-import-btn');
   if(!btn)return;
-  btn.style.display=currentJobId?'inline-flex':'none';
+  btn.style.display='none';   // v348: Excel import now lives on each job card (Designer › Jobs)
   btn.textContent=units.length===0?'📋 Import':'📋 Import ▾';
 }
 
@@ -4653,7 +4653,7 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-// ===== v347: Hardware name defaults list + purchase link =====
+// ===== v348: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
 function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
@@ -7621,7 +7621,7 @@ function renderJobs(q){
   document.getElementById('jcount').textContent=Object.keys(allJobs).length+' jobs';
   document.getElementById('del-btn').style.display=currentJobId?'block':'none';
   var el=document.getElementById('jlist');
-  if(!jobs.length){el.innerHTML='<div class="empty-jobs">No jobs yet<br><small>Click "+ New Job" to create one</small></div>';return;}
+  if(!jobs.length){el.innerHTML='<div class="empty-jobs">No jobs yet<br><small>New jobs are added on the Designer › 🏠 Jobs page</small></div>';return;}
   el.innerHTML=jobs.map(function(j){
     var total=(j.units||[]).length,shipped=(j.units||[]).filter(function(u){return u.status==='shipped';}).length;
     var pct=total>0?Math.round(shipped/total*100):0;var cur=j.id===currentJobId;
@@ -8317,7 +8317,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v347 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v348 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9704,15 +9704,15 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
-// ===== v347: JOBS HOME =====
+// ===== v348: JOBS HOME =====
 var JH_STAGES=[{k:'design',t:'Waiting to Start',i:'📥',c:'#6b4c93'},{k:'drafting',t:'Drafting',i:'📐',c:'#a3506b'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qcd',t:'QC & Dispatch',i:'✅',c:'#0e7c86'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
-// v347: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
+// v348: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
 function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
 function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'complete';if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
 var _jhFilter='all';
 function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
 function jhStage(j){return jhManual(j)||jhAutoStage(j);}
-// v347: date stamp every stage change (auto from scans, or set by hand)
+// v348: date stamp every stage change (auto from scans, or set by hand)
 function jhParseDate(t){if(!t)return null;var m=String(t).match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ap]m)?/i);
   if(m){var h=+m[4];if(m[7]){var pm=/p/i.test(m[7]);if(pm&&h<12)h+=12;if(!pm&&h===12)h=0;}var d=new Date(+m[3],+m[2]-1,+m[1],h,+m[5],+(m[6]||0));return isNaN(d)?null:d;}
   var d2=new Date(t);return isNaN(d2)?null:d2;}
@@ -9748,6 +9748,7 @@ function jhOpen(id){if(id!==currentJobId)selectJob(id);var t=document.querySelec
 async function jhNew(){await newJob();try{var nj=allJobs[currentJobId];if(nj){jhInfo(nj).stageLog=[];jhTrack(nj);saveData();}}catch(e){}
   _jhFilter='all';var se=document.getElementById('jh-search');if(se)se.value='';renderJobsHome();
   setTimeout(function(){var el=document.querySelector('[data-jh-name="'+currentJobId+'"]');if(el){el.scrollIntoView({block:'center'});el.focus();el.select();}},80);}
+function jhImport(id,clear){if(id!==currentJobId)selectJob(id);renderJobsHome();if(clear){importMenuClear();}else goToImport();}
 function jhAddPlan(id,kind){if(id!==currentJobId)selectJob(id);renderJobsHome();document.getElementById(kind==='d3'?'jh-file3':'jh-file').click();}
 async function jhUpload(inp,kind){try{await drUpload(inp,kind||'arch');}catch(e){}renderJobsHome();}
 function jhCard(j){
@@ -9763,6 +9764,8 @@ function jhCard(j){
     lab('STAGE &nbsp;'+(man?'<span style="color:#b7791f;">✋ SET BY HAND</span> <a href="#" onclick="jhSet(\''+id+'\',\'stage\',\'auto\');return false;" style="color:#2f4b8f;">↺ back to auto</a>':'<span style="color:#276a4c;">🔄 AUTO — follows the scans</span>'))+'<select onchange="jhSet(\''+id+'\',\'stage\',this.value)" style="'+ist+'font-weight:700;color:'+S.c+';">'+JH_STAGES.map(function(x){return '<option value="'+x.k+'"'+(x.k===st?' selected':'')+'>'+x.i+' '+x.t+(x.k===auto?' (auto)':'')+'</option>';}).join('')+'</select>'+
     (cn.n?'<div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;">'+[['tracker','✅ QC',cn.qc],['dispatch','📦 Dispatch',cn.dis],['installation','🚚 Install',cn.ins]].map(function(x){var pc=Math.round(x[2]/cn.n*100);return '<button class="btn btn-outline btn-sm" style="display:block;flex:1;min-width:86px;padding:4px 6px;font-size:11px;text-align:left;" title="Open this job in '+x[1].slice(2)+'" onclick="jhGo(\''+id+'\',\''+x[0]+'\')"><div style="display:flex;justify-content:space-between;gap:4px;white-space:nowrap;width:100%;"><b>'+x[1]+'</b><span>'+x[2]+'/'+cn.n+'</span></div><div style="height:4px;background:#e5e7eb;border-radius:3px;margin-top:3px;overflow:hidden;"><div style="height:100%;width:'+pc+'%;background:'+(pc===100?'#276a4c':'#3a6ea5')+';"></div></div></button>';}).join('')+'</div>':'')+
     (st==='design'?'<button class="btn btn-sm" style="margin-top:6px;width:100%;background:#a3506b;color:#fff;border:0;font-weight:700;" onclick="jhSet(\''+id+'\',\'stage\',\'drafting\')">➡️ Move to Drafting</button>':'')+
+    (!cn.n?(st!=='drafting'?'':'<button class="btn btn-sm" style="margin-top:6px;width:100%;background:#b7791f;color:#fff;border:0;font-weight:700;" onclick="jhImport(\''+id+'\')">📊 Add Excel files → Production</button>'):
+      '<div style="display:flex;gap:6px;margin-top:6px;"><button class="btn btn-outline btn-sm" style="flex:1;font-size:11px;" onclick="jhImport(\''+id+'\')">📊 Add more Excel</button><button class="btn btn-outline btn-sm" style="flex:1;font-size:11px;color:#b4412f;" onclick="jhImport(\''+id+'\',1)">🗑 Clear &amp; re-import</button></div>')+
     jhHistHTML(j)+
     lab('CLIENT NAME')+q('client',inf.client,'Client name')+
     lab('CLIENT PHONE')+'<div style="display:flex;gap:6px;">'+q('phone',inf.phone,'Phone number','tel')+(inf.phone?'<a class="btn btn-outline btn-sm" style="text-decoration:none;padding:5px 9px;" href="tel:'+qe(String(inf.phone).replace(/[^\d+]/g,''))+'" title="Call">📞</a>':'')+'</div>'+
@@ -10065,7 +10068,7 @@ function applyRole(r,nm,em){
   b.classList.toggle('no-settings',r!=='admin');
   var allowed=ROLE_VIEWS[r];
   ['cabinetlist','tracker','dispatch','installation','admin'].forEach(function(v){
-    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v347: Dispatch lives inside the QC & Dispatch page
+    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v348: Dispatch lives inside the QC & Dispatch page
   });
   var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=(r==='admin'||r==='qc')?'':'none';
   var ds=document.getElementById('disp-scan-box');var dcard=ds&&ds.closest('.card');if(dcard)dcard.style.display=(r==='admin'||r==='dispatch')?'':'none';
@@ -10074,7 +10077,7 @@ function applyRole(r,nm,em){
   if(!chip){chip=document.createElement('button');chip.id='user-chip';chip.className='tbtn';chip.onclick=function(){roleInit();};chip.style.fontWeight='700';
     var cb=document.getElementById('cloud-btn');cb.parentNode.insertBefore(chip,cb);}
   chip.textContent='👤 '+nm+' · '+ROLE_LABEL[r]+' ⇄';
-  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=!(r==='admin'||r==='designer');
+  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v348: renamed on the Jobs page only
   var re=document.getElementById('admin-rec-email');if(re&&!re.value)re.value=_adminEmail();var acs=document.getElementById('admin-code-card');if(acs)acs.style.display=r==='admin'?'':'none';
   switchView(ROLE_HOME[r]);
   if(typeof _presence==='function')setTimeout(_presence,500);
