@@ -9755,7 +9755,7 @@ function jhSet(id,field,val){var j=allJobs[id];if(!j)return;val=String(val||'').
   else jhInfo(j)[field]=val;
   // v356: the countdown starts the FIRST time a delivery date is set; changing the date later keeps that start,
   // so the colour moves to wherever the new date puts it (it does not restart at blue).
-  if(field==='dueDate'){var _i=jhInfo(j);if(val&&!_i.dueSetAt){var _t=new Date();_i.dueSetAt=_t.getFullYear()+'-'+String(_t.getMonth()+1).padStart(2,'0')+'-'+String(_t.getDate()).padStart(2,'0');}else delete _i.dueSetAt;}
+  if(field==='dueDate'){var _i=jhInfo(j);if(val&&!_i.dueSetAt){var _t=new Date();_i.dueSetAt=_t.getFullYear()+'-'+String(_t.getMonth()+1).padStart(2,'0')+'-'+String(_t.getDate()).padStart(2,'0');}else if(!val)delete _i.dueSetAt;}
   if(field==='factory'&&val&&!jhInfo(j).factoryAddr){var prev=jhFactories().filter(function(f){return f.n.toLowerCase()===val.toLowerCase()&&f.a;})[0];if(prev)jhInfo(j).factoryAddr=prev.a;}
   jhSave(id);renderJobsHome();showMsg('✓ Saved');}
 function jhFactories(){var m={};Object.values(allJobs||{}).forEach(function(j){var i=j.info||{};if(i.factory){var k=i.factory.toLowerCase();if(!m[k]||(!m[k].a&&i.factoryAddr))m[k]={n:i.factory,a:i.factoryAddr||''};}});return Object.values(m);}
