@@ -1056,7 +1056,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v369 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v370 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1100,10 +1100,10 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <button class="view-btn" id="vb-admin" onclick="switchView('admin')" style="display:none;">⚙️ Admin</button>
 </div>
 
-<!-- VIEW: JOBS (v369: own top-level page, first in the menu) -->
+<!-- VIEW: JOBS (v370: own top-level page, first in the menu) -->
 <div id="view-jobs" style="display:none;">
 <div class="content">
-<!-- v369: JOBS HOME — every job, its stage and client details -->
+<!-- v370: JOBS HOME — every job, its stage and client details -->
 <div id="panel-jobs">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
     <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every job from waiting to start to completed. The stage moves by itself when QC & Dispatch or Installation start scanning.</div></div>
@@ -1680,7 +1680,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 </div><!-- /#view-tracker -->
 
 <!-- VIEW: ADMIN (only visible to the admin) -->
-<!-- VIEW: MAINTENANCE (v369) — jobs that are installed and now in Maintenance -->
+<!-- VIEW: MAINTENANCE (v370) — jobs that are installed and now in Maintenance -->
 <div id="view-maint" style="display:none;"><div class="content">
   <div style="margin-bottom:10px;"><div style="font-size:18px;font-weight:700;">🔧 Maintenance</div><div style="font-size:12px;color:var(--gray);">Installed jobs that are now in Maintenance. Log each call-out or fix; mark the job Completed when nothing is left.</div></div>
   <input id="mt-search" placeholder="🔍 Search job, client, phone or address…" oninput="renderMaint()" style="width:100%;box-sizing:border-box;padding:10px 12px;font-size:14px;border:1px solid #d1d5db;border-radius:8px;margin-bottom:12px;"/>
@@ -2843,7 +2843,7 @@ function updateHeader(){
 function updateTopbarImportButton(){
   var btn=document.getElementById('topbar-import-btn');
   if(!btn)return;
-  btn.style.display='none';   // v369: Excel import now lives on each job card (Designer › Jobs)
+  btn.style.display='none';   // v370: Excel import now lives on each job card (Designer › Jobs)
   btn.textContent=units.length===0?'📋 Import':'📋 Import ▾';
 }
 
@@ -4676,7 +4676,7 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-// ===== v369: Hardware name defaults list + purchase link =====
+// ===== v370: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
 function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
@@ -8340,7 +8340,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v369 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v370 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9733,15 +9733,15 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
-// ===== v369: JOBS HOME =====
+// ===== v370: JOBS HOME =====
 var JH_STAGES=[{k:'design',t:'Waiting to Start',i:'📥',c:'#6b4c93'},{k:'drafting',t:'Drafting',i:'📐',c:'#a3506b'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qcd',t:'QC & Dispatch',i:'✅',c:'#0e7c86'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'maintenance',t:'Maintenance',i:'🔧',c:'#b45309'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
-// v369: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
+// v370: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
 function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
-function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'maintenance';/* v369: everything installed → Maintenance; Completed is chosen by hand */if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
+function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'maintenance';/* v370: everything installed → Maintenance; Completed is chosen by hand */if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
 var _jhFilter='all';
 function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
 function jhStage(j){return jhManual(j)||jhAutoStage(j);}
-// v369: date stamp every stage change (auto from scans, or set by hand)
+// v370: date stamp every stage change (auto from scans, or set by hand)
 function jhParseDate(t){if(!t)return null;var m=String(t).match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ap]m)?/i);
   if(m){var h=+m[4];if(m[7]){var pm=/p/i.test(m[7]);if(pm&&h<12)h+=12;if(!pm&&h===12)h=0;}var d=new Date(+m[3],+m[2]-1,+m[1],h,+m[5],+(m[6]||0));return isNaN(d)?null:d;}
   var d2=new Date(t);return isNaN(d2)?null:d2;}
@@ -9766,33 +9766,33 @@ function jhSave(id){
   if(id===currentJobId){saveData();return;}
   saveAllJobs();try{if(window.cloud&&cloud.user&&typeof cloudPushJob==='function')cloudPushJob(id);}catch(e){}}
 function jhSet(id,field,val,noDraw){var j=allJobs[id];if(!j)return;val=String(val||'').trim();
-  // v369: a job only goes into Production (or later) once its Excel files are uploaded
+  // v370: a job only goes into Production (or later) once its Excel files are uploaded
   if(field==='stage'&&(val==='production'||val==='qcd'||val==='installation')&&!((j.units||[]).length)){
     renderJobsHome();showMsg('📊 Upload the Excel files first — the job moves to Production once they are added');jhImport(id);return;}
   if(field==='name'){j.name=val||'Unnamed Job';if(id===currentJobId){document.getElementById('proj-input').value=j.name;document.getElementById('proj-display').textContent=j.name;}}
   else if(field==='site'){j.finishes=(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}};j.finishes.site=val;}
   else if(field==='stage'){var inf=jhInfo(j);delete inf.stage;if(!val||val==='auto'||val===jhAutoStage(j)){delete inf.stageManual;delete inf.stageAutoAt;}else{inf.stageManual=val;inf.stageAutoAt=jhAutoStage(j);}jhTrack(j,true);}
   else jhInfo(j)[field]=val;
-  // v369: the countdown starts the FIRST time a delivery date is set; changing the date later keeps that start,
+  // v370: the countdown starts the FIRST time a delivery date is set; changing the date later keeps that start,
   // so the colour moves to wherever the new date puts it (it does not restart at blue).
   if(field==='dueDate'){var _i=jhInfo(j);if(val&&!_i.dueSetAt){var _t=new Date();_i.dueSetAt=_t.getFullYear()+'-'+String(_t.getMonth()+1).padStart(2,'0')+'-'+String(_t.getDate()).padStart(2,'0');}else if(!val)delete _i.dueSetAt;}
   if(field==='factory'&&val&&!jhInfo(j).factoryAddr){var prev=jhFactories().filter(function(f){return f.n.toLowerCase()===val.toLowerCase()&&f.a;})[0];if(prev)jhInfo(j).factoryAddr=prev.a;}
   jhSave(id);if(noDraw)return;try{var _ae=document.activeElement;if(_ae&&_ae.blur&&document.getElementById('panel-jobs').contains(_ae))_ae.blur();}catch(e){}renderJobsHome();showMsg('✓ Saved');}
 function jhFactories(){var m={};Object.values(allJobs||{}).forEach(function(j){var i=j.info||{};if(i.factory){var k=i.factory.toLowerCase();if(!m[k]||(!m[k].a&&i.factoryAddr))m[k]={n:i.factory,a:i.factoryAddr||''};}});return Object.values(m);}
-// v369: delivery-date colour. The time from the day the date was set to the delivery date is split into 4 equal parts:
-// v369: split into 3 equal parts: blue → yellow → red, shown as the card's frame. Once the delivery date has passed the whole card turns purple. Completed jobs are not coloured.
+// v370: delivery-date colour. The time from the day the date was set to the delivery date is split into 4 equal parts:
+// v370: split into 3 equal parts: blue → yellow → red, shown as the card's frame. Once the delivery date has passed the whole card turns purple. Completed jobs are not coloured.
 var JH_DUE_COL=[{k:'blue',bg:'#dbeafe',bd:'#3b82f6',fg:'#1e40af'},{k:'yellow',bg:'#fef9c3',bd:'#eab308',fg:'#854d0e'},{k:'red',bg:'#fee2e2',bd:'#ef4444',fg:'#991b1b'},{k:'purple',bg:'#f3e8ff',bd:'#a855f7',fg:'#6b21a8'}];
-function jhDueCol(j){var inf=j.info||{};if(!inf.dueDate||jhStage(j)==='complete'||jhStage(j)==='maintenance')return null;   // v369: no deadline colour once in Maintenance / Completed
+function jhDueCol(j){var inf=j.info||{};if(!inf.dueDate||jhStage(j)==='complete'||jhStage(j)==='maintenance')return null;   // v370: no deadline colour once in Maintenance / Completed
   var due=new Date(inf.dueDate+'T00:00:00'),st=new Date((inf.dueSetAt||inf.dueDate)+'T00:00:00'),n=new Date();n.setHours(0,0,0,0);if(isNaN(due))return null;
   if(n>due)return JH_DUE_COL[3];
-  // v369: 7 days or less before delivery = always red (even if the date was just set).
+  // v370: 7 days or less before delivery = always red (even if the date was just set).
   // More than 7 days: the time until the last week starts is split in half — blue, then yellow.
   var left=Math.round((due-n)/86400000);if(left<=7)return JH_DUE_COL[2];
   var redStart=new Date(due);redStart.setDate(redStart.getDate()-7);
   var tot=(redStart-st)/86400000,el=(n-st)/86400000;if(!(tot>0))return JH_DUE_COL[1];
   return JH_DUE_COL[el/tot<0.5?0:1];}
 function jhFrame(dc,S){return !dc?'border-left:5px solid '+S.c+';':(dc.k==='purple'?'border:4px solid #7e22ce;background:#c084fc;':'border:4px solid '+dc.bd+';');}
-// v369: while the date box is being used, save and recolour the card in place (a full redraw would interrupt typing)
+// v370: while the date box is being used, save and recolour the card in place (a full redraw would interrupt typing)
 function jhDueLive(el,id){var v=el.value||'';if(v===(el.dataset.last||el.defaultValue))return;el.dataset.last=v;
   var j=allJobs[id];if(!j)return;jhSet(id,'dueDate',v,true);
   var card=el.closest('.card');if(!card)return;var dc=jhDueCol(j),st=jhStage(j),S=JH_STAGES.filter(function(x){return x.k===st;})[0];
@@ -9849,7 +9849,7 @@ function jhCard(j){
   '</div>';}
 function renderJobsHome(){
   var list=document.getElementById('jh-list'),fl=document.getElementById('jh-filter');if(!list||!fl)return;
-  var pn=document.getElementById('panel-jobs');var _ae=document.activeElement;if(pn&&_ae&&pn.contains(_ae)&&_ae.id!=='jh-search'&&_ae.tagName==='INPUT'&&/^(text|tel|url|search|)$/i.test(_ae.type||''))return;   // v369: only hold the redraw while typing in a text box (not for dropdowns / dates)
+  var pn=document.getElementById('panel-jobs');var _ae=document.activeElement;if(pn&&_ae&&pn.contains(_ae)&&_ae.id!=='jh-search'&&_ae.tagName==='INPUT'&&/^(text|tel|url|search|)$/i.test(_ae.type||''))return;   // v370: only hold the redraw while typing in a text box (not for dropdowns / dates)
   var q=((document.getElementById('jh-search')||{}).value||'').toLowerCase().trim();
   var all=Object.values(allJobs||{}),cnt={all:all.length};var _ch=false;all.forEach(function(j){try{var had=j.info&&Array.isArray(j.info.stageLog);if(jhTrack(j)||!had)_ch=true;}catch(e){}});if(_ch){clearTimeout(renderJobsHome._t);renderJobsHome._t=setTimeout(function(){try{saveAllJobs();}catch(e){}},1500);}all.forEach(function(j){var s=jhStage(j);cnt[s]=(cnt[s]||0)+1;});
   fl.innerHTML=[{k:'all',t:'All',i:'📂',c:'#374151'}].concat(JH_STAGES).map(function(x){var on=_jhFilter===x.k;return '<button class="btn btn-sm" style="border:1px solid '+(on?x.c:'#d1d5db')+';background:'+(on?x.c:'#fff')+';color:'+(on?'#fff':'#374151')+';" onclick="jhFilterSet(\''+x.k+'\')">'+x.i+' '+x.t+' ('+(cnt[x.k]||0)+')</button>';}).join('');
@@ -9863,21 +9863,23 @@ function renderJobsHome(){
     return '<div style="display:flex;align-items:center;gap:10px;margin:14px 0 8px;"><span style="font-size:14px;font-weight:700;color:'+S.c+';letter-spacing:.5px;">'+S.i+' '+S.t.toUpperCase()+'</span><span style="font-size:11px;color:#6b7280;font-weight:700;">'+g.length+'</span><div style="flex:1;height:2px;background:'+S.c+';opacity:.25;"></div></div>'+
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">'+g.map(jhCard).join('')+'</div>';}).join('');}
 (function(){var _rf=refresh;refresh=function(){var r=_rf.apply(this,arguments);try{var p=document.getElementById('view-jobs');if(p&&p.style.display!=='none')renderJobsHome();}catch(e){}return r;};})();
-// ===== v369: MAINTENANCE page =====
+// ===== v370: MAINTENANCE page =====
 function mtId(){return 'mt'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-// v369: how many days a job has been in Maintenance (counted from the day it moved there)
+// v370: how many days a job has been in Maintenance (counted from the day it moved there)
 function mtSince(j){var e=(((j.info||{}).stageLog)||[]).filter(function(x){return x.s==='maintenance';}).pop();return e?e.t:'';}
 function mtDays(j){var t=mtSince(j);if(!t)return 0;var a=new Date(t);a.setHours(0,0,0,0);var n=new Date();n.setHours(0,0,0,0);return Math.max(0,Math.round((n-a)/86400000));}
 function mtDaysTxt(d){return d===0?'today':(d===1?'1 day':d+' days');}
 function mtJobs(){return Object.values(allJobs||{}).filter(function(j){return jhStage(j)==='maintenance';});}
-// v369: each maintenance item = Room → Cabinet no. (if known) → Colour → what is needed → optional note + photos
+// v370: each maintenance item = Room → Cabinet no. (if known) → Colour → what is needed → optional note + photos
 var _mtDraft={};
 function mtD(id){return _mtDraft[id]=_mtDraft[id]||{room:'',cab:'',colour:'',text:'',note:'',photos:[]};}
 function mtDraftSet(id,k,v){mtD(id)[k]=v;}
-function mtRooms(j){var r=[];(j.units||[]).forEach(function(u){if(u&&u.room&&r.indexOf(u.room)<0)r.push(u.room);});try{(finInit(j).ms||[]).forEach(function(sp){if(sp.name&&r.indexOf(sp.name)<0)r.push(sp.name);});}catch(e){}
-  ['Kitchen',"Butler's",'Laundry','Bathroom','Ensuite','Vanity','WIR','Wardrobe','Bar','Alfresco','Study','Living'].forEach(function(x){if(r.indexOf(x)<0)r.push(x);});return r;}
-function mtCabs(j){return (j.units||[]).map(function(u){return u&&(u.cabId||u.id);}).filter(function(x,i,a){return x&&a.indexOf(x)===i;});}
+// v370: rooms and cabinets come from the imported Excel; colours from Designer › Finishes › Material Schedule
+function mtNat(a,b){return String(a).localeCompare(String(b),undefined,{numeric:true,sensitivity:'base'});}
+function mtRooms(j){var r=[];(j.units||[]).forEach(function(u){if(u&&u.room&&r.indexOf(u.room)<0)r.push(u.room);});return r.sort(mtNat);}
+function mtCabs(j,room){return (j.units||[]).filter(function(u){return u&&(!room||u.room===room);}).map(function(u){return u.cabId||u.id;}).filter(function(x,i,a){return x&&a.indexOf(x)===i;}).sort(mtNat);}
 function mtColours(j){var c=[];try{(finInit(j).ms||[]).forEach(function(sp){(sp.items||[]).forEach(function(it){var t=[it.brand,it.colour,it.finish].filter(Boolean).join(' ');if(it.colour&&c.indexOf(t)<0)c.push(t);});});}catch(e){}return c;}
+function mtPick(id,k,v){var d=mtD(id);d[k]=v;if(k==='room')d.cab='';renderMaint(true);}
 async function mtPhotos(inp,id){var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';var d=mtD(id);
   for(var i=0;i<fs.length;i++){try{var data=await siCompress(fs[i]);if(inp.getAttribute('capture')&&typeof skMarkup==='function'){var nd=await skMarkup(data);if(nd)data=nd;}
     var pid='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);_siCache[pid]=data;try{await window.storage.set('cbkph:'+pid,data);}catch(e){}try{upEnqueue(pid,id);}catch(e){}d.photos.push(pid);}catch(e){alert('Could not read photo: '+fs[i].name);}}
@@ -9885,7 +9887,8 @@ async function mtPhotos(inp,id){var fs=Array.prototype.slice.call(inp.files||[])
 function mtDropPhoto(id,k){mtD(id).photos.splice(k,1);renderMaint(true);}
 function mtAdd(id){var j=allJobs[id];if(!j)return;var d=mtD(id);
   ['room','cab','colour','text','note'].forEach(function(k){var el=document.getElementById('mt-'+k+'-'+id);if(el)d[k]=el.value.trim();});
-  if(!d.room){showMsg('Write the room first');var r=document.getElementById('mt-room-'+id);if(r)r.focus();return;}
+  if(!d.room){showMsg('Pick the room first');var r=document.getElementById('mt-room-'+id);if(r)r.focus();return;}
+  if(!d.colour){showMsg('Pick the colour first');var c=document.getElementById('mt-colour-'+id);if(c)c.focus();return;}
   if(!d.text){showMsg('Write what is needed');var t=document.getElementById('mt-text-'+id);if(t)t.focus();return;}
   var inf=jhInfo(j);inf.maint=inf.maint||[];
   inf.maint.unshift({id:mtId(),room:d.room,cab:d.cab,colour:d.colour,text:d.text,note:d.note,photos:d.photos.slice(),date:new Date().toISOString(),by:(window.SESSION&&SESSION.name)||'',done:false});
@@ -9897,28 +9900,31 @@ function mtComplete(id){var j=allJobs[id];if(!j)return;if(!confirm('Mark "'+(j.n
 function mtBadge(){var n=0;mtJobs().forEach(function(j){n+=((j.info||{}).maint||[]).filter(function(m){return !m.done;}).length;});var b=document.getElementById('vb-mt-badge');if(b){b.textContent=n;b.style.display=n?'':'none';}}
 function mtFormHTML(j){var id=j.id,d=mtD(id),fs='width:100%;box-sizing:border-box;padding:9px 11px;font-size:15px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;';
   var L=function(t,req){return '<div style="font-size:10px;font-weight:800;color:#6b7280;letter-spacing:.5px;margin:0 0 3px;">'+t+(req?' <span style="color:#b4412f;">*</span>':'')+'</div>';};
-  var dl=function(nm,arr){return '<datalist id="'+nm+'">'+arr.map(function(x){return '<option value="'+qe(x)+'">';}).join('')+'</datalist>';};
-  var inp=function(k,ph,list){return '<input id="mt-'+k+'-'+id+'" value="'+qe(d[k]||'')+'" placeholder="'+ph+'"'+(list?' list="'+list+'"':'')+' spellcheck="false" oninput="mtDraftSet(\''+id+'\',\''+k+'\',this.value)" style="'+fs+'"/>';};
+  var sel=function(k,arr,ph){return '<select id="mt-'+k+'-'+id+'" onchange="mtPick(\''+id+'\',\''+k+'\',this.value)" style="'+fs+(d[k]?'font-weight:700;':'color:#6b7280;')+'"><option value="">'+ph+'</option>'+arr.map(function(x){return '<option value="'+qe(x)+'"'+(x===d[k]?' selected':'')+'>'+esc(x)+'</option>';}).join('')+'</select>';};
+  var txt=function(k,ph){return '<input id="mt-'+k+'-'+id+'" value="'+qe(d[k]||'')+'" placeholder="'+ph+'" spellcheck="false" oninput="mtDraftSet(\''+id+'\',\''+k+'\',this.value)" onchange="renderMaint(true)" style="'+fs+'"/>';};
+  var rooms=mtRooms(j),cabs=mtCabs(j,d.room),cols=mtColours(j);
+  var ready=!!(String(d.room||'').trim()&&String(d.colour||'').trim());
   return '<div style="margin-top:12px;padding:12px;border:1px dashed #f59e0b;border-radius:10px;background:#fffbeb;">'+
     '<div style="font-size:13px;font-weight:800;color:#b45309;margin-bottom:8px;">➕ New maintenance item</div>'+
-    dl('mt-dl-room-'+id,mtRooms(j))+dl('mt-dl-cab-'+id,mtCabs(j))+dl('mt-dl-col-'+id,mtColours(j))+
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">'+
-      '<div>'+L('1 · ROOM',1)+inp('room','e.g. Kitchen','mt-dl-room-'+id)+'</div>'+
-      '<div>'+L('2 · CABINET NO. (if known)')+inp('cab','e.g. R1C107','mt-dl-cab-'+id)+'</div>'+
-      '<div>'+L('3 · COLOUR')+inp('colour','e.g. Polytec Florentine Walnut','mt-dl-col-'+id)+'</div></div>'+
-    '<div style="margin-top:10px;">'+L('4 · WHAT IS NEEDED',1)+'<textarea id="mt-text-'+id+'" rows="2" placeholder="e.g. adjust pantry door hinge" oninput="mtDraftSet(\''+id+'\',\'text\',this.value)" style="'+fs+'resize:vertical;">'+esc(d.text||'')+'</textarea></div>'+
-    '<div style="margin-top:10px;">'+L('NOTE (optional)')+inp('note','anything extra')+'</div>'+
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;">'+
-      '<label class="btn btn-outline btn-sm" style="cursor:pointer;">📷 Take photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="mtPhotos(this,\''+id+'\')"></label>'+
-      '<label class="btn btn-outline btn-sm" style="cursor:pointer;">🖼 From gallery<input type="file" accept="image/*" multiple style="display:none" onchange="mtPhotos(this,\''+id+'\')"></label>'+
-      (d.photos||[]).map(function(pid,k){return '<span style="position:relative;display:inline-block;"><img data-pid="'+pid+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #d1d5db;"/><span onclick="mtDropPhoto(\''+id+'\','+k+')" title="Remove" style="position:absolute;top:-6px;right:-6px;background:#b4412f;color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;line-height:18px;text-align:center;cursor:pointer;">✕</span></span>';}).join('')+
-      '<button class="btn btn-sm" style="margin-left:auto;background:#b45309;color:#fff;border:0;font-weight:700;padding:8px 18px;" onclick="mtAdd(\''+id+'\')">➕ Add item</button></div></div>';}
+      '<div>'+L('1 · ROOM',1)+(rooms.length?sel('room',rooms,'— pick the room —'):txt('room','No Excel yet — type the room'))+'</div>'+
+      '<div>'+L('2 · CABINET NO. (if known)')+(cabs.length?sel('cab',cabs,d.room?'— not sure / none —':'— pick the room first —'):txt('cab','e.g. R1C107'))+'</div>'+
+      '<div>'+L('3 · COLOUR',1)+(cols.length?sel('colour',cols,'— pick the colour —'):txt('colour','Material Schedule is empty — type the colour'))+'</div></div>'+
+    (ready?'':'<div style="margin-top:10px;font-size:13px;font-weight:700;color:#b4412f;">⚠️ Pick the <u>room</u> and the <u>colour</u> first — then you can write what is needed.</div>')+
+    '<div style="margin-top:10px;'+(ready?'':'opacity:.45;pointer-events:none;')+'">'+
+      '<div>'+L('4 · WHAT IS NEEDED',1)+'<textarea id="mt-text-'+id+'" rows="2" '+(ready?'':'disabled ')+'placeholder="e.g. adjust pantry door hinge" oninput="mtDraftSet(\''+id+'\',\'text\',this.value)" style="'+fs+'resize:vertical;">'+esc(d.text||'')+'</textarea></div>'+
+      '<div style="margin-top:10px;">'+L('NOTE (optional)')+'<input id="mt-note-'+id+'" '+(ready?'':'disabled ')+'value="'+qe(d.note||'')+'" placeholder="anything extra" oninput="mtDraftSet(\''+id+'\',\'note\',this.value)" style="'+fs+'"/></div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;">'+
+        '<label class="btn btn-outline btn-sm" style="cursor:pointer;">📷 Take photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="mtPhotos(this,\''+id+'\')"></label>'+
+        '<label class="btn btn-outline btn-sm" style="cursor:pointer;">🖼 From gallery<input type="file" accept="image/*" multiple style="display:none" onchange="mtPhotos(this,\''+id+'\')"></label>'+
+        (d.photos||[]).map(function(pid,k){return '<span style="position:relative;display:inline-block;"><img data-pid="'+pid+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #d1d5db;"/><span onclick="mtDropPhoto(\''+id+'\','+k+')" title="Remove" style="position:absolute;top:-6px;right:-6px;background:#b4412f;color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;line-height:18px;text-align:center;cursor:pointer;">✕</span></span>';}).join('')+
+        '<button class="btn btn-sm" style="margin-left:auto;background:#b45309;color:#fff;border:0;font-weight:700;padding:8px 18px;" onclick="mtAdd(\''+id+'\')">➕ Add item</button></div></div></div>';}
 function renderMaint(force){mtBadge();var list=document.getElementById('mt-list');if(!list)return;
   var ae=document.activeElement;if(!force&&ae&&(ae.tagName==='TEXTAREA'||ae.tagName==='INPUT')&&ae.type!=='checkbox'&&list.contains(ae))return;
   var q=((document.getElementById('mt-search')||{}).value||'').toLowerCase().trim();
   var jobs=mtJobs().filter(function(j){if(!q)return true;var i=j.info||{};return [j.name,i.client,i.phone,j.finishes&&j.finishes.site].join(' ').toLowerCase().indexOf(q)>=0;}).sort(function(a,b){return mtDays(b)-mtDays(a)||String(a.name||'').localeCompare(String(b.name||''));});   // longest in maintenance first
   var canDone=hasRole('designer');
-  // v369: add any job to Maintenance by hand from here (e.g. an older job that was installed before the app tracked it)
+  // v370: add any job to Maintenance by hand from here (e.g. an older job that was installed before the app tracked it)
   var others=Object.values(allJobs||{}).filter(function(j){var st=jhStage(j);return st!=='maintenance';}).sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''));});
   var adder=false?'<div class="card" style="margin:0 0 12px;border-left:4px solid #b45309;"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><b style="font-size:13px;">➕ Add a job to Maintenance:</b>'+
     '<select id="mt-pick" style="flex:1;min-width:200px;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;"><option value="">— pick a job —</option>'+others.map(function(j){var S=JH_STAGES.filter(function(x){return x.k===jhStage(j);})[0]||{};return '<option value="'+j.id+'">'+esc(j.name||'Job')+' ('+esc(S.t||'')+')</option>';}).join('')+'</select>'+
@@ -9967,7 +9973,7 @@ async function drUpload(inp,kind){kind=kind||'prod';
     }catch(e){alert('Could not save '+f.name+' on this device.');}
   }
   if(pe)pe.textContent='';renderDrawings();}
-// v369: always show the real file name, including the extension (older PDFs were saved without ".pdf")
+// v370: always show the real file name, including the extension (older PDFs were saved without ".pdf")
 function drName(x){var n=String((x&&x.name)||'');if(!/\.[a-z0-9]{2,5}$/i.test(n)&&drIsPdf(x))n+='.pdf';return n;}
 function drKind(x){return x.kind==='arch'?'arch':(x.kind==='d3'?'d3':'prod');}
 function drIsPdf(x){return x.kind!=='d3'||/pdf/i.test(x.mime||'')||/\.pdf$/i.test(x.name||'');}
@@ -10026,7 +10032,7 @@ function renderInstFin(){var tabs=document.getElementById('if-tabs'),body=docume
     if(m){var u=/^www\./i.test(t)?'https://'+t:t;td.innerHTML='<a href="'+qe(u)+'" target="_blank" rel="noopener" style="color:#2c5a87;font-weight:700;word-break:break-all;">🔗 Open link</a>';}
     else if(/https?:\/\/\S+/i.test(t)){td.innerHTML=esc(t).replace(/(https?:\/\/[^\s<]+)/gi,function(u){return '<a href="'+u+'" target="_blank" rel="noopener" style="color:#2c5a87;font-weight:700;word-break:break-all;">'+u+'</a>';});}});
   body.querySelectorAll('input,select,textarea,button').forEach(function(i){i.disabled=true;});
-  // v369: clear layout for the installer — every space/room in its own box, proper table lines, empty spaces hidden
+  // v370: clear layout for the installer — every space/room in its own box, proper table lines, empty spaces hidden
   try{body.classList.add('inst-fin');
     var hs=Array.prototype.slice.call(body.querySelectorAll('h3')),shown=0;
     hs.forEach(function(h){var t=h.nextElementSibling;if(!t||t.tagName!=='TABLE')return;
@@ -10199,7 +10205,7 @@ var ROLE_VIEWS={admin:['jobs','cabinetlist','tracker','dispatch','installation',
 var ROLE_HOME={admin:'jobs',designer:'jobs',qc:'tracker',dispatch:'dispatch',installer:'installation'};
 var ROLE_LABEL={admin:'Admin',designer:'Designer',qc:'QC Checker',dispatch:'Dispatch / Shipping',installer:'Installer'};
 var SESSION={role:'',name:'',roles:[]};
-// v369: a person can hold several sections; they get all of them at once (no "Enter as" question). Admin has everything.
+// v370: a person can hold several sections; they get all of them at once (no "Enter as" question). Admin has everything.
 function hasRole(x){var R=(SESSION.roles&&SESSION.roles.length)?SESSION.roles:(SESSION.role?[SESSION.role]:[]);return R.indexOf('admin')>-1||R.indexOf(x)>-1;}
 var ROLE_ORDER=['admin','designer','installer','dispatch','qc'];
 function roleViews(){var R=(SESSION.roles&&SESSION.roles.length)?SESSION.roles:[SESSION.role],v=[];R.forEach(function(r){(ROLE_VIEWS[r]||[]).forEach(function(x){if(v.indexOf(x)<0)v.push(x);});});return v;}
@@ -10244,7 +10250,7 @@ function applyRole(r,nm,em,roles){
   b.classList.toggle('no-settings',!H('admin'));
   var allowed=roleViews();
   ['jobs','cabinetlist','tracker','dispatch','installation','maint','admin'].forEach(function(v){
-    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v369: Dispatch lives inside the QC & Dispatch page
+    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v370: Dispatch lives inside the QC & Dispatch page
   });
   var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=H('qc')?'':'none';
   var ds=document.getElementById('disp-scan-box');var dcard=ds&&ds.closest('.card');if(dcard)dcard.style.display=H('dispatch')?'':'none';
@@ -10253,8 +10259,8 @@ function applyRole(r,nm,em,roles){
   if(!chip){chip=document.createElement('button');chip.id='user-chip';chip.className='tbtn';chip.onclick=function(){roleInit();};chip.style.fontWeight='700';
     var cb=document.getElementById('cloud-btn');cb.parentNode.insertBefore(chip,cb);}
   chip.textContent='👤 '+nm+' · '+(H('admin')?ROLE_LABEL.admin:ROLE_ORDER.filter(function(x){return roles.indexOf(x)>-1;}).map(function(x){return ROLE_LABEL[x];}).join(' + '))+' ⇄';
-  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v369: renamed on the Jobs page only
-  // v369: Admin / Designer pick and create jobs on the Designer › 🏠 Jobs page, so the top Jobs button + name box are hidden for them.
+  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v370: renamed on the Jobs page only
+  // v370: Admin / Designer pick and create jobs on the Designer › 🏠 Jobs page, so the top Jobs button + name box are hidden for them.
   // QC / Dispatch / Installer still use them, because they don't see the Jobs page.
   var topJobs=H('designer');var jb=document.querySelector('.topbar-right .jobs-btn');if(jb)jb.style.display=topJobs?'none':'';if(pin)pin.style.display=topJobs?'none':'';
   var re=document.getElementById('admin-rec-email');if(re&&!re.value)re.value=_adminEmail();var acs=document.getElementById('admin-code-card');if(acs)acs.style.display=H('admin')?'':'none';
@@ -10351,7 +10357,7 @@ function rcSubmitCode(){
   try{localStorage.setItem('cbk-code-fails','{"n":0,"until":0}');}catch(e){}
   var roles=(u.roles||[]).filter(function(r){return ROLE_VIEWS[r];});
   if(!roles.length){er.textContent='The admin has not given you a section yet.';return;}
-  applyRole(roles[0],u.name||u.email,u.email,roles);return;   // v369: all of this person's sections at once — no "Enter as" question
+  applyRole(roles[0],u.name||u.email,u.email,roles);return;   // v370: all of this person's sections at once — no "Enter as" question
   var box=document.getElementById('rc-roles');
   box.innerHTML='<div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:8px;">Enter as</div>'+roles.map(function(r){return '<button class="rbtn" data-r="'+r+'">'+ROLE_LABEL[r]+'</button>';}).join('');
   box.querySelectorAll('button').forEach(function(b){b.onclick=function(){applyRole(b.getAttribute('data-r'),u.name||u.email,u.email);};});
