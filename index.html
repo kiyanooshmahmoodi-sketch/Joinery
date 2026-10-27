@@ -1048,7 +1048,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v344 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v345 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1105,7 +1105,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="tab" onclick="showTab('drawings',this)">📐 Drawings</div>
 </div>
 <div class="content" id="cabinetlist-content">
-<!-- v344: JOBS HOME — every job, its stage and client details -->
+<!-- v345: JOBS HOME — every job, its stage and client details -->
 <div class="panel active" id="panel-jobs">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
     <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every project from interior design to completed. The stage moves by itself when QC & Dispatch or Installation start scanning.</div></div>
@@ -4644,7 +4644,7 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-// ===== v344: Hardware name defaults list + purchase link =====
+// ===== v345: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
 function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
@@ -7791,6 +7791,7 @@ function saveCurrentJob(){
     notesList:Array.isArray(existing.notesList)?existing.notesList:[],
     info:(existing.info&&typeof existing.info==='object')?existing.info:{},
     priority:(typeof existing.priority==='number')?existing.priority:Date.now()};
+  try{if(typeof jhTrack==='function')jhTrack(allJobs[currentJobId]);}catch(e){}
 }
 
 function autoSave(){
@@ -8307,7 +8308,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v344 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v345 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9694,14 +9695,34 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
-// ===== v344: JOBS HOME =====
+// ===== v345: JOBS HOME =====
 var JH_STAGES=[{k:'design',t:'Interior Design',i:'🎨',c:'#6b4c93'},{k:'drafting',t:'Drafting',i:'📐',c:'#a3506b'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qcd',t:'QC & Dispatch',i:'✅',c:'#0e7c86'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
-// v344: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
+// v345: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
 function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
 function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'complete';if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
 var _jhFilter='all';
 function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
 function jhStage(j){return jhManual(j)||jhAutoStage(j);}
+// v345: date stamp every stage change (auto from scans, or set by hand)
+function jhParseDate(t){if(!t)return null;var m=String(t).match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ap]m)?/i);
+  if(m){var h=+m[4];if(m[7]){var pm=/p/i.test(m[7]);if(pm&&h<12)h+=12;if(!pm&&h===12)h=0;}var d=new Date(+m[3],+m[2]-1,+m[1],h,+m[5],+(m[6]||0));return isNaN(d)?null:d;}
+  var d2=new Date(t);return isNaN(d2)?null:d2;}
+function jhBackfill(j){var L=[],ord=JH_STAGES.map(function(x){return x.k;}),cur=ord.indexOf(jhStage(j));
+  var add=function(k,d){if(d&&ord.indexOf(k)<=cur)L.push({s:k,t:d.toISOString(),by:'',from:'scans'});};
+  add('design',jhParseDate(j.date));
+  var first=function(arr){var best=null;arr.forEach(function(d){if(d&&(!best||d<best))best=d;});return best;};
+  var qd=[],ins=[];((j.units)||[]).forEach(function(u){if(!u)return;(u.qcLog||[]).forEach(function(x){qd.push(jhParseDate(x.date));});(u.dispatchLog||[]).forEach(function(x){qd.push(jhParseDate(x.date));});if(u.dispatchedDate)qd.push(jhParseDate(u.dispatchedDate));(u.installLog||[]).forEach(function(x){ins.push(jhParseDate(x.date));});if(u.installedDate)ins.push(jhParseDate(u.installedDate));});
+  add('qcd',first(qd));add('installation',first(ins));
+  if(jhStage(j)==='complete'){var last=null;ins.forEach(function(d){if(d&&(!last||d>last))last=d;});add('complete',last);}
+  return L;}
+function jhTrack(j,hand){if(!j)return;var inf=jhInfo(j),st=jhStage(j);if(!Array.isArray(inf.stageLog))inf.stageLog=jhBackfill(j);
+  var L=inf.stageLog,last=L[L.length-1];if(!last||last.s!==st){L.push({s:st,t:new Date().toISOString(),by:(window.SESSION&&SESSION.name)||'',hand:!!hand});return true;}return false;}
+function jhFmt(t){var d=new Date(t);if(isNaN(d))return '';return d.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})+((d.getHours()||d.getMinutes())?' · '+d.toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'}):'');}
+function jhHistHTML(j){var L=((j.info||{}).stageLog)||[];if(!L.length)return '';
+  return '<details style="margin-top:6px;" onclick="event.stopPropagation()"><summary style="font-size:11px;font-weight:700;color:#4b5563;cursor:pointer;">🕓 Stage dates ('+L.length+')</summary><div style="margin-top:4px;border-left:2px solid #e5e7eb;padding-left:8px;">'+
+    L.map(function(e){var S=JH_STAGES.filter(function(x){return x.k===e.s;})[0]||{i:'•',t:e.s,c:'#6b7280'};
+      return '<div style="font-size:11px;margin:3px 0;display:flex;gap:6px;justify-content:space-between;"><b style="color:'+S.c+';">'+S.i+' '+esc(S.t)+'</b><span style="color:#374151;white-space:nowrap;">'+jhFmt(e.t)+'</span></div>'+
+        ((e.by||e.hand||e.from)?'<div style="font-size:10px;color:#9ca3af;margin:-2px 0 3px;">'+(e.from==='scans'?'from first scan / job date':(e.hand?'set by hand':'auto'))+(e.by?' · '+esc(e.by):'')+'</div>':'');}).join('')+'</div></details>';}
 function jhInfo(j){if(!j.info||typeof j.info!=='object')j.info={};return j.info;}
 function jhSave(id){
   if(id===currentJobId){saveData();return;}
@@ -9709,13 +9730,13 @@ function jhSave(id){
 function jhSet(id,field,val){var j=allJobs[id];if(!j)return;val=String(val||'').trim();
   if(field==='name'){j.name=val||'Unnamed Job';if(id===currentJobId){document.getElementById('proj-input').value=j.name;document.getElementById('proj-display').textContent=j.name;}}
   else if(field==='site'){j.finishes=(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}};j.finishes.site=val;}
-  else if(field==='stage'){var inf=jhInfo(j);delete inf.stage;if(!val||val==='auto'||val===jhAutoStage(j)){delete inf.stageManual;delete inf.stageAutoAt;}else{inf.stageManual=val;inf.stageAutoAt=jhAutoStage(j);}}
+  else if(field==='stage'){var inf=jhInfo(j);delete inf.stage;if(!val||val==='auto'||val===jhAutoStage(j)){delete inf.stageManual;delete inf.stageAutoAt;}else{inf.stageManual=val;inf.stageAutoAt=jhAutoStage(j);}jhTrack(j,true);}
   else jhInfo(j)[field]=val;
   jhSave(id);renderJobsHome();showMsg('✓ Saved');}
 function jhFilterSet(k){_jhFilter=k;renderJobsHome();}
 function jhGo(id,view){if(id!==currentJobId)selectJob(id);switchView(view);}
 function jhOpen(id){if(id!==currentJobId)selectJob(id);var t=document.querySelector(".tabs .tab[onclick*=\"'finishes'\"]");if(t)showTab('finishes',t);}
-async function jhNew(){await newJob();
+async function jhNew(){await newJob();try{var nj=allJobs[currentJobId];if(nj){jhInfo(nj).stageLog=[];jhTrack(nj);saveData();}}catch(e){}
   _jhFilter='all';var se=document.getElementById('jh-search');if(se)se.value='';renderJobsHome();
   setTimeout(function(){var el=document.querySelector('[data-jh-name="'+currentJobId+'"]');if(el){el.scrollIntoView({block:'center'});el.focus();el.select();}},80);}
 function jhAddPlan(id){if(id!==currentJobId)selectJob(id);renderJobsHome();document.getElementById('jh-file').click();}
@@ -9732,6 +9753,7 @@ function jhCard(j){
       (cur?'<span style="font-size:10px;font-weight:700;color:#fff;background:'+S.c+';border-radius:4px;padding:2px 6px;">OPEN</span>':'')+'</div>'+
     lab('STAGE &nbsp;'+(man?'<span style="color:#b7791f;">✋ SET BY HAND</span> <a href="#" onclick="jhSet(\''+id+'\',\'stage\',\'auto\');return false;" style="color:#2f4b8f;">↺ back to auto</a>':'<span style="color:#276a4c;">🔄 AUTO — follows the scans</span>'))+'<select onchange="jhSet(\''+id+'\',\'stage\',this.value)" style="'+ist+'font-weight:700;color:'+S.c+';">'+JH_STAGES.map(function(x){return '<option value="'+x.k+'"'+(x.k===st?' selected':'')+'>'+x.i+' '+x.t+(x.k===auto?' (auto)':'')+'</option>';}).join('')+'</select>'+
     (cn.n?'<div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;">'+[['tracker','✅ QC',cn.qc],['dispatch','📦 Dispatch',cn.dis],['installation','🚚 Install',cn.ins]].map(function(x){var pc=Math.round(x[2]/cn.n*100);return '<button class="btn btn-outline btn-sm" style="display:block;flex:1;min-width:86px;padding:4px 6px;font-size:11px;text-align:left;" title="Open this job in '+x[1].slice(2)+'" onclick="jhGo(\''+id+'\',\''+x[0]+'\')"><div style="display:flex;justify-content:space-between;gap:4px;white-space:nowrap;width:100%;"><b>'+x[1]+'</b><span>'+x[2]+'/'+cn.n+'</span></div><div style="height:4px;background:#e5e7eb;border-radius:3px;margin-top:3px;overflow:hidden;"><div style="height:100%;width:'+pc+'%;background:'+(pc===100?'#276a4c':'#3a6ea5')+';"></div></div></button>';}).join('')+'</div>':'')+
+    jhHistHTML(j)+
     lab('CLIENT NAME')+q('client',inf.client,'Client name')+
     lab('CLIENT PHONE')+'<div style="display:flex;gap:6px;">'+q('phone',inf.phone,'Phone number','tel')+(inf.phone?'<a class="btn btn-outline btn-sm" style="text-decoration:none;padding:5px 9px;" href="tel:'+qe(String(inf.phone).replace(/[^\d+]/g,''))+'" title="Call">📞</a>':'')+'</div>'+
     lab('ADDRESS')+'<div style="display:flex;gap:6px;">'+q('site',site,'Site address')+(site?'<a class="btn btn-outline btn-sm" style="text-decoration:none;padding:5px 9px;" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(site)+'" title="Open in Maps">📍</a>':'')+'</div>'+
@@ -9744,7 +9766,7 @@ function renderJobsHome(){
   var list=document.getElementById('jh-list'),fl=document.getElementById('jh-filter');if(!list||!fl)return;
   var pn=document.getElementById('panel-jobs');if(pn&&document.activeElement&&pn.contains(document.activeElement)&&document.activeElement.id!=='jh-search'&&document.activeElement.tagName!=='BUTTON')return;
   var q=((document.getElementById('jh-search')||{}).value||'').toLowerCase().trim();
-  var all=Object.values(allJobs||{}),cnt={all:all.length};all.forEach(function(j){var s=jhStage(j);cnt[s]=(cnt[s]||0)+1;});
+  var all=Object.values(allJobs||{}),cnt={all:all.length};var _ch=false;all.forEach(function(j){try{var had=j.info&&Array.isArray(j.info.stageLog);if(jhTrack(j)||!had)_ch=true;}catch(e){}});if(_ch){clearTimeout(renderJobsHome._t);renderJobsHome._t=setTimeout(function(){try{saveAllJobs();}catch(e){}},1500);}all.forEach(function(j){var s=jhStage(j);cnt[s]=(cnt[s]||0)+1;});
   fl.innerHTML=[{k:'all',t:'All',i:'📂',c:'#374151'}].concat(JH_STAGES).map(function(x){var on=_jhFilter===x.k;return '<button class="btn btn-sm" style="border:1px solid '+(on?x.c:'#d1d5db')+';background:'+(on?x.c:'#fff')+';color:'+(on?'#fff':'#374151')+';" onclick="jhFilterSet(\''+x.k+'\')">'+x.i+' '+x.t+' ('+(cnt[x.k]||0)+')</button>';}).join('');
   var jobs=all.filter(function(j){if(_jhFilter!=='all'&&jhStage(j)!==_jhFilter)return false;if(!q)return true;var inf=j.info||{};return [j.name,inf.client,inf.phone,j.finishes&&j.finishes.site].join(' ').toLowerCase().indexOf(q)>=0;});
   if(!all.length){list.innerHTML='<div style="text-align:center;color:#6b7280;padding:30px;border:1px dashed #d1d5db;border-radius:10px;">No jobs yet — click <b>+ New Job</b> to add your first project.</div>';return;}
@@ -10021,7 +10043,7 @@ function applyRole(r,nm,em){
   b.classList.toggle('no-settings',r!=='admin');
   var allowed=ROLE_VIEWS[r];
   ['cabinetlist','tracker','dispatch','installation','admin'].forEach(function(v){
-    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v344: Dispatch lives inside the QC & Dispatch page
+    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v345: Dispatch lives inside the QC & Dispatch page
   });
   var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=(r==='admin'||r==='qc')?'':'none';
   var ds=document.getElementById('disp-scan-box');var dcard=ds&&ds.closest('.card');if(dcard)dcard.style.display=(r==='admin'||r==='dispatch')?'':'none';
