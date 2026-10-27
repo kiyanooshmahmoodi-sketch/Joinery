@@ -1048,7 +1048,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v340 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v341 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1093,8 +1093,9 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 <!-- VIEW: CABINET LIST (Cabinet & Part List, Glass Door, Steccawood & Laminate, Kickboard, Import) -->
 <div id="view-cabinetlist">
 <div class="tabs">
+  <div class="tab active" onclick="showTab('jobs',this)">🏠 Jobs</div>
   <div class="tab" onclick="showTab('finishes',this)">📋 Finishes &amp; Appliances</div>
-  <div class="tab active" onclick="showTab('units',this)">📦 Cabinet & Part List <span class="tbadge" id="tb-rem">0</span></div>
+  <div class="tab" onclick="showTab('units',this)">📦 Cabinet & Part List <span class="tbadge" id="tb-rem">0</span></div>
   <div class="tab" onclick="showTab('hardware',this)">🛒 Purchasing</div>
   <div class="tab" onclick="showTab('kickboard',this)">🦶 Kickboard</div>
   <div class="tab" onclick="showTab('closetrod',this)">🪧 Closet Rod</div>
@@ -1104,6 +1105,17 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="tab" onclick="showTab('drawings',this)">📐 Drawings</div>
 </div>
 <div class="content" id="cabinetlist-content">
+<!-- v341: JOBS HOME — every job, its stage and client details -->
+<div class="panel active" id="panel-jobs">
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+    <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every project from interior design to completed — client details, stage and architect plans.</div></div>
+    <button class="btn btn-blue btn-sm" onclick="jhNew()">+ New Job</button>
+  </div>
+  <input id="jh-search" placeholder="🔍 Search job, client, phone or address…" oninput="renderJobsHome()" style="width:100%;box-sizing:border-box;padding:10px 12px;font-size:14px;border:1px solid #d1d5db;border-radius:8px;margin-bottom:10px;"/>
+  <div id="jh-filter" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
+  <div id="jh-list"></div>
+  <input type="file" id="jh-file" accept="application/pdf,.pdf" multiple style="display:none" onchange="jhUpload(this)"/>
+</div>
 <!-- FINISHES & APPLIANCES CHECKLIST -->
 <div class="panel" id="panel-drawings">
   <div style="margin-bottom:10px;"><div style="font-size:18px;font-weight:700;">📐 Drawings — upload PDF plans</div><div style="font-size:12px;color:var(--gray);">Upload the Installation Drawings and Architectural Drawings here. The installer sees them in his Drawings tab (view only).</div></div>
@@ -1121,7 +1133,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 </div>
 
 <!-- ALL UNITS -->
-<div class="panel active" id="panel-units">
+<div class="panel" id="panel-units">
   <div id="units-sub" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
     <button id="us-list" class="btn" onclick="unitsView('list')">📦 Cabinets &amp; Parts</button>
     <button id="us-sum" class="btn btn-outline" onclick="unitsView('sum')">📊 Summary</button>
@@ -4630,7 +4642,7 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-// ===== v340: Hardware name defaults list + purchase link =====
+// ===== v341: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
 function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
@@ -7549,7 +7561,7 @@ function showTab(n,el){
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
   document.getElementById('panel-'+n).classList.add('active');el.classList.add('active');
-  if(n==='finishes')renderFinishes();if(n==='drawings'){try{renderDrawings();}catch(e){}}if(n==='issues')renderSiteIssues();if(n==='notes')renderNotesDoc();if(n==='summary')renderSummary();if(n==='hardware'||n==='closetrod')renderHardware();if(n==='glassdoor')renderGlassDoors();if(n==='stecca')renderStecca();if(n==='kickboard')renderKickboard();updateReminderBanners();
+  if(n==='jobs')renderJobsHome();if(n==='finishes')renderFinishes();if(n==='drawings'){try{renderDrawings();}catch(e){}}if(n==='issues')renderSiteIssues();if(n==='notes')renderNotesDoc();if(n==='summary')renderSummary();if(n==='hardware'||n==='closetrod')renderHardware();if(n==='glassdoor')renderGlassDoors();if(n==='stecca')renderStecca();if(n==='kickboard')renderKickboard();updateReminderBanners();
   if(n==='qc'){setTimeout(focusQcScanBox,60);}
 }
 
@@ -7775,6 +7787,7 @@ function saveCurrentJob(){
     finishes:(existing.finishes&&typeof existing.finishes==='object')?existing.finishes:{site:'',v:{}},
     sketches:Array.isArray(existing.sketches)?existing.sketches:[],
     notesList:Array.isArray(existing.notesList)?existing.notesList:[],
+    info:(existing.info&&typeof existing.info==='object')?existing.info:{},
     priority:(typeof existing.priority==='number')?existing.priority:Date.now()};
 }
 
@@ -7953,6 +7966,7 @@ function _normJob(id,j){
     notes:j.notes||[],noteHTML:(typeof j.noteHTML==='string')?j.noteHTML:'',docHTML:(typeof j.docHTML==='string')?j.docHTML:'',siteIssues:Array.isArray(j.siteIssues)?j.siteIssues:[],installIssues:Array.isArray(j.installIssues)?j.installIssues:[],drawings:Array.isArray(j.drawings)?j.drawings:[],deleted:Array.isArray(j.deleted)?j.deleted:[],finishes:(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}},sketches:Array.isArray(j.sketches)?j.sketches:[],notesList:Array.isArray(j.notesList)?j.notesList:[],
     kickboards:normKick(j.kickboards),completed:j.completed||false,
     category:j.category||'production',prevCategory:j.prevCategory||'production',
+    info:(j.info&&typeof j.info==='object')?j.info:{},
     priority:(typeof j.priority==='number')?j.priority:Date.now()};
 }
 // Load the live module variables from the currently-selected job.
@@ -8291,7 +8305,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v340 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v341 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9678,6 +9692,61 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
+// ===== v341: JOBS HOME =====
+var JH_STAGES=[{k:'design',t:'Interior Design',i:'🎨',c:'#6b4c93'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'✅',c:'#276a4c'}];
+var _jhFilter='all';
+function jhStage(j){var st=j&&j.info&&j.info.stage;if(st&&JH_STAGES.some(function(x){return x.k===st;}))return st;if(j&&j.completed)return 'complete';return (j&&j.units&&j.units.length)?'production':'design';}
+function jhInfo(j){if(!j.info||typeof j.info!=='object')j.info={};return j.info;}
+function jhSave(id){
+  if(id===currentJobId){saveData();return;}
+  saveAllJobs();try{if(window.cloud&&cloud.user&&typeof cloudPushJob==='function')cloudPushJob(id);}catch(e){}}
+function jhSet(id,field,val){var j=allJobs[id];if(!j)return;val=String(val||'').trim();
+  if(field==='name'){j.name=val||'Unnamed Job';if(id===currentJobId){document.getElementById('proj-input').value=j.name;document.getElementById('proj-display').textContent=j.name;}}
+  else if(field==='site'){j.finishes=(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}};j.finishes.site=val;}
+  else if(field==='stage'){jhInfo(j).stage=val;j.completed=(val==='complete');if(id===currentJobId)projectCompleted=j.completed;}
+  else jhInfo(j)[field]=val;
+  jhSave(id);renderJobsHome();showMsg('✓ Saved');}
+function jhFilterSet(k){_jhFilter=k;renderJobsHome();}
+function jhOpen(id){if(id!==currentJobId)selectJob(id);var t=document.querySelector(".tabs .tab[onclick*=\"'finishes'\"]");if(t)showTab('finishes',t);}
+async function jhNew(){await newJob();var j=allJobs[currentJobId];if(j){jhInfo(j).stage='design';saveData();}
+  _jhFilter='all';var se=document.getElementById('jh-search');if(se)se.value='';renderJobsHome();
+  setTimeout(function(){var el=document.querySelector('[data-jh-name="'+currentJobId+'"]');if(el){el.scrollIntoView({block:'center'});el.focus();el.select();}},80);}
+function jhAddPlan(id){if(id!==currentJobId)selectJob(id);renderJobsHome();document.getElementById('jh-file').click();}
+async function jhUpload(inp){try{await drUpload(inp,'arch');}catch(e){}renderJobsHome();}
+function jhCard(j){
+  var inf=j.info||{},id=j.id,cur=id===currentJobId,st=jhStage(j),S=JH_STAGES.filter(function(x){return x.k===st;})[0];
+  var site=(j.finishes&&j.finishes.site)||'',arch=(j.drawings||[]).filter(function(x){return x.kind==='arch';});
+  var ist='width:100%;box-sizing:border-box;padding:7px 9px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;';
+  var lab=function(t){return '<div style="font-size:10px;font-weight:700;color:#6b7280;letter-spacing:.5px;margin:7px 0 2px;">'+t+'</div>';};
+  var q=function(f,v,ph,type){return '<input'+(type?' type="'+type+'"':'')+' value="'+qe(v||'')+'" placeholder="'+ph+'" spellcheck="false" onchange="jhSet(\''+id+'\',\''+f+'\',this.value)" style="'+ist+'"/>';};
+  return '<div class="card" style="border-left:5px solid '+S.c+';margin:0;'+(cur?'box-shadow:0 0 0 2px '+S.c+'55;':'')+'">'+
+    '<div style="display:flex;gap:8px;align-items:center;">'+
+      '<input data-jh-name="'+id+'" value="'+qe(j.name||'')+'" placeholder="Job name" spellcheck="false" onchange="jhSet(\''+id+'\',\'name\',this.value)" style="flex:1;min-width:0;padding:7px 9px;font-size:15px;font-weight:700;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/>'+
+      (cur?'<span style="font-size:10px;font-weight:700;color:#fff;background:'+S.c+';border-radius:4px;padding:2px 6px;">OPEN</span>':'')+'</div>'+
+    lab('STAGE')+'<select onchange="jhSet(\''+id+'\',\'stage\',this.value)" style="'+ist+'font-weight:700;color:'+S.c+';">'+JH_STAGES.map(function(x){return '<option value="'+x.k+'"'+(x.k===st?' selected':'')+'>'+x.i+' '+x.t+'</option>';}).join('')+'</select>'+
+    lab('CLIENT NAME')+q('client',inf.client,'Client name')+
+    lab('CLIENT PHONE')+'<div style="display:flex;gap:6px;">'+q('phone',inf.phone,'Phone number','tel')+(inf.phone?'<a class="btn btn-outline btn-sm" style="text-decoration:none;padding:5px 9px;" href="tel:'+qe(String(inf.phone).replace(/[^\d+]/g,''))+'" title="Call">📞</a>':'')+'</div>'+
+    lab('ADDRESS')+'<div style="display:flex;gap:6px;">'+q('site',site,'Site address')+(site?'<a class="btn btn-outline btn-sm" style="text-decoration:none;padding:5px 9px;" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(site)+'" title="Open in Maps">📍</a>':'')+'</div>'+
+    lab('ARCHITECT PLANS')+
+      (arch.length?arch.map(function(x){return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;"><span style="flex:1;min-width:0;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📄 '+esc(x.name)+'</span><button class="btn btn-outline btn-sm" style="padding:2px 9px;" onclick="drOpen(\''+x.id+'\',\''+qe(x.name)+'\')">Open</button></div>';}).join(''):'<div style="font-size:12px;color:#9ca3af;margin-bottom:4px;">No plan uploaded</div>')+
+      '<button class="btn btn-outline btn-sm" style="padding:3px 10px;font-size:12px;" onclick="jhAddPlan(\''+id+'\')">📎 Add plan (PDF)</button>'+
+    '<div style="margin-top:10px;display:flex;gap:8px;align-items:center;"><button class="btn btn-blue btn-sm" style="flex:1;" onclick="jhOpen(\''+id+'\')">📂 Open job</button><span style="font-size:11px;color:#6b7280;">'+((j.units||[]).length?(j.units.length+' items'):'no cabinet list yet')+'</span></div>'+
+  '</div>';}
+function renderJobsHome(){
+  var list=document.getElementById('jh-list'),fl=document.getElementById('jh-filter');if(!list||!fl)return;
+  var pn=document.getElementById('panel-jobs');if(pn&&document.activeElement&&pn.contains(document.activeElement)&&document.activeElement.id!=='jh-search'&&document.activeElement.tagName!=='BUTTON')return;
+  var q=((document.getElementById('jh-search')||{}).value||'').toLowerCase().trim();
+  var all=Object.values(allJobs||{}),cnt={all:all.length};all.forEach(function(j){var s=jhStage(j);cnt[s]=(cnt[s]||0)+1;});
+  fl.innerHTML=[{k:'all',t:'All',i:'📂',c:'#374151'}].concat(JH_STAGES).map(function(x){var on=_jhFilter===x.k;return '<button class="btn btn-sm" style="border:1px solid '+(on?x.c:'#d1d5db')+';background:'+(on?x.c:'#fff')+';color:'+(on?'#fff':'#374151')+';" onclick="jhFilterSet(\''+x.k+'\')">'+x.i+' '+x.t+' ('+(cnt[x.k]||0)+')</button>';}).join('');
+  var jobs=all.filter(function(j){if(_jhFilter!=='all'&&jhStage(j)!==_jhFilter)return false;if(!q)return true;var inf=j.info||{};return [j.name,inf.client,inf.phone,j.finishes&&j.finishes.site].join(' ').toLowerCase().indexOf(q)>=0;});
+  if(!all.length){list.innerHTML='<div style="text-align:center;color:#6b7280;padding:30px;border:1px dashed #d1d5db;border-radius:10px;">No jobs yet — click <b>+ New Job</b> to add your first project.</div>';return;}
+  if(!jobs.length){list.innerHTML='<div style="text-align:center;color:#6b7280;padding:20px;">No job matches.</div>';return;}
+  list.innerHTML=JH_STAGES.map(function(S){
+    var g=jobs.filter(function(j){return jhStage(j)===S.k;}).sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''));});
+    if(!g.length)return '';
+    return '<div style="display:flex;align-items:center;gap:10px;margin:14px 0 8px;"><span style="font-size:14px;font-weight:700;color:'+S.c+';letter-spacing:.5px;">'+S.i+' '+S.t.toUpperCase()+'</span><span style="font-size:11px;color:#6b7280;font-weight:700;">'+g.length+'</span><div style="flex:1;height:2px;background:'+S.c+';opacity:.25;"></div></div>'+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">'+g.map(jhCard).join('')+'</div>';}).join('');}
+(function(){var _rf=refresh;refresh=function(){var r=_rf.apply(this,arguments);try{var p=document.getElementById('panel-jobs');if(p&&p.classList.contains('active'))renderJobsHome();}catch(e){}return r;};})();
 // ===== v259: PRODUCTION DRAWINGS (PDF) in Installation =====
 function tomb(id){var j=siJob();if(!j)return;j.deleted=j.deleted||[];if(j.deleted.indexOf(id)<0)j.deleted.push(id);}
 function drMB(n){return (n/1048576).toFixed(1)+' MB';}
