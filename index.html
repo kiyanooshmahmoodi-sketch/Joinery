@@ -1048,7 +1048,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v346 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v347 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1105,7 +1105,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="tab" onclick="showTab('drawings',this)">📐 Drawings</div>
 </div>
 <div class="content" id="cabinetlist-content">
-<!-- v346: JOBS HOME — every job, its stage and client details -->
+<!-- v347: JOBS HOME — every job, its stage and client details -->
 <div class="panel active" id="panel-jobs">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
     <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every job from waiting to start to completed. The stage moves by itself when QC & Dispatch or Installation start scanning.</div></div>
@@ -1115,10 +1115,11 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div id="jh-filter" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
   <div id="jh-list"></div>
   <input type="file" id="jh-file" accept="application/pdf,.pdf" multiple style="display:none" onchange="jhUpload(this)"/>
+  <input type="file" id="jh-file3" multiple style="display:none" onchange="jhUpload(this,'d3')"/>
 </div>
 <!-- FINISHES & APPLIANCES CHECKLIST -->
 <div class="panel" id="panel-drawings">
-  <div style="margin-bottom:10px;"><div style="font-size:18px;font-weight:700;">📐 Drawings — upload PDF plans</div><div style="font-size:12px;color:var(--gray);">Upload the Installation Drawings and Architectural Drawings here. The installer sees them in his Drawings tab (view only).</div></div>
+  <div style="margin-bottom:10px;"><div style="font-size:18px;font-weight:700;">📐 Drawings — upload PDF plans</div><div style="font-size:12px;color:var(--gray);">Upload the Installation Drawings, Architectural Drawings and 3D / Design files here (files added on the Jobs page appear here too). The installer sees them in his Drawings tab (view only).</div></div>
   <div id="dr-host-designer"></div>
 </div>
 <div class="panel" id="panel-finishes">
@@ -1482,6 +1483,14 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div id="dr-pending-arch" style="font-size:11px;color:#6b7280;"></div>
     <div id="dr-list-arch"></div>
+  </div>
+  <div id="inst-drawings-d3" class="card" style="margin-top:6px;border-top:3px solid #bbf7d0;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+      <div><div style="font-size:18px;font-weight:700;">🧊 3D / Design Files</div><div style="font-size:12px;color:#4b5563;">3D views, renders, design files — any file type (PDF, image, video, SketchUp…), max 50 MB each.</div></div>
+      <label id="dr-up-d3" class="btn btn-sm" style="cursor:pointer;background:#3a6ea5;color:#fff;border:0;display:none;">⬆ Upload file<input type="file" multiple style="display:none" onchange="drUpload(this,'d3')"></label>
+    </div>
+    <div id="dr-pending-d3" style="font-size:11px;color:#6b7280;"></div>
+    <div id="dr-list-d3"></div>
   </div>
   <div id="inst-issues" style="margin-top:6px;border-top:3px solid #efc9c2;padding-top:14px;">
   <div class="flex ai-c jb" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;">
@@ -4644,7 +4653,7 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-// ===== v346: Hardware name defaults list + purchase link =====
+// ===== v347: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
 function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
@@ -8308,7 +8317,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v346 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v347 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9695,15 +9704,15 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
-// ===== v346: JOBS HOME =====
+// ===== v347: JOBS HOME =====
 var JH_STAGES=[{k:'design',t:'Waiting to Start',i:'📥',c:'#6b4c93'},{k:'drafting',t:'Drafting',i:'📐',c:'#a3506b'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qcd',t:'QC & Dispatch',i:'✅',c:'#0e7c86'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
-// v346: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
+// v347: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
 function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
 function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'complete';if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
 var _jhFilter='all';
 function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
 function jhStage(j){return jhManual(j)||jhAutoStage(j);}
-// v346: date stamp every stage change (auto from scans, or set by hand)
+// v347: date stamp every stage change (auto from scans, or set by hand)
 function jhParseDate(t){if(!t)return null;var m=String(t).match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ap]m)?/i);
   if(m){var h=+m[4];if(m[7]){var pm=/p/i.test(m[7]);if(pm&&h<12)h+=12;if(!pm&&h===12)h=0;}var d=new Date(+m[3],+m[2]-1,+m[1],h,+m[5],+(m[6]||0));return isNaN(d)?null:d;}
   var d2=new Date(t);return isNaN(d2)?null:d2;}
@@ -9739,11 +9748,11 @@ function jhOpen(id){if(id!==currentJobId)selectJob(id);var t=document.querySelec
 async function jhNew(){await newJob();try{var nj=allJobs[currentJobId];if(nj){jhInfo(nj).stageLog=[];jhTrack(nj);saveData();}}catch(e){}
   _jhFilter='all';var se=document.getElementById('jh-search');if(se)se.value='';renderJobsHome();
   setTimeout(function(){var el=document.querySelector('[data-jh-name="'+currentJobId+'"]');if(el){el.scrollIntoView({block:'center'});el.focus();el.select();}},80);}
-function jhAddPlan(id){if(id!==currentJobId)selectJob(id);renderJobsHome();document.getElementById('jh-file').click();}
-async function jhUpload(inp){try{await drUpload(inp,'arch');}catch(e){}renderJobsHome();}
+function jhAddPlan(id,kind){if(id!==currentJobId)selectJob(id);renderJobsHome();document.getElementById(kind==='d3'?'jh-file3':'jh-file').click();}
+async function jhUpload(inp,kind){try{await drUpload(inp,kind||'arch');}catch(e){}renderJobsHome();}
 function jhCard(j){
   var inf=j.info||{},id=j.id,cur=id===currentJobId,st=jhStage(j),auto=jhAutoStage(j),man=jhManual(j),cn=jhCounts(j),S=JH_STAGES.filter(function(x){return x.k===st;})[0];
-  var site=(j.finishes&&j.finishes.site)||'',arch=(j.drawings||[]).filter(function(x){return x.kind==='arch';});
+  var site=(j.finishes&&j.finishes.site)||'',arch=(j.drawings||[]).filter(function(x){return x.kind==='arch'||x.kind==='d3';});
   var ist='width:100%;box-sizing:border-box;padding:7px 9px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;';
   var lab=function(t){return '<div style="font-size:10px;font-weight:700;color:#6b7280;letter-spacing:.5px;margin:7px 0 2px;">'+t+'</div>';};
   var q=function(f,v,ph,type){return '<input'+(type?' type="'+type+'"':'')+' value="'+qe(v||'')+'" placeholder="'+ph+'" spellcheck="false" onchange="jhSet(\''+id+'\',\''+f+'\',this.value)" style="'+ist+'"/>';};
@@ -9758,9 +9767,9 @@ function jhCard(j){
     lab('CLIENT NAME')+q('client',inf.client,'Client name')+
     lab('CLIENT PHONE')+'<div style="display:flex;gap:6px;">'+q('phone',inf.phone,'Phone number','tel')+(inf.phone?'<a class="btn btn-outline btn-sm" style="text-decoration:none;padding:5px 9px;" href="tel:'+qe(String(inf.phone).replace(/[^\d+]/g,''))+'" title="Call">📞</a>':'')+'</div>'+
     lab('ADDRESS')+'<div style="display:flex;gap:6px;">'+q('site',site,'Site address')+(site?'<a class="btn btn-outline btn-sm" style="text-decoration:none;padding:5px 9px;" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(site)+'" title="Open in Maps">📍</a>':'')+'</div>'+
-    lab('ARCHITECT PLANS')+
-      (arch.length?arch.map(function(x){return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;"><span style="flex:1;min-width:0;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📄 '+esc(x.name)+'</span><button class="btn btn-outline btn-sm" style="padding:2px 9px;" onclick="drOpen(\''+x.id+'\',\''+qe(x.name)+'\')">Open</button></div>';}).join(''):'<div style="font-size:12px;color:#9ca3af;margin-bottom:4px;">No plan uploaded</div>')+
-      '<button class="btn btn-outline btn-sm" style="padding:3px 10px;font-size:12px;" onclick="jhAddPlan(\''+id+'\')">📎 Add plan (PDF)</button>'+
+    lab('PLANS &amp; 3D / DESIGN FILES')+
+      (arch.length?arch.map(function(x){return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;"><span style="flex:1;min-width:0;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+drIcon(x)+' '+esc(x.name)+'</span><button class="btn btn-outline btn-sm" style="padding:2px 9px;" onclick="drOpenAny(\''+x.id+'\')">Open</button></div>';}).join(''):'<div style="font-size:12px;color:#9ca3af;margin-bottom:4px;">Nothing uploaded yet</div>')+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-outline btn-sm" style="padding:3px 10px;font-size:12px;" onclick="jhAddPlan(\''+id+'\')">📎 Add plan (PDF)</button><button class="btn btn-outline btn-sm" style="padding:3px 10px;font-size:12px;" onclick="jhAddPlan(\''+id+'\',\'d3\')">🧊 Add 3D / design file</button></div>'+
     '<div style="margin-top:10px;display:flex;gap:8px;align-items:center;"><button class="btn btn-blue btn-sm" style="flex:1;" onclick="jhOpen(\''+id+'\')">📂 Open job</button><span style="font-size:11px;color:#6b7280;">'+(cn.n?(cn.n+' items'):'no cabinet list yet')+'</span></div>'+
   '</div>';}
 function renderJobsHome(){
@@ -9785,7 +9794,7 @@ async function drUpload(inp,kind){kind=kind||'prod';
   var j=siJob();var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';if(!j){alert('Open a project first.');return;}
   var pe=document.getElementById('dr-pending-'+kind);
   for(var i=0;i<fs.length;i++){var f=fs[i];
-    if(!/pdf$/i.test(f.type)&&!/\.pdf$/i.test(f.name)){alert(f.name+' is not a PDF.');continue;}
+    if(kind!=='d3'&&!/pdf$/i.test(f.type)&&!/\.pdf$/i.test(f.name)){alert(f.name+' is not a PDF.');continue;}
     if(f.size>50*1048576){alert(f.name+' is '+drMB(f.size)+' — too big (max 50 MB). Please compress the PDF first.');continue;}
     if(pe)pe.textContent='Saving '+f.name+'…';
     try{
@@ -9793,12 +9802,24 @@ async function drUpload(inp,kind){kind=kind||'prod';
       var id='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
       await window.storage.set('cbkph:'+id,d);
       j.drawings=j.drawings||[];
-      j.drawings.unshift({kind:kind,id:id,name:f.name.replace(/\.pdf$/i,''),size:f.size,date:new Date().toLocaleString('en-AU'),by:(window.SESSION&&SESSION.name)||''});
+      j.drawings.unshift({kind:kind,id:id,name:(kind==='d3'?f.name:f.name.replace(/\.pdf$/i,'')),mime:f.type||'',size:f.size,date:new Date().toLocaleString('en-AU'),by:(window.SESSION&&SESSION.name)||''});
       siSave();upEnqueue(id,currentJobId||'');
     }catch(e){alert('Could not save '+f.name+' on this device.');}
   }
   if(pe)pe.textContent='';renderDrawings();}
-function drKind(x){return x.kind==='arch'?'arch':'prod';}
+function drKind(x){return x.kind==='arch'?'arch':(x.kind==='d3'?'d3':'prod');}
+function drIsPdf(x){return x.kind!=='d3'||/pdf/i.test(x.mime||'')||/\.pdf$/i.test(x.name||'');}
+function drIcon(x){if(drIsPdf(x))return '📄';var n=(x.name||'')+' '+(x.mime||'');if(/image|\.(jpe?g|png|gif|webp|heic)/i.test(n))return '🖼';if(/video|\.(mp4|mov|avi)/i.test(n))return '🎬';return '🧊';}
+async function drOpenAny(id){var j=siJob(),x=null;Object.values(allJobs||{}).some(function(jj){return (jj.drawings||[]).some(function(d){if(d.id===id){x=d;return true;}});});if(!x)return;
+  if(drIsPdf(x)){drOpen(x.id,x.name);return;}
+  var d=await siGetPhoto(id);if(!d){alert('This file is not on this device yet and there is no internet to download it.');return;}
+  var blob=await (await fetch(d)).blob();var url=URL.createObjectURL(blob);var n=x.name+' '+(x.mime||'');
+  if(/image|video/i.test(blob.type+' '+n)&&/(image|video)/i.test(blob.type||x.mime||'')){var vid=/video/i.test(blob.type||x.mime);
+    var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:#111827;z-index:100000;display:flex;flex-direction:column;';
+    o.innerHTML='<div style="display:flex;gap:8px;align-items:center;padding:8px 12px;background:#1f2937;color:#fff;"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+drIcon(x)+' '+esc(x.name)+'</b><a href="'+url+'" download="'+qe(x.name)+'" style="color:#fff;background:#3a6ea5;padding:6px 12px;border-radius:8px;font-weight:700;text-decoration:none;">⬇ Save</a><button style="background:#b4412f;color:#fff;border:0;padding:6px 14px;border-radius:8px;font-weight:700;" id="dr-x2">✕ Close</button></div>'+
+      '<div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;">'+(vid?'<video src="'+url+'" controls style="max-width:100%;max-height:100%;"></video>':'<img src="'+url+'" style="max-width:100%;max-height:100%;object-fit:contain;"/>')+'</div>';
+    document.body.appendChild(o);document.getElementById('dr-x2').onclick=function(){o.remove();setTimeout(function(){URL.revokeObjectURL(url);},2000);};return;}
+  var a=document.createElement('a');a.href=url;a.download=x.name||'file';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},5000);showMsg('⬇ '+x.name+' saved to Downloads — open it with your 3D / design program');}
 function drDelete(id){var j=siJob();if(!j||!confirm('Delete this drawing for everyone?'))return;
   j.drawings=(j.drawings||[]).filter(function(x){return x.id!==id;});tomb(id);siSave();
   try{window.storage.delete&&window.storage.delete('cbkph:'+id);}catch(e){}
@@ -9818,16 +9839,16 @@ var _drBusy=false;
 async function renderDrawings(){
   var j=siJob();var adm=window.SESSION&&(SESSION.role==='admin'||SESSION.role==='designer');var missing=false,allList=j?(j.drawings||[]):[];
   var loc={};for(var i=0;i<allList.length;i++){try{var r=await window.storage.get('cbkph:'+allList[i].id);loc[allList[i].id]=!!(r&&r.value);}catch(e){}}
-  ['prod','arch'].forEach(function(k){
+  ['prod','arch','d3'].forEach(function(k){
     var box=document.getElementById('dr-list-'+k);if(!box)return;
     var up=document.getElementById('dr-up-'+k);if(up)up.style.display=adm?'':'none';
     var list=allList.filter(function(x){return drKind(x)===k;});
-    if(!list.length){box.innerHTML='<div style="color:#6b7280;font-size:13px;padding:8px 0;">'+(j?'No '+(k==='arch'?'architectural':'installation')+' drawings uploaded yet.':'Open a project first.')+'</div>';return;}
+    if(!list.length){box.innerHTML='<div style="color:#6b7280;font-size:13px;padding:8px 0;">'+(j?(k==='d3'?'No 3D / design files uploaded yet.':'No '+(k==='arch'?'architectural':'installation')+' drawings uploaded yet.'):'Open a project first.')+'</div>';return;}
     box.innerHTML=list.map(function(x){var has=loc[x.id];if(!has)missing=true;
       return '<div class="card" style="margin:6px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-left:4px solid '+(k==='arch'?'#6b4c93':'#3a6ea5')+';">'+
-       '<div style="flex:1;min-width:150px;"><div style="font-weight:700;">📄 '+esc(x.name)+'</div><div style="font-size:11px;color:#6b7280;">'+drMB(x.size||0)+' · '+esc(x.date||'')+(x.by?' · '+esc(x.by):'')+'</div>'+
+       '<div style="flex:1;min-width:150px;"><div style="font-weight:700;">'+drIcon(x)+' '+esc(x.name)+'</div><div style="font-size:11px;color:#6b7280;">'+drMB(x.size||0)+' · '+esc(x.date||'')+(x.by?' · '+esc(x.by):'')+'</div>'+
        '<div style="font-size:11px;font-weight:700;color:'+(has?'#276a4c':'#9a6618')+';">'+(has?'✓ Saved on this device — works offline':'☁ Not on this device yet — downloading when online…')+'</div></div>'+
-       '<button class="btn btn-sm" style="background:#3a6ea5;color:#fff;border:0;" onclick="drOpen(\''+x.id+'\',\''+qe(x.name)+'\')">Open</button>'+
+       '<button class="btn btn-sm" style="background:#3a6ea5;color:#fff;border:0;" onclick="drOpenAny(\''+x.id+'\')">Open</button>'+
        (adm?'<button class="btn btn-outline btn-sm" style="color:#b4412f;" onclick="drDelete(\''+x.id+'\')">🗑</button>':'')+'</div>';}).join('');});
   if(!_drBusy&&navigator.onLine&&missing){_drBusy=true;try{var got=false;for(var k=0;k<allList.length;k++){if(!loc[allList[k].id]){var d=await siGetPhoto(allList[k].id);if(d)got=true;}}if(got){_drBusy=false;renderDrawings();return;}}catch(e){}_drBusy=false;}}
 var _ifSheet='mat';
@@ -9844,7 +9865,7 @@ function renderInstFin(){var tabs=document.getElementById('if-tabs'),body=docume
     else if(/https?:\/\/\S+/i.test(t)){td.innerHTML=esc(t).replace(/(https?:\/\/[^\s<]+)/gi,function(u){return '<a href="'+u+'" target="_blank" rel="noopener" style="color:#2c5a87;font-weight:700;word-break:break-all;">'+u+'</a>';});}});
   body.querySelectorAll('input,select,textarea,button').forEach(function(i){i.disabled=true;});}
 var _drwTab='prod';
-var DRW_TABS=[['prod','📐 Installation Drawings','inst-drawings-prod'],['arch','🏛 Architectural Drawings','inst-drawings-arch'],['iss','⚠️ Installation Issues & Notes','inst-issues']];
+var DRW_TABS=[['prod','📐 Installation Drawings','inst-drawings-prod'],['arch','🏛 Architectural Drawings','inst-drawings-arch'],['d3','🧊 3D / Design','inst-drawings-d3'],['iss','⚠️ Installation Issues & Notes','inst-issues']];
 function drTab(k){_drwTab=k;var t=document.getElementById('drw-tabs');if(!t)return;
   t.innerHTML=DRW_TABS.map(function(x){return '<button class="btn '+(x[0]===k?'':'btn-outline')+'" onclick="drTab(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');
   DRW_TABS.forEach(function(x){var el=document.getElementById(x[2]);if(el)el.style.display=(x[0]===k||!document.getElementById('drw-host').contains(el))?'':'none';});
@@ -9854,7 +9875,7 @@ function drPlace(){   // installer: these 3 sections live in the Drawings tab. E
   var ids=DRW_TABS.map(function(x){return x[2];}),els=ids.map(function(i){return document.getElementById(i);});
   var badge=document.getElementById('vb-ii-badge');
   if(inst){els.forEach(function(el){if(el)host.appendChild(el);});var bd=document.getElementById('vb-drawings');if(badge&&bd)bd.appendChild(badge);}
-  else{var first=view.firstChild,dh=document.getElementById('dr-host-designer');els.forEach(function(el,i){if(!el)return;el.style.display='';if(i<2&&dh)dh.appendChild(el);else view.insertBefore(el,first);});var bi=document.getElementById('vb-installation');if(badge&&bi)bi.appendChild(badge);}
+  else{var first=view.firstChild,dh=document.getElementById('dr-host-designer');els.forEach(function(el,i){if(!el)return;el.style.display='';if(i<3&&dh)dh.appendChild(el);else view.insertBefore(el,first);});var bi=document.getElementById('vb-installation');if(badge&&bi)bi.appendChild(badge);}
   var b=document.getElementById('vb-drawings');if(b)b.style.display=inst?'':'none';}
 var _ris=renderInstallStats;renderInstallStats=function(){_ris.apply(this,arguments);try{renderDrawings();renderInstFin();}catch(e){}};
 
@@ -10044,7 +10065,7 @@ function applyRole(r,nm,em){
   b.classList.toggle('no-settings',r!=='admin');
   var allowed=ROLE_VIEWS[r];
   ['cabinetlist','tracker','dispatch','installation','admin'].forEach(function(v){
-    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v346: Dispatch lives inside the QC & Dispatch page
+    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v347: Dispatch lives inside the QC & Dispatch page
   });
   var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=(r==='admin'||r==='qc')?'':'none';
   var ds=document.getElementById('disp-scan-box');var dcard=ds&&ds.closest('.card');if(dcard)dcard.style.display=(r==='admin'||r==='dispatch')?'':'none';
