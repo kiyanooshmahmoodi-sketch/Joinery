@@ -849,6 +849,16 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   .dmodal-title{font-size:18px;}
 }
 </style>
+<style id="inst-fin-css">
+.inst-fin .if-box{background:#fff;border:1px solid #e5e7eb;border-left:4px solid #3a6ea5;border-radius:10px;padding:10px 12px;margin:0 0 12px;}
+.inst-fin .if-box h3{margin:0 0 8px!important;font-size:15px;font-weight:800;color:#1f2937;}
+.inst-fin .if-scroll{overflow-x:auto;}
+.inst-fin table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;min-width:520px;}
+.inst-fin th{background:#f1f5f9;color:#475569;font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;text-align:left;padding:7px 10px;border:1px solid #e2e8f0;white-space:nowrap;}
+.inst-fin td{padding:8px 10px;border:1px solid #e2e8f0;vertical-align:top;color:#111827;}
+.inst-fin tbody tr:nth-child(even) td{background:#fafbfc;}
+.inst-fin td:first-child{font-weight:700;}
+</style>
 </head>
 <body>
 
@@ -1046,7 +1056,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v360 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v361 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1089,10 +1099,10 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <button class="view-btn" id="vb-admin" onclick="switchView('admin')" style="display:none;">⚙️ Admin</button>
 </div>
 
-<!-- VIEW: JOBS (v360: own top-level page, first in the menu) -->
+<!-- VIEW: JOBS (v361: own top-level page, first in the menu) -->
 <div id="view-jobs" style="display:none;">
 <div class="content">
-<!-- v360: JOBS HOME — every job, its stage and client details -->
+<!-- v361: JOBS HOME — every job, its stage and client details -->
 <div id="panel-jobs">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
     <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every job from waiting to start to completed. The stage moves by itself when QC & Dispatch or Installation start scanning.</div></div>
@@ -2826,7 +2836,7 @@ function updateHeader(){
 function updateTopbarImportButton(){
   var btn=document.getElementById('topbar-import-btn');
   if(!btn)return;
-  btn.style.display='none';   // v360: Excel import now lives on each job card (Designer › Jobs)
+  btn.style.display='none';   // v361: Excel import now lives on each job card (Designer › Jobs)
   btn.textContent=units.length===0?'📋 Import':'📋 Import ▾';
 }
 
@@ -4659,7 +4669,7 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-// ===== v360: Hardware name defaults list + purchase link =====
+// ===== v361: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
 function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
@@ -8323,7 +8333,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v360 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v361 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9713,15 +9723,15 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
-// ===== v360: JOBS HOME =====
+// ===== v361: JOBS HOME =====
 var JH_STAGES=[{k:'design',t:'Waiting to Start',i:'📥',c:'#6b4c93'},{k:'drafting',t:'Drafting',i:'📐',c:'#a3506b'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qcd',t:'QC & Dispatch',i:'✅',c:'#0e7c86'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
-// v360: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
+// v361: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
 function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
 function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'complete';if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
 var _jhFilter='all';
 function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
 function jhStage(j){return jhManual(j)||jhAutoStage(j);}
-// v360: date stamp every stage change (auto from scans, or set by hand)
+// v361: date stamp every stage change (auto from scans, or set by hand)
 function jhParseDate(t){if(!t)return null;var m=String(t).match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ap]m)?/i);
   if(m){var h=+m[4];if(m[7]){var pm=/p/i.test(m[7]);if(pm&&h<12)h+=12;if(!pm&&h===12)h=0;}var d=new Date(+m[3],+m[2]-1,+m[1],h,+m[5],+(m[6]||0));return isNaN(d)?null:d;}
   var d2=new Date(t);return isNaN(d2)?null:d2;}
@@ -9746,29 +9756,29 @@ function jhSave(id){
   if(id===currentJobId){saveData();return;}
   saveAllJobs();try{if(window.cloud&&cloud.user&&typeof cloudPushJob==='function')cloudPushJob(id);}catch(e){}}
 function jhSet(id,field,val,noDraw){var j=allJobs[id];if(!j)return;val=String(val||'').trim();
-  // v360: a job only goes into Production (or later) once its Excel files are uploaded
+  // v361: a job only goes into Production (or later) once its Excel files are uploaded
   if(field==='stage'&&(val==='production'||val==='qcd'||val==='installation')&&!((j.units||[]).length)){
     renderJobsHome();showMsg('📊 Upload the Excel files first — the job moves to Production once they are added');jhImport(id);return;}
   if(field==='name'){j.name=val||'Unnamed Job';if(id===currentJobId){document.getElementById('proj-input').value=j.name;document.getElementById('proj-display').textContent=j.name;}}
   else if(field==='site'){j.finishes=(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}};j.finishes.site=val;}
   else if(field==='stage'){var inf=jhInfo(j);delete inf.stage;if(!val||val==='auto'||val===jhAutoStage(j)){delete inf.stageManual;delete inf.stageAutoAt;}else{inf.stageManual=val;inf.stageAutoAt=jhAutoStage(j);}jhTrack(j,true);}
   else jhInfo(j)[field]=val;
-  // v360: the countdown starts the FIRST time a delivery date is set; changing the date later keeps that start,
+  // v361: the countdown starts the FIRST time a delivery date is set; changing the date later keeps that start,
   // so the colour moves to wherever the new date puts it (it does not restart at blue).
   if(field==='dueDate'){var _i=jhInfo(j);if(val&&!_i.dueSetAt){var _t=new Date();_i.dueSetAt=_t.getFullYear()+'-'+String(_t.getMonth()+1).padStart(2,'0')+'-'+String(_t.getDate()).padStart(2,'0');}else if(!val)delete _i.dueSetAt;}
   if(field==='factory'&&val&&!jhInfo(j).factoryAddr){var prev=jhFactories().filter(function(f){return f.n.toLowerCase()===val.toLowerCase()&&f.a;})[0];if(prev)jhInfo(j).factoryAddr=prev.a;}
   jhSave(id);if(noDraw)return;try{var _ae=document.activeElement;if(_ae&&_ae.blur&&document.getElementById('panel-jobs').contains(_ae))_ae.blur();}catch(e){}renderJobsHome();showMsg('✓ Saved');}
 function jhFactories(){var m={};Object.values(allJobs||{}).forEach(function(j){var i=j.info||{};if(i.factory){var k=i.factory.toLowerCase();if(!m[k]||(!m[k].a&&i.factoryAddr))m[k]={n:i.factory,a:i.factoryAddr||''};}});return Object.values(m);}
-// v360: delivery-date colour. The time from the day the date was set to the delivery date is split into 4 equal parts:
-// v360: split into 3 equal parts: blue → yellow → red, shown as the card's frame. Once the delivery date has passed the whole card turns purple. Completed jobs are not coloured.
+// v361: delivery-date colour. The time from the day the date was set to the delivery date is split into 4 equal parts:
+// v361: split into 3 equal parts: blue → yellow → red, shown as the card's frame. Once the delivery date has passed the whole card turns purple. Completed jobs are not coloured.
 var JH_DUE_COL=[{k:'blue',bg:'#dbeafe',bd:'#3b82f6',fg:'#1e40af'},{k:'yellow',bg:'#fef9c3',bd:'#eab308',fg:'#854d0e'},{k:'red',bg:'#fee2e2',bd:'#ef4444',fg:'#991b1b'},{k:'purple',bg:'#f3e8ff',bd:'#a855f7',fg:'#6b21a8'}];
 function jhDueCol(j){var inf=j.info||{};if(!inf.dueDate||jhStage(j)==='complete')return null;
   var due=new Date(inf.dueDate+'T00:00:00'),st=new Date((inf.dueSetAt||inf.dueDate)+'T00:00:00'),n=new Date();n.setHours(0,0,0,0);if(isNaN(due))return null;
   if(n>due)return JH_DUE_COL[3];
   var tot=(due-st)/86400000,el=(n-st)/86400000;if(!(tot>0))return JH_DUE_COL[2];
-  var q=Math.floor(el/tot*3);return JH_DUE_COL[Math.max(0,Math.min(2,q))];}   // v360: 3 colours — blue, yellow, red
+  var q=Math.floor(el/tot*3);return JH_DUE_COL[Math.max(0,Math.min(2,q))];}   // v361: 3 colours — blue, yellow, red
 function jhFrame(dc,S){return !dc?'border-left:5px solid '+S.c+';':(dc.k==='purple'?'border:4px solid #7e22ce;background:#c084fc;':'border:4px solid '+dc.bd+';');}
-// v360: while the date box is being used, save and recolour the card in place (a full redraw would interrupt typing)
+// v361: while the date box is being used, save and recolour the card in place (a full redraw would interrupt typing)
 function jhDueLive(el,id){var v=el.value||'';if(v===(el.dataset.last||el.defaultValue))return;el.dataset.last=v;
   var j=allJobs[id];if(!j)return;jhSet(id,'dueDate',v,true);
   var card=el.closest('.card');if(!card)return;var dc=jhDueCol(j),st=jhStage(j),S=JH_STAGES.filter(function(x){return x.k===st;})[0];
@@ -9824,7 +9834,7 @@ function jhCard(j){
   '</div>';}
 function renderJobsHome(){
   var list=document.getElementById('jh-list'),fl=document.getElementById('jh-filter');if(!list||!fl)return;
-  var pn=document.getElementById('panel-jobs');var _ae=document.activeElement;if(pn&&_ae&&pn.contains(_ae)&&_ae.id!=='jh-search'&&_ae.tagName==='INPUT'&&/^(text|tel|url|search|)$/i.test(_ae.type||''))return;   // v360: only hold the redraw while typing in a text box (not for dropdowns / dates)
+  var pn=document.getElementById('panel-jobs');var _ae=document.activeElement;if(pn&&_ae&&pn.contains(_ae)&&_ae.id!=='jh-search'&&_ae.tagName==='INPUT'&&/^(text|tel|url|search|)$/i.test(_ae.type||''))return;   // v361: only hold the redraw while typing in a text box (not for dropdowns / dates)
   var q=((document.getElementById('jh-search')||{}).value||'').toLowerCase().trim();
   var all=Object.values(allJobs||{}),cnt={all:all.length};var _ch=false;all.forEach(function(j){try{var had=j.info&&Array.isArray(j.info.stageLog);if(jhTrack(j)||!had)_ch=true;}catch(e){}});if(_ch){clearTimeout(renderJobsHome._t);renderJobsHome._t=setTimeout(function(){try{saveAllJobs();}catch(e){}},1500);}all.forEach(function(j){var s=jhStage(j);cnt[s]=(cnt[s]||0)+1;});
   fl.innerHTML=[{k:'all',t:'All',i:'📂',c:'#374151'}].concat(JH_STAGES).map(function(x){var on=_jhFilter===x.k;return '<button class="btn btn-sm" style="border:1px solid '+(on?x.c:'#d1d5db')+';background:'+(on?x.c:'#fff')+';color:'+(on?'#fff':'#374151')+';" onclick="jhFilterSet(\''+x.k+'\')">'+x.i+' '+x.t+' ('+(cnt[x.k]||0)+')</button>';}).join('');
@@ -9914,7 +9924,17 @@ function renderInstFin(){var tabs=document.getElementById('if-tabs'),body=docume
     var m=t.match(/^(https?:\/\/\S+|www\.\S+)$/i);
     if(m){var u=/^www\./i.test(t)?'https://'+t:t;td.innerHTML='<a href="'+qe(u)+'" target="_blank" rel="noopener" style="color:#2c5a87;font-weight:700;word-break:break-all;">🔗 Open link</a>';}
     else if(/https?:\/\/\S+/i.test(t)){td.innerHTML=esc(t).replace(/(https?:\/\/[^\s<]+)/gi,function(u){return '<a href="'+u+'" target="_blank" rel="noopener" style="color:#2c5a87;font-weight:700;word-break:break-all;">'+u+'</a>';});}});
-  body.querySelectorAll('input,select,textarea,button').forEach(function(i){i.disabled=true;});}
+  body.querySelectorAll('input,select,textarea,button').forEach(function(i){i.disabled=true;});
+  // v361: clear layout for the installer — every space/room in its own box, proper table lines, empty spaces hidden
+  try{body.classList.add('inst-fin');
+    var hs=Array.prototype.slice.call(body.querySelectorAll('h3')),shown=0;
+    hs.forEach(function(h){var t=h.nextElementSibling;if(!t||t.tagName!=='TABLE')return;
+      var rows=t.querySelectorAll('tbody tr').length;
+      if(!rows){h.remove();t.remove();return;}
+      var box=document.createElement('div');box.className='if-box';h.parentNode.insertBefore(box,h);box.appendChild(h);
+      var wrap=document.createElement('div');wrap.className='if-scroll';wrap.appendChild(t);box.appendChild(wrap);shown++;});
+    if(hs.length&&!shown)body.insertAdjacentHTML('beforeend','<div style="color:#6b7280;font-size:13px;padding:10px 0;">Nothing filled in on this sheet yet.</div>');
+  }catch(e){}}
 var _drwTab='prod';
 var DRW_TABS=[['prod','📐 Installation Drawings','inst-drawings-prod'],['arch','🏛 Architectural Drawings','inst-drawings-arch'],['d3','🧊 3D / Design','inst-drawings-d3'],['iss','⚠️ Installation Issues & Notes','inst-issues']];
 function drTab(k){_drwTab=k;var t=document.getElementById('drw-tabs');if(!t)return;
@@ -10116,7 +10136,7 @@ function applyRole(r,nm,em){
   b.classList.toggle('no-settings',r!=='admin');
   var allowed=ROLE_VIEWS[r];
   ['jobs','cabinetlist','tracker','dispatch','installation','admin'].forEach(function(v){
-    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v360: Dispatch lives inside the QC & Dispatch page
+    var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v361: Dispatch lives inside the QC & Dispatch page
   });
   var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=(r==='admin'||r==='qc')?'':'none';
   var ds=document.getElementById('disp-scan-box');var dcard=ds&&ds.closest('.card');if(dcard)dcard.style.display=(r==='admin'||r==='dispatch')?'':'none';
@@ -10125,8 +10145,8 @@ function applyRole(r,nm,em){
   if(!chip){chip=document.createElement('button');chip.id='user-chip';chip.className='tbtn';chip.onclick=function(){roleInit();};chip.style.fontWeight='700';
     var cb=document.getElementById('cloud-btn');cb.parentNode.insertBefore(chip,cb);}
   chip.textContent='👤 '+nm+' · '+ROLE_LABEL[r]+' ⇄';
-  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v360: renamed on the Jobs page only
-  // v360: Admin / Designer pick and create jobs on the Designer › 🏠 Jobs page, so the top Jobs button + name box are hidden for them.
+  var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v361: renamed on the Jobs page only
+  // v361: Admin / Designer pick and create jobs on the Designer › 🏠 Jobs page, so the top Jobs button + name box are hidden for them.
   // QC / Dispatch / Installer still use them, because they don't see the Jobs page.
   var topJobs=(r==='admin'||r==='designer');var jb=document.querySelector('.topbar-right .jobs-btn');if(jb)jb.style.display=topJobs?'none':'';if(pin)pin.style.display=topJobs?'none':'';
   var re=document.getElementById('admin-rec-email');if(re&&!re.value)re.value=_adminEmail();var acs=document.getElementById('admin-code-card');if(acs)acs.style.display=r==='admin'?'':'none';
