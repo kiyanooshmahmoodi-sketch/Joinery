@@ -1048,7 +1048,7 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v341 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v342 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1105,10 +1105,10 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
   <div class="tab" onclick="showTab('drawings',this)">📐 Drawings</div>
 </div>
 <div class="content" id="cabinetlist-content">
-<!-- v341: JOBS HOME — every job, its stage and client details -->
+<!-- v342: JOBS HOME — every job, its stage and client details -->
 <div class="panel active" id="panel-jobs">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
-    <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every project from interior design to completed — client details, stage and architect plans.</div></div>
+    <div style="flex:1;min-width:200px;"><div style="font-size:18px;font-weight:700;">🏠 All Jobs</div><div style="font-size:12px;color:var(--gray);">Every project from interior design to completed. The stage moves by itself when QC, Dispatch or Installation start scanning.</div></div>
     <button class="btn btn-blue btn-sm" onclick="jhNew()">+ New Job</button>
   </div>
   <input id="jh-search" placeholder="🔍 Search job, client, phone or address…" oninput="renderJobsHome()" style="width:100%;box-sizing:border-box;padding:10px 12px;font-size:14px;border:1px solid #d1d5db;border-radius:8px;margin-bottom:10px;"/>
@@ -4642,7 +4642,7 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
-// ===== v341: Hardware name defaults list + purchase link =====
+// ===== v342: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
 function hwNamesAll(){var seen={};return HW_NAME_DEFAULTS.concat(HW_NAME_CUSTOM).filter(function(n){var l=String(n||'').trim().toLowerCase();if(!l||seen[l])return false;seen[l]=1;return true;});}
@@ -8305,7 +8305,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v341 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v342 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9692,10 +9692,14 @@ function cloudDelete(id){
   delete cloud.sig[id];
   cloud.db.collection('jobs').doc(id).delete().catch(function(e){console.error('cloud delete',e);});
 }
-// ===== v341: JOBS HOME =====
-var JH_STAGES=[{k:'design',t:'Interior Design',i:'🎨',c:'#6b4c93'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'✅',c:'#276a4c'}];
+// ===== v342: JOBS HOME =====
+var JH_STAGES=[{k:'design',t:'Interior Design',i:'🎨',c:'#6b4c93'},{k:'production',t:'Production',i:'🔨',c:'#b7791f'},{k:'qc',t:'QC',i:'✅',c:'#0e7c86'},{k:'dispatch',t:'Dispatch',i:'📦',c:'#9a5b13'},{k:'installation',t:'Installation',i:'🚚',c:'#3a6ea5'},{k:'complete',t:'Completed',i:'🏁',c:'#276a4c'}];
+// v342: stage follows the scans automatically. A stage picked by hand holds until the scans move the job on.
+function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
+function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'complete';if(c.ins)return 'installation';if(c.dis)return 'dispatch';if(c.qc)return 'qc';return 'production';}
 var _jhFilter='all';
-function jhStage(j){var st=j&&j.info&&j.info.stage;if(st&&JH_STAGES.some(function(x){return x.k===st;}))return st;if(j&&j.completed)return 'complete';return (j&&j.units&&j.units.length)?'production':'design';}
+function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
+function jhStage(j){return jhManual(j)||jhAutoStage(j);}
 function jhInfo(j){if(!j.info||typeof j.info!=='object')j.info={};return j.info;}
 function jhSave(id){
   if(id===currentJobId){saveData();return;}
@@ -9703,18 +9707,19 @@ function jhSave(id){
 function jhSet(id,field,val){var j=allJobs[id];if(!j)return;val=String(val||'').trim();
   if(field==='name'){j.name=val||'Unnamed Job';if(id===currentJobId){document.getElementById('proj-input').value=j.name;document.getElementById('proj-display').textContent=j.name;}}
   else if(field==='site'){j.finishes=(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}};j.finishes.site=val;}
-  else if(field==='stage'){jhInfo(j).stage=val;j.completed=(val==='complete');if(id===currentJobId)projectCompleted=j.completed;}
+  else if(field==='stage'){var inf=jhInfo(j);delete inf.stage;if(!val||val==='auto'||val===jhAutoStage(j)){delete inf.stageManual;delete inf.stageAutoAt;}else{inf.stageManual=val;inf.stageAutoAt=jhAutoStage(j);}}
   else jhInfo(j)[field]=val;
   jhSave(id);renderJobsHome();showMsg('✓ Saved');}
 function jhFilterSet(k){_jhFilter=k;renderJobsHome();}
+function jhGo(id,view){if(id!==currentJobId)selectJob(id);switchView(view);}
 function jhOpen(id){if(id!==currentJobId)selectJob(id);var t=document.querySelector(".tabs .tab[onclick*=\"'finishes'\"]");if(t)showTab('finishes',t);}
-async function jhNew(){await newJob();var j=allJobs[currentJobId];if(j){jhInfo(j).stage='design';saveData();}
+async function jhNew(){await newJob();
   _jhFilter='all';var se=document.getElementById('jh-search');if(se)se.value='';renderJobsHome();
   setTimeout(function(){var el=document.querySelector('[data-jh-name="'+currentJobId+'"]');if(el){el.scrollIntoView({block:'center'});el.focus();el.select();}},80);}
 function jhAddPlan(id){if(id!==currentJobId)selectJob(id);renderJobsHome();document.getElementById('jh-file').click();}
 async function jhUpload(inp){try{await drUpload(inp,'arch');}catch(e){}renderJobsHome();}
 function jhCard(j){
-  var inf=j.info||{},id=j.id,cur=id===currentJobId,st=jhStage(j),S=JH_STAGES.filter(function(x){return x.k===st;})[0];
+  var inf=j.info||{},id=j.id,cur=id===currentJobId,st=jhStage(j),auto=jhAutoStage(j),man=jhManual(j),cn=jhCounts(j),S=JH_STAGES.filter(function(x){return x.k===st;})[0];
   var site=(j.finishes&&j.finishes.site)||'',arch=(j.drawings||[]).filter(function(x){return x.kind==='arch';});
   var ist='width:100%;box-sizing:border-box;padding:7px 9px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;';
   var lab=function(t){return '<div style="font-size:10px;font-weight:700;color:#6b7280;letter-spacing:.5px;margin:7px 0 2px;">'+t+'</div>';};
@@ -9723,14 +9728,15 @@ function jhCard(j){
     '<div style="display:flex;gap:8px;align-items:center;">'+
       '<input data-jh-name="'+id+'" value="'+qe(j.name||'')+'" placeholder="Job name" spellcheck="false" onchange="jhSet(\''+id+'\',\'name\',this.value)" style="flex:1;min-width:0;padding:7px 9px;font-size:15px;font-weight:700;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/>'+
       (cur?'<span style="font-size:10px;font-weight:700;color:#fff;background:'+S.c+';border-radius:4px;padding:2px 6px;">OPEN</span>':'')+'</div>'+
-    lab('STAGE')+'<select onchange="jhSet(\''+id+'\',\'stage\',this.value)" style="'+ist+'font-weight:700;color:'+S.c+';">'+JH_STAGES.map(function(x){return '<option value="'+x.k+'"'+(x.k===st?' selected':'')+'>'+x.i+' '+x.t+'</option>';}).join('')+'</select>'+
+    lab('STAGE &nbsp;'+(man?'<span style="color:#b7791f;">✋ SET BY HAND</span> <a href="#" onclick="jhSet(\''+id+'\',\'stage\',\'auto\');return false;" style="color:#2f4b8f;">↺ back to auto</a>':'<span style="color:#276a4c;">🔄 AUTO — follows the scans</span>'))+'<select onchange="jhSet(\''+id+'\',\'stage\',this.value)" style="'+ist+'font-weight:700;color:'+S.c+';">'+JH_STAGES.map(function(x){return '<option value="'+x.k+'"'+(x.k===st?' selected':'')+'>'+x.i+' '+x.t+(x.k===auto?' (auto)':'')+'</option>';}).join('')+'</select>'+
+    (cn.n?'<div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;">'+[['tracker','✅ QC',cn.qc],['dispatch','📦 Dispatch',cn.dis],['installation','🚚 Install',cn.ins]].map(function(x){var pc=Math.round(x[2]/cn.n*100);return '<button class="btn btn-outline btn-sm" style="display:block;flex:1;min-width:86px;padding:4px 6px;font-size:11px;text-align:left;" title="Open this job in '+x[1].slice(2)+'" onclick="jhGo(\''+id+'\',\''+x[0]+'\')"><div style="display:flex;justify-content:space-between;gap:4px;white-space:nowrap;width:100%;"><b>'+x[1]+'</b><span>'+x[2]+'/'+cn.n+'</span></div><div style="height:4px;background:#e5e7eb;border-radius:3px;margin-top:3px;overflow:hidden;"><div style="height:100%;width:'+pc+'%;background:'+(pc===100?'#276a4c':'#3a6ea5')+';"></div></div></button>';}).join('')+'</div>':'')+
     lab('CLIENT NAME')+q('client',inf.client,'Client name')+
     lab('CLIENT PHONE')+'<div style="display:flex;gap:6px;">'+q('phone',inf.phone,'Phone number','tel')+(inf.phone?'<a class="btn btn-outline btn-sm" style="text-decoration:none;padding:5px 9px;" href="tel:'+qe(String(inf.phone).replace(/[^\d+]/g,''))+'" title="Call">📞</a>':'')+'</div>'+
     lab('ADDRESS')+'<div style="display:flex;gap:6px;">'+q('site',site,'Site address')+(site?'<a class="btn btn-outline btn-sm" style="text-decoration:none;padding:5px 9px;" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(site)+'" title="Open in Maps">📍</a>':'')+'</div>'+
     lab('ARCHITECT PLANS')+
       (arch.length?arch.map(function(x){return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;"><span style="flex:1;min-width:0;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📄 '+esc(x.name)+'</span><button class="btn btn-outline btn-sm" style="padding:2px 9px;" onclick="drOpen(\''+x.id+'\',\''+qe(x.name)+'\')">Open</button></div>';}).join(''):'<div style="font-size:12px;color:#9ca3af;margin-bottom:4px;">No plan uploaded</div>')+
       '<button class="btn btn-outline btn-sm" style="padding:3px 10px;font-size:12px;" onclick="jhAddPlan(\''+id+'\')">📎 Add plan (PDF)</button>'+
-    '<div style="margin-top:10px;display:flex;gap:8px;align-items:center;"><button class="btn btn-blue btn-sm" style="flex:1;" onclick="jhOpen(\''+id+'\')">📂 Open job</button><span style="font-size:11px;color:#6b7280;">'+((j.units||[]).length?(j.units.length+' items'):'no cabinet list yet')+'</span></div>'+
+    '<div style="margin-top:10px;display:flex;gap:8px;align-items:center;"><button class="btn btn-blue btn-sm" style="flex:1;" onclick="jhOpen(\''+id+'\')">📂 Open job</button><span style="font-size:11px;color:#6b7280;">'+(cn.n?(cn.n+' items'):'no cabinet list yet')+'</span></div>'+
   '</div>';}
 function renderJobsHome(){
   var list=document.getElementById('jh-list'),fl=document.getElementById('jh-filter');if(!list||!fl)return;
