@@ -1209,7 +1209,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v401 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v402 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1304,7 +1304,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
   </div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;">
-      <div><div class="card-title" style="margin-bottom:4px;">Client selections link</div><div style="font-size:12px;color:#71717a;max-width:560px;">The client opens this link to fill in (or just check) Appliances and Stone, see the Material Schedule, sign off, and send you notes and files.</div></div>
+      <div><div class="card-title" style="margin-bottom:4px;">Client selections link</div><div style="font-size:12px;color:#71717a;max-width:560px;">The client opens this link to fill in (or just check) Appliances and Stone, see the Material Schedule, and sign them off.</div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
         <label style="font-size:12.5px;color:#52525b;display:inline-flex;align-items:center;gap:6px;cursor:pointer;" title="Off = the client can only look at Appliances and Stone and sign them off"><input type="checkbox" id="cl-can-edit" style="width:auto;margin:0;" onchange="clSetEdit(this.checked)"> Client can edit</label>
         <button class="btn btn-outline btn-sm" onclick="clCopy()">Copy client link</button>
@@ -1314,7 +1314,6 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     <div id="cl-status" style="font-size:13px;color:#52525b;margin-top:12px;"></div>
   </div>
   <div id="brief-box"></div>
-  <div id="cl-notes-box"></div>
 </div>
 <div class="panel" id="panel-finishes">
   <div class="flex ai-c jb" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;">
@@ -8569,7 +8568,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v401 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v402 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10471,7 +10470,7 @@ function clientRender(){var D=_clDoc||{},C=D.company||{},w=document.querySelecto
   w.innerHTML=(C.name||C.logo?'<div class="cl-co">'+(C.logo?'<img src="'+clE(C.logo)+'" alt="">':'')+'<div><b>'+clE(C.name||'')+'</b>'+(C.address?'<span>'+clE(C.address)+'</span>':'')+'</div></div>':'')+
     '<h1>'+clE(D.jobName||'Your project')+'</h1><div class="cl-sub">'+(D.canEdit===false?'Please review your appliance and stone selections and sign them off.':'Please fill in your appliance models and stone selections.')+' Everything saves automatically — you can close this page and come back to the same link any time. The material schedule is for your information only.</div>'+
     (RO?'<div class="cl-card" style="background:#fafafa;">These selections were filled in by us. Please check Appliances and Stone and sign off below.</div>':'')+
-    '<div class="cl-tabs">'+tab('ap','Appliances')+tab('ss','Stone')+tab('ms','Materials (view only)')+((D.docs||[]).length?tab('dc','Documents ('+(D.docs||[]).length+')'):'')+tab('nt','Notes &amp; references')+'</div>'+body+clSignHTML(D)+
+    '<div class="cl-tabs">'+tab('ap','Appliances')+tab('ss','Stone')+tab('ms','Materials (view only)')+((D.docs||[]).length?tab('dc','Documents ('+(D.docs||[]).length+')'):'')+'</div>'+body+clSignHTML(D)+
     '<div class="cl-foot">'+(C.phone||C.email?clE([C.phone,C.email].filter(Boolean).join(' · ')):'Questions? Just reply to our email.')+'</div><div class="cl-save" id="cl-save">Saved</div>';}
 function clSet(sec,ri,ai,k,v){var D=_clDoc;if(!D)return;var tgt=sec==='ap'?D.ap.filter(function(r){return (r.items||[]).length;})[ri].items[ai]:D.ss[ri];tgt[k]=v;
   clearTimeout(_clSaveT);_clSaveT=setTimeout(function(){_clRef.set({ap:D.ap,ss:D.ss,clientAt:Date.now()},{merge:true}).then(function(){var s=document.getElementById('cl-save');if(s){s.classList.add('on');setTimeout(function(){s.classList.remove('on');},1400);}}).catch(function(){alert('Could not save — please check your internet.');});},700);}
