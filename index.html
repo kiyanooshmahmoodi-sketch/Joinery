@@ -1209,7 +1209,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v406 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v407 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8568,7 +8568,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v406 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v407 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11338,28 +11338,39 @@ function userDelete(i){var u=_userList[i];if(!u||!confirm('Delete '+(u.name||u._
 roleInit();
 </script>
 
-<div id="upd-bar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99998;background:#2f4b8f;color:#fff;padding:9px 14px;font-size:13px;font-weight:700;text-align:center;">
-  🔄 New version <span id="upd-ver"></span> is ready —
-  <button onclick="applyUpdate()" style="margin-left:8px;padding:4px 12px;border:0;border-radius:6px;background:#fff;color:#2f4b8f;font-weight:700;cursor:pointer;">Update now</button>
+<div id="upd-bar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:100002;background:#27272a;color:#fff;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;">
+  New version <span id="upd-ver"></span> is ready
+  <button onclick="applyUpdate()" style="margin-left:10px;padding:5px 14px;border:0;border-radius:6px;background:#fff;color:#27272a;font-weight:700;cursor:pointer;">Update now</button>
 </div>
 <script>
 // AUTO-UPDATE CHECK (v204): when served from a web link, compare this file's version with version.json on the server.
 // v288: version is read from the visible version label (BRAND_SUBS), so it can never fall behind and keep showing the update bar
 var APP_VERSION=(function(){try{return parseInt((String(BRAND_SUBS.tracker).match(/v(\d+)/)||[])[1],10)||0;}catch(e){return 0;}})();
+// v407: check often (open, every 2 min, when you come back to the app, back online). If you are not in the middle of typing, update straight away.
+var _updLastKey=0,_updBusy=false;
+['keydown','input','pointerdown'].forEach(function(ev){document.addEventListener(ev,function(){_updLastKey=Date.now();},true);});
+function _updSafe(){var a=document.activeElement,t=a&&a.tagName;if(/INPUT|TEXTAREA|SELECT/.test(t||'')&&!(document.getElementById('role-ov')&&document.getElementById('role-ov').contains(a)))return false;
+  if(Date.now()-_updLastKey<20000)return false;if(document.querySelector('.modal.show,.overlay.show,#sk-ov'))return false;return true;}
 function checkForUpdate(){
-  if(!/^https?:$/.test(location.protocol))return;
+  if(!/^https?:$/.test(location.protocol)||_updBusy)return;
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
     if(j&&Number(j.version)>APP_VERSION){
       document.getElementById('upd-ver').textContent='v'+j.version;
+      if(_updSafe()){applyUpdate();return;}
       document.getElementById('upd-bar').style.display='block';
     }
   }).catch(function(){});
 }
 function applyUpdate(){
+  if(_updBusy)return;_updBusy=true;
   try{if(currentJobId)saveCurrentJob();}catch(e){}
-  setTimeout(function(){location.href=location.pathname+'?v='+Date.now();},300);
+  var go=function(){location.replace(location.pathname+'?v='+Date.now()+location.hash);};
+  try{if('caches' in window)caches.keys().then(function(k){return Promise.all(k.map(function(n){return caches.open(n).then(function(c){return Promise.all([c.delete('./'),c.delete('./index.html'),c.delete(location.pathname)]);});}));}).then(function(){setTimeout(go,300);},function(){setTimeout(go,300);});else setTimeout(go,300);}catch(e){setTimeout(go,300);}
 }
-window.addEventListener('load',function(){setTimeout(checkForUpdate,1500);setInterval(checkForUpdate,300000);});
+window.addEventListener('load',function(){setTimeout(checkForUpdate,1500);setInterval(checkForUpdate,120000);});
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')setTimeout(checkForUpdate,500);});
+window.addEventListener('focus',function(){setTimeout(checkForUpdate,500);});
+window.addEventListener('online',function(){setTimeout(checkForUpdate,1000);});
 </script>
 </body>
 </html>
