@@ -1209,7 +1209,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v395 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v396 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8567,7 +8567,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v395 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v396 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10411,7 +10411,7 @@ function clNotesBox(){var b=document.getElementById('cl-notes-box');if(!b)return
        V.slice().reverse().map(function(v){return '<tr><td><b>v'+v.v+'</b></td><td>'+tag(v.by)+'</td><td><button class="btn btn-outline btn-sm" onclick="drOpenAny(\''+v.file.id+'\')">'+esc(v.file.name||'file')+'</button>'+(msOn()?' <button class="btn btn-outline btn-sm" title="Email this version to the client" onclick="msEmailVersion(\''+d.id+'\',\''+v.id+'\')">Email</button>':'')+'</td><td style="font-size:12.5px;white-space:pre-wrap;">'+esc(v.note||'')+'</td><td style="font-size:12px;color:#71717a;">'+jhFmt(new Date(v.at).toISOString())+'</td></tr>';}).join('')+'</tbody></table>'+
        '<label class="btn btn-outline btn-sm" style="cursor:pointer;margin-top:8px;">Upload new version<input type="file" style="display:none" onchange="clDocVersion(\''+d.id+'\',this)"></label></div>';}).join(''):'<div style="font-size:12.5px;color:#a1a1aa;margin-bottom:10px;">No shared documents yet.</div>')+
      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid #f0f0f2;padding-top:10px;"><input id="cl-doc-t" placeholder="Document name (e.g. Kitchen layout)" style="flex:1;min-width:200px;"/><label class="btn btn-blue btn-sm" style="cursor:pointer;">Share a document<input type="file" style="display:none" onchange="clDocNew(this)"></label></div></div>'+
-   '<div class="card"><div class="card-title" style="margin-bottom:4px;">Notes &amp; references</div><div style="font-size:12px;color:#71717a;margin-bottom:10px;">Messages and files between you and the client — newest first. The client sees these on their page.</div>'+
+   '<div class="card"><div class="card-title" style="margin-bottom:4px;">Messages on the client page</div><div style="font-size:12px;color:#71717a;margin-bottom:10px;">Only for the client link: what you and the client write on the client page. The client can see these. (Your own notes go in “Client notes” above.)</div>'+
      '<textarea id="cl-dn" rows="3" placeholder="Write a note to the client…" style="width:100%;"></textarea><div style="display:flex;gap:8px;align-items:center;margin:8px 0 6px;flex-wrap:wrap;"><label class="btn btn-outline btn-sm" style="cursor:pointer;">Attach files<input id="cl-dnf" type="file" multiple style="display:none" onchange="var l=document.getElementById(\'cl-dnf-l\');if(l)l.textContent=Array.prototype.map.call(this.files,function(f){return f.name;}).join(\', \');"></label><span id="cl-dnf-l" style="font-size:12px;color:#71717a;"></span><button class="btn btn-blue btn-sm" style="margin-left:auto;" onclick="clDesignerNote()">Post note</button></div>'+
      (N.length?N.map(function(n){return '<div style="border-top:1px solid #f0f0f2;padding:10px 0;"><div style="display:flex;gap:8px;align-items:center;font-size:11.5px;color:#a1a1aa;">'+tag(n.by)+jhFmt(new Date(n.at).toISOString())+'</div>'+
        (n.text?'<div style="font-size:13.5px;white-space:pre-wrap;margin-top:4px;">'+esc(n.text)+'</div>':'')+
@@ -10531,7 +10531,7 @@ function brCats(j){var x=[];try{x=JSON.parse(localStorage.getItem('cbk-brcats')|
 function brDay(t){var d=new Date(t);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function brFmt(t){return new Date(t).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});}
 function briefBox(){var b=document.getElementById('brief-box');if(!b)return;var j=siJob();if(!j){b.innerHTML='';return;}
-  b.innerHTML='<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;"><div><div class="card-title" style="margin-bottom:4px;">Client brief</div><div style="font-size:12px;color:#71717a;max-width:600px;">Copy what the client says in emails (or paste a screenshot) and file it under a topic — so you never have to search your inbox again.</div></div>'+
+  b.innerHTML='<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;"><div><div class="card-title" style="margin-bottom:4px;">Client notes</div><div style="font-size:12px;color:#71717a;max-width:600px;">Copy what the client says in emails (or paste a screenshot) and file it under a topic — so you never have to search your inbox again.</div></div>'+
     '<button class="btn btn-blue btn-sm" onclick="brNew()">+ New note</button></div><div id="br-form"></div><div id="br-filter" style="margin-top:12px;"></div><div id="br-list"></div></div>';
   if(_brEdit)brForm();brList();}
 function brNew(){_brEdit={};_brFiles=[];brForm();var t=document.getElementById('br-txt');if(t)t.focus();}
