@@ -1209,7 +1209,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v407 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v408 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4773,12 +4773,12 @@ function deleteClosetRod(railId){
 // The user sets a fixed amount (e.g. 5mm) that is automatically subtracted
 // from every length entered manually — e.g. type 805 → saved as 800.
 function getRodDeduct(){
-  var v=0;try{v=parseInt(localStorage.getItem('cbk-rod-deduct'))||0;}catch(e){}
+  var v=parseInt(appSetGet('rodDeduct','cbk-rod-deduct'))||0;
   return v>0?v:0;
 }
 function setRodDeduct(val){
   var v=parseInt(val)||0;if(v<0)v=0;
-  try{localStorage.setItem('cbk-rod-deduct',v);}catch(e){}
+  appSetPut('rodDeduct',v,'cbk-rod-deduct');
   updateRodPreview();
 }
 function updateRodPreview(){
@@ -8568,7 +8568,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v407 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v408 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10391,7 +10391,7 @@ async function stRestore(inp){var f=inp.files&&inp.files[0];inp.value='';if(!f)r
   await saveAllJobs();try{updateProjectCount();renderJobsHome();}catch(e){}_stCache=null;stRender(true);showMsg('✓ Restored '+o.jobs.length+' project(s)');}
 // ===== v393: CLIENT SELECTIONS LINK — the client fills Appliances + Stone; Material Schedule is view-only; changes land straight in the job =====
 var CL_COL='client';
-function clCompany(){try{return JSON.parse(localStorage.getItem('cbk-company')||'{}')||{};}catch(e){return {};}}
+function clCompany(){var c=appSetGet('company','cbk-company');if(typeof c==='string'){try{c=JSON.parse(c);}catch(e){c={};}}return c||{};}
 function clToken(j){var inf=jhInfo(j);if(!inf.clientToken){var a=new Uint8Array(15);(window.crypto||{getRandomValues:function(x){for(var i=0;i<x.length;i++)x[i]=Math.random()*256;return x;}}).getRandomValues(a);inf.clientToken=Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join('');}return inf.clientToken;}
 function clLink(j){return location.origin+location.pathname+'?client='+clToken(j);}
 function clPayload(j){var F=apInit(j);finInit(j);
@@ -10604,7 +10604,7 @@ async function clClientVersion(did,inp){var f=inp.files&&inp.files[0];inp.value=
 var BR_CATS=['Changes from client','References','Appliances','Stone','Colours & materials','Hardware','Measurements & site','Design changes','Dates & access','Payments','Other'];
 var _brCat='',_brQ='',_brEdit=null,_brFiles=[];
 function brItems(j){return (j&&j.finishes&&j.finishes.clientBrief)||[];}
-function brCats(j){var x=[];try{x=JSON.parse(localStorage.getItem('cbk-brcats')||'[]')||[];}catch(e){}var all=BR_CATS.slice();
+function brCats(j){var x=brCustomCats();var all=BR_CATS.slice();
   x.concat(brItems(j).map(function(i){return i.cat;})).forEach(function(c){if(c&&all.indexOf(c)<0)all.splice(all.length-1,0,c);});return all;}
 function brDay(t){var d=new Date(t);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function brFmt(t){return new Date(t).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});}
@@ -10631,7 +10631,7 @@ function brNextVer(j,cat,onlyVerCats){if(onlyVerCats&&['Changes from client','Re
 function brCatChg(){var v=document.getElementById('br-ver');if(!v||v.dataset.man||(_brEdit&&_brEdit.id))return;v.value=brNextVer(siJob(),document.getElementById('br-cat').value,true);}
 function brPick(inp){_brFiles=_brFiles.concat(Array.prototype.slice.call(inp.files||[]));inp.value='';brPrev();var v=document.getElementById('br-ver');if(v&&!v.value&&!v.dataset.man&&!(_brEdit&&_brEdit.id)&&_brFiles.some(function(f){return /pdf/.test(f.type);}))v.value=brNextVer(siJob(),document.getElementById('br-cat').value,false);}
 function brPaste(ev){var it=(ev.clipboardData&&ev.clipboardData.items)||[],got=false;for(var i=0;i<it.length;i++){if(it[i].kind==='file'&&/^image\//.test(it[i].type)){var f=it[i].getAsFile();if(f){_brFiles.push(new File([f],'Screenshot '+new Date().toLocaleString('en-AU').replace(/[\/:]/g,'-')+'.png',{type:f.type}));got=true;}}}if(got){ev.preventDefault();brPrev();}}
-function brNewCat(){var n=prompt('Name of the new topic:','');if(!n)return;n=n.trim();if(!n)return;var x=[];try{x=JSON.parse(localStorage.getItem('cbk-brcats')||'[]')||[];}catch(e){}if(x.indexOf(n)<0)x.push(n);try{localStorage.setItem('cbk-brcats',JSON.stringify(x));}catch(e){}
+function brNewCat(){var n=prompt('Name of the new topic:','');if(!n)return;n=n.trim();if(!n)return;var x=brCustomCats().slice();if(x.indexOf(n)<0)x.push(n);appSetPut('brcats',x,'cbk-brcats');
   if(_brEdit){_brEdit.cat=n;_brEdit.text=document.getElementById('br-txt').value;}brForm();}
 async function brSave(){var j=siJob();if(!j||!_brEdit)return;var t=(document.getElementById('br-txt').value||'').trim();if(!t&&!_brFiles.length&&!((_brEdit.files||[]).length)){alert('Paste the text or add a screenshot first.');return;}
   var dv=document.getElementById('br-date').value,at=dv?new Date(dv+'T12:00:00').getTime():Date.now(),src=(document.getElementById('br-src').value||'').trim();
@@ -10809,6 +10809,26 @@ function mailSave(){var U={};document.querySelectorAll('#mail-card .mail-em').fo
   try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('settings').doc('mail').set(MAIL_CFG).then(function(){showMsg('✓ Email settings saved');}).catch(function(e){alert('Saved on this device only: '+e.message);});else showMsg('✓ Saved on this device');}catch(e){}}
 function mailTest(){mailSave();var m=mailMine();mailCompose(m.email||'test@example.com','CabLine test','This is a test from CabLine.');}
 setTimeout(function(){mailLoad().then(function(){try{mailCard();}catch(e){}});},5000);
+// ===== v408: SHARED SETTINGS — saved on the server so every device and person sees the same =====
+// (Client-notes topics, company details, closet-rod deduction. Hardware names, colours and email setup were already shared.)
+var APPSET=(function(){try{return JSON.parse(localStorage.getItem('cbk-appset')||'{}')||{};}catch(e){return {};}})();
+function _appLegacy(k){try{var v=localStorage.getItem(k);if(v==null)return undefined;try{return JSON.parse(v);}catch(e){return v;}}catch(e){return undefined;}}
+function appSetGet(key,legacy){if(APPSET[key]!==undefined)return APPSET[key];return legacy?_appLegacy(legacy):undefined;}
+function appSetPut(key,val,legacy){APPSET[key]=val;try{localStorage.setItem('cbk-appset',JSON.stringify(APPSET));}catch(e){}
+  if(legacy){try{localStorage.setItem(legacy,typeof val==='string'?val:JSON.stringify(val));}catch(e){}}
+  try{if(window.cloud&&cloud.db&&cloud.user){var o={};o[key]=val;cloud.db.collection('settings').doc('app').set(o,{merge:true}).catch(function(){});}}catch(e){}}
+function brCustomCats(){var x=appSetGet('brcats','cbk-brcats');return Array.isArray(x)?x:[];}
+function appSetLoad(){if(!(window.cloud&&cloud.db&&cloud.user))return;
+  cloud.db.collection('settings').doc('app').onSnapshot(function(d){var C=d.exists?(d.data()||{}):{},push={};
+    // first time on the server: bring up what this device had saved
+    var lc=_appLegacy('cbk-brcats');if(Array.isArray(lc)&&lc.length){var u=(C.brcats||[]).slice();lc.forEach(function(c){if(u.indexOf(c)<0)u.push(c);});if(u.length!==(C.brcats||[]).length){push.brcats=u;C.brcats=u;}}
+    if(C.company===undefined){var co=_appLegacy('cbk-company');if(co&&typeof co==='object'&&Object.keys(co).length){push.company=co;C.company=co;}}
+    if(C.rodDeduct===undefined){var rd=parseInt(_appLegacy('cbk-rod-deduct'))||0;if(rd>0){push.rodDeduct=rd;C.rodDeduct=rd;}}
+    if(Object.keys(push).length)cloud.db.collection('settings').doc('app').set(push,{merge:true}).catch(function(){});
+    APPSET=Object.assign({},APPSET,C);try{localStorage.setItem('cbk-appset',JSON.stringify(APPSET));}catch(e){}
+    try{if(typeof briefBox==='function'&&document.getElementById('br-form')&&!_brEdit)briefBox();}catch(e){}
+    try{if(typeof updateRodPreview==='function')updateRodPreview();var ri=document.getElementById('cr-deduct');if(ri&&document.activeElement!==ri)ri.value=getRodDeduct()||'';}catch(e){}
+  },function(){});}
 // ===== v259: PRODUCTION DRAWINGS (PDF) in Installation =====
 function tomb(id){var j=siJob();if(!j)return;j.deleted=j.deleted||[];if(j.deleted.indexOf(id)<0)j.deleted.push(id);}
 function drMB(n){return (n/1048576).toFixed(1)+' MB';}
@@ -11214,7 +11234,7 @@ async function rcResend(){try{await cloud.auth.currentUser.sendEmailVerification
 async function rcVerified(){var u=cloud.auth.currentUser;if(!u)return rcStart();try{await u.reload();u=cloud.auth.currentUser;if(!u.emailVerified){rcErr('Not confirmed yet — open the link in the email first.');return;}await u.getIdToken(true);rcErr('');rcStart();}catch(e){rcErr(rcAuthMsg(e));}}
 function rcSignOut(){try{if(_rcUnsub){_rcUnsub();_rcUnsub=null;}}catch(e){}try{cloudStop();}catch(e){}cloud.started=false;SESSION.role='';SESSION.roles=[];
   Promise.resolve(cloud.auth&&cloud.auth.signOut()).then(function(){location.reload();});}
-function rcBegin(){if(cloud.started)return;cloud.started=true;try{cloudStart();}catch(e){}try{setTimeout(clWatchAll,4000);}catch(e){}try{upKick();}catch(e){}try{hwNamesLoad();}catch(e){}try{colourLoadCustom();}catch(e){}try{mailLoad();}catch(e){}}
+function rcBegin(){if(cloud.started)return;cloud.started=true;try{appSetLoad();}catch(e){}try{cloudStart();}catch(e){}try{setTimeout(clWatchAll,4000);}catch(e){}try{upKick();}catch(e){}try{hwNamesLoad();}catch(e){}try{colourLoadCustom();}catch(e){}try{mailLoad();}catch(e){}}
 function rcWatch(em){
   if(_rcUnsub){_rcUnsub();_rcUnsub=null;}
   var nm0=(cloud.auth.currentUser&&cloud.auth.currentUser.displayName)||(function(){try{return localStorage.getItem('cbk-user-name')||'';}catch(e){return '';}})();
