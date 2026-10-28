@@ -1209,7 +1209,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v398 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v399 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8568,7 +8568,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v398 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v399 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10405,13 +10405,6 @@ function clNotesBox(){var b=document.getElementById('cl-notes-box');if(!b)return
   var F=j.finishes||{},N=(F.clientNotes||[]).slice().sort(function(a,c){return c.at-a.at;}),D=F.clientDocs||[];
   var tag=function(by){return '<span style="font-size:10.5px;font-weight:600;border:1px solid #e4e4e7;border-radius:4px;padding:1px 6px;color:'+(by==='designer'?'#52525b':'#3d5f8c')+';">'+clWho(by)+'</span>';};
   b.innerHTML=
-   '<div class="card"><div class="card-title" style="margin-bottom:4px;">Shared documents</div><div style="font-size:12px;color:#71717a;margin-bottom:10px;">Send the client a PDF (layout, drawings, quote…). They can open it and upload their marked-up changes; every upload is a new version with its date.</div>'+
-     (D.length?D.slice().reverse().map(function(d){var V=d.versions||[],last=V[V.length-1]||{};return '<div style="border:1px solid #ececef;border-radius:8px;padding:10px 12px;margin-bottom:10px;">'+
-       '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;"><b style="font-size:14px;">'+esc(d.title||'Document')+'</b><span style="font-size:11.5px;color:#71717a;">Latest: v'+(last.v||0)+' · '+(last.by?clWho(last.by):'')+' · '+(last.at?jhFmt(new Date(last.at).toISOString()):'')+'</span></div>'+
-       '<table class="sum-table" style="margin-top:8px;"><thead><tr><th style="width:44px;">Ver.</th><th style="width:70px;">From</th><th>File</th><th>Note</th><th style="width:150px;">Date</th></tr></thead><tbody>'+
-       V.slice().reverse().map(function(v){return '<tr><td><b>v'+v.v+'</b></td><td>'+tag(v.by)+'</td><td><button class="btn btn-outline btn-sm" onclick="drOpenAny(\''+v.file.id+'\')">'+esc(v.file.name||'file')+'</button>'+(msOn()?' <button class="btn btn-outline btn-sm" title="Email this version to the client" onclick="msEmailVersion(\''+d.id+'\',\''+v.id+'\')">Email</button>':'')+'</td><td style="font-size:12.5px;white-space:pre-wrap;">'+esc(v.note||'')+'</td><td style="font-size:12px;color:#71717a;">'+jhFmt(new Date(v.at).toISOString())+'</td></tr>';}).join('')+'</tbody></table>'+
-       '<label class="btn btn-outline btn-sm" style="cursor:pointer;margin-top:8px;">Upload new version<input type="file" style="display:none" onchange="clDocVersion(\''+d.id+'\',this)"></label></div>';}).join(''):'<div style="font-size:12.5px;color:#a1a1aa;margin-bottom:10px;">No shared documents yet.</div>')+
-     '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid #f0f0f2;padding-top:10px;"><input id="cl-doc-t" placeholder="Document name (e.g. Kitchen layout)" style="flex:1;min-width:200px;"/><label class="btn btn-blue btn-sm" style="cursor:pointer;">Share a document<input type="file" style="display:none" onchange="clDocNew(this)"></label></div></div>'+
    '<div class="card"><div class="card-title" style="margin-bottom:4px;">Messages on the client page</div><div style="font-size:12px;color:#71717a;margin-bottom:10px;">Only for the client link: what you and the client write on the client page. The client can see these. (Your own notes go in “Client notes” above.)</div>'+
      '<textarea id="cl-dn" rows="3" placeholder="Write a note to the client…" style="width:100%;"></textarea><div style="display:flex;gap:8px;align-items:center;margin:8px 0 6px;flex-wrap:wrap;"><label class="btn btn-outline btn-sm" style="cursor:pointer;">Attach files<input id="cl-dnf" type="file" multiple style="display:none" onchange="var l=document.getElementById(\'cl-dnf-l\');if(l)l.textContent=Array.prototype.map.call(this.files,function(f){return f.name;}).join(\', \');"></label><span id="cl-dnf-l" style="font-size:12px;color:#71717a;"></span><button class="btn btn-blue btn-sm" style="margin-left:auto;" onclick="clDesignerNote()">Post note</button></div>'+
      (N.length?N.map(function(n){return '<div style="border-top:1px solid #f0f0f2;padding:10px 0;"><div style="display:flex;gap:8px;align-items:center;font-size:11.5px;color:#a1a1aa;">'+tag(n.by)+jhFmt(new Date(n.at).toISOString())+'</div>'+
@@ -10477,7 +10470,7 @@ function clientRender(){var D=_clDoc||{},C=D.company||{},w=document.querySelecto
   w.innerHTML=(C.name||C.logo?'<div class="cl-co">'+(C.logo?'<img src="'+clE(C.logo)+'" alt="">':'')+'<div><b>'+clE(C.name||'')+'</b>'+(C.address?'<span>'+clE(C.address)+'</span>':'')+'</div></div>':'')+
     '<h1>'+clE(D.jobName||'Your project')+'</h1><div class="cl-sub">'+(D.canEdit===false?'Please review your appliance and stone selections and sign them off.':'Please fill in your appliance models and stone selections.')+' Everything saves automatically — you can close this page and come back to the same link any time. The material schedule is for your information only.</div>'+
     (RO?'<div class="cl-card" style="background:#fafafa;">These selections were filled in by us. Please check Appliances and Stone and sign off below.</div>':'')+
-    '<div class="cl-tabs">'+tab('ap','Appliances')+tab('ss','Stone')+tab('ms','Materials (view only)')+tab('dc','Documents'+((D.docs||[]).length?' ('+(D.docs||[]).length+')':''))+tab('nt','Notes &amp; references')+'</div>'+body+clSignHTML(D)+
+    '<div class="cl-tabs">'+tab('ap','Appliances')+tab('ss','Stone')+tab('ms','Materials (view only)')+((D.docs||[]).length?tab('dc','Documents ('+(D.docs||[]).length+')'):'')+tab('nt','Notes &amp; references')+'</div>'+body+clSignHTML(D)+
     '<div class="cl-foot">'+(C.phone||C.email?clE([C.phone,C.email].filter(Boolean).join(' · ')):'Questions? Just reply to our email.')+'</div><div class="cl-save" id="cl-save">Saved</div>';}
 function clSet(sec,ri,ai,k,v){var D=_clDoc;if(!D)return;var tgt=sec==='ap'?D.ap.filter(function(r){return (r.items||[]).length;})[ri].items[ai]:D.ss[ri];tgt[k]=v;
   clearTimeout(_clSaveT);_clSaveT=setTimeout(function(){_clRef.set({ap:D.ap,ss:D.ss,clientAt:Date.now()},{merge:true}).then(function(){var s=document.getElementById('cl-save');if(s){s.classList.add('on');setTimeout(function(){s.classList.remove('on');},1400);}}).catch(function(){alert('Could not save — please check your internet.');});},700);}
@@ -10527,7 +10520,7 @@ async function clClientVersion(did,inp){var f=inp.files&&inp.files[0];inp.value=
   _clDoc.docs=clUnionDocs(_clDoc.docs,[{id:did,title:d.title,at:d.at,versions:[{id:'v'+Date.now().toString(36),by:'client',file:{id:id,name:f.name,mime:/^image\//.test(f.type)?'image/jpeg':(f.type||''),size:f.size},note:note,at:Date.now()}]}]);
   await _clRef.set({docs:_clDoc.docs,clientAt:Date.now()},{merge:true}).catch(function(){alert('Could not save — please check your internet.');});clientRender();}
 // ===== v395: CLIENT BRIEF — notes from the client's emails, sorted by topic =====
-var BR_CATS=['Appliances','Stone','Colours & materials','Hardware','Measurements & site','Design changes','Dates & access','Payments','Other'];
+var BR_CATS=['Changes from client','References','Appliances','Stone','Colours & materials','Hardware','Measurements & site','Design changes','Dates & access','Payments','Other'];
 var _brCat='',_brQ='',_brEdit=null,_brFiles=[];
 function brItems(j){return (j&&j.finishes&&j.finishes.clientBrief)||[];}
 function brCats(j){var x=[];try{x=JSON.parse(localStorage.getItem('cbk-brcats')||'[]')||[];}catch(e){}var all=BR_CATS.slice();
@@ -10542,24 +10535,27 @@ function brNew(){_brEdit={};_brFiles=[];brForm();var t=document.getElementById('
 function brForm(){var w=document.getElementById('br-form');if(!w)return;var j=siJob();if(!_brEdit||!j){w.innerHTML='';return;}var e=_brEdit,cats=brCats(j),cur=e.cat||_brCat||cats[0];
   w.innerHTML='<div style="border:1px solid #e4e4e7;border-radius:8px;padding:12px;margin-top:12px;background:#fafafa;">'+
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">'+
-      '<div><div style="font-size:11.5px;color:#71717a;margin-bottom:4px;">Topic</div><div style="display:flex;gap:6px;"><select id="br-cat" style="flex:1;min-width:0;">'+cats.map(function(c){return '<option'+(c===cur?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select><button class="btn btn-outline btn-sm" title="New topic" onclick="brNewCat()">+</button></div></div>'+
+      '<div><div style="font-size:11.5px;color:#71717a;margin-bottom:4px;">Topic</div><div style="display:flex;gap:6px;"><select id="br-cat" style="flex:1;min-width:0;" onchange="brCatChg()">'+cats.map(function(c){return '<option'+(c===cur?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select><button class="btn btn-outline btn-sm" title="New topic" onclick="brNewCat()">+</button></div></div>'+
       '<div><div style="font-size:11.5px;color:#71717a;margin-bottom:4px;">Date (when the client said it)</div><input id="br-date" type="date" value="'+brDay(e.at||Date.now())+'"/></div>'+
-      '<div><div style="font-size:11.5px;color:#71717a;margin-bottom:4px;">From (optional)</div><input id="br-src" value="'+qe((e.src&&e.src.label)||'')+'" placeholder="e.g. Email from Ali, phone call"/></div></div>'+
-    '<div style="font-size:11.5px;color:#71717a;margin:10px 0 4px;">What the client said</div><textarea id="br-txt" rows="5" placeholder="Paste the text from the email here. You can also paste a screenshot (Ctrl+V)." style="width:100%;" onpaste="brPaste(event)">'+esc(e.text||'')+'</textarea>'+
+      '<div><div style="font-size:11.5px;color:#71717a;margin-bottom:4px;">From (optional)</div><input id="br-src" value="'+qe((e.src&&e.src.label)||'')+'" placeholder="e.g. Email from Ali, phone call"/></div>'+
+      '<div><div style="font-size:11.5px;color:#71717a;margin-bottom:4px;">Version (optional)</div><input id="br-ver" type="number" min="1" value="'+(e.id?(e.ver||''):brNextVer(j,cur,true))+'" placeholder="e.g. 1" oninput="this.dataset.man=1"/></div></div>'+
+    '<div style="font-size:11.5px;color:#71717a;margin:10px 0 4px;">What the client said</div><textarea id="br-txt" rows="5" placeholder="Paste the text from the email here, or write what changed. You can also paste a screenshot (Ctrl+V)." style="width:100%;" onpaste="brPaste(event)">'+esc(e.text||'')+'</textarea>'+
     '<div id="br-prev" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>'+
-    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;"><label class="btn btn-outline btn-sm" style="cursor:pointer;">Add screenshot / file<input type="file" multiple accept="image/*,application/pdf" style="display:none" onchange="brPick(this)"></label>'+
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;"><label class="btn btn-outline btn-sm" style="cursor:pointer;">Add PDF / screenshot<input type="file" multiple accept="image/*,application/pdf" style="display:none" onchange="brPick(this)"></label>'+
     '<span style="margin-left:auto;"></span><button class="btn btn-outline btn-sm" onclick="_brEdit=null;_brFiles=[];brForm();">Cancel</button><button class="btn btn-blue btn-sm" onclick="brSave()">'+(e.id?'Save changes':'Save note')+'</button></div></div>';brPrev();}
 function brPrev(){var w=document.getElementById('br-prev');if(!w)return;var old=(_brEdit&&_brEdit.files)||[];
   w.innerHTML=old.map(function(f,i){return '<span style="font-size:12px;border:1px solid #e4e4e7;border-radius:6px;padding:3px 8px;background:#fff;">'+esc(f.name)+' <a href="#" style="color:#a1a1aa;text-decoration:none;" onclick="_brEdit.files.splice('+i+',1);brPrev();return false;">×</a></span>';}).join('')+
     _brFiles.map(function(f,i){return /^image\//.test(f.type)?'<span style="position:relative;display:inline-block;"><img src="'+URL.createObjectURL(f)+'" style="height:64px;border:1px solid #e4e4e7;border-radius:6px;"><a href="#" style="position:absolute;top:-6px;right:-6px;background:#fff;border:1px solid #e4e4e7;border-radius:50%;width:18px;height:18px;line-height:16px;text-align:center;font-size:12px;color:#71717a;text-decoration:none;" onclick="_brFiles.splice('+i+',1);brPrev();return false;">×</a></span>':'<span style="font-size:12px;border:1px solid #e4e4e7;border-radius:6px;padding:3px 8px;background:#fff;">'+esc(f.name)+' <a href="#" style="color:#a1a1aa;text-decoration:none;" onclick="_brFiles.splice('+i+',1);brPrev();return false;">×</a></span>';}).join('');}
-function brPick(inp){_brFiles=_brFiles.concat(Array.prototype.slice.call(inp.files||[]));inp.value='';brPrev();}
+function brNextVer(j,cat,onlyVerCats){if(onlyVerCats&&['Changes from client','References'].indexOf(cat)<0)return '';var m=0;brItems(j).forEach(function(x){if(x.cat===cat&&+x.ver>m)m=+x.ver;});return m+1;}
+function brCatChg(){var v=document.getElementById('br-ver');if(!v||v.dataset.man||(_brEdit&&_brEdit.id))return;v.value=brNextVer(siJob(),document.getElementById('br-cat').value,true);}
+function brPick(inp){_brFiles=_brFiles.concat(Array.prototype.slice.call(inp.files||[]));inp.value='';brPrev();var v=document.getElementById('br-ver');if(v&&!v.value&&!v.dataset.man&&!(_brEdit&&_brEdit.id)&&_brFiles.some(function(f){return /pdf/.test(f.type);}))v.value=brNextVer(siJob(),document.getElementById('br-cat').value,false);}
 function brPaste(ev){var it=(ev.clipboardData&&ev.clipboardData.items)||[],got=false;for(var i=0;i<it.length;i++){if(it[i].kind==='file'&&/^image\//.test(it[i].type)){var f=it[i].getAsFile();if(f){_brFiles.push(new File([f],'Screenshot '+new Date().toLocaleString('en-AU').replace(/[\/:]/g,'-')+'.png',{type:f.type}));got=true;}}}if(got){ev.preventDefault();brPrev();}}
 function brNewCat(){var n=prompt('Name of the new topic:','');if(!n)return;n=n.trim();if(!n)return;var x=[];try{x=JSON.parse(localStorage.getItem('cbk-brcats')||'[]')||[];}catch(e){}if(x.indexOf(n)<0)x.push(n);try{localStorage.setItem('cbk-brcats',JSON.stringify(x));}catch(e){}
   if(_brEdit){_brEdit.cat=n;_brEdit.text=document.getElementById('br-txt').value;}brForm();}
 async function brSave(){var j=siJob();if(!j||!_brEdit)return;var t=(document.getElementById('br-txt').value||'').trim();if(!t&&!_brFiles.length&&!((_brEdit.files||[]).length)){alert('Paste the text or add a screenshot first.');return;}
   var dv=document.getElementById('br-date').value,at=dv?new Date(dv+'T12:00:00').getTime():Date.now(),src=(document.getElementById('br-src').value||'').trim();
   showMsg('Saving…');var files=(_brEdit.files||[]).slice();for(var i=0;i<_brFiles.length;i++){var r=await clStoreFile(_brFiles[i],j.id);if(r)files.push(r);}
-  var F=finInit(j),it={id:_brEdit.id||('b'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),cat:document.getElementById('br-cat').value,text:t,at:at,created:_brEdit.created||Date.now(),src:src?{type:'manual',label:src}:{type:'manual'},files:files};
+  var F=finInit(j),it={id:_brEdit.id||('b'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),cat:document.getElementById('br-cat').value,text:t,at:at,created:_brEdit.created||Date.now(),src:src?{type:'manual',label:src}:{type:'manual'},files:files,ver:(+((document.getElementById('br-ver')||{}).value)||'')};
   F.clientBrief=(F.clientBrief||[]).filter(function(x){return x.id!==it.id;}).concat([it]);saveData();_brEdit=null;_brFiles=[];brForm();brList();showMsg('✓ Saved');}
 function brEditItem(id){var x=brItems(siJob()).filter(function(i){return i.id===id;})[0];if(!x)return;_brEdit=JSON.parse(JSON.stringify(x));_brFiles=[];brForm();var w=document.getElementById('br-form');if(w)w.scrollIntoView({behavior:'smooth',block:'center'});}
 function brDel(id){var j=siJob();if(!j)return;if(!confirm('Delete this note?'))return;var F=finInit(j);F.clientBrief=(F.clientBrief||[]).filter(function(x){return x.id!==id;});saveData();brList();}
@@ -10575,11 +10571,11 @@ function brList(){var w=document.getElementById('br-list'),fw=document.getElemen
   if(!B.length){w.innerHTML='<div style="font-size:12.5px;color:#a1a1aa;margin-top:12px;">No notes yet — press “+ New note”.</div>';return;}
   if(!L.length){w.innerHTML='<div style="font-size:12.5px;color:#a1a1aa;margin-top:12px;">Nothing matches.</div>';return;}
   var item=function(x){var src=x.src||{};return '<div style="border-top:1px solid #f0f0f2;padding:10px 0;"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:#a1a1aa;">'+
-      (_brCat?'':'')+'<span>'+brFmt(x.at)+'</span>'+(src.label?'<span>· '+(src.link?'<a href="'+qe(src.link)+'" target="_blank" rel="noopener" style="color:#71717a;">'+esc(src.label)+'</a>':esc(src.label))+'</span>':'')+
+      (_brCat?'':'')+(x.ver?'<b style="font-size:11.5px;color:#27272a;border:1px solid #d4d4d8;border-radius:4px;padding:0 6px;">v'+x.ver+'</b>':'')+'<span>'+brFmt(x.at)+'</span>'+(src.label?'<span>· '+(src.link?'<a href="'+qe(src.link)+'" target="_blank" rel="noopener" style="color:#71717a;">'+esc(src.label)+'</a>':esc(src.label))+'</span>':'')+
       '<span style="margin-left:auto;display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="brEditItem(\''+x.id+'\')">Edit</button><button class="btn btn-outline btn-sm" title="Delete" onclick="brDel(\''+x.id+'\')">×</button></span></div>'+
       (x.text?'<div style="font-size:13.5px;white-space:pre-wrap;margin-top:4px;line-height:1.55;">'+esc(x.text)+'</div>':'')+
       ((x.files||[]).length?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">'+x.files.map(function(f){return /^image\//.test(f.mime)?'<img data-br="'+f.id+'" title="'+qe(f.name)+'" onclick="clOpenFile(\''+f.id+'\',\'\')" style="height:90px;min-width:60px;border:1px solid #e4e4e7;border-radius:6px;cursor:zoom-in;background:#f4f4f5;">':'<button class="btn btn-outline btn-sm" onclick="clOpenFile(\''+f.id+'\',\''+qe(f.name).replace(/'/g,'')+'\')">'+esc(f.name)+'</button>';}).join('')+'</div>':'')+'</div>';};
-  var sorted=L.slice().sort(function(a,z){return z.at-a.at||(z.created||0)-(a.created||0);});
+  var sorted=L.slice().sort(function(a,z){return (+z.ver||0)-(+a.ver||0)||z.at-a.at||(z.created||0)-(a.created||0);});
   w.innerHTML=_brCat?sorted.map(item).join(''):cats.map(function(c){var G=sorted.filter(function(x){return x.cat===c;});if(!G.length)return '';
     return '<div style="margin-top:14px;"><div style="font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#52525b;">'+esc(c)+' <span style="font-weight:400;color:#a1a1aa;">('+G.length+')</span></div>'+G.map(item).join('')+'</div>';}).join('');
   w.querySelectorAll('img[data-br]').forEach(function(im){siGetPhoto(im.getAttribute('data-br')).then(function(d){if(d)im.src=d;}).catch(function(){});});}
