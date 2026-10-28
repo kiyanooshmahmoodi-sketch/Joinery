@@ -1053,6 +1053,8 @@ html,body{overflow-x:hidden;}
 #ro-slowmsg a{color:#fbbf24}
 #role-ov.ro-wait #ro-card{display:none}#role-ov.ro-wait #ro-load{display:block}
 #ro-load.ro-slow #ro-slowmsg{display:block}
+#role-ov.ro-hold #ro-card,#role-ov.ro-hold #ro-load{display:none!important}
+#role-ov{transition:opacity .5s ease}#role-ov.ro-out{opacity:0}
 @media(max-width:640px){#ro-main{margin-top:6vh!important}#ro-art .g1 path{opacity:.1}}
 @media(prefers-reduced-motion:reduce){#ro-art .d{animation:none;stroke-dashoffset:0}#ro-art .t,#ro-brand,#ro-card{animation:none;opacity:1;transform:none}}
 </style>
@@ -1255,7 +1257,7 @@ html,body{overflow-x:hidden;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v417 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v418 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8348,7 +8350,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v417 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v418 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10684,13 +10686,21 @@ function submitAdminCode(){
   var nm=(document.getElementById('role-name').value.trim()||'Admin');
   applyRole('admin',nm);
 }
+// v418: when the app opens, let the CabLine drawing finish before going in, then fade out
+var RO_SPLASH_MS=3900;
+function roHideSplash(){var ov=document.getElementById('role-ov');if(!ov)return;
+  var left=RO_SPLASH_MS-(Date.now()-((window.__diag&&__diag.t0)||0));
+  if(ov.style.display==='none')return;
+  if(left<=0||window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ov.style.display='none';ov.classList.remove('ro-hold','ro-out');return;}
+  ov.classList.add('ro-hold');clearTimeout(window._roHideT);
+  window._roHideT=setTimeout(function(){ov.classList.add('ro-out');setTimeout(function(){ov.style.display='none';ov.classList.remove('ro-hold','ro-out');},520);},left);}
 function applyRole(r,nm,em,roles){
   roles=(roles&&roles.length)?roles.slice():[r];
   r=ROLE_ORDER.filter(function(x){return roles.indexOf(x)>-1;})[0]||r;   // main section = where the app opens
   SESSION.role=r;SESSION.roles=roles;SESSION.name=nm;SESSION.email=em||'';if(roles.indexOf('admin')>-1||!em){SESSION.jobs='all';SESSION.jobRoles=null;}
   var H=function(x){return roles.indexOf('admin')>-1||roles.indexOf(x)>-1;};
   try{localStorage.setItem('cbk-user-name',nm);}catch(e){}
-  document.getElementById('role-ov').style.display='none';
+  roHideSplash();
   document.getElementById('role-code').value='';document.getElementById('role-admin-box').style.display='none';
   var b=document.body;
   b.classList.toggle('role-limited',!H('designer'));

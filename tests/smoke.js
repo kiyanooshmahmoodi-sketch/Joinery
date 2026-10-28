@@ -40,7 +40,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('new account asks to confirm email',(await vis()).startsWith('rc-verify'));
   await p.evaluate(()=>__setAcc('sara@x.com',{v:true}));await p.evaluate(()=>rcVerified());await p.waitForTimeout(T*700);
   ok('confirmed account waits for approval',(await vis()).startsWith('rc-pending'));
-  await p.evaluate(()=>{const D=JSON.parse(localStorage.getItem('__db'));Object.assign(D['users/sara@x.com'],{status:'approved',roles:['designer']});localStorage.setItem('__db',JSON.stringify(D));});await p.waitForTimeout(T*900);
+  await p.evaluate(()=>{const D=JSON.parse(localStorage.getItem('__db'));Object.assign(D['users/sara@x.com'],{status:'approved',roles:['designer']});localStorage.setItem('__db',JSON.stringify(D));});await p.waitForTimeout(T*900+4500);   // the opening drawing plays for ~4 s before the app shows
   ok('approved person gets in',(await vis()).endsWith('|none'));
   await p.evaluate(()=>rcSignOut());await p.waitForTimeout(T*1500);
   await p.evaluate(()=>{const a=JSON.parse(localStorage.getItem('__acc'));a['kiyanoosh.mahmoodi@gmail.com']={email:'kiyanoosh.mahmoodi@gmail.com',pw:'654321',v:true,name:'Kiya'};localStorage.setItem('__acc',JSON.stringify(a));});await p.reload();await p.waitForTimeout(T*1500);await p.evaluate(()=>{document.getElementById('rc-si-em').value='kiyanoosh.mahmoodi@gmail.com';document.getElementById('rc-si-pw').value='bad';rcSignIn();});await p.waitForTimeout(T*400);
