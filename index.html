@@ -1209,7 +1209,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v402 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v403 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8568,7 +8568,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v402 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v403 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10353,6 +10353,7 @@ function clPayload(j){var F=apInit(j);finInit(j);
   return {v:1,jobId:j.id,jobName:j.name||'',company:clCompany(),canEdit:jhInfo(j).clientCanEdit!==false,
     ap:(F.ap||[]).map(function(r){return {id:r.id,name:r.name,items:(r.items||[]).map(function(a){return {id:a.id,item:a.item||'',brand:a.brand||'',info:a.info||'',link:a.link||''};})};}),
     ss:(F.ss||[]).map(function(r){return {id:r.id,name:r.name||'',stone:r.stone||'',link:r.link||'',mm:r.mm||'',splash:r.splash||'',wf:r.wf||'',wfside:r.wfside||''};}),
+    approval:clApOk(j)?{by:F.approval.by,at:F.approval.at}:null,
     ms:(F.ms||[]).map(function(sp){return {name:sp.name,items:(sp.items||[]).filter(function(it){return it.brand||it.colour||it.finish||it.note;}).map(function(it){return {brand:it.brand||'',colour:it.colour||'',finish:it.finish||'',note:it.note||''};})};}).filter(function(sp){return sp.items.length;}),
     designerAt:Date.now(),editedAt:(j.finishes&&j.finishes.lastEditAt)||0,notes:(j.finishes&&j.finishes.clientNotes)||[],docs:(j.finishes&&j.finishes.clientDocs)||[]};}
 function clMerge(j,d){if(!d||!d.clientAt)return false;var F=apInit(j);finInit(j);if((F.clientMergedAt||0)>=d.clientAt)return false;
@@ -10383,11 +10384,31 @@ async function clSend(){var j=siJob();if(!j){alert('Open a job first.');return;}
   var body='Hi'+(inf.client?' '+inf.client:'')+',\n\nPlease use the link below to fill in your appliance models and stone selections for '+(j.name||'your project')+'. You can also see the materials we have chosen for each area.\n\n'+clLink(j)+'\n\nEverything you type is saved automatically, and you can come back to the link at any time.\n\nThank you,\n'+who;
   mailCompose(inf.clientEmail,'Your selections — '+(j.name||'project'),body);
   inf.clientSentAt=new Date().toISOString();saveData();clStatus();}
+function clApOk(j){var F=(j&&j.finishes)||{},A=F.approval,sg=F.clientSign;return !!(A&&sg&&sg.at&&A.clientSignAt===sg.at&&!((F.lastEditAt||0)>A.at));}
+async function clApprove(){var j=siJob();if(!j)return;var F=finInit(j),sg=F.clientSign;if(!(sg&&sg.at)){alert('The client has not signed off yet.');return;}
+  if((F.lastEditAt||0)>sg.at){alert('You changed the selections after the client signed. Send it to the client again so they can sign the latest version.');return;}
+  var by=(window.SESSION&&SESSION.name)||'Admin';if(!confirm('Approve these selections for production?\n\nClient signed: '+(sg.name||'')+'\nApproved by: '+by))return;
+  var P=clPayload(j);F.approval={by:by,at:Date.now(),clientSignAt:sg.at,clientName:sg.name||'',snap:{ap:P.ap,ss:P.ss}};saveData();try{await clPublish(j.id);}catch(e){}clStatus();showMsg('✓ Approved for production');}
+async function clUnapprove(){var j=siJob();if(!j||!confirm('Undo the approval? The client will be able to change and sign again.'))return;var F=finInit(j);delete F.approval;saveData();try{await clPublish(j.id);}catch(e){}clStatus();}
+function clApPrint(){var j=siJob();if(!j)return;var F=j.finishes||{},A=F.approval;if(!A){alert('Not approved yet.');return;}var S=A.snap||{},w=window.open('','_blank');if(!w)return;
+  var fmt=function(t){return new Date(t).toLocaleString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});},e=esc;
+  var ap=(S.ap||[]).filter(function(r){return (r.items||[]).some(function(a){return a.brand||a.info;});}).map(function(r){return '<tr><th colspan="3" style="background:#f4f4f5;">'+e(r.name||'')+'</th></tr>'+r.items.filter(function(a){return a.brand||a.info;}).map(function(a){return '<tr><td>'+e(a.item)+'</td><td>'+e(a.brand)+'</td><td>'+e(a.info)+'</td></tr>';}).join('');}).join('');
+  var ss=(S.ss||[]).filter(function(r){return r.stone||r.mm||r.splash||r.wf;}).map(function(r){return '<tr><td>'+e(r.name)+'</td><td>'+e(r.stone)+'</td><td>'+e(r.mm)+'</td><td>'+e(r.splash)+'</td><td>'+e([r.wf,r.wfside].filter(Boolean).join(' · '))+'</td></tr>';}).join('');
+  w.document.write('<!DOCTYPE html><html><head><title>Approved selections — '+e(j.name||'')+'</title><style>body{font-family:Arial,sans-serif;font-size:12px;padding:24px;color:#111}h2{margin:0 0 4px}h3{margin:18px 0 6px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #d4d4d8;padding:6px;text-align:left;vertical-align:top}.sig{display:flex;gap:30px;margin-top:24px}.sig div{flex:1;border:1px solid #d4d4d8;padding:10px}</style></head><body>'+
+    '<h2>Approved selections</h2><div>Project: <b>'+e(j.name||'')+'</b>'+(jhInfo(j).client?' · Client: '+e(jhInfo(j).client):'')+'</div>'+
+    '<h3>Appliances</h3>'+(ap?'<table><tr><th>Item</th><th>Brand / model</th><th>Info</th></tr>'+ap+'</table>':'<div>—</div>')+
+    '<h3>Stone</h3>'+(ss?'<table><tr><th>Area</th><th>Stone</th><th>Thickness</th><th>Splashback</th><th>Waterfall</th></tr>'+ss+'</table>':'<div>—</div>')+
+    '<div class="sig"><div><b>Client sign-off</b><br>'+e(A.clientName||'')+'<br>'+fmt(A.clientSignAt)+'</div><div><b>Approved for production</b><br>'+e(A.by||'')+'<br>'+fmt(A.at)+'</div></div></body></html>');
+  w.document.close();setTimeout(function(){w.print();},400);}
 function clStatus(){var el=document.getElementById('cl-status');if(!el)return;var j=siJob(),inf=j&&j.info||{},F=j&&j.finishes||{};
   var ce=document.getElementById('cl-can-edit');if(ce)ce.checked=inf.clientCanEdit!==false;
   var sg=F.clientSign;
   el.innerHTML=!j?'':((sg&&sg.at?'<b style="color:#4f7d5f;">✓ Signed off by '+esc(sg.name||'client')+' · '+jhFmt(new Date(sg.at).toISOString())+'</b>'+(F.lastEditAt&&F.lastEditAt>sg.at?' <span style="color:#a94b3f;">(changed since)</span>':'')+' · ':'')+
     (F.clientAt?'Client last active '+jhFmt(new Date(F.clientAt).toISOString()):(inf.clientSentAt?'Sent to client '+jhFmt(inf.clientSentAt):(inf.clientToken?'Client link ready':''))));
+  if(!j)return;var A=F.approval,ok=clApOk(j),fresh=sg&&sg.at&&!((F.lastEditAt||0)>sg.at),box='<div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f2;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">';
+  if(ok)el.innerHTML+=box+'<b style="color:#2f5d40;">✓ Approved for production by '+esc(A.by||'')+' · '+jhFmt(new Date(A.at).toISOString())+'</b><span style="font-size:12px;color:#71717a;">Final — the client can no longer change it.</span><span style="margin-left:auto;"></span><button class="btn btn-outline btn-sm" onclick="clApPrint()">Print approved sheet</button><button class="btn btn-outline btn-sm" onclick="clUnapprove()">Undo approval</button></div>';
+  else if(fresh)el.innerHTML+=box+(A?'<span style="color:#a94b3f;font-size:12.5px;">The earlier approval no longer matches — the client signed again.</span>':'<span style="font-size:12.5px;">The client has signed off. Check it and approve.</span>')+'<span style="margin-left:auto;"></span><button class="btn btn-blue btn-sm" onclick="clApprove()">Approve for production</button></div>';
+  else el.innerHTML+=box+'<span style="font-size:12.5px;color:#a1a1aa;">'+(A?'<span style="color:#a94b3f;">Changed after approval — send to the client to sign again.</span>':(sg&&sg.at?'You changed the selections after the client signed — send it again for a new sign-off.':'Waiting for the client to sign off. After that you approve it here.'))+'</span></div>';
   clNotesBox();}
 function clSetEdit(on){var j=siJob();if(!j)return;jhInfo(j).clientCanEdit=!!on;saveData();clPublishSoon(j.id);if(!(j.info&&j.info.clientToken))clEnsure();showMsg(on?'The client can fill in Appliances and Stone':'The client can only view and sign off');}
 // v393: notes thread (both sides) + shared documents with versions
@@ -10450,7 +10471,7 @@ function clientLoad(){clientBoot();_clRef=cloud.db.collection(CL_COL).doc(window
 function clE(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function clientRender(){var D=_clDoc||{},C=D.company||{},w=document.querySelector('#cl-ov .cl-wrap');if(!w)return;
   var tab=function(k,t){return '<button class="cl-tab'+(_clTab===k?' on':'')+'" onclick="_clTab=\''+k+'\';clientRender()">'+t+'</button>';};
-  var RO=D.canEdit===false,dis=RO?' disabled':'';
+  var RO=D.canEdit===false||!!(D.approval&&D.signed&&D.signed.at),dis=RO?' disabled':'';
   var body='';
   if(_clTab==='ap'){body=(D.ap||[]).filter(function(r){return (r.items||[]).length;}).map(function(r,ri){return '<div class="cl-card"><h2>'+clE(r.name)+'</h2><div class="cl-row cl-h"><span>Appliance</span><span>Brand / model no.</span><span>Additional information</span><span>Web link (specs)</span></div>'+
       r.items.map(function(a,ai){var f=function(k,ph){return '<input'+dis+' value="'+clE(a[k])+'" placeholder="'+(RO?'':ph)+'" oninput="clSet(\'ap\','+ri+','+ai+',\''+k+'\',this.value)"/>';};return '<div class="cl-row"><b>'+clE(a.item)+'</b>'+f('brand','e.g. Miele KM 7464')+f('info','size, colour, notes')+f('link','https://…')+'</div>';}).join('')+'</div>';}).join('')||'<div class="cl-card">No appliances to fill in yet.</div>';}
@@ -10470,14 +10491,16 @@ function clientRender(){var D=_clDoc||{},C=D.company||{},w=document.querySelecto
   w.innerHTML=(C.name||C.logo?'<div class="cl-co">'+(C.logo?'<img src="'+clE(C.logo)+'" alt="">':'')+'<div><b>'+clE(C.name||'')+'</b>'+(C.address?'<span>'+clE(C.address)+'</span>':'')+'</div></div>':'')+
     '<h1>'+clE(D.jobName||'Your project')+'</h1><div class="cl-sub">'+(D.canEdit===false?'Please review your appliance and stone selections and sign them off.':'Please fill in your appliance models and stone selections.')+' Everything saves automatically — you can close this page and come back to the same link any time. The material schedule is for your information only.</div>'+
     (RO?'<div class="cl-card" style="background:#fafafa;">These selections were filled in by us. Please check Appliances and Stone and sign off below.</div>':'')+
-    '<div class="cl-tabs">'+tab('ap','Appliances')+tab('ss','Stone')+tab('ms','Materials (view only)')+((D.docs||[]).length?tab('dc','Documents ('+(D.docs||[]).length+')'):'')+'</div>'+body+clSignHTML(D)+
+    '<div class="cl-tabs">'+tab('ap','Appliances')+tab('ss','Stone')+tab('ms','Materials (view only)')+((D.docs||[]).length?tab('dc','Documents ('+(D.docs||[]).length+')'):'')+'</div>'+body+'<div id="cl-signw">'+clSignHTML(D)+'</div>'+
     '<div class="cl-foot">'+(C.phone||C.email?clE([C.phone,C.email].filter(Boolean).join(' · ')):'Questions? Just reply to our email.')+'</div><div class="cl-save" id="cl-save">Saved</div>';}
 function clSet(sec,ri,ai,k,v){var D=_clDoc;if(!D)return;var tgt=sec==='ap'?D.ap.filter(function(r){return (r.items||[]).length;})[ri].items[ai]:D.ss[ri];tgt[k]=v;
-  clearTimeout(_clSaveT);_clSaveT=setTimeout(function(){_clRef.set({ap:D.ap,ss:D.ss,clientAt:Date.now()},{merge:true}).then(function(){var s=document.getElementById('cl-save');if(s){s.classList.add('on');setTimeout(function(){s.classList.remove('on');},1400);}}).catch(function(){alert('Could not save — please check your internet.');});},700);}
+  clearTimeout(_clSaveT);_clSaveT=setTimeout(function(){var up={ap:D.ap,ss:D.ss,clientAt:Date.now()};if(D.signed){D.signed=null;up.signed=null;}_clRef.set(up,{merge:true}).then(function(){var sw=document.getElementById('cl-signw');if(sw)sw.innerHTML=clSignHTML(D);var s=document.getElementById('cl-save');if(s){s.classList.add('on');setTimeout(function(){s.classList.remove('on');},1400);}}).catch(function(){alert('Could not save — please check your internet.');});},700);}
 // v393: client sign-off + notes & references
 var _clFiles=[];
 function clSignHTML(D){var sg=D.signed,stale=sg&&sg.at&&(D.editedAt||0)>sg.at;
-  if(sg&&sg.at&&!stale)return '<div class="cl-card" style="border-color:#b9d4c2;background:#f4f9f5;"><h2 style="color:#2f5d40;">✓ Signed off</h2><div style="font-size:13.5px;">Signed by <b>'+clE(sg.name)+'</b> on '+new Date(sg.at).toLocaleString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'})+'.</div><button class="cl-btn" style="margin-top:10px;" onclick="clUnsign()">Withdraw sign-off</button></div>';
+  var fmt=function(t){return new Date(t).toLocaleString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});};
+  if(sg&&sg.at&&!stale&&D.approval)return '<div class="cl-card" style="border-color:#b9d4c2;background:#f4f9f5;"><h2 style="color:#2f5d40;">✓ Signed off and approved</h2><div style="font-size:13.5px;line-height:1.7;">Signed by <b>'+clE(sg.name)+'</b> on '+fmt(sg.at)+'.<br>Approved by <b>'+clE(D.approval.by||(D.company&&D.company.name)||'us')+'</b> on '+fmt(D.approval.at)+'.</div><div style="font-size:12.5px;color:#52525b;margin-top:8px;">These selections are now final and go to production. If you need a change, please email us.</div></div>';
+  if(sg&&sg.at&&!stale)return '<div class="cl-card" style="border-color:#b9d4c2;background:#f4f9f5;"><h2 style="color:#2f5d40;">✓ Signed off</h2><div style="font-size:13.5px;">Signed by <b>'+clE(sg.name)+'</b> on '+fmt(sg.at)+'. We will check and approve it.</div><button class="cl-btn" style="margin-top:10px;" onclick="clUnsign()">Withdraw sign-off</button></div>';
   return '<div class="cl-card"><h2>Sign off</h2>'+(stale?'<div style="font-size:13px;color:#a94b3f;margin-bottom:8px;">The selections changed after your last sign-off — please check again and sign.</div>':'')+
     '<label style="display:flex;align-items:flex-start;gap:8px;font-size:14px;color:#27272a;margin:0 0 10px;"><input type="checkbox" id="cl-ok" style="width:auto;margin-top:3px;"> I have checked the appliance and stone selections and confirm they are correct.</label>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap;"><input id="cl-sn" placeholder="Your full name" style="flex:1;min-width:200px;"/><button class="cl-btn cl-dark" onclick="clSign()">Sign off</button></div></div>';}
