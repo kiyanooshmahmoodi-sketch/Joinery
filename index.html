@@ -1209,7 +1209,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v394 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v395 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1302,7 +1302,6 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     <div id="ci-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;"></div>
   </div>
   <div id="brief-box"></div>
-  <div id="ms-box"></div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;">
       <div><div class="card-title" style="margin-bottom:4px;">Client selections link</div><div style="font-size:12px;color:#71717a;max-width:560px;">The client opens this link to fill in (or just check) Appliances and Stone, see the Material Schedule, sign off, and send you notes and files.</div></div>
@@ -8568,7 +8567,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v394 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v395 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10513,7 +10512,7 @@ function renderClientInfo(){var j=siJob(),pn=document.getElementById('ci-proj'),
     row('Phone','phone',inf.phone,'Phone number','tel',inf.phone?'tel:'+String(inf.phone).replace(/[^\d+]/g,''):'')+
     row('Email','clientEmail',inf.clientEmail,'client@email.com','email',inf.clientEmail?'mailto:'+inf.clientEmail:'')+
     row('Site address','site',site,'Site address','',site?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(site):'');
-  clStatus();try{briefBox();msBox();}catch(e){}}
+  clStatus();try{briefBox();}catch(e){}}
 // v393: client side — open shared files, upload a new version of a document
 async function clOpenFile(id,name){var d='';try{d=await siGetPhoto(id);}catch(e){}if(!d){alert('Could not open the file — please check your internet.');return;}
   var bl=await (await fetch(d)).blob(),u=URL.createObjectURL(bl);if(/pdf|image/.test(bl.type)){var w=window.open(u,'_blank');if(!w){location.href=u;}}else{var a=document.createElement('a');a.href=u;a.download=name||'file';document.body.appendChild(a);a.click();a.remove();}}
@@ -10523,22 +10522,63 @@ async function clClientVersion(did,inp){var f=inp.files&&inp.files[0];inp.value=
   var d=(_clDoc.docs||[]).filter(function(x){return x.id===did;})[0];if(!d)return;
   _clDoc.docs=clUnionDocs(_clDoc.docs,[{id:did,title:d.title,at:d.at,versions:[{id:'v'+Date.now().toString(36),by:'client',file:{id:id,name:f.name,mime:/^image\//.test(f.type)?'image/jpeg':(f.type||''),size:f.size},note:note,at:Date.now()}]}]);
   await _clRef.set({docs:_clDoc.docs,clientAt:Date.now()},{merge:true}).catch(function(){alert('Could not save — please check your internet.');});clientRender();}
-// ===== v394: CLIENT BRIEF (categorised client information) =====
-var BR_CATS=['Appliances','Stone & benchtops','Colours & materials','Hardware & handles','Measurements & site','Design changes','Dates & access','Budget & payments','Other'];
-function briefBox(){var b=document.getElementById('brief-box');if(!b)return;var j=siJob();if(!j){b.innerHTML='';return;}var B=(j.finishes&&j.finishes.clientBrief)||[];
-  var opts=BR_CATS.map(function(c){return '<option>'+esc(c)+'</option>';}).join('');
-  var groups=BR_CATS.map(function(c){var L=B.filter(function(x){return x.cat===c;}).sort(function(a,z){return z.at-a.at;});if(!L.length)return '';
-    return '<div style="margin-top:12px;"><div style="font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#71717a;margin-bottom:4px;">'+esc(c)+' <span style="font-weight:400;">('+L.length+')</span></div>'+
-      L.map(function(x){var src=x.src||{};return '<div style="display:flex;gap:10px;align-items:flex-start;border-top:1px solid #f0f0f2;padding:7px 0;"><div style="flex:1;min-width:0;"><div style="font-size:13.5px;white-space:pre-wrap;">'+esc(x.text)+'</div>'+
-        '<div style="font-size:11px;color:#a1a1aa;margin-top:2px;">'+jhFmt(new Date(x.at).toISOString())+(src.label?' · '+(src.link?'<a href="'+qe(src.link)+'" target="_blank" rel="noopener" style="color:#71717a;">'+esc(src.label)+'</a>':esc(src.label)):'')+'</div></div>'+
-        '<button class="btn btn-outline btn-sm" title="Remove" onclick="brDel(\''+x.id+'\')">×</button></div>';}).join('')+'</div>';}).join('');
-  b.innerHTML='<div class="card"><div class="card-title" style="margin-bottom:4px;">Client brief</div><div style="font-size:12px;color:#71717a;margin-bottom:10px;">Everything the client has asked for, sorted by topic. Add items yourself or straight from an email below.</div>'+
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;"><select id="br-cat" style="width:auto;">'+opts+'</select><textarea id="br-txt" rows="1" placeholder="e.g. Fridge: Fisher & Paykel RF610, 790 wide" style="flex:1;min-width:220px;"></textarea><button class="btn btn-blue btn-sm" onclick="brAddForm()">Add</button></div>'+
-    (B.length?groups:'<div style="font-size:12.5px;color:#a1a1aa;margin-top:10px;">Nothing in the brief yet.</div>')+'</div>';}
-function brAdd(cat,text,src){var j=siJob();if(!j||!text)return;var F=finInit(j);F.clientBrief=(F.clientBrief||[]).concat([{id:'b'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),cat:cat,text:text,at:Date.now(),src:src||{type:'manual'}}]);saveData();briefBox();}
-function brAddForm(){var t=((document.getElementById('br-txt')||{}).value||'').trim();if(!t)return;brAdd(document.getElementById('br-cat').value,t,{type:'manual'});}
-function brDel(id){var j=siJob();if(!j)return;if(!confirm('Remove this item from the brief?'))return;var F=finInit(j);F.clientBrief=(F.clientBrief||[]).filter(function(x){return x.id!==id;});saveData();briefBox();}
-
+// ===== v395: CLIENT BRIEF — notes from the client's emails, sorted by topic =====
+var BR_CATS=['Appliances','Stone','Colours & materials','Hardware','Measurements & site','Design changes','Dates & access','Payments','Other'];
+var _brCat='',_brQ='',_brEdit=null,_brFiles=[];
+function brItems(j){return (j&&j.finishes&&j.finishes.clientBrief)||[];}
+function brCats(j){var x=[];try{x=JSON.parse(localStorage.getItem('cbk-brcats')||'[]')||[];}catch(e){}var all=BR_CATS.slice();
+  x.concat(brItems(j).map(function(i){return i.cat;})).forEach(function(c){if(c&&all.indexOf(c)<0)all.splice(all.length-1,0,c);});return all;}
+function brDay(t){var d=new Date(t);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function brFmt(t){return new Date(t).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});}
+function briefBox(){var b=document.getElementById('brief-box');if(!b)return;var j=siJob();if(!j){b.innerHTML='';return;}
+  b.innerHTML='<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;"><div><div class="card-title" style="margin-bottom:4px;">Client brief</div><div style="font-size:12px;color:#71717a;max-width:600px;">Copy what the client says in emails (or paste a screenshot) and file it under a topic — so you never have to search your inbox again.</div></div>'+
+    '<button class="btn btn-blue btn-sm" onclick="brNew()">+ New note</button></div><div id="br-form"></div><div id="br-filter" style="margin-top:12px;"></div><div id="br-list"></div></div>';
+  if(_brEdit)brForm();brList();}
+function brNew(){_brEdit={};_brFiles=[];brForm();var t=document.getElementById('br-txt');if(t)t.focus();}
+function brForm(){var w=document.getElementById('br-form');if(!w)return;var j=siJob();if(!_brEdit||!j){w.innerHTML='';return;}var e=_brEdit,cats=brCats(j),cur=e.cat||_brCat||cats[0];
+  w.innerHTML='<div style="border:1px solid #e4e4e7;border-radius:8px;padding:12px;margin-top:12px;background:#fafafa;">'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">'+
+      '<div><div style="font-size:11.5px;color:#71717a;margin-bottom:4px;">Topic</div><div style="display:flex;gap:6px;"><select id="br-cat" style="flex:1;min-width:0;">'+cats.map(function(c){return '<option'+(c===cur?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select><button class="btn btn-outline btn-sm" title="New topic" onclick="brNewCat()">+</button></div></div>'+
+      '<div><div style="font-size:11.5px;color:#71717a;margin-bottom:4px;">Date (when the client said it)</div><input id="br-date" type="date" value="'+brDay(e.at||Date.now())+'"/></div>'+
+      '<div><div style="font-size:11.5px;color:#71717a;margin-bottom:4px;">From (optional)</div><input id="br-src" value="'+qe((e.src&&e.src.label)||'')+'" placeholder="e.g. Email from Ali, phone call"/></div></div>'+
+    '<div style="font-size:11.5px;color:#71717a;margin:10px 0 4px;">What the client said</div><textarea id="br-txt" rows="5" placeholder="Paste the text from the email here. You can also paste a screenshot (Ctrl+V)." style="width:100%;" onpaste="brPaste(event)">'+esc(e.text||'')+'</textarea>'+
+    '<div id="br-prev" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>'+
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;"><label class="btn btn-outline btn-sm" style="cursor:pointer;">Add screenshot / file<input type="file" multiple accept="image/*,application/pdf" style="display:none" onchange="brPick(this)"></label>'+
+    '<span style="margin-left:auto;"></span><button class="btn btn-outline btn-sm" onclick="_brEdit=null;_brFiles=[];brForm();">Cancel</button><button class="btn btn-blue btn-sm" onclick="brSave()">'+(e.id?'Save changes':'Save note')+'</button></div></div>';brPrev();}
+function brPrev(){var w=document.getElementById('br-prev');if(!w)return;var old=(_brEdit&&_brEdit.files)||[];
+  w.innerHTML=old.map(function(f,i){return '<span style="font-size:12px;border:1px solid #e4e4e7;border-radius:6px;padding:3px 8px;background:#fff;">'+esc(f.name)+' <a href="#" style="color:#a1a1aa;text-decoration:none;" onclick="_brEdit.files.splice('+i+',1);brPrev();return false;">×</a></span>';}).join('')+
+    _brFiles.map(function(f,i){return /^image\//.test(f.type)?'<span style="position:relative;display:inline-block;"><img src="'+URL.createObjectURL(f)+'" style="height:64px;border:1px solid #e4e4e7;border-radius:6px;"><a href="#" style="position:absolute;top:-6px;right:-6px;background:#fff;border:1px solid #e4e4e7;border-radius:50%;width:18px;height:18px;line-height:16px;text-align:center;font-size:12px;color:#71717a;text-decoration:none;" onclick="_brFiles.splice('+i+',1);brPrev();return false;">×</a></span>':'<span style="font-size:12px;border:1px solid #e4e4e7;border-radius:6px;padding:3px 8px;background:#fff;">'+esc(f.name)+' <a href="#" style="color:#a1a1aa;text-decoration:none;" onclick="_brFiles.splice('+i+',1);brPrev();return false;">×</a></span>';}).join('');}
+function brPick(inp){_brFiles=_brFiles.concat(Array.prototype.slice.call(inp.files||[]));inp.value='';brPrev();}
+function brPaste(ev){var it=(ev.clipboardData&&ev.clipboardData.items)||[],got=false;for(var i=0;i<it.length;i++){if(it[i].kind==='file'&&/^image\//.test(it[i].type)){var f=it[i].getAsFile();if(f){_brFiles.push(new File([f],'Screenshot '+new Date().toLocaleString('en-AU').replace(/[\/:]/g,'-')+'.png',{type:f.type}));got=true;}}}if(got){ev.preventDefault();brPrev();}}
+function brNewCat(){var n=prompt('Name of the new topic:','');if(!n)return;n=n.trim();if(!n)return;var x=[];try{x=JSON.parse(localStorage.getItem('cbk-brcats')||'[]')||[];}catch(e){}if(x.indexOf(n)<0)x.push(n);try{localStorage.setItem('cbk-brcats',JSON.stringify(x));}catch(e){}
+  if(_brEdit){_brEdit.cat=n;_brEdit.text=document.getElementById('br-txt').value;}brForm();}
+async function brSave(){var j=siJob();if(!j||!_brEdit)return;var t=(document.getElementById('br-txt').value||'').trim();if(!t&&!_brFiles.length&&!((_brEdit.files||[]).length)){alert('Paste the text or add a screenshot first.');return;}
+  var dv=document.getElementById('br-date').value,at=dv?new Date(dv+'T12:00:00').getTime():Date.now(),src=(document.getElementById('br-src').value||'').trim();
+  showMsg('Saving…');var files=(_brEdit.files||[]).slice();for(var i=0;i<_brFiles.length;i++){var r=await clStoreFile(_brFiles[i],j.id);if(r)files.push(r);}
+  var F=finInit(j),it={id:_brEdit.id||('b'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),cat:document.getElementById('br-cat').value,text:t,at:at,created:_brEdit.created||Date.now(),src:src?{type:'manual',label:src}:{type:'manual'},files:files};
+  F.clientBrief=(F.clientBrief||[]).filter(function(x){return x.id!==it.id;}).concat([it]);saveData();_brEdit=null;_brFiles=[];brForm();brList();showMsg('✓ Saved');}
+function brEditItem(id){var x=brItems(siJob()).filter(function(i){return i.id===id;})[0];if(!x)return;_brEdit=JSON.parse(JSON.stringify(x));_brFiles=[];brForm();var w=document.getElementById('br-form');if(w)w.scrollIntoView({behavior:'smooth',block:'center'});}
+function brDel(id){var j=siJob();if(!j)return;if(!confirm('Delete this note?'))return;var F=finInit(j);F.clientBrief=(F.clientBrief||[]).filter(function(x){return x.id!==id;});saveData();brList();}
+function brSetCat(c){_brCat=c;brList();}
+function brList(){var w=document.getElementById('br-list'),fw=document.getElementById('br-filter');if(!w)return;var j=siJob();if(!j)return;var B=brItems(j),cats=brCats(j);
+  var cnt={};B.forEach(function(x){cnt[x.cat]=(cnt[x.cat]||0)+1;});
+  var chip=function(c,lab,n){var on=_brCat===c;return '<button onclick="brSetCat(\''+qe(c).replace(/'/g,"\\'")+'\')" style="font-size:12px;padding:4px 10px;border-radius:999px;cursor:pointer;border:1px solid '+(on?'#27272a':'#e4e4e7')+';background:'+(on?'#27272a':'#fff')+';color:'+(on?'#fff':'#52525b')+';">'+esc(lab)+(n?' <span style="opacity:.6;">'+n+'</span>':'')+'</button>';};
+  if(fw){var q=document.getElementById('br-q'),had=q&&document.activeElement===q,pos=had?q.selectionStart:0;
+    fw.innerHTML='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">'+chip('','All',B.length)+cats.filter(function(c){return cnt[c];}).map(function(c){return chip(c,c,cnt[c]);}).join('')+
+      '<input id="br-q" value="'+qe(_brQ)+'" placeholder="Search notes…" oninput="_brQ=this.value;brList();" style="margin-left:auto;width:200px;padding:5px 9px;font-size:12.5px;"/></div>';
+    if(had){q=document.getElementById('br-q');q.focus();q.setSelectionRange(pos,pos);}}
+  var ql=_brQ.trim().toLowerCase(),L=B.filter(function(x){return (!_brCat||x.cat===_brCat)&&(!ql||(x.text+' '+x.cat+' '+((x.src&&x.src.label)||'')).toLowerCase().indexOf(ql)>=0);});
+  if(!B.length){w.innerHTML='<div style="font-size:12.5px;color:#a1a1aa;margin-top:12px;">No notes yet — press “+ New note”.</div>';return;}
+  if(!L.length){w.innerHTML='<div style="font-size:12.5px;color:#a1a1aa;margin-top:12px;">Nothing matches.</div>';return;}
+  var item=function(x){var src=x.src||{};return '<div style="border-top:1px solid #f0f0f2;padding:10px 0;"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:#a1a1aa;">'+
+      (_brCat?'':'')+'<span>'+brFmt(x.at)+'</span>'+(src.label?'<span>· '+(src.link?'<a href="'+qe(src.link)+'" target="_blank" rel="noopener" style="color:#71717a;">'+esc(src.label)+'</a>':esc(src.label))+'</span>':'')+
+      '<span style="margin-left:auto;display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="brEditItem(\''+x.id+'\')">Edit</button><button class="btn btn-outline btn-sm" title="Delete" onclick="brDel(\''+x.id+'\')">×</button></span></div>'+
+      (x.text?'<div style="font-size:13.5px;white-space:pre-wrap;margin-top:4px;line-height:1.55;">'+esc(x.text)+'</div>':'')+
+      ((x.files||[]).length?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">'+x.files.map(function(f){return /^image\//.test(f.mime)?'<img data-br="'+f.id+'" title="'+qe(f.name)+'" onclick="clOpenFile(\''+f.id+'\',\'\')" style="height:90px;min-width:60px;border:1px solid #e4e4e7;border-radius:6px;cursor:zoom-in;background:#f4f4f5;">':'<button class="btn btn-outline btn-sm" onclick="clOpenFile(\''+f.id+'\',\''+qe(f.name).replace(/'/g,'')+'\')">'+esc(f.name)+'</button>';}).join('')+'</div>':'')+'</div>';};
+  var sorted=L.slice().sort(function(a,z){return z.at-a.at||(z.created||0)-(a.created||0);});
+  w.innerHTML=_brCat?sorted.map(item).join(''):cats.map(function(c){var G=sorted.filter(function(x){return x.cat===c;});if(!G.length)return '';
+    return '<div style="margin-top:14px;"><div style="font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#52525b;">'+esc(c)+' <span style="font-weight:400;color:#a1a1aa;">('+G.length+')</span></div>'+G.map(item).join('')+'</div>';}).join('');
+  w.querySelectorAll('img[data-br]').forEach(function(im){siGetPhoto(im.getAttribute('data-br')).then(function(d){if(d)im.src=d;}).catch(function(){});});}
 // ===== v394: OUTLOOK / MICROSOFT 365 EMAIL WITH THE CLIENT =====
 var MS_SC='openid profile offline_access User.Read Mail.Read Mail.Send',_msMsgs={},_msOpen={},_msPre=[],_msKey='';
 function msCfg(){try{return JSON.parse(localStorage.getItem('cbk-ms')||'{}')||{};}catch(e){return {};}}
