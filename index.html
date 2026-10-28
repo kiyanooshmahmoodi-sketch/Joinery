@@ -1225,7 +1225,7 @@ html,body{overflow-x:hidden;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v409 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v410 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -2864,58 +2864,9 @@ async function confirmImportAsNewProject(){
   showMsg('✅ New project created — '+nUnits+' units imported.');
 }
 
-function importCSV(){
-  var raw=document.getElementById('csv-area').value.trim();if(!raw)return;var groups={};
-  raw.split('\n').forEach(function(line){if(!line.trim())return;var c=line.split(',').map(function(x){return x.trim().replace(/^"|"$/g,'');});if(c.length<2)return;
-    var id=c[0].toUpperCase(),part=c[1]||'',mat=c[2]||'',room=c[5]||'';if(!id)return;
-    if(!groups[id]){var rm=id.match(/R\d+/i);groups[id]={id:id,cabId:id,room:room||(rm?rm[0]:''),parts:[],mat:mat,status:'factory',shippedAt:null,type:'cabinet',isPTO:false,isJoining:false};}
-    if(!groups[id].parts.find(function(p){return p.name===part;}))groups[id].parts.push({name:part,h:parseFloat(c[3])||0,w:parseFloat(c[4])||0,qty:1,comment:'',edgeband:'',mat:mat});
-  });
-  var added=0;Object.values(groups).forEach(function(g){if(units.find(function(u){return u.id===g.id;}))return;
-    // Only mark as cabinet if it has a UBack part
-    var hasUBack=g.parts.some(function(p){return isUBack(p);});
-    g.type=hasUBack?'cabinet':'panel';
-    units.push(g);added++;});
-  units=ensureUnitShape(units);
-  document.getElementById('import-msg').textContent='✓ '+added+' units';document.getElementById('csv-area').value='';refresh();
-}
+/* removed unused importCSV */
 
-function loadDemo(){
-  var demo=[
-    {id:'R1C107',room:'R1',parts:[{name:'UBack'},{name:'Bottom'},{name:'Top Stretcher'}],mat:'HMR',type:'cabinet',isPTO:false,isJoining:false},
-    {id:'R1C132',room:'R1',parts:[{name:'UBack'},{name:'Bottom'},{name:'Joining Block'},{name:'Drw Bottom'}],mat:'HMR',type:'cabinet',isPTO:false,isJoining:true},
-    {id:'R2C208',room:'R2',parts:[{name:'UBack'},{name:'Bottom'},{name:'Top'}],mat:'HMR',type:'cabinet',isPTO:false,isJoining:false},
-    {id:'R1C124',room:'R1',parts:[{name:'UBack PTO'},{name:'Bottom'},{name:'Joiner Plate'}],mat:'HMR',type:'cabinet',isPTO:true,isJoining:true},
-    {id:'R1C107_door',room:'R1',parts:[{name:'CBK-Door'}],mat:'Tasmanian Oak',type:'panel',isPTO:false,isJoining:false},
-    {id:'R1C132_drawer',room:'R1',parts:[{name:'CBK-Drawer'}],mat:'Tasmanian Oak',type:'panel',isPTO:false,isJoining:false},
-    {id:'R1C114_door',room:'R1',parts:[{name:'CBK-Door'}],mat:'Tasmanian Oak',type:'panel',isPTO:false,isJoining:false},
-  ];
-  demo.forEach(function(d){if(units.find(function(u){return u.id===d.id;}))return;
-    units.push({id:d.id,cabId:d.id,room:d.room,parts:d.parts.map(function(p){return{name:p.name,h:0,w:0,qty:1,comment:'',edgeband:'',mat:d.mat};}),mat:d.mat,status:'factory',shippedAt:null,type:d.type,isPTO:d.isPTO,isJoining:d.isJoining});
-  });
-  var pi=document.getElementById('proj-input');pi.value='Hamed - Mario';document.getElementById('proj-display').textContent='Hamed - Mario';
-  // Demo closet rods (will come from Excel in production)
-  if(!hangingRails.length){
-    hangingRails.push(
-      {id:'rail_'+Date.now()+'_1',room:'R1',cabId:'R1C107',length:800,color:null},
-      {id:'rail_'+Date.now()+'_2',room:'R1',cabId:'R1C132',length:1200,color:'black'},
-      {id:'rail_'+Date.now()+'_3',room:'R1',cabId:'R1C124',length:600,color:'silver'},
-      {id:'rail_'+Date.now()+'_4',room:'R2',cabId:'R2C208',length:900,color:'gold',installLocation:null},
-      {id:'rail_'+Date.now()+'_5',room:'R2',cabId:'R2C212',length:1500,color:null}
-    );
-  }
-  // Demo glass doors (detection rules will be defined later)
-  if(!glassDoors.length){
-    glassDoors.push(
-      {id:'gd_'+Date.now()+'_1',room:'R1',cabId:'R1C107',width:600,height:720,profileColor:null,glassType:null,thickness:null,toughened:false,cutType:null},
-      {id:'gd_'+Date.now()+'_2',room:'R1',cabId:'R1C132',width:800,height:900,profileColor:'silver',glassType:'Frost',thickness:6,toughened:true,cutType:'Polish'},
-      {id:'gd_'+Date.now()+'_3',room:'R1',cabId:'R1C124',width:500,height:720,profileColor:'black',glassType:'Grey',thickness:4,toughened:false,cutType:'Clean cut'},
-      {id:'gd_'+Date.now()+'_4',room:'R2',cabId:'R2C208',width:700,height:850,profileColor:'gold',glassType:'Bronze Mirror',thickness:6,toughened:true,cutType:'Polish'},
-      {id:'gd_'+Date.now()+'_5',room:'R2',cabId:'R2C212',width:600,height:720,profileColor:null,glassType:null,thickness:null,toughened:false,cutType:null}
-    );
-  }
-  document.getElementById('import-msg').textContent='✓ Demo — 7 units · 5 rails · 5 glass doors';refresh();
-}
+/* removed unused loadDemo */
 
 function clearAll(){if(!confirm('Clear all data for this job?'))return;units=[];shipLog=[];dispatches=[];hangingRails=[];glassDoors=[];steccaItems=[];orderReminders={glass:'pending',laminate:'pending',steccawood:'pending',closetRod:'pending'};matAliases={};matPrintOrder={};hwAliases={};projectNotes=[];projectCompleted=false;kickboards={total:0,items:[]};refresh();renderLog();renderDispatchHistory();saveData();}
 
@@ -3043,27 +2994,14 @@ function _findUnitInUnits(unitsArr,fullId,text){
 // Mozaik QR labels start with the project name/address, e.g.
 //   "117 Cottenham Avenue Kingsford_R1C129_\nGF-KITCHEN_..."
 // Extract that leading name (everything before the first `_R\d+C\d+_`).
-function _extractScanProjectName(text){
-  if(!text)return'';
-  var m=String(text).match(/^([\s\S]*?)_R\d+C\d+_/i);
-  return(m&&m[1])?m[1].trim():'';
-}
+/* removed unused _extractScanProjectName */
 // Tokenise a name: lowercased alphanumeric tokens, length >= 4
 // (short generic words / numbers are ignored).
-function _nameTokens(s){
-  if(!s)return[];
-  return String(s).toLowerCase().split(/[^a-z0-9]+/).filter(function(t){return t.length>=4;});
-}
+/* removed unused _nameTokens */
 // True if the scan's project name and a stored project name share at least one
 // >=4-char token (e.g. "Kingsford" in both "117 Cottenham Avenue Kingsford" and
 // "Kingsford Kitchen").
-function _projectNameMatches(scanName,projName){
-  if(!scanName||!projName)return false;
-  var s=_nameTokens(scanName),p=_nameTokens(projName);
-  if(!s.length||!p.length)return false;
-  for(var i=0;i<s.length;i++)for(var j=0;j<p.length;j++)if(s[i]===p[j])return true;
-  return false;
-}
+/* removed unused _projectNameMatches */
 
 function updateHeader(){
   var total=units.length;
@@ -3547,14 +3485,14 @@ function focusDispScanBox(){var inp=document.getElementById('disp-scan-box');if(
 // them). These are kept as harmless no-op stubs ONLY so the many existing
 // "refresh everything" call sites elsewhere (job load/save/clear, etc.)
 // don't throw — none of them do anything anymore.
-function renderMissing(){}
+/* removed unused renderMissing */
 function renderLog(){}
 function renderDispatchHistory(){}
-function finalize(){}
-function checkAll(){}
+/* removed unused finalize */
+/* removed unused checkAll */
 function doScan(){}
-function quickShip(){}
-function undoShip(){}
+/* removed unused quickShip */
+/* removed unused undoShip */
 
 // RENDER UNITS — the Cabinet & Part List grid (Cabinet List tab). Filters
 // by search text + the dropdown (type, or QC/Installed status), then
@@ -3714,53 +3652,9 @@ function renderAllTabs(){
 
 // DISPATCH removed along with Scan to Ship — see the no-op stubs above.
 
-async function sendAllEmail(num,note,newIds){
-  var proj=document.getElementById('proj-input').value||'Project';
-  var date=new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});
-  var dispSum=newIds&&newIds.length>0?'\nThis dispatch: '+newIds.slice(0,15).join(', '):'';
-  await sendEmail(true,{project:proj,date:date,missing_count:0,total:units.length,shipped:units.length,missing_list:'DISPATCH #'+(num||dispatches.length)+(note?' — '+note:'')+' — ALL UNITS SHIPPED ✅'+dispSum});
-  showMsg('✅ Dispatch confirmed! Email sent.');
-}
+/* removed unused sendAllEmail */
 
-async function sendEmail(allClear,params){
-  try{
-    var subject=allClear?
-      '✅ DISPATCHED — '+params.project:
-      '🚫 INCOMPLETE — '+params.missing_count+' missing | '+params.project;
-    var body=
-      '📦 Project: '+params.project+'\n'+
-      '📅 Date: '+params.date+'\n'+
-      '🚚 Shipped: '+params.shipped+' / '+params.total+'\n\n'+
-      params.missing_list;
-    var res=await fetch('https://api.web3forms.com/submit',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body:JSON.stringify({
-        access_key:W3F_KEY,
-        subject:subject,
-        from_name:'CabLine',
-        email:NOTIFY_EMAIL,
-        message:body
-      })
-    });
-    var data=await res.json();
-    if(data.success){
-      
-      showMsg('📧 Email sent!');
-      return true;
-    }else{
-      throw new Error(data.message||'Web3Forms error');
-    }
-  }catch(e){
-    
-    var es=document.getElementById('ejs-status');
-    if(es)es.innerHTML='<span style="color:var(--red);">❌ '+e.message+'</span>';
-    // Fallback mailto
-    var subj=allClear?'✅ DISPATCHED — '+params.project:'🚫 INCOMPLETE — '+params.missing_count+' missing | '+params.project;
-    window.open('mailto:'+NOTIFY_EMAIL+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(params.missing_list),'_blank');
-    return false;
-  }
-}
+/* removed unused sendEmail */
 
 async function testEmail(){
   var s=document.getElementById('ejs-status');
@@ -4551,10 +4445,7 @@ var PART_CAT_SORT_ORDER=['Panel','Filler','L Filler','Appliance Filler','Kick Fa
 // "Door" / "CBK-Door". Deliberately does NOT match a bare trailing letter
 // with no delimiter, so ordinary part names that happen to end in "l" or
 // "r" — Filler, Rail, Underpanel, Bar — are never touched.
-function _stripHanding(name){
-  var stripped=(name||'').replace(/[\(\s_-]+[LR][\)\s]*$/i,'').trim();
-  return stripped||name;
-}
+/* removed unused _stripHanding */
 // For the Parts Summary print only: Filler, Panel, Door, Bulkhead, and
 // Finger Rail are each wanted as ONE combined total, regardless of shape/
 // sub-variant/prefix — "L Filler"/"Appliance Filler" fold into "Filler";
@@ -4775,9 +4666,7 @@ function getPTOCount(){
   return units.filter(function(u){return u.type==='cabinet'&&u.isPTO;}).length;
 }
 
-function getJoiningCount(){
-  return units.filter(function(u){return u.type==='cabinet'&&u.isJoining;}).length;
-}
+/* removed unused getJoiningCount */
 
 function deleteClosetRod(railId){
   if(!confirm('Delete this closet rod?'))return;
@@ -4858,10 +4747,7 @@ function colorPickerHTML(itemId,currentColor,setterFn){
 
 function setGlassMdfColour(id,v){var d=glassDoors.find(function(x){return x.id===id;});if(!d)return;d.mdfColour=String(v||'').trim();saveData();}
 
-function colorTagHTML(color){
-  if(!color)return'<span class="color-tag none">⚠ Not set</span>';
-  return'<span class="color-tag '+color+'">'+_railColorMap[color].label+'</span>';
-}
+/* removed unused colorTagHTML */
 
 // ===== v296: Hardware Items — managed order + include-in-print =====
 function _hwLay(){var l=hwAliases['__hwlayout'];if(!l||typeof l!=='object')l=hwAliases['__hwlayout']={order:[],hidden:{}};if(!Array.isArray(l.order))l.order=[];if(!l.hidden)l.hidden={};if(!l.comments)l.comments={};if(!Array.isArray(l.custom))l.custom=[];if(!l.over)l.over={};if(!l.msubs)l.msubs={};return l;}
@@ -4961,7 +4847,7 @@ function hwSet(key,field,val,j){
 }
 function hwAddSub(key){key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();(lay.msubs[key]=lay.msubs[key]||[]).push({id:Date.now().toString(36)+Math.floor(Math.random()*1000).toString(36),name:'',model:'',qty:0});saveData();renderHardware();}
 function hwDelSub(key,j){key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();var it=hwItems().find(function(x){return x.key===key;});if(!it||!it.subs[j]||!it.subs[j].manual)return;lay.msubs[key]=(lay.msubs[key]||[]).filter(function(x){return x.id!==it.subs[j].mid;});if(!lay.msubs[key].length)delete lay.msubs[key];saveData();renderHardware();}
-function hwEditToggle(key){key=String(key).replace(/&#39;/g,"'");_hwEd[key]=!_hwEd[key];renderHardware();}
+/* removed unused hwEditToggle */
 function hwReset(key){key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();delete lay.over[key];delete lay.msubs[key];delete _hwEd[key];saveData();renderHardware();showMsg('✓ Back to the automatic value');}
 function hwAddCustom(){
   var n=document.getElementById('hw-add-name'),q=document.getElementById('hw-add-qty');var name=(n&&n.value||'').trim();
@@ -4979,7 +4865,7 @@ function hwMove(key,dir){
   var i=keys.indexOf(key),j=i+dir;if(i<0||j<0||j>=keys.length)return;
   var t=keys[i];keys[i]=keys[j];keys[j]=t;lay.order=keys;saveData();renderHardware();
 }
-function hwComment(key,val){key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();val=String(val||'').trim();if(val)lay.comments[key]=val;else delete lay.comments[key];saveData();showMsg('✓ Comment saved');}
+/* removed unused hwComment */
 function hwToggle(key){key=String(key).replace(/&#39;/g,"'");var lay=_hwLay();if(lay.hidden[key])delete lay.hidden[key];else lay.hidden[key]=1;saveData();renderHardware();}
 function printHwItems(){
   var lay=_hwLay(),its=hwItems().filter(function(x){return !lay.hidden[x.key];});
@@ -5178,7 +5064,7 @@ function thProfCell(r){
   return '<td style="padding:3px;vertical-align:top;"><div style="display:flex;gap:6px;align-items:center;">'+
    (f?'<img src="'+qe(thImg(f.name))+'" alt="" onclick="thZoom(\''+qe(f.name)+'\')" onerror="this.style.display=\'none\'" title="Click to enlarge" style="width:84px;height:112px;object-fit:contain;background:#f3f4f6;border-radius:8px;border:1px solid #d1d5db;cursor:zoom-in;flex-shrink:0;"/>':'')+
    '<input value="'+qe(r.profile||'')+'" placeholder="Click to choose a profile…" readonly onclick="thGallery(\''+qe(r.id)+'\')" style="'+inp+'flex:1;min-width:0;width:100%;cursor:pointer;font-weight:700;"/></div>'+(f?'<div style="font-size:10px;color:#6b7280;margin:2px 0 0 2px;">'+esc(f.style+' · '+f.title)+'</div>':'')+'</td>';}
-function thProfList(){return '<datalist id="th-prof-list">'+TH_STYLES.map(function(st){return st.n.map(function(x){return '<option value="'+qe(x)+'">'+esc(st.k+' '+st.t)+'</option>';}).join('');}).join('')+'</datalist>';}
+/* removed unused thProfList */
 var _thTarget=null;
 function thGallery(target){
   _thTarget=target;var old=document.getElementById('th-gal');if(old)old.remove();
@@ -5428,41 +5314,7 @@ function renderHardware(){
 }
 
 // PRINT ONLY PTO — separate from closet rods
-function printPTOOnly(){
-  var ptoCount=getPTOCount();
-  if(!ptoCount){alert('No PTO items to print');return;}
-  var proj=document.getElementById('proj-input').value||'Project';
-  var date=new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});
-  var time=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
-  var ptoCabs=units.filter(function(u){return u.type==='cabinet'&&u.isPTO;});
-  var win=window.open('','_blank');
-  win.document.write('<!DOCTYPE html><html><head><title>PTO List — '+proj+'</title>'+
-    '<style>body{font-family:Arial,sans-serif;padding:24px;color:#0f172a;max-width:900px;margin:0 auto;}'+
-    'h1{color:#ec4899;margin-bottom:4px;font-size:24px;}'+
-    '.meta{font-size:13px;color:#64748b;margin-bottom:18px;}'+
-    '.pto-card{background:linear-gradient(135deg,#fdf4ff,#fff);border:1px solid #f5d0fe;border-left:6px solid #ec4899;border-radius:10px;padding:24px;margin-bottom:20px;text-align:center;}'+
-    '.pto-card-num{font-size:64px;font-weight:800;color:#ec4899;font-family:monospace;line-height:1;}'+
-    '.pto-card-l{font-weight:800;color:#be185d;font-size:16px;letter-spacing:2px;margin-top:8px;}'+
-    'table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;font-size:13px;}'+
-    'th{background:#fdf4ff;padding:10px;text-align:left;font-size:11px;letter-spacing:1px;color:#be185d;border-bottom:2px solid #f5d0fe;font-weight:700;}'+
-    'td{padding:9px 10px;border-bottom:1px solid #f5d0fe;}tr:last-child td{border-bottom:none;}'+
-    '.cabid{font-weight:800;color:#ec4899;font-family:monospace;}'+
-    'button{padding:10px 20px;background:#ec4899;color:#fff;border:none;border-radius:8px;cursor:pointer;margin-bottom:18px;font-size:13px;font-weight:600;}'+
-    '@media print{button{display:none!important;}body{padding:14px;}}'+
-    '</style></head><body>'+
-    '<h1>🔧 PTO Mechanism List</h1>'+
-    '<div class="meta">Project: <b>'+proj+'</b> &nbsp;|&nbsp; Date: '+date+' '+time+'</div>'+
-    '<button onclick="window.print()">🖨️ Print This List</button>'+
-    '<div class="pto-card"><div class="pto-card-num">'+ptoCount+'</div><div class="pto-card-l">PTO MECHANISMS NEEDED</div></div>'+
-    (ptoCabs.length
-      ?'<h2 style="font-size:14px;color:#475569;margin:18px 0 8px;">Cabinets requiring PTO:</h2>'+
-       '<table><thead><tr><th style="width:30px;">#</th><th>CABINET ID</th><th>ROOM</th><th>MATERIAL</th></tr></thead><tbody>'+
-       ptoCabs.map(function(c,i){return'<tr><td style="color:#94a3b8;font-family:monospace;">'+(i+1)+'</td><td class="cabid">'+(c.cabId||'—')+'</td><td>'+(c.room||'—')+'</td><td>'+(c.mat?matL(c.mat):'—')+'</td></tr>';}).join('')+
-       '</tbody></table>'
-      :'')+
-    '</body></html>');
-  win.document.close();
-}
+/* removed unused printPTOOnly */
 
 // PRINT ONLY CLOSET RODS — separate from PTO
 function printClosetRodsOnly(){
@@ -5562,128 +5414,7 @@ function printClosetRodsOnly(){
   win.document.close();
 }
 
-function printHardware(){
-  var ptoCount=getPTOCount();
-  var rails=hangingRails.slice();
-  var totalRailLength=rails.reduce(function(s,r){return s+(parseInt(r.length)||0);},0);
-  var unsetRails=rails.filter(function(r){return!r.color;}).length;
-  var proj=document.getElementById('proj-input').value||'Project';
-  var date=new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});
-  var time=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
-
-  // Group rails by room
-  var byRoom={};
-  rails.forEach(function(r){var room=r.room||'No Room';if(!byRoom[room])byRoom[room]=[];byRoom[room].push(r);});
-
-  // Group rails by color (for color summary)
-  var byColor={black:[],white:[],gold:[],silver:[],none:[]};
-  rails.forEach(function(r){var c=r.color||'none';if(byColor[c])byColor[c].push(r);});
-
-  var win=window.open('','_blank');
-  var html='<!DOCTYPE html><html><head><title>Hardware — '+proj+'</title><style>'+
-    'body{font-family:Arial,sans-serif;padding:24px;color:#0f172a;max-width:1000px;margin:0 auto;}'+
-    'h1{color:#4f46e5;margin-bottom:4px;font-size:24px;}'+
-    'h2{color:#1e293b;margin:22px 0 8px;font-size:14px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid #e2e8f0;padding-bottom:6px;display:flex;justify-content:space-between;align-items:center;}'+
-    'h3{color:#475569;margin:14px 0 6px;font-size:12px;letter-spacing:1px;font-weight:700;}'+
-    '.cat-total{font-family:monospace;font-size:13px;color:#8b5cf6;font-weight:800;text-transform:none;}'+
-    '.meta{font-size:13px;color:#64748b;margin-bottom:18px;}'+
-    '.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}'+
-    '.sbox{padding:14px;border:1px solid #e2e8f0;border-radius:10px;text-align:center;border-top:3px solid;background:#fff;}'+
-    '.sbox-n{font-size:24px;font-weight:800;font-family:monospace;line-height:1;}'+
-    '.sbox-l{font-size:10px;color:#64748b;margin-top:5px;letter-spacing:1px;font-weight:700;text-transform:uppercase;}'+
-    '.pto-card{background:linear-gradient(135deg,#fdf4ff,#fff);border:1px solid #f5d0fe;border-left:4px solid #ec4899;border-radius:10px;padding:16px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}'+
-    '.pto-card-title{font-weight:800;color:#be185d;font-size:14px;}'+
-    '.pto-card-num{font-size:32px;font-weight:800;color:#ec4899;font-family:monospace;line-height:1;}'+
-    'table{width:100%;border-collapse:collapse;margin-bottom:14px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;}'+
-    'th{background:#f8fafc;padding:9px 10px;text-align:left;font-size:10px;letter-spacing:1px;color:#64748b;border-bottom:2px solid #e2e8f0;font-weight:700;}'+
-    'td{padding:8px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;}'+
-    'tr:last-child td{border-bottom:none;}'+
-    '.cabid{font-weight:800;color:#4f46e5;font-family:monospace;}'+
-    '.qty{font-weight:800;font-family:monospace;text-align:center;font-size:13px;}'+
-    '.color-tag{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;}'+
-    '.color-tag::before{content:"";width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15);}'+
-    '.ct-black{background:#1f2937;color:#fff;}.ct-black::before{background:#1f2937;border-color:#475569;}'+
-    '.ct-white{background:#f1f5f9;color:#0f172a;border:1px solid #cbd5e1;}.ct-white::before{background:#fff;}'+
-    '.ct-gold{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#78350f;}.ct-gold::before{background:linear-gradient(135deg,#f4cf60,#c9a04e);}'+
-    '.ct-silver{background:#f1f5f9;color:#334155;}.ct-silver::before{background:linear-gradient(135deg,#d1d5db,#9ca3af);}'+
-    '.ct-none{background:#fef2f2;color:#991b1b;font-weight:700;}.ct-none::before{display:none;}'+
-    '.empty{text-align:center;padding:50px 20px;color:#94a3b8;background:#fff;border:1px dashed #cbd5e1;border-radius:10px;}'+
-    '.warn{background:#fef3c7;border:1px solid #fde68a;color:#78350f;padding:9px 14px;border-radius:8px;font-size:12px;margin-bottom:14px;font-weight:600;}'+
-    '.color-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px;}'+
-    '.csum{padding:10px;border-radius:8px;text-align:center;border:1px solid #e2e8f0;background:#fff;}'+
-    '.csum-n{font-size:20px;font-weight:800;font-family:monospace;line-height:1;}'+
-    '.csum-l{font-size:9px;letter-spacing:.5px;font-weight:700;text-transform:uppercase;color:#64748b;margin-top:4px;}'+
-    'button{padding:10px 20px;background:#4f46e5;color:#fff;border:none;border-radius:8px;cursor:pointer;margin-bottom:18px;font-size:13px;font-weight:600;}'+
-    'button:hover{background:#4338ca;}'+
-    '@media print{button{display:none!important;}body{padding:14px;max-width:100%;}h1{font-size:20px;}table{page-break-inside:auto;}tr{page-break-inside:avoid;}}'+
-    '</style></head><body>'+
-    '<h1>🔧 Hardware List</h1>'+
-    '<div class="meta">Project: <b>'+proj+'</b> &nbsp;|&nbsp; Date: '+date+' '+time+'</div>'+
-    '<button onclick="window.print()">🖨️ Print This List</button>';
-
-  // Top stats
-  html+='<div class="summary">'+
-    '<div class="sbox" style="border-color:#ec4899;"><div class="sbox-n" style="color:#ec4899;">'+ptoCount+'</div><div class="sbox-l">PTO Needed</div></div>'+
-    '<div class="sbox" style="border-color:#06b6d4;"><div class="sbox-n" style="color:#06b6d4;">'+rails.length+'</div><div class="sbox-l">Closet Rods</div></div>'+
-    '<div class="sbox" style="border-color:#8b5cf6;"><div class="sbox-n" style="color:#8b5cf6;">'+totalRailLength+'mm</div><div class="sbox-l">Total Length</div></div>'+
-    '<div class="sbox" style="border-color:'+(unsetRails>0?'#ef4444':'#22c55e')+';"><div class="sbox-n" style="color:'+(unsetRails>0?'#ef4444':'#22c55e')+';">'+unsetRails+'</div><div class="sbox-l">Color Unset</div></div>'+
-  '</div>';
-
-  // ===== Section 1: PTO =====
-  html+='<h2><span>🔘 PTO Mechanisms</span></h2>';
-  if(ptoCount>0){
-    html+='<div class="pto-card"><div><div class="pto-card-title">PTO Mechanisms</div><div style="font-size:11px;color:#64748b;margin-top:4px;">One per PTO cabinet — to be sent from warehouse</div></div><div class="pto-card-num">'+ptoCount+'</div></div>';
-  }else{
-    html+='<div class="empty" style="margin-bottom:18px;"><div style="font-size:32px;margin-bottom:8px;">🔘</div><div style="font-size:13px;font-weight:600;">No PTO cabinets in this job</div></div>';
-  }
-
-  // ===== Section 2: Closet Rods =====
-  html+='<h2><span>🪧 Closet Rods</span><span class="cat-total">'+rails.length+' rails · '+totalRailLength+'mm</span></h2>';
-  if(!rails.length){
-    html+='<div class="empty"><div style="font-size:32px;margin-bottom:8px;">🪧</div><div style="font-size:13px;font-weight:600;">No closet rods imported yet</div></div>';
-  }else{
-    if(unsetRails>0)html+='<div class="warn">⚠️ '+unsetRails+' rail(s) have no color selected — please pick a color before printing.</div>';
-
-    // Color summary
-    html+='<h3>Color Summary</h3><div class="color-summary">';
-    ['black','white','gold','silver','none'].forEach(function(c){
-      var n=byColor[c].length;
-      var lbl=c==='none'?'⚠ Unset':c.charAt(0).toUpperCase()+c.slice(1);
-      var col=c==='none'?'#ef4444':(c==='black'?'#1f2937':(c==='white'?'#64748b':(c==='gold'?'#c9a04e':'#9ca3af')));
-      var ln=byColor[c].reduce(function(s,r){return s+(parseInt(r.length)||0);},0);
-      html+='<div class="csum" style="border-color:'+col+';"><div class="csum-n" style="color:'+col+';">'+n+'</div><div class="csum-l">'+lbl+(ln?' · '+ln+'mm':'')+'</div></div>';
-    });
-    html+='</div>';
-
-    // Detail table per room
-    html+='<h3>Detail List by Room</h3>';
-    Object.keys(byRoom).sort().forEach(function(room){
-      var rs=byRoom[room];
-      var roomTotal=rs.reduce(function(s,r){return s+(parseInt(r.length)||0);},0);
-      html+='<h3 style="background:#eff6ff;color:#1e40af;padding:7px 12px;border-radius:6px;display:flex;justify-content:space-between;"><span>🏠 Room '+room.replace('R','')+' — '+rs.length+' rails</span><span style="color:#8b5cf6;font-family:monospace;">'+roomTotal+'mm</span></h3>'+
-        '<table><thead><tr>'+
-          '<th style="width:40px;">#</th>'+
-          '<th>CABINET</th>'+
-          '<th style="width:110px;text-align:center;">LENGTH (mm)</th>'+
-          '<th>COLOR</th>'+
-        '</tr></thead><tbody>'+
-        rs.map(function(r,i){
-          var ctag=r.color?'<span class="color-tag ct-'+r.color+'">'+r.color.charAt(0).toUpperCase()+r.color.slice(1)+'</span>':'<span class="color-tag ct-none">⚠ Not Set</span>';
-          return'<tr>'+
-            '<td style="color:#94a3b8;font-family:monospace;">'+(i+1)+'</td>'+
-            '<td class="cabid">'+(r.cabId||'—')+'</td>'+
-            '<td class="qty">'+(r.length||0)+'</td>'+
-            '<td>'+ctag+'</td>'+
-          '</tr>';
-        }).join('')+
-      '</tbody></table>';
-    });
-  }
-
-  html+='</body></html>';
-  win.document.write(html);
-  win.document.close();
-}
+/* removed unused printHardware */
 
 // GLASS DOOR
 // Each door: {id, room, cabId, width, height, profileColor, glassType}
@@ -5802,7 +5533,7 @@ function workflowButtonsHTML(arrayName,itemId,wf){
   }).join('')+'</div>';
 }
 
-function ghParse(t){return String(t||'').split(/[,;\s]+/).map(function(x){return parseInt(x);}).filter(function(n){return n>0;});}
+/* removed unused ghParse */
 function ghType(id,v){var d=glassDoors.find(function(x){return x.id===id;});if(!d)return;d.hingeType=String(v||'').trim();saveData();ghTypesList();}
 function ghTypesList(){var dl=document.getElementById('gh-types');if(!dl)return;var seen={};glassDoors.forEach(function(g){if(g.hingeType)seen[g.hingeType]=1;});dl.innerHTML=Object.keys(seen).map(function(t){return '<option value="'+t.replace(/"/g,'&quot;')+'"></option>';}).join('');}
 function ghSide(id,side){var d=glassDoors.find(function(x){return x.id===id;});if(!d)return;d.hingeSide=(d.hingeSide===side?null:side);saveData();renderGlassDoors();}
@@ -5853,12 +5584,7 @@ function cutPickerHTML(doorId,currentCut){
   }).join('')+'</div>';
 }
 
-function setGlassPartName(doorId,val){
-  var d=glassDoors.find(function(x){return x.id===doorId;});
-  if(!d)return;
-  d.partName=(val||'').trim()||null;
-  saveData();
-}
+/* removed unused setGlassPartName */
 
 function setGlassThickness(doorId,mm){
   var d=glassDoors.find(function(x){return x.id===doorId;});
@@ -6761,8 +6487,8 @@ function printSummary(){
 }
 
 // LOCK
-function lockApp(miss){return;}
-function lockScan(raw){}
+/* removed unused lockApp */
+/* removed unused lockScan */
 
 async function sendThisWeekCode(){
   var s=document.getElementById('ejs-status');
@@ -6813,7 +6539,7 @@ function saveNotifyEmail(){
   setTimeout(function(){document.getElementById('email-save-msg').textContent='';},3000);
 }
 
-function savePIN(){}
+/* removed unused savePIN */
 
 // GLOBAL USB SCANNER LISTENER
 // USB barcode scanners type very rapidly (~10-50ms between keys) and end with Enter.
@@ -8412,7 +8138,7 @@ document.addEventListener('focusin',function(e){var t=e.target;if(!t||!t.tagName
   var ok=t.isContentEditable||t.tagName==='TEXTAREA'||(t.tagName==='INPUT'&&/^(text|search|)$/i.test(t.type||''));
   if(ok&&t.getAttribute('spellcheck')!=='true'&&!t.hasAttribute('data-nospell')&&t.id!=='inst-scan-box'&&t.id!=='cloud-pass'&&t.type!=='password'){t.setAttribute('spellcheck','true');if(!t.lang)t.lang='en-AU';}},true);
 // Legacy export function kept for backward compat with old buttons that call it
-async function exportJSON(){return saveProjectAs();}
+/* removed unused exportJSON */
 
 function importJSON(e){
   var file=e.target.files[0];if(!file)return;var reader=new FileReader();
@@ -8584,7 +8310,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v409 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v410 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8857,58 +8583,14 @@ function kickDelSize(idx){
 }
 // Print the kickboard count + sizes for this project.
 // Small HTML escaper for label text
-function _esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+/* removed unused _esc */
 
 // ── KICKBOARD LABEL SCAN ────────────────────────────────────────────
 // Recognises labels printed by printKickboardLabels, payload format:
 //   "KICKBOARD|<num>|<room>|<size>|<project>"
 // Finds the matching project by name, marks the piece made (first scan)
 // then shipped (second scan), stored in that project's kickboards.scanned.
-function handleKickboardScan(text,resId){
-  var el=document.getElementById(resId)||document.getElementById('r-usb');
-  var parts=String(text).split('|');
-  // KICKBOARD | num | room | size | proj   (also tolerates legacy "KB|proj|room|size|seq")
-  var head=(parts[0]||'').trim().toUpperCase();
-  var num,room,size,proj;
-  if(head==='KB'){ // legacy order
-    proj=(parts[1]||'').trim();room=(parts[2]||'').trim();size=(parts[3]||'').trim();num=(parts[4]||'').trim();
-  } else {         // KICKBOARD order
-    num=(parts[1]||'').trim();room=(parts[2]||'').trim();size=(parts[3]||'').trim();proj=(parts[4]||'').trim();
-  }
-  // Locate the target project (match by name; fall back to current)
-  var targetJob=null,isCur=false;
-  var curJob=currentJobId?allJobs[currentJobId]:null;
-  if(proj&&curJob&&_projectNameMatches(proj,curJob.name||'')){targetJob=curJob;isCur=true;}
-  if(!targetJob&&proj){
-    var ids=Object.keys(allJobs||{});
-    for(var i=0;i<ids.length;i++){if(ids[i]===currentJobId)continue;if(_projectNameMatches(proj,(allJobs[ids[i]]||{}).name||'')){targetJob=allJobs[ids[i]];break;}}
-  }
-  if(!targetJob&&curJob){targetJob=curJob;isCur=true;}
-  if(!targetJob){if(el){el.className='rbox r-err';el.innerHTML='\u274c No project found for this kickboard label';}return;}
-  var kb=normKick(targetJob.kickboards);
-  if(!kb.scanned||typeof kb.scanned!=='object')kb.scanned={};
-  var key=num||(room+'|'+size);
-  var rec=kb.scanned[key]||{made:false,shipped:false};
-  var action,cls;
-  if(!rec.made){rec.made=true;rec.ts=nowT();action='\u2713 MADE';cls='r-ok';}
-  else if(!rec.shipped){rec.shipped=true;rec.ts=nowT();action='\ud83d\ude9a SHIPPED';cls='r-ok';}
-  else {action='\u26a0\ufe0f already made & shipped';cls='r-warn';}
-  rec.room=room;rec.size=size;
-  kb.scanned[key]=rec;
-  targetJob.kickboards=kb;
-  if(isCur)kickboards=kb;
-  var made=0,ship=0;for(var kk in kb.scanned){if(kb.scanned[kk].made)made++;if(kb.scanned[kk].shipped)ship++;}
-  saveAllJobs();
-  if(el){
-    el.className='rbox '+cls;
-    el.innerHTML='\ud83e\uddb6 KICKBOARD '+action+'<br><b>'+_esc(num)+' \u00b7 '+_esc(room)+'</b><br>'+
-      '<small>'+_esc(size)+' mm</small>'+
-      (isCur?'':'<br><small style="color:#6b4c93;font-weight:700;">\ud83d\udcc2 \u2192 '+_esc(targetJob.name||'?')+'</small>')+
-      '<br><small style="color:#4b5563;">made '+made+' \u00b7 shipped '+ship+'</small>';
-    setTimeout(function(){var e2=document.getElementById('r-usb');if(e2){e2.className='rbox r-wait';e2.innerHTML='Waiting for scan...';}},4500);
-  }
-  if(isCur&&typeof renderKickboard==='function')renderKickboard();
-}
+/* removed unused handleKickboardScan */
 
 function printKickboard(){
   if(_kickSaveTimer){clearTimeout(_kickSaveTimer);_kickSaveTimer=null;saveData();}
@@ -9122,30 +8804,7 @@ function renderKickboard(){
 
 // Popup reminder — shown each time a cabinet is shipped while kickboards are
 // still unshipped. Kickboards must go out together with the cabinets.
-function showKickboardReminder(){
-  var c=kickCounts(kickboards);
-  var pending=c.total-c.shipped;
-  if(pending<=0)return; // no kickboards for this project, or all already shipped
-  var old=document.getElementById('kick-reminder-overlay');
-  if(old)old.remove();
-  var ov=document.createElement('div');
-  ov.id='kick-reminder-overlay';
-  ov.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-  ov.onclick=function(e){if(e.target===ov)ov.remove();};
-  ov.innerHTML='<div style="background:#fff;border-radius:20px;max-width:390px;width:100%;padding:28px 24px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.4);">'+
-    '<div style="font-size:50px;line-height:1;">🦶</div>'+
-    '<div style="font-size:20px;font-weight:700;color:#b7791f;margin:10px 0 4px;">Don\'t forget the kickboards!</div>'+
-    '<div style="font-size:14px;color:#374151;line-height:1.6;">Kickboards must be shipped <b>together with the cabinets</b>.</div>'+
-    '<div style="background:#fbf6e8;border:1.5px solid #ecd9a4;border-radius:14px;padding:16px;margin:16px 0;">'+
-      '<div style="font-size:40px;font-weight:700;color:#b7791f;font-family:\'JetBrains Mono\',monospace;line-height:1;">'+pending+'</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#7a5316;letter-spacing:.5px;margin-top:5px;">KICKBOARD'+(pending>1?'S':'')+' STILL TO SHIP</div>'+
-      '<div style="font-size:11px;color:#9a6618;margin-top:4px;">'+c.shipped+' of '+c.total+' shipped so far</div>'+
-    '</div>'+
-    '<button onclick="var o=document.getElementById(\'kick-reminder-overlay\');if(o)o.remove();" '+
-      'style="width:100%;padding:14px;border:none;border-radius:12px;background:#2f7d5b;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">✓ Got it</button>'+
-  '</div>';
-  document.body.appendChild(ov);
-}
+/* removed unused showKickboardReminder */
 
 function computeJobStats(job){
   var units=job.units||[],glasses=job.glassDoors||[],rods=job.hangingRails||[],
@@ -9780,11 +9439,8 @@ function openSectionFromPM(jobId,sectionKey){
   },80);
 }
 
-function newJobFromPM(){
-  newJob();
-  switchView('tracker');
-}
-function nowT(){return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+/* removed unused newJobFromPM */
+/* removed unused nowT */
 
 // HID SCANNER CONNECTION (shows actual scanner name when supported)
 var connectedHIDScanner=null;
@@ -10475,7 +10131,7 @@ function clStatus(){var el=document.getElementById('cl-status');if(!el)return;va
   else if(fresh)el.innerHTML+=box+(A?'<span style="color:#a94b3f;font-size:12.5px;">The earlier approval no longer matches — the client signed again.</span>':'<span style="font-size:12.5px;">The client has signed off. Check it and approve.</span>')+'<span style="margin-left:auto;"></span><button class="btn btn-outline btn-sm" onclick="clUnlock()">Allow changes…</button><button class="btn btn-blue btn-sm" onclick="clApprove()">Approve for production</button></div>';
   else el.innerHTML+=box+'<span style="font-size:12.5px;color:#a1a1aa;">'+(A?'<span style="color:#a94b3f;">Changed after approval — send to the client to sign again.</span>':(sg&&sg.at?'You changed the selections after the client signed — send it again for a new sign-off.':(F.unlock?'Changes allowed '+jhFmt(new Date(F.unlock.at).toISOString())+' — waiting for the client to change and sign again.':'Waiting for the client to sign off. After that you approve it here.')))+'</span></div>';
   if((F.signLog||[]).length)el.innerHTML+=clLogHTML(F.signLog);
-  clNotesBox();}
+}
 function clSetEdit(on){var j=siJob();if(!j)return;jhInfo(j).clientCanEdit=!!on;saveData();clPublishSoon(j.id);if(!(j.info&&j.info.clientToken))clEnsure();showMsg(on?'The client can fill in Appliances and Stone':'The client can only view and sign off');}
 // v393: notes thread (both sides) + shared documents with versions
 function clUnionNotes(a,b){var m={};(a||[]).concat(b||[]).forEach(function(n){if(n&&n.id)m[n.id]=Object.assign(m[n.id]||{},n);});return Object.keys(m).map(function(k){return m[k];}).sort(function(x,y){return x.at-y.at;});}
@@ -10487,26 +10143,6 @@ async function clReadFile(f){if(/^image\//.test(f.type))return await siCompress(
 async function clStoreFile(f,jobId){if(f.size>25*1048576){alert(f.name+' is larger than 25 MB.');return null;}var d=await clReadFile(f),id=clFileId();_siCache[id]=d;try{await window.storage.set('cbkph:'+id,d);}catch(e){}
   try{if(window.cloud&&cloud.db&&cloud.user&&navigator.onLine)await upPut(id,d,jobId||'');else upEnqueue(id,jobId||'');}catch(e){try{upEnqueue(id,jobId||'');}catch(_){}}
   return {id:id,name:f.name,mime:/^image\//.test(f.type)?'image/jpeg':(f.type||''),size:f.size};}
-function clWho(by){return by==='designer'?'You':'Client';}
-function clNotesBox(){var b=document.getElementById('cl-notes-box');if(!b)return;var j=siJob();if(!j){b.innerHTML='';return;}
-  var F=j.finishes||{},N=(F.clientNotes||[]).slice().sort(function(a,c){return c.at-a.at;}),D=F.clientDocs||[];
-  var tag=function(by){return '<span style="font-size:10.5px;font-weight:600;border:1px solid #e4e4e7;border-radius:4px;padding:1px 6px;color:'+(by==='designer'?'#52525b':'#3d5f8c')+';">'+clWho(by)+'</span>';};
-  b.innerHTML=
-   '<div class="card"><div class="card-title" style="margin-bottom:4px;">Messages on the client page</div><div style="font-size:12px;color:#71717a;margin-bottom:10px;">Only for the client link: what you and the client write on the client page. The client can see these. (Your own notes go in “Client notes” above.)</div>'+
-     '<textarea id="cl-dn" rows="3" placeholder="Write a note to the client…" style="width:100%;"></textarea><div style="display:flex;gap:8px;align-items:center;margin:8px 0 6px;flex-wrap:wrap;"><label class="btn btn-outline btn-sm" style="cursor:pointer;">Attach files<input id="cl-dnf" type="file" multiple style="display:none" onchange="var l=document.getElementById(\'cl-dnf-l\');if(l)l.textContent=Array.prototype.map.call(this.files,function(f){return f.name;}).join(\', \');"></label><span id="cl-dnf-l" style="font-size:12px;color:#71717a;"></span><button class="btn btn-blue btn-sm" style="margin-left:auto;" onclick="clDesignerNote()">Post note</button></div>'+
-     (N.length?N.map(function(n){return '<div style="border-top:1px solid #f0f0f2;padding:10px 0;"><div style="display:flex;gap:8px;align-items:center;font-size:11.5px;color:#a1a1aa;">'+tag(n.by)+jhFmt(new Date(n.at).toISOString())+'</div>'+
-       (n.text?'<div style="font-size:13.5px;white-space:pre-wrap;margin-top:4px;">'+esc(n.text)+'</div>':'')+
-       ((n.files||[]).length?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">'+n.files.map(function(f){return '<button class="btn btn-outline btn-sm" onclick="drOpenAny(\''+f.id+'\')">'+esc(f.name||'file')+'</button>';}).join('')+'</div>':'')+'</div>';}).join(''):'<div style="font-size:12.5px;color:#a1a1aa;">Nothing yet.</div>')+'</div>';}
-async function clDesignerSave(j){saveData();try{await clPublish(j.id);}catch(e){}clNotesBox();clStatus();}
-async function clDesignerNote(){var j=siJob();if(!j)return;var t=(document.getElementById('cl-dn')||{}).value||'';t=t.trim();var inp=document.getElementById('cl-dnf'),fs=inp?Array.prototype.slice.call(inp.files||[]):[];
-  if(!t&&!fs.length){showMsg('Write a note or attach a file first');return;}clToken(j);showMsg('Posting…');var files=[];for(var i=0;i<fs.length;i++){var r=await clStoreFile(fs[i],j.id);if(r)files.push(r);}
-  var F=finInit(j);F.clientNotes=clUnionNotes(F.clientNotes,[{id:'n'+Date.now().toString(36),at:Date.now(),by:'designer',text:t,files:files}]);await clDesignerSave(j);showMsg('✓ Note posted');}
-async function clDocNew(inp){var j=siJob();var f=inp.files&&inp.files[0];inp.value='';if(!j||!f)return;var tt=((document.getElementById('cl-doc-t')||{}).value||'').trim()||f.name.replace(/\.[^.]+$/,'');
-  var note=prompt('Note for the client (optional):','')||'';showMsg('Uploading…');var r=await clStoreFile(f,j.id);if(!r)return;clToken(j);
-  var F=finInit(j);F.clientDocs=clUnionDocs(F.clientDocs,[{id:'d'+Date.now().toString(36),title:tt,at:Date.now(),versions:[{id:'v'+Date.now().toString(36),by:'designer',file:r,note:note,at:Date.now()}]}]);await clDesignerSave(j);showMsg('✓ Shared with the client as v1');}
-async function clDocVersion(did,inp){var j=siJob();var f=inp.files&&inp.files[0];inp.value='';if(!j||!f)return;var note=prompt('What changed in this version? (optional)','')||'';showMsg('Uploading…');var r=await clStoreFile(f,j.id);if(!r)return;
-  var F=finInit(j),d=(F.clientDocs||[]).filter(function(x){return x.id===did;})[0];if(!d)return;F.clientDocs=clUnionDocs(F.clientDocs,[{id:did,title:d.title,at:d.at,versions:[{id:'v'+Date.now().toString(36),by:'designer',file:r,note:note,at:Date.now()}]}]);await clDesignerSave(j);
-  var nd=F.clientDocs.filter(function(x){return x.id===did;})[0];showMsg('✓ Uploaded as v'+nd.versions.length);}
 
 // ---------- the client's page ----------
 var _clDoc=null,_clTab='ap',_clSaveT=null,_clRef=null;
@@ -10544,25 +10180,15 @@ function clientRender(){var D=_clDoc||{},C=D.company||{},w=document.querySelecto
   else if(_clTab==='ss'){body=(D.ss||[]).map(function(r,ri){var f=function(k,ph,lab){return '<div><label>'+lab+'</label><input'+dis+' value="'+clE(r[k])+'" placeholder="'+(RO?'':ph)+'" oninput="clSet(\'ss\','+ri+',null,\''+k+'\',this.value)"/></div>';};
       var sel=function(k,lab,opts){return '<div><label>'+lab+'</label><select'+dis+' onchange="clSet(\'ss\','+ri+',null,\''+k+'\',this.value);clientRender()"><option value="">—</option>'+opts.map(function(o){return '<option'+(r[k]===o?' selected':'')+'>'+o+'</option>';}).join('')+'</select></div>';};
       return '<div class="cl-card"><h2>'+clE(r.name)+'</h2><div class="cl-sg">'+f('stone','Stone name or code','Stone')+f('link','https://…','Web link')+f('mm','e.g. 20','Thickness (mm)')+sel('splash','Splashback in stone',['Yes','No'])+sel('wf','Waterfall end',['Yes','No'])+(r.wf==='Yes'?sel('wfside','Waterfall side',['Left','Right','Both']):'')+'</div></div>';}).join('')||'<div class="cl-card">No stone areas yet.</div>';}
-  else if(_clTab==='dc'){var DC=(D.docs||[]).slice().reverse();
-    body=DC.length?DC.map(function(d){var V=(d.versions||[]).slice().reverse();return '<div class="cl-card"><h2>'+clE(d.title||'Document')+'</h2>'+
-      V.map(function(v){return '<div class="cl-mat" style="align-items:center;"><div><b>v'+v.v+'</b> <span style="font-size:12px;">'+(v.by==='designer'?'from us':'from you')+' · '+new Date(v.at).toLocaleString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'})+'</span>'+(v.note?'<div style="font-size:13px;color:#52525b;white-space:pre-wrap;margin-top:2px;">'+clE(v.note)+'</div>':'')+'</div><button class="cl-btn" onclick="clOpenFile(\''+v.file.id+'\',\''+clE(v.file.name).replace(/'/g,'')+'\')">Open</button></div>';}).join('')+
-      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><label class="cl-btn cl-dark" style="cursor:pointer;margin:0;">Upload my changes<input type="file" style="display:none" onchange="clClientVersion(\''+d.id+'\',this)"></label><span style="font-size:12px;color:#a1a1aa;">Mark up the PDF (or take a photo) and upload it here.</span></div></div>';}).join(''):'<div class="cl-card">No documents shared yet.</div>';}
-  else if(_clTab==='nt'){var N=(D.notes||[]).slice().sort(function(a,b){return b.at-a.at;});
-    body='<div class="cl-card"><h2>Add a note or reference</h2><textarea id="cl-nt" rows="5" placeholder="Anything we should know — measurements, preferences, questions… You can also attach photos, PDFs or brochures." style="width:100%;box-sizing:border-box;border:1px solid #e4e4e7;border-radius:6px;padding:10px;font:400 14px Inter,sans-serif;resize:vertical;"></textarea>'+
-      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;"><label class="cl-btn" style="cursor:pointer;margin:0;">Attach files<input id="cl-nf" type="file" multiple accept="image/*,application/pdf,.pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="clPickFiles(this)"></label><span id="cl-nf-l" style="font-size:12.5px;color:#71717a;"></span><button class="cl-btn cl-dark" style="margin-left:auto;" onclick="clAddNote()">Save note</button></div></div>'+
-      (N.length?N.map(function(n){return '<div class="cl-card"><div style="font-size:12px;color:#a1a1aa;margin-bottom:4px;">'+new Date(n.at).toLocaleString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'})+'</div>'+(n.by==='designer'?'<div style="font-size:11px;font-weight:600;color:#52525b;margin-bottom:3px;">From us</div>':'')+(n.text?'<div style="white-space:pre-wrap;font-size:14px;">'+clE(n.text)+'</div>':'')+
-        ((n.files||[]).length?'<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">'+n.files.map(function(f){return '<button class="cl-btn" onclick="clOpenFile(\''+f.id+'\',\''+clE(f.name).replace(/'/g,'')+'\')">'+clE(f.name)+'</button>';}).join('')+'</div>':'')+'</div>';}).join(''):'');}
   else{body=(D.ms||[]).map(function(sp){return '<div class="cl-card"><h2>'+clE(sp.name)+'</h2>'+sp.items.map(function(it){return '<div class="cl-mat"><b>'+clE([it.brand,it.colour].filter(Boolean).join(' '))+'</b><span>'+clE([it.finish,it.note].filter(Boolean).join(' · '))+'</span></div>';}).join('')+'</div>';}).join('')||'<div class="cl-card">The materials have not been chosen yet.</div>';}
   w.innerHTML=(C.name||C.logo?'<div class="cl-co">'+(C.logo?'<img src="'+clE(C.logo)+'" alt="">':'')+'<div><b>'+clE(C.name||'')+'</b>'+(C.address?'<span>'+clE(C.address)+'</span>':'')+'</div></div>':'')+
     '<h1>'+clE(D.jobName||'Your project')+'</h1><div class="cl-sub">'+(D.canEdit===false?'Please review your appliance and stone selections and sign them off.':'Please fill in your appliance models and stone selections.')+' Everything saves automatically — you can close this page and come back to the same link any time. The material schedule is for your information only.</div>'+
     (RO?'<div class="cl-card" style="background:#fafafa;">These selections were filled in by us. Please check Appliances and Stone and sign off below.</div>':'')+
-    '<div class="cl-tabs">'+tab('ap','Appliances')+tab('ss','Stone')+tab('ms','Materials (view only)')+((D.docs||[]).length?tab('dc','Documents ('+(D.docs||[]).length+')'):'')+'</div>'+body+'<div id="cl-signw">'+clSignHTML(D)+'</div>'+
+    '<div class="cl-tabs">'+tab('ap','Appliances')+tab('ss','Stone')+tab('ms','Materials (view only)')+'</div>'+body+'<div id="cl-signw">'+clSignHTML(D)+'</div>'+
     '<div class="cl-foot">'+(C.phone||C.email?clE([C.phone,C.email].filter(Boolean).join(' · ')):'Questions? Just reply to our email.')+'</div><div class="cl-save" id="cl-save">Saved</div>';}
 function clSet(sec,ri,ai,k,v){var D=_clDoc;if(!D)return;var tgt=sec==='ap'?D.ap.filter(function(r){return (r.items||[]).length;})[ri].items[ai]:D.ss[ri];tgt[k]=v;
   clearTimeout(_clSaveT);_clSaveT=setTimeout(function(){var up={ap:D.ap,ss:D.ss,clientAt:Date.now()};if(D.signed){D.signed=null;up.signed=null;}_clRef.set(up,{merge:true}).then(function(){var sw=document.getElementById('cl-signw');if(sw)sw.innerHTML=clSignHTML(D);var s=document.getElementById('cl-save');if(s){s.classList.add('on');setTimeout(function(){s.classList.remove('on');},1400);}}).catch(function(){alert('Could not save — please check your internet.');});},700);}
-// v393: client sign-off + notes & references
-var _clFiles=[];
+// v393: client sign-off
 function clLogHTML(L){L=(L||[]).slice().sort(function(a,z){return z.at-a.at;});if(!L.length)return '';var fmt=function(t){return new Date(t).toLocaleString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});};
   var T={signed:'Signed off',approved:'Approved for production',unlocked:'Changes allowed'};
   return '<div style="margin-top:12px;border-top:1px solid #ececef;padding-top:8px;"><div style="font-size:11.5px;font-weight:600;color:#71717a;margin-bottom:4px;">History</div>'+L.map(function(x){return '<div style="font-size:12.5px;padding:3px 0;color:#3f3f46;"><span style="color:#a1a1aa;">'+fmt(x.at)+'</span> · <b>'+clE(T[x.t]||x.t)+'</b>'+(x.by?' by '+clE(x.by):'')+(x.note?'<div style="color:#52525b;margin-left:2px;white-space:pre-wrap;">Reason: '+clE(x.note)+'</div>':'')+'</div>';}).join('')+'</div>';}
@@ -10582,24 +10208,13 @@ function clSign(){var ok=document.getElementById('cl-ok'),nm=(document.getElemen
   if(!ok||!ok.checked){alert('Please tick the box to confirm.');return;}if(!nm){alert('Please type your full name.');return;}
   var at=Date.now(),sg={name:nm,at:at,reason:why};_clDoc.signed=sg;_clDoc.log=clUnionNotes(_clDoc.log,[{id:'l'+at.toString(36),t:'signed',by:nm,at:at,note:why}]);
   _clRef.set({signed:sg,log:_clDoc.log,clientAt:at},{merge:true}).then(function(){clientRender();}).catch(function(){alert('Could not save — please check your internet.');});}
-function clPickFiles(inp){var fs=Array.prototype.slice.call(inp.files||[]);fs.forEach(function(f){if(f.size>20*1048576){alert(f.name+' is larger than 20 MB — please send a smaller file.');return;}_clFiles.push(f);});inp.value='';
-  var l=document.getElementById('cl-nf-l');if(l)l.textContent=_clFiles.map(function(f){return f.name;}).join(', ');}
-async function clAddNote(){var t=(document.getElementById('cl-nt')||{}).value||'';t=t.trim();if(!t&&!_clFiles.length){alert('Write a note or attach a file first.');return;}
-  var btn=event&&event.target;if(btn){btn.disabled=true;btn.textContent='Saving…';}
-  var files=[];try{for(var i=0;i<_clFiles.length;i++){var f=_clFiles[i],data;
-      if(/^image\//.test(f.type))data=await siCompress(f);else data=await new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.onerror=rej;fr.readAsDataURL(f);});
-      var pid='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);await upPut(pid,data,(_clDoc&&_clDoc.jobId)||'');files.push({id:pid,name:f.name,mime:/^image\//.test(f.type)?'image/jpeg':(f.type||''),size:f.size});}
-  }catch(e){alert('Could not upload a file — please check your internet and try again.');if(btn){btn.disabled=false;btn.textContent='Save note';}return;}
-  var n={id:'n'+Date.now().toString(36),at:Date.now(),by:'client',text:t,files:files};_clDoc.notes=clUnionNotes(_clDoc.notes,[n]);_clFiles=[];
-  await _clRef.set({notes:_clDoc.notes,clientAt:Date.now()},{merge:true}).catch(function(){alert('Could not save — please check your internet.');});
-  clientRender();}
 // v393: Client Information tab
 function ciPick(id){if(!id)return;selectJob(id);renderClientInfo();}
 function ciPickFill(){var el=document.getElementById('ci-pick');if(!el)return;var L=Object.values(allJobs||{}).filter(function(j){return typeof jobOK!=='function'||jobOK(j);}).sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''));});
   el.innerHTML=(currentJobId&&allJobs[currentJobId]?'':'<option value="">— choose a project —</option>')+L.map(function(j){return '<option value="'+qe(j.id)+'"'+(j.id===currentJobId?' selected':'')+'>'+esc(j.name||'Untitled')+'</option>';}).join('');}
 function renderClientInfo(){var j=siJob(),pn=document.getElementById('ci-proj'),f=document.getElementById('ci-form');if(!f)return;try{ciPickFill();}catch(e){}
   if(pn)pn.textContent=j?(j.name||''):'Choose a project on the right';
-  if(!j){f.innerHTML='<div style="color:#a1a1aa;font-size:13px;">Choose a project at the top right to see its client details and notes.</div>';clStatus();try{briefBox();clNotesBox();}catch(e){}return;}
+  if(!j){f.innerHTML='<div style="color:#a1a1aa;font-size:13px;">Choose a project at the top right to see its client details and notes.</div>';clStatus();try{briefBox();}catch(e){}return;}
   var inf=j.info||{},site=(j.finishes&&j.finishes.site)||'',id=j.id;
   var row=function(lab,field,val,ph,type,link){return '<div><div style="font-size:11.5px;color:#71717a;margin-bottom:4px;">'+lab+'</div><div style="display:flex;gap:6px;"><input'+(type?' type="'+type+'"':'')+' value="'+qe(val||'')+'" placeholder="'+ph+'" spellcheck="false" onchange="jhSet(\''+id+'\',\''+field+'\',this.value);renderClientInfo();" style="flex:1;min-width:0;"/>'+(val&&link?(link==='#mail'?'<button class="btn btn-blue btn-sm" title="Opens your email to write to the client" onclick="mailCompose(\''+qe(val).replace(/'/g,'')+'\',\''+qe((siJob()||{}).name||'').replace(/'/g,'')+' — \')">Write email</button>':'<a class="btn btn-outline btn-sm" style="text-decoration:none;" href="'+link+'" target="_blank" rel="noopener">'+(type==='tel'?'Call':'Map')+'</a>'):'')+'</div></div>';};
   f.innerHTML=row('Client name','client',inf.client,'Client name')+
@@ -10607,15 +10222,9 @@ function renderClientInfo(){var j=siJob(),pn=document.getElementById('ci-proj'),
     row('Email','clientEmail',inf.clientEmail,'client@email.com','email',inf.clientEmail?'#mail':'')+
     row('Site address','site',site,'Site address','',site?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(site):'');
   clStatus();try{briefBox();}catch(e){}}
-// v393: client side — open shared files, upload a new version of a document
+// v393: open a stored file (used by Client notes)
 async function clOpenFile(id,name){var d='';try{d=await siGetPhoto(id);}catch(e){}if(!d){alert('Could not open the file — please check your internet.');return;}
   var bl=await (await fetch(d)).blob(),u=URL.createObjectURL(bl);if(/pdf|image/.test(bl.type)){var w=window.open(u,'_blank');if(!w){location.href=u;}}else{var a=document.createElement('a');a.href=u;a.download=name||'file';document.body.appendChild(a);a.click();a.remove();}}
-async function clClientVersion(did,inp){var f=inp.files&&inp.files[0];inp.value='';if(!f||!_clDoc)return;if(f.size>25*1048576){alert('Please upload a file smaller than 25 MB.');return;}
-  var note=prompt('What did you change? (optional)','')||'';var data;try{data=await clReadFile(f);}catch(e){alert('Could not read the file.');return;}
-  var id=clFileId();try{await upPut(id,data,_clDoc.jobId||'');}catch(e){alert('Could not upload — please check your internet and try again.');return;}
-  var d=(_clDoc.docs||[]).filter(function(x){return x.id===did;})[0];if(!d)return;
-  _clDoc.docs=clUnionDocs(_clDoc.docs,[{id:did,title:d.title,at:d.at,versions:[{id:'v'+Date.now().toString(36),by:'client',file:{id:id,name:f.name,mime:/^image\//.test(f.type)?'image/jpeg':(f.type||''),size:f.size},note:note,at:Date.now()}]}]);
-  await _clRef.set({docs:_clDoc.docs,clientAt:Date.now()},{merge:true}).catch(function(){alert('Could not save — please check your internet.');});clientRender();}
 // ===== v395: CLIENT BRIEF — notes from the client's emails, sorted by topic =====
 var BR_CATS=['Changes from client','References','Appliances','Stone','Colours & materials','Hardware','Measurements & site','Design changes','Dates & access','Payments','Other'];
 var _brCat='',_brQ='',_brEdit=null,_brFiles=[];
@@ -10678,126 +10287,6 @@ function brList(){var w=document.getElementById('br-list'),fw=document.getElemen
   w.innerHTML=_brCat?sorted.map(item).join(''):cats.map(function(c){var G=sorted.filter(function(x){return x.cat===c;});if(!G.length)return '';
     return '<div style="margin-top:14px;"><div style="font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#52525b;">'+esc(c)+' <span style="font-weight:400;color:#a1a1aa;">('+G.length+')</span></div>'+G.map(item).join('')+'</div>';}).join('');
   w.querySelectorAll('img[data-br]').forEach(function(im){siGetPhoto(im.getAttribute('data-br')).then(function(d){if(d)im.src=d;}).catch(function(){});});}
-// ===== v394: OUTLOOK / MICROSOFT 365 EMAIL WITH THE CLIENT =====
-var MS_SC='openid profile offline_access User.Read Mail.Read Mail.Send',_msMsgs={},_msOpen={},_msPre=[],_msKey='';
-function msCfg(){try{return JSON.parse(localStorage.getItem('cbk-ms')||'{}')||{};}catch(e){return {};}}
-function msSetCfg(o){var c=Object.assign(msCfg(),o);try{localStorage.setItem('cbk-ms',JSON.stringify(c));}catch(e){}return c;}
-function msOn(){var c=msCfg();return !!(c.clientId&&c.rt);}
-function msRedir(){return location.origin+location.pathname;}
-function msB64u(buf){var s='',a=new Uint8Array(buf);for(var i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
-function msSaveId(){var v=((document.getElementById('ms-cid')||{}).value||'').trim();if(!/^[0-9a-f-]{36}$/i.test(v)){alert('That does not look like an Application (client) ID — it should look like 1a2b3c4d-....');return;}msSetCfg({clientId:v});_msKey='';msBox();}
-async function msConnect(){var c=msCfg();if(!c.clientId){alert('Enter the Application (client) ID first.');return;}
-  var v=msB64u(crypto.getRandomValues(new Uint8Array(48))),ch=msB64u(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v))),st='ms_'+Math.random().toString(36).slice(2);
-  try{sessionStorage.setItem('cbk-ms-pkce',JSON.stringify({v:v,st:st,job:currentJobId||''}));}catch(e){}
-  location.href='https://login.microsoftonline.com/'+(c.tenant||'common')+'/oauth2/v2.0/authorize?'+new URLSearchParams({client_id:c.clientId,response_type:'code',redirect_uri:msRedir(),response_mode:'query',scope:MS_SC,state:st,code_challenge:ch,code_challenge_method:'S256',prompt:'select_account'}).toString();}
-async function msToken(body){var c=msCfg();body.client_id=c.clientId;body.scope=MS_SC;
-  var r=await fetch('https://login.microsoftonline.com/'+(c.tenant||'common')+'/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(body).toString()});
-  var d=await r.json().catch(function(){return {};});if(!r.ok||!d.access_token)throw new Error(d.error_description||d.error||'Sign-in failed');
-  msSetCfg({at:d.access_token,exp:Date.now()+((d.expires_in||3600)-120)*1000,rt:d.refresh_token||msCfg().rt});return d.access_token;}
-async function msHandleRedirect(){var q=new URLSearchParams(location.search),st=q.get('state');if(!st||!/^ms_/.test(st))return;var p={};try{p=JSON.parse(sessionStorage.getItem('cbk-ms-pkce')||'{}');sessionStorage.removeItem('cbk-ms-pkce');}catch(e){}
-  try{history.replaceState(null,'',location.pathname);}catch(e){}
-  if(q.get('error')){alert('Outlook: '+(q.get('error_description')||q.get('error')));}
-  else if(p.st!==st){alert('The Outlook sign-in expired — please press Connect again.');}
-  else{try{await msToken({grant_type:'authorization_code',code:q.get('code'),redirect_uri:msRedir(),code_verifier:p.v});var me=await msApi('/me?$select=mail,userPrincipalName,displayName');msSetCfg({me:String(me.mail||me.userPrincipalName||'').toLowerCase(),name:me.displayName||''});showMsg('✓ Outlook connected');}catch(e){alert('Outlook: '+e.message);}}
-  if(p.job)msReturn(p.job,0);}
-function msReturn(id,n){if(window.allJobs&&allJobs[id]&&typeof selectJob==='function'&&!document.querySelector('#role-ov:not([style*="none"])')){try{selectJob(id);var t=document.querySelector('.tab[onclick*="\'client\'"]');if(t)showTab('client',t);}catch(e){}return;}if(n<40)setTimeout(function(){msReturn(id,n+1);},500);}
-function msDisconnect(){if(!confirm('Disconnect Outlook on this device?'))return;msSetCfg({at:'',rt:'',me:'',name:''});_msMsgs={};_msKey='';msBox();}
-async function msAT(){var c=msCfg();if(c.at&&c.exp>Date.now())return c.at;if(!c.rt)throw new Error('Outlook is not connected — press Connect.');
-  try{return await msToken({grant_type:'refresh_token',refresh_token:c.rt});}catch(e){msSetCfg({at:'',rt:''});_msKey='';setTimeout(msBox,0);throw new Error('Outlook sign-in has expired — please press Connect again.');}}
-async function msApi(path,opt){opt=opt||{};var t=await msAT();var h={Authorization:'Bearer '+t};if(opt.body)h['Content-Type']='application/json';
-  var r=await fetch('https://graph.microsoft.com/v1.0'+path,{method:opt.method||'GET',headers:h,body:opt.body?JSON.stringify(opt.body):undefined});
-  if(r.status===202||r.status===204)return {};var d=await r.json().catch(function(){return {};});if(!r.ok)throw new Error((d.error&&d.error.message)||('Outlook error '+r.status));return d;}
-function msEm(j){return String((jhInfo(j).clientEmail)||'').trim().toLowerCase();}
-function msBox(force){var b=document.getElementById('ms-box');if(!b)return;var j=siJob();if(!j){b.innerHTML='';_msKey='';return;}var c=msCfg(),em=msEm(j);
-  var key=[j.id,c.clientId||'',msOn()?1:0,em].join('|');if(key===_msKey&&!force){msList();return;}_msKey=key;
-  var head='<div class="card-title" style="margin-bottom:4px;">Email with client <span style="font-weight:400;color:#a1a1aa;font-size:12px;">Outlook</span></div>';
-  if(!c.clientId){b.innerHTML='<div class="card">'+head+'<div style="font-size:12.5px;color:#52525b;line-height:1.6;">Connect your Outlook once and every email between you and this client shows here, with its attachments. You can also send from here.'+
-    '<details style="margin-top:8px;"><summary style="cursor:pointer;font-weight:600;">One-time setup (about 5 minutes)</summary><ol style="margin:8px 0 0 18px;padding:0;">'+
-    '<li>Open <a href="https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank" rel="noopener">Microsoft Entra › App registrations</a> (sign in with your Outlook account) and press <b>New registration</b>.</li>'+
-    '<li>Name: <b>CabLine</b>. Supported account types: <b>Accounts in any organizational directory and personal Microsoft accounts</b>.</li>'+
-    '<li>Redirect URI: choose <b>Single-page application (SPA)</b> and paste <code style="background:#f4f4f5;padding:1px 5px;border-radius:4px;user-select:all;">'+esc(msRedir())+'</code></li>'+
-    '<li>Press <b>Register</b>, copy the <b>Application (client) ID</b> and paste it below.</li></ol></details></div>'+
-    '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"><input id="ms-cid" placeholder="Application (client) ID" spellcheck="false" style="flex:1;min-width:240px;"/><button class="btn btn-blue btn-sm" onclick="msSaveId()">Save</button></div></div>';return;}
-  if(!msOn()){b.innerHTML='<div class="card">'+head+'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><span style="font-size:12.5px;color:#52525b;">Outlook is not connected on this device.</span><button class="btn btn-blue btn-sm" onclick="msConnect()">Connect Outlook</button><button class="btn btn-outline btn-sm" onclick="if(confirm(\'Change the Application ID?\')){msSetCfg({clientId:\'\'});_msKey=\'\';msBox();}">Change app ID</button></div></div>';return;}
-  var D=(j.finishes&&j.finishes.clientDocs)||[];
-  b.innerHTML='<div class="card">'+head+'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:#71717a;margin-bottom:10px;"><span>From <b style="color:#3f3f46;">'+esc(c.me||'you')+'</b> to <b style="color:#3f3f46;">'+(em?esc(em):'— add the client email above')+'</b></span><span><button class="btn btn-outline btn-sm" onclick="msLoad(true)">Refresh</button> <button class="btn btn-outline btn-sm" onclick="msDisconnect()">Disconnect</button></span></div>'+
-    (em?'<div style="border:1px solid #ececef;border-radius:8px;padding:10px 12px;margin-bottom:12px;"><input id="ms-subj" placeholder="Subject" value="'+qe((j.name||'')+' — ')+'" style="width:100%;margin-bottom:8px;"/><textarea id="ms-body" rows="4" placeholder="Message to the client…" style="width:100%;"></textarea>'+
-      '<div id="ms-pre" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;"></div>'+
-      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px;"><label class="btn btn-outline btn-sm" style="cursor:pointer;">Attach files<input id="ms-files" type="file" multiple style="display:none" onchange="msPreShow()"></label>'+
-      '<label style="font-size:12px;color:#52525b;display:inline-flex;gap:5px;align-items:center;"><input id="ms-link" type="checkbox" style="width:auto;margin:0;"> Include client page link</label>'+
-      '<label style="font-size:12px;color:#52525b;display:inline-flex;gap:5px;align-items:center;">Save attachments to <select id="ms-doc" style="width:auto;padding:4px 6px;"><option value="">— not saved —</option><option value="new">New shared document</option>'+D.map(function(d){return '<option value="'+d.id+'">'+esc(d.title)+' (next version)</option>';}).join('')+'</select></label>'+
-      '<button class="btn btn-blue btn-sm" style="margin-left:auto;" onclick="msSend()">Send email</button></div></div>':'')+
-    '<div id="ms-list"></div></div>';msPreShow();msList();if(em)msLoad(false);}
-function msPreShow(){var w=document.getElementById('ms-pre');if(!w)return;var inp=document.getElementById('ms-files'),fs=inp?Array.prototype.slice.call(inp.files||[]):[];
-  w.innerHTML=_msPre.map(function(f,i){return '<span style="font-size:12px;border:1px solid #e4e4e7;border-radius:6px;padding:2px 8px;">'+esc(f.name)+' <a href="#" onclick="_msPre.splice('+i+',1);msPreShow();return false;" style="color:#a1a1aa;text-decoration:none;">×</a></span>';}).join('')+fs.map(function(f){return '<span style="font-size:12px;border:1px solid #e4e4e7;border-radius:6px;padding:2px 8px;">'+esc(f.name)+'</span>';}).join('');}
-async function msLoad(force){var j=siJob();if(!j||!msOn())return;var em=msEm(j);if(!em)return;var cur=_msMsgs[j.id];if(cur&&!force&&cur.em===em&&(cur.loading||Date.now()-cur.at<120000))return;
-  _msMsgs[j.id]={em:em,loading:true,list:(cur&&cur.list)||[],at:Date.now()};msList();
-  try{var d=await msApi('/me/messages?$search='+encodeURIComponent('"participants:'+em+'"')+'&$top=60&$select=id,subject,from,toRecipients,receivedDateTime,bodyPreview,hasAttachments,webLink,isDraft');
-    var L=(d.value||[]).filter(function(m){return !m.isDraft;}).sort(function(a,z){return new Date(z.receivedDateTime)-new Date(a.receivedDateTime);});_msMsgs[j.id]={em:em,list:L,at:Date.now()};}
-  catch(e){_msMsgs[j.id]={em:em,list:(cur&&cur.list)||[],err:e.message,at:Date.now()};}msList();}
-function msFromClient(m,em){return String((m.from&&m.from.emailAddress&&m.from.emailAddress.address)||'').toLowerCase()===em;}
-function msSavedSrc(j){var S={};((j.finishes&&j.finishes.clientDocs)||[]).forEach(function(d){(d.versions||[]).forEach(function(v){if(v.src)S[v.src]=1;});});return S;}
-function msList(){var w=document.getElementById('ms-list');if(!w)return;var j=siJob();if(!j)return;var em=msEm(j),M=_msMsgs[j.id];if(!em){w.innerHTML='';return;}
-  if(!M){w.innerHTML='<div style="font-size:12.5px;color:#a1a1aa;">Loading emails…</div>';return;}
-  var S=msSavedSrc(j),D=(j.finishes&&j.finishes.clientDocs)||[],cats=BR_CATS.map(function(c){return '<option>'+esc(c)+'</option>';}).join('');
-  w.innerHTML=(M.err?'<div style="font-size:12.5px;color:#b45309;margin-bottom:8px;">'+esc(M.err)+'</div>':'')+(M.loading?'<div style="font-size:12px;color:#a1a1aa;margin-bottom:6px;">Checking Outlook…</div>':'')+
-    (M.list.length?M.list.map(function(m){var fc=msFromClient(m,em),O=_msOpen[m.id];
-      return '<div style="border-top:1px solid #f0f0f2;padding:9px 0;"><div style="display:flex;gap:8px;align-items:baseline;cursor:pointer;" onclick="msExpand(\''+m.id+'\')">'+
-        '<span style="font-size:10.5px;font-weight:600;border:1px solid #e4e4e7;border-radius:4px;padding:1px 6px;flex:none;color:'+(fc?'#3d5f8c':'#52525b')+';">'+(fc?'Client':'You')+'</span>'+
-        '<div style="flex:1;min-width:0;"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(m.subject||'(no subject)')+(m.hasAttachments?' <span style="font-weight:400;color:#a1a1aa;">· attachments</span>':'')+'</div>'+
-        (O?'':'<div style="font-size:12.5px;color:#71717a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(m.bodyPreview||'')+'</div>')+'</div>'+
-        '<span style="font-size:11.5px;color:#a1a1aa;flex:none;">'+jhFmt(m.receivedDateTime)+'</span></div>'+
-        (O?'<div style="margin:8px 0 0 0;">'+(O.loading?'<div style="font-size:12px;color:#a1a1aa;">Opening…</div>':O.err?'<div style="font-size:12px;color:#b45309;">'+esc(O.err)+'</div>':
-          '<div class="ms-body" data-mid="'+m.id+'" style="border:1px solid #ececef;border-radius:8px;overflow:hidden;"></div>'+
-          ((O.att||[]).length?'<div style="margin-top:8px;">'+O.att.map(function(a){var k=m.id+':'+a.id,done=S[k];return '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;padding:3px 0;"><button class="btn btn-outline btn-sm" onclick="msOpenAtt(\''+m.id+'\',\''+a.id+'\')">'+esc(a.name)+'</button><span style="color:#a1a1aa;">'+Math.max(1,Math.round((a.size||0)/1024))+' KB</span>'+
-            (done?'<span style="color:#52525b;">✓ in Shared documents</span>':'<select id="ms-ad-'+a.id.slice(-12).replace(/[^\w]/g,'')+'" style="width:auto;padding:3px 6px;font-size:12px;"><option value="new">New shared document</option>'+D.map(function(d){return '<option value="'+d.id+'">'+esc(d.title)+' (next version)</option>';}).join('')+'</select><button class="btn btn-outline btn-sm" onclick="msSaveAtt(\''+m.id+'\',\''+a.id+'\')">Save as version</button>')+'</div>';}).join('')+'</div>':'')+
-          '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;margin-top:8px;"><select id="ms-bc-'+m.id.slice(-12).replace(/[^\w]/g,'')+'" style="width:auto;">'+cats+'</select><textarea id="ms-bt-'+m.id.slice(-12).replace(/[^\w]/g,'')+'" rows="2" placeholder="What does the client want? (copy the important part here)" style="flex:1;min-width:200px;"></textarea><button class="btn btn-outline btn-sm" onclick="msToBrief(\''+m.id+'\')">Add to brief</button>'+
-          (m.webLink?'<a class="btn btn-outline btn-sm" style="text-decoration:none;" href="'+qe(m.webLink)+'" target="_blank" rel="noopener">Open in Outlook</a>':'')+'</div>')+'</div>':'')+'</div>';}).join(''):(M.loading?'':'<div style="font-size:12.5px;color:#a1a1aa;">No emails with '+esc(em)+' yet.</div>'));
-  w.querySelectorAll('.ms-body').forEach(function(el){var O=_msOpen[el.getAttribute('data-mid')];if(!O||O.body==null)return;var f=document.createElement('iframe');f.setAttribute('sandbox','allow-popups allow-popups-to-escape-sandbox');f.style.cssText='width:100%;height:220px;border:0;background:#fff;';
-    f.srcdoc='<base target="_blank"><style>body{font:13.5px/1.5 -apple-system,Segoe UI,Arial,sans-serif;color:#27272a;margin:10px 12px;}img{max-width:100%;height:auto;}</style>'+O.body;el.appendChild(f);
-    f.onload=function(){try{f.style.height=Math.min(520,Math.max(80,f.contentDocument.body.scrollHeight+24))+'px';}catch(e){}};});}
-async function msExpand(mid){if(_msOpen[mid]){delete _msOpen[mid];msList();return;}_msOpen[mid]={loading:true};msList();
-  try{var m=await msApi('/me/messages/'+mid+'?$select=body,uniqueBody'),a={value:[]};try{a=await msApi('/me/messages/'+mid+'/attachments?$select=id,name,contentType,size,isInline');}catch(e){}
-    var bd=(m.uniqueBody&&m.uniqueBody.content)||(m.body&&m.body.content)||'',tp=((m.uniqueBody&&m.uniqueBody.content)?m.uniqueBody.contentType:(m.body&&m.body.contentType))||'html';
-    if(String(tp).toLowerCase()==='text')bd='<div style="white-space:pre-wrap;">'+esc(bd)+'</div>';
-    _msOpen[mid]={body:bd,att:(a.value||[]).filter(function(x){return !x.isInline&&!/itemAttachment|referenceAttachment/.test(x['@odata.type']||'');})};}
-  catch(e){_msOpen[mid]={err:e.message};}msList();}
-function msMsg(mid){var j=siJob(),M=j&&_msMsgs[j.id];return M?(M.list.filter(function(m){return m.id===mid;})[0]||null):null;}
-async function msAttData(mid,aid){var a=await msApi('/me/messages/'+mid+'/attachments/'+aid);if(!a.contentBytes)throw new Error('This attachment cannot be downloaded.');return {name:a.name||'file',mime:a.contentType||'application/octet-stream',size:a.size||0,data:'data:'+(a.contentType||'application/octet-stream')+';base64,'+a.contentBytes};}
-async function msOpenAtt(mid,aid){try{showMsg('Opening…');var A=await msAttData(mid,aid);var bl=await (await fetch(A.data)).blob(),u=URL.createObjectURL(bl);
-  if(/pdf|image/.test(A.mime)){var w=window.open(u,'_blank');if(!w)location.href=u;}else{var l=document.createElement('a');l.href=u;l.download=A.name;document.body.appendChild(l);l.click();l.remove();}}catch(e){alert(e.message);}}
-async function clStoreData(data,name,mime,size,jobId){var id=clFileId();_siCache[id]=data;try{await window.storage.set('cbkph:'+id,data);}catch(e){}
-  try{if(window.cloud&&cloud.db&&cloud.user&&navigator.onLine)await upPut(id,data,jobId||'');else upEnqueue(id,jobId||'');}catch(e){try{upEnqueue(id,jobId||'');}catch(_){}}
-  return {id:id,name:name,mime:mime||'',size:size||0};}
-function clAddVersion(j,did,title,ver){var F=finInit(j);if(!did||did==='new'){did='d'+Date.now().toString(36)+Math.random().toString(36).slice(2,4);F.clientDocs=clUnionDocs(F.clientDocs,[{id:did,title:title,at:ver.at,versions:[ver]}]);}
-  else{var d=(F.clientDocs||[]).filter(function(x){return x.id===did;})[0];if(!d)return null;F.clientDocs=clUnionDocs(F.clientDocs,[{id:did,title:d.title,at:d.at,versions:[ver]}]);}
-  var nd=F.clientDocs.filter(function(x){return x.id===did;})[0];return nd.versions.filter(function(v){return v.id===ver.id;})[0];}
-async function msSaveAtt(mid,aid){var j=siJob(),m=msMsg(mid);if(!j||!m)return;var sel=document.getElementById('ms-ad-'+aid.slice(-12).replace(/[^\w]/g,'')),did=sel?sel.value:'new';
-  try{showMsg('Saving…');var A=await msAttData(mid,aid);if(A.size>25*1048576){alert('This file is larger than 25 MB.');return;}
-    var title='';if(did==='new'){title=prompt('Name for this document:',A.name.replace(/\.[^.]+$/,''));if(title===null)return;title=title.trim()||A.name;}
-    var r=await clStoreData(A.data,A.name,A.mime,A.size,j.id),fc=msFromClient(m,msEm(j));clToken(j);
-    var v=clAddVersion(j,did,title,{id:'v'+Date.now().toString(36),by:fc?'client':'designer',file:r,note:'By email: '+(m.subject||''),at:new Date(m.receivedDateTime).getTime()||Date.now(),src:mid+':'+aid});
-    await clDesignerSave(j);_msKey='';msBox();showMsg('✓ Saved as v'+(v?v.v:''));}catch(e){alert(e.message);}}
-function msToBrief(mid){var j=siJob(),m=msMsg(mid);if(!j||!m)return;var k=mid.slice(-12).replace(/[^\w]/g,''),t=((document.getElementById('ms-bt-'+k)||{}).value||'').trim();if(!t){alert('Type (or paste) what the client asked for first.');return;}
-  brAdd(document.getElementById('ms-bc-'+k).value,t,{type:'email',ref:mid,link:m.webLink||'',label:'Email '+new Date(m.receivedDateTime).toLocaleDateString('en-AU',{day:'numeric',month:'short'})+' · '+(m.subject||'')});document.getElementById('ms-bt-'+k).value='';showMsg('✓ Added to the brief');}
-async function msEmailVersion(did,vid){var j=siJob();if(!j)return;var d=((j.finishes&&j.finishes.clientDocs)||[]).filter(function(x){return x.id===did;})[0],v=d&&(d.versions||[]).filter(function(x){return x.id===vid;})[0];if(!v)return;
-  var data='';try{data=await siGetPhoto(v.file.id);}catch(e){}if(!data){alert('Could not load the file.');return;}
-  _msPre=[{name:v.file.name,mime:v.file.mime,data:data}];_msKey='';msBox(true);var s=document.getElementById('ms-subj');if(s)s.value=(j.name||'')+' — '+(d.title||'')+' v'+v.v;var bx=document.getElementById('ms-box');if(bx)bx.scrollIntoView({behavior:'smooth',block:'start'});}
-function msRaw(f){return new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.onerror=rej;fr.readAsDataURL(f);});}
-async function msSend(){var j=siJob();if(!j)return;var em=msEm(j);if(!em){alert('Add the client email first.');return;}
-  var subj=(document.getElementById('ms-subj').value||'').trim(),txt=document.getElementById('ms-body').value||'',inp=document.getElementById('ms-files'),fs=inp?Array.prototype.slice.call(inp.files||[]):[],did=document.getElementById('ms-doc').value,link=document.getElementById('ms-link').checked;
-  if(!txt.trim()&&!fs.length&&!_msPre.length){alert('Write a message or attach a file.');return;}
-  var att=_msPre.slice();for(var i=0;i<fs.length;i++)att.push({name:fs[i].name,mime:fs[i].type||'application/octet-stream',size:fs[i].size,data:await msRaw(fs[i]),local:true});
-  var tot=att.reduce(function(a,f){return a+f.data.length*0.75;},0);if(tot>3*1048576){alert('Attachments are '+(tot/1048576).toFixed(1)+' MB. Outlook allows about 3 MB from here — share big files with "Share a document" and tick "Include client page link".');return;}
-  var url='';if(link){var jj=await clEnsure();if(!jj)return;url=clLink(jj);}
-  var C=clCompany(),html='<div style="font-family:Arial,sans-serif;font-size:14px;">'+esc(txt).replace(/\n/g,'<br>')+(url?'<p><a href="'+qe(url)+'">Open your project page</a></p>':'')+'</div>';
-  try{showMsg('Sending…');await msApi('/me/sendMail',{method:'POST',body:{message:{subject:subj||(j.name||'Project'),body:{contentType:'HTML',content:html},toRecipients:[{emailAddress:{address:em,name:jhInfo(j).client||''}}],
-    attachments:att.map(function(f){return {'@odata.type':'#microsoft.graph.fileAttachment',name:f.name,contentType:f.mime,contentBytes:f.data.split(",")[1]};})},saveToSentItems:true}});}
-  catch(e){alert('Could not send: '+e.message);return;}
-  var loc=att.filter(function(f){return f.local;});if(did&&loc.length){clToken(j);for(var k=0;k<loc.length;k++){var f=loc[k],r=await clStoreData(f.data,f.name,f.mime,f.size,j.id);var title=(did==='new'?(f.name.replace(/\.[^.]+$/,'')):'');
-    var v=clAddVersion(j,did,title,{id:'v'+Date.now().toString(36)+k,by:'designer',file:r,note:'Emailed: '+(subj||''),at:Date.now()});if(did==='new'&&v){var F=finInit(j);did=F.clientDocs[F.clientDocs.length-1].id;}}await clDesignerSave(j);}
-  _msPre=[];_msKey='';msBox();showMsg('✓ Email sent');setTimeout(function(){msLoad(true);},4000);}
-setTimeout(function(){msHandleRedirect().catch(function(){});},300);
 // ===== v401: EMAIL — which email account each person writes to clients from =====
 var MAIL_APPS=[['outlook365','Outlook — work / Microsoft 365'],['outlookcom','Outlook.com — personal'],['gmail','Gmail'],['mailto','Computer mail app']];
 var MAIL_CFG=null;try{MAIL_CFG=JSON.parse(localStorage.getItem('cbk-mail')||'null');}catch(e){}
@@ -11118,7 +10607,7 @@ function roleScanUI(){try{var b=document.body;b.classList.toggle('role-limited',
 var ROLE_ORDER=['admin','designer','installer','dispatch','qc'];
 function roleViews(){var R=(SESSION.roles&&SESSION.roles.length)?SESSION.roles:[SESSION.role],v=[];R.forEach(function(r){(ROLE_VIEWS[r]||[]).forEach(function(x){if(v.indexOf(x)<0)v.push(x);});});return v;}
 function _adminCode(){try{return localStorage.getItem('cbk-admin-code')||'1773';}catch(e){return '1773';}}
-function _who(){return SESSION.name||'';}
+/* removed unused _who */
 function roleInit(){
   if(window.CLIENT_MODE){clientBoot();return;}   // v393: a client's link opens only their selections form
   var v=document.getElementById('brand-sub');var rv=document.getElementById('role-ver');
@@ -11350,11 +10839,7 @@ function jobAccessApply(){   // after login / when the admin changes this person
     else{currentJobId=null;units=[];shipLog=[];dispatches=[];hangingRails=[];glassDoors=[];steccaItems=[];orderReminders={glass:'pending',laminate:'pending',steccawood:'pending',closetRod:'pending'};matAliases={};matPrintOrder={};hwAliases={};projectNotes=[];projectCompleted=false;kickboards={total:0,items:[]};
       var pi=document.getElementById('proj-input');if(pi)pi.value='';var pd=document.getElementById('proj-display');if(pd)pd.textContent='—';try{refresh();}catch(e){}}}
   try{renderJobsHome();}catch(e){}try{renderMaint();}catch(e){}try{updateProjectCount();}catch(e){}}
-function userRandom(i){
-  var used={};_userList.forEach(function(u){if(u.code)used[u.code]=1;});
-  var c;do{c=String(Math.floor(1000+Math.random()*9000));}while(used[c]);
-  document.getElementById('ucode-'+i).value=c;
-}
+/* removed unused userRandom */
 function userSave(i){
   var u=_userList[i];if(!u)return;
   var roles=ujExpand(['designer','qcd','installer'].filter(function(r){var c=document.getElementById('ur-'+i+'-'+r);return c&&c.checked;}));
