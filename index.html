@@ -1209,7 +1209,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v400 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v401 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1911,6 +1911,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
 <!-- Settings PIN removed -->
 </div>
 <div class="panel" id="panel-users">
+  <div class="card" id="mail-card"></div>
   <div class="card">
     <div class="card-title">👥 Users</div>
     <div class="card-sub">New people appear here as <b>Pending</b>. Tick their roles, give them a code (4–8 digits), then press <b>Approve / Save</b>. Tell them the code yourself. They only type the code afterwards.</div>
@@ -8568,7 +8569,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v400 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v401 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10102,7 +10103,7 @@ function jhCard(j){
     jhSec(id,'client','Client &amp; site',[inf.client,inf.phone,inf.clientEmail,site].filter(Boolean).join(' · '),
       lab('Client name')+q('client',inf.client,'Client name')+
       lab('Phone')+'<div class="jx-row">'+q('phone',inf.phone,'Phone number','tel')+(inf.phone?lnk('tel:'+qe(String(inf.phone).replace(/[^\d+]/g,'')),'Call'):'')+'</div>'+
-      lab('Email')+'<div class="jx-row">'+q('clientEmail',inf.clientEmail,'client@email.com','email')+(inf.clientEmail?lnk('mailto:'+qe(inf.clientEmail),'Email'):'')+'</div>'+
+      lab('Email')+'<div class="jx-row">'+q('clientEmail',inf.clientEmail,'client@email.com','email')+(inf.clientEmail?'<a class="jx-btn jx-ghost" href="#" onclick="mailCompose(\''+qe(inf.clientEmail).replace(/\'/g,'')+'\',\''+qe(j.name||'').replace(/\'/g,'')+' — \');return false;">Email</a>':'')+'</div>'+
       lab('Site address')+'<div class="jx-row">'+q('site',site,'Site address')+(site?lnk('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(site),'Map',1):'')+'</div>')+
     jhSec(id,'factory','Factory',[inf.factory,inf.factoryAddr].filter(Boolean).join(' · '),
       lab('Factory')+'<input class="jx-in" value="'+qe(inf.factory||'')+'" list="jh-fac-dl" placeholder="Factory name" spellcheck="false" onchange="jhSet(\''+id+'\',\'factory\',this.value)"/>'+
@@ -10381,7 +10382,7 @@ async function clSend(){var j=siJob();if(!j){alert('Open a job first.');return;}
   if(!inf.clientEmail){var em=prompt('Client email address:','');if(!em)return;inf.clientEmail=em.trim();saveData();}
   j=await clEnsure();if(!j)return;var C=clCompany(),who=C.name||'our team';
   var body='Hi'+(inf.client?' '+inf.client:'')+',\n\nPlease use the link below to fill in your appliance models and stone selections for '+(j.name||'your project')+'. You can also see the materials we have chosen for each area.\n\n'+clLink(j)+'\n\nEverything you type is saved automatically, and you can come back to the link at any time.\n\nThank you,\n'+who;
-  location.href='mailto:'+encodeURIComponent(inf.clientEmail)+'?subject='+encodeURIComponent('Your selections — '+(j.name||'project'))+'&body='+encodeURIComponent(body);
+  mailCompose(inf.clientEmail,'Your selections — '+(j.name||'project'),body);
   inf.clientSentAt=new Date().toISOString();saveData();clStatus();}
 function clStatus(){var el=document.getElementById('cl-status');if(!el)return;var j=siJob(),inf=j&&j.info||{},F=j&&j.finishes||{};
   var ce=document.getElementById('cl-can-edit');if(ce)ce.checked=inf.clientCanEdit!==false;
@@ -10504,10 +10505,10 @@ function renderClientInfo(){var j=siJob(),pn=document.getElementById('ci-proj'),
   if(pn)pn.textContent=j?(j.name||''):'Choose a project on the right';
   if(!j){f.innerHTML='<div style="color:#a1a1aa;font-size:13px;">Choose a project at the top right to see its client details and notes.</div>';clStatus();try{briefBox();clNotesBox();}catch(e){}return;}
   var inf=j.info||{},site=(j.finishes&&j.finishes.site)||'',id=j.id;
-  var row=function(lab,field,val,ph,type,link){return '<div><div style="font-size:11.5px;color:#71717a;margin-bottom:4px;">'+lab+'</div><div style="display:flex;gap:6px;"><input'+(type?' type="'+type+'"':'')+' value="'+qe(val||'')+'" placeholder="'+ph+'" spellcheck="false" onchange="jhSet(\''+id+'\',\''+field+'\',this.value);renderClientInfo();" style="flex:1;min-width:0;"/>'+(val&&link?'<a class="btn btn-outline btn-sm" style="text-decoration:none;" href="'+link+'" target="_blank" rel="noopener">'+(type==='tel'?'Call':(type==='email'?'Email':'Map'))+'</a>':'')+'</div></div>';};
+  var row=function(lab,field,val,ph,type,link){return '<div><div style="font-size:11.5px;color:#71717a;margin-bottom:4px;">'+lab+'</div><div style="display:flex;gap:6px;"><input'+(type?' type="'+type+'"':'')+' value="'+qe(val||'')+'" placeholder="'+ph+'" spellcheck="false" onchange="jhSet(\''+id+'\',\''+field+'\',this.value);renderClientInfo();" style="flex:1;min-width:0;"/>'+(val&&link?(link==='#mail'?'<button class="btn btn-blue btn-sm" title="Opens your email to write to the client" onclick="mailCompose(\''+qe(val).replace(/'/g,'')+'\',\''+qe((siJob()||{}).name||'').replace(/'/g,'')+' — \')">Write email</button>':'<a class="btn btn-outline btn-sm" style="text-decoration:none;" href="'+link+'" target="_blank" rel="noopener">'+(type==='tel'?'Call':'Map')+'</a>'):'')+'</div></div>';};
   f.innerHTML=row('Client name','client',inf.client,'Client name')+
     row('Phone','phone',inf.phone,'Phone number','tel',inf.phone?'tel:'+String(inf.phone).replace(/[^\d+]/g,''):'')+
-    row('Email','clientEmail',inf.clientEmail,'client@email.com','email',inf.clientEmail?'mailto:'+inf.clientEmail:'')+
+    row('Email','clientEmail',inf.clientEmail,'client@email.com','email',inf.clientEmail?'#mail':'')+
     row('Site address','site',site,'Site address','',site?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(site):'');
   clStatus();try{briefBox();}catch(e){}}
 // v393: client side — open shared files, upload a new version of a document
@@ -10701,6 +10702,33 @@ async function msSend(){var j=siJob();if(!j)return;var em=msEm(j);if(!em){alert(
     var v=clAddVersion(j,did,title,{id:'v'+Date.now().toString(36)+k,by:'designer',file:r,note:'Emailed: '+(subj||''),at:Date.now()});if(did==='new'&&v){var F=finInit(j);did=F.clientDocs[F.clientDocs.length-1].id;}}await clDesignerSave(j);}
   _msPre=[];_msKey='';msBox();showMsg('✓ Email sent');setTimeout(function(){msLoad(true);},4000);}
 setTimeout(function(){msHandleRedirect().catch(function(){});},300);
+// ===== v401: EMAIL — which email account each person writes to clients from =====
+var MAIL_APPS=[['outlook365','Outlook — work / Microsoft 365'],['outlookcom','Outlook.com — personal'],['gmail','Gmail'],['mailto','Computer mail app']];
+var MAIL_CFG=null;try{MAIL_CFG=JSON.parse(localStorage.getItem('cbk-mail')||'null');}catch(e){}
+function mailLoad(){try{if(window.cloud&&cloud.db&&cloud.user)return cloud.db.collection('settings').doc('mail').get().then(function(d){if(d.exists){MAIL_CFG=d.data();try{localStorage.setItem('cbk-mail',JSON.stringify(MAIL_CFG));}catch(e){}}return MAIL_CFG;}).catch(function(){return MAIL_CFG;});}catch(e){}return Promise.resolve(MAIL_CFG);}
+function mailKey(){var S=window.SESSION||{};return ((S.roles||[]).indexOf('admin')>-1||S.role==='admin'||!S.email)?'admin':String(S.email).toLowerCase();}
+function mailMine(){var C=MAIL_CFG||{},U=C.users||{},k=mailKey(),m=U[k]||{},S=window.SESSION||{};var ad=U.admin||{};
+  return {email:m.email||(k==='admin'?'':S.email||''),app:m.app||ad.app||'mailto'};}
+function mailURL(to,subj,body){var m=mailMine(),e=encodeURIComponent;subj=subj||'';body=body||'';
+  if(m.app==='outlook365')return 'https://outlook.office.com/mail/deeplink/compose?to='+e(to)+'&subject='+e(subj)+'&body='+e(body)+(m.email?'&login_hint='+e(m.email):'');
+  if(m.app==='outlookcom')return 'https://outlook.live.com/mail/0/deeplink/compose?to='+e(to)+'&subject='+e(subj)+'&body='+e(body)+(m.email?'&login_hint='+e(m.email):'');
+  if(m.app==='gmail')return 'https://mail.google.com/mail/?view=cm&fs=1&to='+e(to)+'&su='+e(subj)+'&body='+e(body)+(m.email?'&authuser='+e(m.email):'');
+  return 'mailto:'+e(to)+'?subject='+e(subj)+'&body='+e(body);}
+function mailCompose(to,subj,body){if(!to){alert('Add the client email first.');return;}var go=function(){var u=mailURL(to,subj,body);if(/^mailto:/.test(u)){location.href=u;return;}var w=window.open(u,'_blank','noopener');if(!w)location.href=u;};
+  if(!MAIL_CFG)mailLoad().then(go);else go();}
+function mailCard(){var c=document.getElementById('mail-card');if(!c)return;var C=MAIL_CFG||{},U=C.users||{};
+  var people=[{k:'admin',name:'Admin (you)',login:''}].concat((_userList||[]).filter(function(u){return u.status==='approved';}).map(function(u){return {k:String(u._id).toLowerCase(),name:u.name||u._id,login:u._id};}));
+  var sel=function(k,v){return '<select data-mk="'+qe(k)+'" class="mail-app" style="width:auto;">'+MAIL_APPS.map(function(a){return '<option value="'+a[0]+'"'+(a[0]===v?' selected':'')+'>'+a[1]+'</option>';}).join('')+'</select>';};
+  c.innerHTML='<div class="card-title">Email for writing to clients</div><div class="card-sub">When someone presses <b>Write email</b> on a client, their own email opens with the client already filled in — they type, attach files and send from there. Choose the email account and where it opens for each person.</div>'+
+    '<div style="overflow-x:auto;"><table class="sum-table" style="min-width:560px;"><thead><tr><th>Person</th><th>Sends from (email)</th><th>Opens in</th></tr></thead><tbody>'+
+    people.map(function(p){var m=U[p.k]||{};return '<tr><td><b>'+esc(p.name)+'</b>'+(p.login?'<div style="font-size:11px;color:#a1a1aa;">'+esc(p.login)+'</div>':'')+'</td><td><input class="mail-em" data-mk="'+qe(p.k)+'" type="email" value="'+qe(m.email||p.login||'')+'" placeholder="you@company.com" spellcheck="false" style="min-width:220px;"/></td><td>'+sel(p.k,m.app||(U.admin&&U.admin.app)||'outlook365')+'</td></tr>';}).join('')+
+    '</tbody></table></div><div style="display:flex;gap:8px;align-items:center;margin-top:10px;"><button class="btn btn-blue btn-sm" onclick="mailSave()">Save</button><button class="btn btn-outline btn-sm" onclick="mailTest()">Test (opens your email)</button><span style="font-size:12px;color:#71717a;">Be signed in to that email account in this browser.</span></div>';}
+function mailSave(){var U={};document.querySelectorAll('#mail-card .mail-em').forEach(function(i){var k=i.dataset.mk;U[k]=U[k]||{};U[k].email=i.value.trim();});
+  document.querySelectorAll('#mail-card .mail-app').forEach(function(i){var k=i.dataset.mk;U[k]=U[k]||{};U[k].app=i.value;});
+  MAIL_CFG={users:U};try{localStorage.setItem('cbk-mail',JSON.stringify(MAIL_CFG));}catch(e){}
+  try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('settings').doc('mail').set(MAIL_CFG).then(function(){showMsg('✓ Email settings saved');}).catch(function(e){alert('Saved on this device only: '+e.message);});else showMsg('✓ Saved on this device');}catch(e){}}
+function mailTest(){mailSave();var m=mailMine();mailCompose(m.email||'test@example.com','CabLine test','This is a test from CabLine.');}
+setTimeout(function(){mailLoad().then(function(){try{mailCard();}catch(e){}});},5000);
 // ===== v259: PRODUCTION DRAWINGS (PDF) in Installation =====
 function tomb(id){var j=siJob();if(!j)return;j.deleted=j.deleted||[];if(j.deleted.indexOf(id)<0)j.deleted.push(id);}
 function drMB(n){return (n/1048576).toFixed(1)+' MB';}
@@ -11142,7 +11170,7 @@ function usersOpen(){
   _usersUnsub=cloud.db.collection('users').onSnapshot(function(snap){
     _userList=[];snap.forEach(function(d){var u=d.data();u._id=d.id;_userList.push(u);});
     _userList.sort(function(a,b){var pa=a.status==='pending'?0:1,pb=b.status==='pending'?0:1;if(pa!==pb)return pa-pb;return String(a.name||a._id).localeCompare(String(b.name||b._id));});
-    renderUsers();
+    renderUsers();try{mailCard();}catch(e){}
   },function(e){box.innerHTML='<div style="color:#8f3224;padding:14px;">Cannot read users — check Firestore rules.</div>';});
 }
 function _fmtTs(t){try{return t&&t.toDate?t.toDate().toLocaleString():'—';}catch(e){return '—';}}
