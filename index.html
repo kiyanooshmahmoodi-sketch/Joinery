@@ -1209,7 +1209,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v405 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v406 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8568,7 +8568,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v405 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v406 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9909,11 +9909,11 @@ async function cloudStart(){
         if(loc&&ls!==str){
           // local copy differs from the cloud: keep what was done offline on this device, add what others added
           var localChanged=cloud.sigH[id]?(_hs(ls)!==cloud.sigH[id]):false;
-          var remote=JSON.parse(str);
-          var merged=localChanged?mergeJobs(loc,remote):mergeJobs(remote,loc);
-          cloud.sig[id]=str;allJobs[id]=merged;
+          var remote=JSON.parse(str),base=await syncBase(id);
+          var merged=base?syncMerge(base,loc,remote):(localChanged?mergeJobs(loc,remote):mergeJobs(remote,loc));
+          cloud.sig[id]=str;syncBaseSet(id,str);allJobs[id]=merged;
           if(JSON.stringify(merged)!==str){setTimeout(function(){cloudPushJob(id);},200);}else{cloud.sigH[id]=_hs(str);sigSave();}
-        }else{cloud.sig[id]=str;allJobs[id]=JSON.parse(str);cloud.sigH[id]=_hs(str);sigSave();}
+        }else{cloud.sig[id]=str;syncBaseSet(id,str);allJobs[id]=JSON.parse(str);cloud.sigH[id]=_hs(str);sigSave();}
         if(id===currentJobId)changedCur=true;
       }catch(e){console.error('cloud pull',id,e);}
     }
@@ -9947,15 +9947,55 @@ async function cloudPushJob(id){
   if(!cloud.db||!cloud.user||!allJobs[id])return;
   var str=JSON.stringify(allJobs[id]);
   if(cloud.sig[id]===str)return;
+  if(!navigator.onLine){_cstat('☁ Offline — will sync','#9a6618');return;}   // v406: saved on this device; sent (and merged) when back online
+  if(cloud.pushing&&cloud.pushing[id]){cloud.pushAgain=cloud.pushAgain||{};cloud.pushAgain[id]=1;return;}
+  cloud.pushing=cloud.pushing||{};cloud.pushing[id]=1;
+  var ref=cloud.db.collection('jobs').doc(id),out=null,mergedIn=false;
   try{
-    var p=await _pack(str);
-    p.name=allJobs[id].name||'';p.updatedAt=firebase.firestore.FieldValue.serverTimestamp();p.updatedBy=(window.SESSION&&SESSION.name)||'';
-    cloud.sig[id]=str;
-    await cloud.db.collection('jobs').doc(id).set(p);
-    cloud.sigH=cloud.sigH||{};cloud.sigH[id]=_hs(str);sigSave();
+    var base=await syncBase(id);
+    await cloud.db.runTransaction(async function(t){
+      mergedIn=false;var d=await t.get(ref),mine=allJobs[id];if(!mine)return;var send=mine;
+      if(d.exists){var rs=await _unpack(d.data());
+        var known=cloud.sig[id]||(base?JSON.stringify(base):null);if(rs!==known&&rs!==JSON.stringify(mine)){var remote=JSON.parse(rs);send=base?syncMerge(base,mine,remote):mergeJobs(mine,remote);mergedIn=true;}}
+      out=JSON.stringify(send);var pk=await _pack(out);
+      var sz=(pk.z||pk.json||'').length;if(sz>950000)throw {code:'too-big',size:sz};
+      pk.name=send.name||'';pk.updatedAt=firebase.firestore.FieldValue.serverTimestamp();pk.updatedBy=(window.SESSION&&SESSION.name)||'';
+      t.set(ref,pk);});
+    if(out){cloud.sig[id]=out;syncBaseSet(id,out);cloud.sigH=cloud.sigH||{};cloud.sigH[id]=_hs(out);sigSave();
+      if(mergedIn){allJobs[id]=JSON.parse(out);try{window.storage.set('cbk-jobs-v1',JSON.stringify({allJobs:allJobs,currentJobId:currentJobId,managerPin:managerPin,notifyEmail:NOTIFY_EMAIL}));}catch(e){}if(id===currentJobId)cloudReloadCurrent();showMsg('☁ Merged with changes from another device');}}
     _cstat('☁ Synced','#276a4c');
-  }catch(e){console.error('cloud push',e);delete cloud.sig[id];_cstat('☁ Not synced','#8f3224');}
+  }catch(e){console.error('cloud push',e);delete cloud.sig[id];
+    if(e&&e.code==='too-big'){_cstat('☁ Project too big to sync','#8f3224');if(!cloud.bigWarn){cloud.bigWarn=1;alert('"'+(allJobs[id].name||'This project')+'" is too big to save to the cloud ('+Math.round(e.size/1024)+' KB of about 950 KB).\nIt is still saved on this device. Remove old photos/files from it, or ask to move files to Cloud Storage.');}}
+    else _cstat('☁ Not synced','#8f3224');}
+  finally{cloud.pushing[id]=0;if(cloud.pushAgain&&cloud.pushAgain[id]){cloud.pushAgain[id]=0;setTimeout(function(){cloudPushJob(id);},300);}}
 }
+// v406: three-way merge. base = the last version both sides agreed on. Each side keeps what it changed;
+// lists of items with an id are merged item by item; history lists keep entries from both sides.
+function syncBase(id){if(cloud.sig[id])return Promise.resolve(JSON.parse(cloud.sig[id]));
+  return Promise.resolve(window.storage&&window.storage.get('cbk-base:'+id)).then(function(r){if(r&&r.value)return JSON.parse(r.value);return null;}).catch(function(){return null;});}
+function syncBaseSet(id,str){try{if(window.storage)window.storage.set('cbk-base:'+id,str);}catch(e){}}
+function _sEq(a,b){return a===b||JSON.stringify(a)===JSON.stringify(b);}
+function _sObj(x){return x!==null&&typeof x==='object'&&!Array.isArray(x);}
+function _sIdArr(a){return Array.isArray(a)&&a.length>0&&a.every(function(x){return _sObj(x)&&x.id!=null;});}
+function syncMerge(base,local,remote){var m=_sM(base,local,remote);
+  try{var dm={};(m.deleted||[]).forEach(function(x){dm[x]=1;});_SYNC_ARR.forEach(function(k){if(Array.isArray(m[k]))m[k]=m[k].filter(function(x){return !(x&&x.id&&dm[x.id]);});});}catch(e){}
+  return m;}
+function _sM(b,l,r){
+  if(_sEq(l,r))return l;if(_sEq(b,l))return r;if(_sEq(b,r))return l;
+  if(l===undefined)return _sEq(b,r)?undefined:r;if(r===undefined)return _sEq(b,l)?undefined:l;
+  if(_sObj(l)&&_sObj(r)){var o={},bb=_sObj(b)?b:{};Object.keys(l).concat(Object.keys(r)).forEach(function(k){if(k in o)return;var v=_sM(bb[k],l[k],r[k]);if(v!==undefined)o[k]=v;});return o;}
+  if(Array.isArray(l)&&Array.isArray(r)){var ba=Array.isArray(b)?b:[];
+    if((_sIdArr(l)||!l.length)&&(_sIdArr(r)||!r.length)&&(l.length||r.length)&&(!ba.length||_sIdArr(ba))){
+      var bi={},li={},ri={},order=[];ba.forEach(function(x){bi[x.id]=x;});l.forEach(function(x){li[x.id]=x;order.push(x.id);});r.forEach(function(x){ri[x.id]=x;if(!(x.id in li))order.push(x.id);});
+      var out=[];order.forEach(function(k){var inL=k in li,inR=k in ri,inB=k in bi;var v;
+        if(inL&&inR)v=_sM(bi[k],li[k],ri[k]);
+        else if(inL)v=inB?(_sEq(bi[k],li[k])?undefined:li[k]):li[k];
+        else v=inB?(_sEq(bi[k],ri[k])?undefined:ri[k]):ri[k];
+        if(v!==undefined)out.push(v);});return out;}
+    var prim=l.concat(r).every(function(x){return typeof x==='number';});if(prim)return l;
+    var key=function(x){return JSON.stringify(x);},bs={},ls={},rs={};ba.forEach(function(x){bs[key(x)]=1;});l.forEach(function(x){ls[key(x)]=1;});r.forEach(function(x){rs[key(x)]=1;});
+    var res=[],seen={};l.concat(r).forEach(function(x){var k=key(x);if(seen[k])return;seen[k]=1;if(bs[k]&&(!ls[k]||!rs[k]))return;res.push(x);});return res;}
+  return l;}
 function cloudPush(){
   if(!cloud.user||!currentJobId)return;
   clearTimeout(cloud.pushT);
