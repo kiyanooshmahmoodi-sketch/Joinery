@@ -1026,6 +1026,27 @@ html,body{overflow-x:hidden;}
   .topbar-right{gap:6px!important;}
 }
 </style>
+<style id="ro-css">
+/* v411: sign-in screen — big wordmark, quiet joinery sketches drawn in once */
+#ro-art{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+#ro-art path{fill:none;stroke:#27272a;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;}
+#ro-art .g1 path{opacity:.16}#ro-art .g2 path{opacity:.22;stroke-width:.9}#ro-art .g3 path{opacity:.13}
+#ro-art .t text{font:11px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#27272a;opacity:.28;letter-spacing:.08em}
+#ro-art .d{stroke-dasharray:1;stroke-dashoffset:1;animation:roDraw 2.6s cubic-bezier(.4,0,.2,1) forwards}
+#ro-art .g1 .d{animation-delay:.15s}#ro-art .g2 .d{animation-delay:1.2s;animation-duration:1.4s}#ro-art .g3 .d{animation-delay:.6s;animation-duration:3s}
+#ro-art .t{opacity:0;animation:roFade .8s ease 2.2s forwards}
+@keyframes roDraw{to{stroke-dashoffset:0}}@keyframes roFade{to{opacity:1}}
+#ro-brand{text-align:center;margin-bottom:26px;opacity:0;transform:translateY(8px);animation:roUp .9s cubic-bezier(.2,.7,.2,1) .1s forwards}
+#ro-word{font-size:clamp(44px,11vw,76px);line-height:1;font-weight:700;letter-spacing:.14em;color:#18181b;padding-left:.14em}
+#ro-word span{font-weight:300;color:#18181b}
+#ro-tag{font-size:13px;color:#71717a;margin-top:12px;letter-spacing:.02em}
+#role-ver{font-size:10.5px;color:#a1a1aa;letter-spacing:.18em;margin-top:6px;text-transform:uppercase}
+#ro-card{opacity:0;transform:translateY(10px);animation:roUp .8s cubic-bezier(.2,.7,.2,1) .45s forwards}
+@keyframes roUp{to{opacity:1;transform:none}}
+#role-cloud>div[style*="border-top"]{display:none}
+@media(max-width:640px){#ro-art .g3{display:none}#ro-main{margin-top:6vh!important}#ro-art .g1 path{opacity:.1}}
+@media(prefers-reduced-motion:reduce){#ro-art .d{animation:none;stroke-dashoffset:0}#ro-art .t,#ro-brand,#ro-card{animation:none;opacity:1;transform:none}}
+</style>
 </head>
 <body>
 
@@ -1225,7 +1246,7 @@ html,body{overflow-x:hidden;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v410 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v411 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8310,7 +8331,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v410 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v411 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10528,13 +10549,48 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
 #role-ov .rbtn:hover{border-color:#2f4b8f;background:#edf2f9;}
 #role-ov .rbtn small{display:block;font-weight:600;font-size:11px;color:#4b5563;margin-top:2px;}
 </style>
-<div id="role-ov" style="position:fixed;inset:0;background:#f1f2f5;z-index:100000;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;">
-  <div style="width:min(420px,100%);margin-top:4vh;">
-    <div style="text-align:center;margin-bottom:18px;">
-      <div style="font-size:22px;font-weight:700;color:#111827;letter-spacing:.5px;">CAB<span style="color:#c28a2c;">LINE</span></div>
-      <div id="role-ver" style="font-size:11px;color:#4b5563;letter-spacing:1.5px;margin-top:3px;"></div>
+<div id="role-ov" style="position:fixed;inset:0;background:#f6f5f2;z-index:100000;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;">
+<svg id="ro-art" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <g class="g1">
+    <!-- wall cabinets -->
+    <path class="d" pathLength="1" d="M260 250 H1340 V470 H260 Z"/>
+    <path class="d" pathLength="1" d="M440 250 V470 M620 250 V470 M800 250 V470 M980 250 V470 M1160 250 V470"/>
+    <path class="d" pathLength="1" d="M425 340 V380 M455 340 V380 M785 340 V380 M815 340 V380 M1145 340 V380 M1175 340 V380"/>
+    <!-- benchtop + base cabinets -->
+    <path class="d" pathLength="1" d="M240 640 H1360 V662 H240 Z"/>
+    <path class="d" pathLength="1" d="M260 662 H1340 V900 H260 Z M260 900 V922 H1340 V900"/>
+    <path class="d" pathLength="1" d="M440 662 V900 M800 662 V900 M980 662 V900 M1160 662 V900"/>
+    <path class="d" pathLength="1" d="M440 742 H800 M440 822 H800 M580 700 H660 M580 780 H660 M580 862 H660"/>
+    <path class="d" pathLength="1" d="M425 760 V800 M995 760 V800 M1145 760 V800"/>
+    <!-- sink + tap -->
+    <path class="d" pathLength="1" d="M1010 640 C1010 600 1060 600 1060 640 M1050 612 H1075"/>
+  </g>
+  <g class="g2">
+    <!-- dimension lines -->
+    <path class="d" pathLength="1" d="M1400 662 V900 M1388 662 H1412 M1388 900 H1412"/>
+    <path class="d" pathLength="1" d="M440 960 H800 M440 948 V972 M800 948 V972"/>
+  </g>
+  <g class="t"><text x="1416" y="788">720</text><text x="600" y="992">900</text></g>
+  <g class="g3">
+    <!-- dovetail joint, top left -->
+    <path class="d" pathLength="1" d="M70 80 H220 V140 H70 Z M95 140 L85 110 H120 L110 140 M150 140 L140 110 H175 L165 140"/>
+    <path class="d" pathLength="1" d="M70 150 H220 V185 H70 Z M85 150 L95 185 M120 150 L110 185"/>
+    <!-- cup hinge, top right -->
+    <path class="d" pathLength="1" d="M1480 110 a38 38 0 1 0 0.1 0 Z M1480 128 a20 20 0 1 0 0.1 0 Z M1518 148 H1580 V170 H1518"/>
+    <!-- carcass in isometric, bottom left -->
+    <path class="d" pathLength="1" d="M60 720 L150 680 L240 720 L150 760 Z M60 720 V860 L150 900 V760 M240 720 V860 L150 900"/>
+    <path class="d" pathLength="1" d="M60 790 L150 830 L240 790"/>
+    <!-- drawer runner, bottom right -->
+    <path class="d" pathLength="1" d="M1430 820 H1580 M1430 840 H1580 M1450 820 V840 M1560 820 V840 M1470 830 h70"/>
+  </g>
+</svg>
+  <div id="ro-main" style="width:min(400px,100%);margin-top:9vh;position:relative;z-index:1;">
+    <div id="ro-brand">
+      <div id="ro-word">CAB<span>LINE</span></div>
+      <div id="ro-tag">Joinery projects — from drawing to install</div>
+      <div id="role-ver"></div>
     </div>
-    <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.1);">
+    <div id="ro-card" style="background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 2px rgba(24,24,27,.06),0 12px 32px rgba(24,24,27,.08);border:1px solid #ececef;">
       <div id="role-err" style="color:#8f3224;font-size:12px;min-height:16px;margin-bottom:6px;"></div>
       <div id="role-cloud" style="display:none;">
         <div id="rc-connecting" style="font-size:13px;color:#4b5563;padding:14px 0;text-align:center;">Connecting…</div>
