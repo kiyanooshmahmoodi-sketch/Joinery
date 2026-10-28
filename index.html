@@ -19,7 +19,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 /* ============ RESET & TOKENS ============ */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -1027,23 +1027,31 @@ html,body{overflow-x:hidden;}
 }
 </style>
 <style id="ro-css">
-/* v411: sign-in screen — big wordmark, quiet joinery sketches drawn in once */
+/* v412: sign-in screen in the app-icon colours — navy, white "Cab", yellow "Line"; quiet joinery sketches drawn in once */
+#role-ov{background:#0f172a!important;}
 #ro-art{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}
-#ro-art path{fill:none;stroke:#27272a;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;}
-#ro-art .g1 path{opacity:.16}#ro-art .g2 path{opacity:.22;stroke-width:.9}#ro-art .g3 path{opacity:.13}
-#ro-art .t text{font:11px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#27272a;opacity:.28;letter-spacing:.08em}
+#ro-art path{fill:none;stroke:#cbd5e1;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;}
+#ro-art .g1 path{opacity:.16}#ro-art .g2 path{opacity:.26;stroke:#fbbf24;stroke-width:.9}#ro-art .g3 path{opacity:.12}
+#ro-art .t text{font:11px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#fbbf24;opacity:.45;letter-spacing:.08em}
 #ro-art .d{stroke-dasharray:1;stroke-dashoffset:1;animation:roDraw 2.6s cubic-bezier(.4,0,.2,1) forwards}
 #ro-art .g1 .d{animation-delay:.15s}#ro-art .g2 .d{animation-delay:1.2s;animation-duration:1.4s}#ro-art .g3 .d{animation-delay:.6s;animation-duration:3s}
 #ro-art .t{opacity:0;animation:roFade .8s ease 2.2s forwards}
 @keyframes roDraw{to{stroke-dashoffset:0}}@keyframes roFade{to{opacity:1}}
 #ro-brand{text-align:center;margin-bottom:26px;opacity:0;transform:translateY(8px);animation:roUp .9s cubic-bezier(.2,.7,.2,1) .1s forwards}
-#ro-word{font-size:clamp(44px,11vw,76px);line-height:1;font-weight:700;letter-spacing:.14em;color:#18181b;padding-left:.14em}
-#ro-word span{font-weight:300;color:#18181b}
-#ro-tag{font-size:13px;color:#71717a;margin-top:12px;letter-spacing:.02em}
-#role-ver{font-size:10.5px;color:#a1a1aa;letter-spacing:.18em;margin-top:6px;text-transform:uppercase}
-#ro-card{opacity:0;transform:translateY(10px);animation:roUp .8s cubic-bezier(.2,.7,.2,1) .45s forwards}
+#ro-word{font-family:'Poppins',Inter,system-ui,sans-serif;font-size:clamp(52px,13vw,88px);line-height:1;font-weight:700;letter-spacing:-.01em;color:#fff}
+#ro-word span{font-weight:700;color:#fbbf24}
+#ro-tag{font-size:13px;color:#94a3b8;margin-top:14px;letter-spacing:.02em}
+#role-ver{font-size:10.5px;color:#64748b;letter-spacing:.18em;margin-top:6px;text-transform:uppercase}
+#ro-card{opacity:0;transform:translateY(10px);animation:roUp .8s cubic-bezier(.2,.7,.2,1) .45s forwards;border-color:transparent!important;box-shadow:0 20px 50px rgba(0,0,0,.35)!important}
 @keyframes roUp{to{opacity:1;transform:none}}
 #role-cloud>div[style*="border-top"]{display:none}
+#ro-load{display:none;margin:22px auto 0;width:140px}
+#ro-load i{display:block;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#fbbf24,transparent);background-size:200% 100%;animation:roBar 1.3s linear infinite}
+@keyframes roBar{from{background-position:200% 0}to{background-position:-200% 0}}
+#ro-slowmsg{display:none;font-size:12.5px;color:#94a3b8;margin-top:14px;width:280px;margin-left:-70px;text-align:center}
+#ro-slowmsg a{color:#fbbf24}
+#role-ov.ro-wait #ro-card{display:none}#role-ov.ro-wait #ro-load{display:block}
+#ro-load.ro-slow #ro-slowmsg{display:block}
 @media(max-width:640px){#ro-art .g3{display:none}#ro-main{margin-top:6vh!important}#ro-art .g1 path{opacity:.1}}
 @media(prefers-reduced-motion:reduce){#ro-art .d{animation:none;stroke-dashoffset:0}#ro-art .t,#ro-brand,#ro-card{animation:none;opacity:1;transform:none}}
 </style>
@@ -1246,7 +1254,7 @@ html,body{overflow-x:hidden;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v411 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v412 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8331,7 +8339,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v411 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v412 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10586,9 +10594,10 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
 </svg>
   <div id="ro-main" style="width:min(400px,100%);margin-top:9vh;position:relative;z-index:1;">
     <div id="ro-brand">
-      <div id="ro-word">CAB<span>LINE</span></div>
+      <div id="ro-word">Cab<span>Line</span></div>
       <div id="ro-tag">Joinery projects — from drawing to install</div>
       <div id="role-ver"></div>
+      <div id="ro-load"><i></i><div id="ro-slowmsg">Can't reach the server — check the internet. <a href="#" onclick="location.reload();return false;">Retry</a></div></div>
     </div>
     <div id="ro-card" style="background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 2px rgba(24,24,27,.06),0 12px 32px rgba(24,24,27,.08);border:1px solid #ececef;">
       <div id="role-err" style="color:#8f3224;font-size:12px;min-height:16px;margin-bottom:6px;"></div>
@@ -10765,7 +10774,11 @@ async function forgotAdminCode(){
 // ===== CLOUD ROLES (v209): request access by email, admin approves + gives a code =====
 var _rcUnsub=null,_rcUser=null;
 function _cloudMode(){return !!_cfg();}
-function rcShow(id){['rc-connecting','rc-signin','rc-create','rc-verify','rc-pending','rc-roles','rc-blocked'].forEach(function(x){var e=document.getElementById(x);if(e)e.style.display=(x===id?'':'none');});}
+function rcShow(id){['rc-connecting','rc-signin','rc-create','rc-verify','rc-pending','rc-roles','rc-blocked'].forEach(function(x){var e=document.getElementById(x);if(e)e.style.display=(x===id?'':'none');});
+  // v412: while connecting, no "Connecting…" box — just a thin moving line under the name; after 12 s say why and offer Retry
+  var ov=document.getElementById('role-ov');if(!ov)return;var w=id==='rc-connecting';ov.classList.toggle('ro-wait',w);clearTimeout(window._roWaitT);
+  var ld=document.getElementById('ro-load');if(ld)ld.classList.remove('ro-slow');
+  if(w)window._roWaitT=setTimeout(function(){if(ov.classList.contains('ro-wait')&&ld)ld.classList.add('ro-slow');},12000);}
 function _ukey(e){return String(e||'').trim().toLowerCase();}
 function rcOnCloudReady(){var ov=document.getElementById('role-ov');if(!SESSION.role||ov.style.display!=='none'||!cloud.user){if(SESSION.role&&!cloud.user){location.reload();return;}rcStart();}}
 var ADMIN_EMAIL='kiyanoosh.mahmoodi@gmail.com';
