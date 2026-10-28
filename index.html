@@ -1209,7 +1209,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v403 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v404 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8568,7 +8568,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v403 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v404 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10353,11 +10353,11 @@ function clPayload(j){var F=apInit(j);finInit(j);
   return {v:1,jobId:j.id,jobName:j.name||'',company:clCompany(),canEdit:jhInfo(j).clientCanEdit!==false,
     ap:(F.ap||[]).map(function(r){return {id:r.id,name:r.name,items:(r.items||[]).map(function(a){return {id:a.id,item:a.item||'',brand:a.brand||'',info:a.info||'',link:a.link||''};})};}),
     ss:(F.ss||[]).map(function(r){return {id:r.id,name:r.name||'',stone:r.stone||'',link:r.link||'',mm:r.mm||'',splash:r.splash||'',wf:r.wf||'',wfside:r.wfside||''};}),
-    approval:clApOk(j)?{by:F.approval.by,at:F.approval.at}:null,
+    approval:clApOk(j)?{by:F.approval.by,at:F.approval.at}:null,log:F.signLog||[],unlock:F.unlock||null,
     ms:(F.ms||[]).map(function(sp){return {name:sp.name,items:(sp.items||[]).filter(function(it){return it.brand||it.colour||it.finish||it.note;}).map(function(it){return {brand:it.brand||'',colour:it.colour||'',finish:it.finish||'',note:it.note||''};})};}).filter(function(sp){return sp.items.length;}),
     designerAt:Date.now(),editedAt:(j.finishes&&j.finishes.lastEditAt)||0,notes:(j.finishes&&j.finishes.clientNotes)||[],docs:(j.finishes&&j.finishes.clientDocs)||[]};}
 function clMerge(j,d){if(!d||!d.clientAt)return false;var F=apInit(j);finInit(j);if((F.clientMergedAt||0)>=d.clientAt)return false;
-  F.clientNotes=clUnionNotes(F.clientNotes,d.notes);F.clientDocs=clUnionDocs(F.clientDocs,d.docs);
+  F.clientNotes=clUnionNotes(F.clientNotes,d.notes);F.signLog=clUnionNotes(F.signLog,d.log);F.clientDocs=clUnionDocs(F.clientDocs,d.docs);
   if(d.signed!==undefined)F.clientSign=d.signed||null;
   if(jhInfo(j).clientCanEdit!==false)(d.ap||[]).forEach(function(cr){var r=(F.ap||[]).filter(function(x){return x.id===cr.id;})[0];if(!r)return;(cr.items||[]).forEach(function(ci){var it=(r.items||[]).filter(function(x){return x.id===ci.id;})[0];if(!it)return;['brand','info','link'].forEach(function(k){if(ci[k]!==undefined)it[k]=ci[k];});});});
   if(jhInfo(j).clientCanEdit!==false)(d.ss||[]).forEach(function(cr){var r=(F.ss||[]).filter(function(x){return x.id===cr.id;})[0];if(!r)return;['stone','link','mm','splash','wf','wfside'].forEach(function(k){if(cr[k]!==undefined)r[k]=cr[k];});});
@@ -10388,8 +10388,12 @@ function clApOk(j){var F=(j&&j.finishes)||{},A=F.approval,sg=F.clientSign;return
 async function clApprove(){var j=siJob();if(!j)return;var F=finInit(j),sg=F.clientSign;if(!(sg&&sg.at)){alert('The client has not signed off yet.');return;}
   if((F.lastEditAt||0)>sg.at){alert('You changed the selections after the client signed. Send it to the client again so they can sign the latest version.');return;}
   var by=(window.SESSION&&SESSION.name)||'Admin';if(!confirm('Approve these selections for production?\n\nClient signed: '+(sg.name||'')+'\nApproved by: '+by))return;
-  var P=clPayload(j);F.approval={by:by,at:Date.now(),clientSignAt:sg.at,clientName:sg.name||'',snap:{ap:P.ap,ss:P.ss}};saveData();try{await clPublish(j.id);}catch(e){}clStatus();showMsg('✓ Approved for production');}
-async function clUnapprove(){var j=siJob();if(!j||!confirm('Undo the approval? The client will be able to change and sign again.'))return;var F=finInit(j);delete F.approval;saveData();try{await clPublish(j.id);}catch(e){}clStatus();}
+  var P=clPayload(j);var at=Date.now();F.approval={by:by,at:at,clientSignAt:sg.at,clientName:sg.name||'',snap:{ap:P.ap,ss:P.ss}};F.signLog=clUnionNotes(F.signLog,[{id:'l'+at.toString(36),t:'approved',by:by,at:at}]);saveData();try{await clPublish(j.id);}catch(e){}clStatus();showMsg('✓ Approved for production');}
+async function clUnlock(){var j=siJob();if(!j)return;var r=prompt('Why are changes being allowed? (required — e.g. client wants a different oven)','');if(r===null)return;r=r.trim();if(!r){alert('Please write the reason.');return;}
+  var F=finInit(j),by=(window.SESSION&&SESSION.name)||'Admin',at=Date.now();if(F.approval){F.approvalOld=(F.approvalOld||[]).concat([F.approval]);delete F.approval;}
+  F.clientSign=null;F.unlock={at:at,by:by,reason:r};F.signLog=clUnionNotes(F.signLog,[{id:'l'+at.toString(36),t:'unlocked',by:by,at:at,note:r}]);saveData();
+  try{if(window.cloud&&cloud.db&&cloud.user){await cloud.db.collection(CL_COL).doc(clToken(j)).set({signed:null,approval:null,unlock:F.unlock,log:F.signLog},{merge:true});F.clientMergedAt=Date.now();await clPublish(j.id);}}catch(e){}
+  clStatus();showMsg('✓ The client can change it now');}
 function clApPrint(){var j=siJob();if(!j)return;var F=j.finishes||{},A=F.approval;if(!A){alert('Not approved yet.');return;}var S=A.snap||{},w=window.open('','_blank');if(!w)return;
   var fmt=function(t){return new Date(t).toLocaleString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});},e=esc;
   var ap=(S.ap||[]).filter(function(r){return (r.items||[]).some(function(a){return a.brand||a.info;});}).map(function(r){return '<tr><th colspan="3" style="background:#f4f4f5;">'+e(r.name||'')+'</th></tr>'+r.items.filter(function(a){return a.brand||a.info;}).map(function(a){return '<tr><td>'+e(a.item)+'</td><td>'+e(a.brand)+'</td><td>'+e(a.info)+'</td></tr>';}).join('');}).join('');
@@ -10406,9 +10410,10 @@ function clStatus(){var el=document.getElementById('cl-status');if(!el)return;va
   el.innerHTML=!j?'':((sg&&sg.at?'<b style="color:#4f7d5f;">✓ Signed off by '+esc(sg.name||'client')+' · '+jhFmt(new Date(sg.at).toISOString())+'</b>'+(F.lastEditAt&&F.lastEditAt>sg.at?' <span style="color:#a94b3f;">(changed since)</span>':'')+' · ':'')+
     (F.clientAt?'Client last active '+jhFmt(new Date(F.clientAt).toISOString()):(inf.clientSentAt?'Sent to client '+jhFmt(inf.clientSentAt):(inf.clientToken?'Client link ready':''))));
   if(!j)return;var A=F.approval,ok=clApOk(j),fresh=sg&&sg.at&&!((F.lastEditAt||0)>sg.at),box='<div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f2;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">';
-  if(ok)el.innerHTML+=box+'<b style="color:#2f5d40;">✓ Approved for production by '+esc(A.by||'')+' · '+jhFmt(new Date(A.at).toISOString())+'</b><span style="font-size:12px;color:#71717a;">Final — the client can no longer change it.</span><span style="margin-left:auto;"></span><button class="btn btn-outline btn-sm" onclick="clApPrint()">Print approved sheet</button><button class="btn btn-outline btn-sm" onclick="clUnapprove()">Undo approval</button></div>';
-  else if(fresh)el.innerHTML+=box+(A?'<span style="color:#a94b3f;font-size:12.5px;">The earlier approval no longer matches — the client signed again.</span>':'<span style="font-size:12.5px;">The client has signed off. Check it and approve.</span>')+'<span style="margin-left:auto;"></span><button class="btn btn-blue btn-sm" onclick="clApprove()">Approve for production</button></div>';
-  else el.innerHTML+=box+'<span style="font-size:12.5px;color:#a1a1aa;">'+(A?'<span style="color:#a94b3f;">Changed after approval — send to the client to sign again.</span>':(sg&&sg.at?'You changed the selections after the client signed — send it again for a new sign-off.':'Waiting for the client to sign off. After that you approve it here.'))+'</span></div>';
+  if(ok)el.innerHTML+=box+'<b style="color:#2f5d40;">✓ Approved for production by '+esc(A.by||'')+' · '+jhFmt(new Date(A.at).toISOString())+'</b><span style="font-size:12px;color:#71717a;">Final — the client can no longer change it.</span><span style="margin-left:auto;"></span><button class="btn btn-outline btn-sm" onclick="clApPrint()">Print approved sheet</button><button class="btn btn-outline btn-sm" onclick="clUnlock()">Allow changes…</button></div>';
+  else if(fresh)el.innerHTML+=box+(A?'<span style="color:#a94b3f;font-size:12.5px;">The earlier approval no longer matches — the client signed again.</span>':'<span style="font-size:12.5px;">The client has signed off. Check it and approve.</span>')+'<span style="margin-left:auto;"></span><button class="btn btn-outline btn-sm" onclick="clUnlock()">Allow changes…</button><button class="btn btn-blue btn-sm" onclick="clApprove()">Approve for production</button></div>';
+  else el.innerHTML+=box+'<span style="font-size:12.5px;color:#a1a1aa;">'+(A?'<span style="color:#a94b3f;">Changed after approval — send to the client to sign again.</span>':(sg&&sg.at?'You changed the selections after the client signed — send it again for a new sign-off.':(F.unlock?'Changes allowed '+jhFmt(new Date(F.unlock.at).toISOString())+' — waiting for the client to change and sign again.':'Waiting for the client to sign off. After that you approve it here.')))+'</span></div>';
+  if((F.signLog||[]).length)el.innerHTML+=clLogHTML(F.signLog);
   clNotesBox();}
 function clSetEdit(on){var j=siJob();if(!j)return;jhInfo(j).clientCanEdit=!!on;saveData();clPublishSoon(j.id);if(!(j.info&&j.info.clientToken))clEnsure();showMsg(on?'The client can fill in Appliances and Stone':'The client can only view and sign off');}
 // v393: notes thread (both sides) + shared documents with versions
@@ -10471,7 +10476,7 @@ function clientLoad(){clientBoot();_clRef=cloud.db.collection(CL_COL).doc(window
 function clE(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function clientRender(){var D=_clDoc||{},C=D.company||{},w=document.querySelector('#cl-ov .cl-wrap');if(!w)return;
   var tab=function(k,t){return '<button class="cl-tab'+(_clTab===k?' on':'')+'" onclick="_clTab=\''+k+'\';clientRender()">'+t+'</button>';};
-  var RO=D.canEdit===false||!!(D.approval&&D.signed&&D.signed.at),dis=RO?' disabled':'';
+  var RO=D.canEdit===false||clLocked(D),dis=RO?' disabled':'';
   var body='';
   if(_clTab==='ap'){body=(D.ap||[]).filter(function(r){return (r.items||[]).length;}).map(function(r,ri){return '<div class="cl-card"><h2>'+clE(r.name)+'</h2><div class="cl-row cl-h"><span>Appliance</span><span>Brand / model no.</span><span>Additional information</span><span>Web link (specs)</span></div>'+
       r.items.map(function(a,ai){var f=function(k,ph){return '<input'+dis+' value="'+clE(a[k])+'" placeholder="'+(RO?'':ph)+'" oninput="clSet(\'ap\','+ri+','+ai+',\''+k+'\',this.value)"/>';};return '<div class="cl-row"><b>'+clE(a.item)+'</b>'+f('brand','e.g. Miele KM 7464')+f('info','size, colour, notes')+f('link','https://…')+'</div>';}).join('')+'</div>';}).join('')||'<div class="cl-card">No appliances to fill in yet.</div>';}
@@ -10497,17 +10502,25 @@ function clSet(sec,ri,ai,k,v){var D=_clDoc;if(!D)return;var tgt=sec==='ap'?D.ap.
   clearTimeout(_clSaveT);_clSaveT=setTimeout(function(){var up={ap:D.ap,ss:D.ss,clientAt:Date.now()};if(D.signed){D.signed=null;up.signed=null;}_clRef.set(up,{merge:true}).then(function(){var sw=document.getElementById('cl-signw');if(sw)sw.innerHTML=clSignHTML(D);var s=document.getElementById('cl-save');if(s){s.classList.add('on');setTimeout(function(){s.classList.remove('on');},1400);}}).catch(function(){alert('Could not save — please check your internet.');});},700);}
 // v393: client sign-off + notes & references
 var _clFiles=[];
-function clSignHTML(D){var sg=D.signed,stale=sg&&sg.at&&(D.editedAt||0)>sg.at;
+function clLogHTML(L){L=(L||[]).slice().sort(function(a,z){return z.at-a.at;});if(!L.length)return '';var fmt=function(t){return new Date(t).toLocaleString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});};
+  var T={signed:'Signed off',approved:'Approved for production',unlocked:'Changes allowed'};
+  return '<div style="margin-top:12px;border-top:1px solid #ececef;padding-top:8px;"><div style="font-size:11.5px;font-weight:600;color:#71717a;margin-bottom:4px;">History</div>'+L.map(function(x){return '<div style="font-size:12.5px;padding:3px 0;color:#3f3f46;"><span style="color:#a1a1aa;">'+fmt(x.at)+'</span> · <b>'+clE(T[x.t]||x.t)+'</b>'+(x.by?' by '+clE(x.by):'')+(x.note?'<div style="color:#52525b;margin-left:2px;white-space:pre-wrap;">Reason: '+clE(x.note)+'</div>':'')+'</div>';}).join('')+'</div>';}
+function clLocked(D){var sg=D.signed;return !!(sg&&sg.at&&!((D.editedAt||0)>sg.at));}
+function clSignHTML(D){var sg=D.signed,stale=sg&&sg.at&&(D.editedAt||0)>sg.at,log=clLogHTML(D.log),U=D.unlock;
   var fmt=function(t){return new Date(t).toLocaleString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});};
-  if(sg&&sg.at&&!stale&&D.approval)return '<div class="cl-card" style="border-color:#b9d4c2;background:#f4f9f5;"><h2 style="color:#2f5d40;">✓ Signed off and approved</h2><div style="font-size:13.5px;line-height:1.7;">Signed by <b>'+clE(sg.name)+'</b> on '+fmt(sg.at)+'.<br>Approved by <b>'+clE(D.approval.by||(D.company&&D.company.name)||'us')+'</b> on '+fmt(D.approval.at)+'.</div><div style="font-size:12.5px;color:#52525b;margin-top:8px;">These selections are now final and go to production. If you need a change, please email us.</div></div>';
-  if(sg&&sg.at&&!stale)return '<div class="cl-card" style="border-color:#b9d4c2;background:#f4f9f5;"><h2 style="color:#2f5d40;">✓ Signed off</h2><div style="font-size:13.5px;">Signed by <b>'+clE(sg.name)+'</b> on '+fmt(sg.at)+'. We will check and approve it.</div><button class="cl-btn" style="margin-top:10px;" onclick="clUnsign()">Withdraw sign-off</button></div>';
+  var resign=(D.log||[]).some(function(x){return x.t==='signed';});
+  if(sg&&sg.at&&!stale&&D.approval)return '<div class="cl-card" style="border-color:#b9d4c2;background:#f4f9f5;"><h2 style="color:#2f5d40;">✓ Signed off and approved</h2><div style="font-size:13.5px;line-height:1.7;">Signed by <b>'+clE(sg.name)+'</b> on '+fmt(sg.at)+'.<br>Approved by <b>'+clE(D.approval.by||(D.company&&D.company.name)||'us')+'</b> on '+fmt(D.approval.at)+'.</div><div style="font-size:12.5px;color:#52525b;margin-top:8px;">These selections are final and go to production. If you need a change, please email us — we will open it for you.</div>'+log+'</div>';
+  if(sg&&sg.at&&!stale)return '<div class="cl-card" style="border-color:#b9d4c2;background:#f4f9f5;"><h2 style="color:#2f5d40;">✓ Signed off</h2><div style="font-size:13.5px;">Signed by <b>'+clE(sg.name)+'</b> on '+fmt(sg.at)+'. We will check and approve it.</div><div style="font-size:12.5px;color:#52525b;margin-top:8px;">If you need a change, please email us — we will open it for you.</div>'+log+'</div>';
   return '<div class="cl-card"><h2>Sign off</h2>'+(stale?'<div style="font-size:13px;color:#a94b3f;margin-bottom:8px;">The selections changed after your last sign-off — please check again and sign.</div>':'')+
+    (U&&U.at&&!stale?'<div style="font-size:13px;color:#27272a;background:#fafafa;border:1px solid #ececef;border-radius:8px;padding:8px 10px;margin-bottom:10px;">Changes allowed on '+fmt(U.at)+(U.reason?' — '+clE(U.reason):'')+'. Make your changes above, then write what you changed and sign again.</div>':'')+
+    (resign?'<textarea id="cl-rs" rows="2" placeholder="What did you change and why? (required)" style="width:100%;margin-bottom:10px;"></textarea>':'')+
     '<label style="display:flex;align-items:flex-start;gap:8px;font-size:14px;color:#27272a;margin:0 0 10px;"><input type="checkbox" id="cl-ok" style="width:auto;margin-top:3px;"> I have checked the appliance and stone selections and confirm they are correct.</label>'+
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;"><input id="cl-sn" placeholder="Your full name" style="flex:1;min-width:200px;"/><button class="cl-btn cl-dark" onclick="clSign()">Sign off</button></div></div>';}
-function clSign(){var ok=document.getElementById('cl-ok'),nm=(document.getElementById('cl-sn')||{}).value||'';nm=nm.trim();
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;"><input id="cl-sn" placeholder="Your full name" style="flex:1;min-width:200px;"/><button class="cl-btn cl-dark" onclick="clSign()">Sign off</button></div>'+log+'</div>';}
+function clSign(){var ok=document.getElementById('cl-ok'),nm=(document.getElementById('cl-sn')||{}).value||'',rs=document.getElementById('cl-rs');nm=nm.trim();var why=rs?rs.value.trim():'';
+  if(rs&&!why){alert('Please write what you changed and why.');rs.focus();return;}
   if(!ok||!ok.checked){alert('Please tick the box to confirm.');return;}if(!nm){alert('Please type your full name.');return;}
-  var sg={name:nm,at:Date.now()};_clDoc.signed=sg;_clRef.set({signed:sg,clientAt:Date.now()},{merge:true}).then(function(){clientRender();}).catch(function(){alert('Could not save — please check your internet.');});}
-function clUnsign(){if(!confirm('Withdraw your sign-off?'))return;_clDoc.signed=null;_clRef.set({signed:null,clientAt:Date.now()},{merge:true}).then(function(){clientRender();});}
+  var at=Date.now(),sg={name:nm,at:at,reason:why};_clDoc.signed=sg;_clDoc.log=clUnionNotes(_clDoc.log,[{id:'l'+at.toString(36),t:'signed',by:nm,at:at,note:why}]);
+  _clRef.set({signed:sg,log:_clDoc.log,clientAt:at},{merge:true}).then(function(){clientRender();}).catch(function(){alert('Could not save — please check your internet.');});}
 function clPickFiles(inp){var fs=Array.prototype.slice.call(inp.files||[]);fs.forEach(function(f){if(f.size>20*1048576){alert(f.name+' is larger than 20 MB — please send a smaller file.');return;}_clFiles.push(f);});inp.value='';
   var l=document.getElementById('cl-nf-l');if(l)l.textContent=_clFiles.map(function(f){return f.name;}).join(', ');}
 async function clAddNote(){var t=(document.getElementById('cl-nt')||{}).value||'';t=t.trim();if(!t&&!_clFiles.length){alert('Write a note or attach a file first.');return;}
