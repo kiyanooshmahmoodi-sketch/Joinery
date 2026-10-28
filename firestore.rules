@@ -1,0 +1,64 @@
+rules_version = '2';
+// CabLine — Firestore security rules (v405)
+// Paste this whole file into Firebase console › Firestore Database › Rules, then press Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function myEmail() { return request.auth.token.email.lower(); }
+    function realUser() {
+      return signedIn() && request.auth.token.email != null && request.auth.token.email_verified == true;
+    }
+    function isAdmin() { return realUser() && myEmail() == 'kiyanoosh.mahmoodi@gmail.com'; }
+    function isStaff() {
+      return isAdmin() || (realUser()
+        && exists(/databases/$(database)/documents/users/$(myEmail()))
+        && get(/databases/$(database)/documents/users/$(myEmail())).data.status == 'approved');
+    }
+
+    // Projects: only approved staff
+    match /jobs/{id} {
+      allow read, write: if isStaff();
+    }
+
+    // Shared settings (hardware names, colours, email setup)
+    match /settings/{id} {
+      allow read, write: if isStaff();
+    }
+
+    // People: everyone sees only their own record; only the admin sees everyone and approves
+    match /users/{em} {
+      allow get: if isAdmin() || (realUser() && em == myEmail());
+      allow list: if isAdmin();
+      allow create: if isAdmin() || (realUser() && em == myEmail()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.roles.size() == 0);
+      allow update: if isAdmin() || (realUser() && em == myEmail()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['lastSeen', 'lastRole', 'lastProject', 'projects', 'name']));
+      allow delete: if isAdmin();
+    }
+
+    // Client links: the client can open only the page whose secret link they have
+    match /client/{token} {
+      allow get: if signedIn();
+      allow list: if isStaff();
+      allow create, delete: if isStaff();
+      allow update: if isStaff() || (signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['ap', 'ss', 'signed', 'log', 'clientAt', 'notes', 'docs']));
+    }
+
+    // Files (photos, PDFs): opened by their id; only staff can list or delete
+    match /photos/{id} {
+      allow get: if signedIn();
+      allow list, delete: if isStaff();
+      allow create, update: if signedIn();
+    }
+
+    // Anything else: closed
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
