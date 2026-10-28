@@ -1209,7 +1209,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v393 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v394 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1301,6 +1301,8 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     <div class="card-title">Client details</div>
     <div id="ci-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;"></div>
   </div>
+  <div id="brief-box"></div>
+  <div id="ms-box"></div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;">
       <div><div class="card-title" style="margin-bottom:4px;">Client selections link</div><div style="font-size:12px;color:#71717a;max-width:560px;">The client opens this link to fill in (or just check) Appliances and Stone, see the Material Schedule, sign off, and send you notes and files.</div></div>
@@ -8566,7 +8568,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v393 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v394 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10407,7 +10409,7 @@ function clNotesBox(){var b=document.getElementById('cl-notes-box');if(!b)return
      (D.length?D.slice().reverse().map(function(d){var V=d.versions||[],last=V[V.length-1]||{};return '<div style="border:1px solid #ececef;border-radius:8px;padding:10px 12px;margin-bottom:10px;">'+
        '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;"><b style="font-size:14px;">'+esc(d.title||'Document')+'</b><span style="font-size:11.5px;color:#71717a;">Latest: v'+(last.v||0)+' · '+(last.by?clWho(last.by):'')+' · '+(last.at?jhFmt(new Date(last.at).toISOString()):'')+'</span></div>'+
        '<table class="sum-table" style="margin-top:8px;"><thead><tr><th style="width:44px;">Ver.</th><th style="width:70px;">From</th><th>File</th><th>Note</th><th style="width:150px;">Date</th></tr></thead><tbody>'+
-       V.slice().reverse().map(function(v){return '<tr><td><b>v'+v.v+'</b></td><td>'+tag(v.by)+'</td><td><button class="btn btn-outline btn-sm" onclick="drOpenAny(\''+v.file.id+'\')">'+esc(v.file.name||'file')+'</button></td><td style="font-size:12.5px;white-space:pre-wrap;">'+esc(v.note||'')+'</td><td style="font-size:12px;color:#71717a;">'+jhFmt(new Date(v.at).toISOString())+'</td></tr>';}).join('')+'</tbody></table>'+
+       V.slice().reverse().map(function(v){return '<tr><td><b>v'+v.v+'</b></td><td>'+tag(v.by)+'</td><td><button class="btn btn-outline btn-sm" onclick="drOpenAny(\''+v.file.id+'\')">'+esc(v.file.name||'file')+'</button>'+(msOn()?' <button class="btn btn-outline btn-sm" title="Email this version to the client" onclick="msEmailVersion(\''+d.id+'\',\''+v.id+'\')">Email</button>':'')+'</td><td style="font-size:12.5px;white-space:pre-wrap;">'+esc(v.note||'')+'</td><td style="font-size:12px;color:#71717a;">'+jhFmt(new Date(v.at).toISOString())+'</td></tr>';}).join('')+'</tbody></table>'+
        '<label class="btn btn-outline btn-sm" style="cursor:pointer;margin-top:8px;">Upload new version<input type="file" style="display:none" onchange="clDocVersion(\''+d.id+'\',this)"></label></div>';}).join(''):'<div style="font-size:12.5px;color:#a1a1aa;margin-bottom:10px;">No shared documents yet.</div>')+
      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid #f0f0f2;padding-top:10px;"><input id="cl-doc-t" placeholder="Document name (e.g. Kitchen layout)" style="flex:1;min-width:200px;"/><label class="btn btn-blue btn-sm" style="cursor:pointer;">Share a document<input type="file" style="display:none" onchange="clDocNew(this)"></label></div></div>'+
    '<div class="card"><div class="card-title" style="margin-bottom:4px;">Notes &amp; references</div><div style="font-size:12px;color:#71717a;margin-bottom:10px;">Messages and files between you and the client — newest first. The client sees these on their page.</div>'+
@@ -10511,7 +10513,7 @@ function renderClientInfo(){var j=siJob(),pn=document.getElementById('ci-proj'),
     row('Phone','phone',inf.phone,'Phone number','tel',inf.phone?'tel:'+String(inf.phone).replace(/[^\d+]/g,''):'')+
     row('Email','clientEmail',inf.clientEmail,'client@email.com','email',inf.clientEmail?'mailto:'+inf.clientEmail:'')+
     row('Site address','site',site,'Site address','',site?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(site):'');
-  clStatus();}
+  clStatus();try{briefBox();msBox();}catch(e){}}
 // v393: client side — open shared files, upload a new version of a document
 async function clOpenFile(id,name){var d='';try{d=await siGetPhoto(id);}catch(e){}if(!d){alert('Could not open the file — please check your internet.');return;}
   var bl=await (await fetch(d)).blob(),u=URL.createObjectURL(bl);if(/pdf|image/.test(bl.type)){var w=window.open(u,'_blank');if(!w){location.href=u;}}else{var a=document.createElement('a');a.href=u;a.download=name||'file';document.body.appendChild(a);a.click();a.remove();}}
@@ -10521,6 +10523,142 @@ async function clClientVersion(did,inp){var f=inp.files&&inp.files[0];inp.value=
   var d=(_clDoc.docs||[]).filter(function(x){return x.id===did;})[0];if(!d)return;
   _clDoc.docs=clUnionDocs(_clDoc.docs,[{id:did,title:d.title,at:d.at,versions:[{id:'v'+Date.now().toString(36),by:'client',file:{id:id,name:f.name,mime:/^image\//.test(f.type)?'image/jpeg':(f.type||''),size:f.size},note:note,at:Date.now()}]}]);
   await _clRef.set({docs:_clDoc.docs,clientAt:Date.now()},{merge:true}).catch(function(){alert('Could not save — please check your internet.');});clientRender();}
+// ===== v394: CLIENT BRIEF (categorised client information) =====
+var BR_CATS=['Appliances','Stone & benchtops','Colours & materials','Hardware & handles','Measurements & site','Design changes','Dates & access','Budget & payments','Other'];
+function briefBox(){var b=document.getElementById('brief-box');if(!b)return;var j=siJob();if(!j){b.innerHTML='';return;}var B=(j.finishes&&j.finishes.clientBrief)||[];
+  var opts=BR_CATS.map(function(c){return '<option>'+esc(c)+'</option>';}).join('');
+  var groups=BR_CATS.map(function(c){var L=B.filter(function(x){return x.cat===c;}).sort(function(a,z){return z.at-a.at;});if(!L.length)return '';
+    return '<div style="margin-top:12px;"><div style="font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#71717a;margin-bottom:4px;">'+esc(c)+' <span style="font-weight:400;">('+L.length+')</span></div>'+
+      L.map(function(x){var src=x.src||{};return '<div style="display:flex;gap:10px;align-items:flex-start;border-top:1px solid #f0f0f2;padding:7px 0;"><div style="flex:1;min-width:0;"><div style="font-size:13.5px;white-space:pre-wrap;">'+esc(x.text)+'</div>'+
+        '<div style="font-size:11px;color:#a1a1aa;margin-top:2px;">'+jhFmt(new Date(x.at).toISOString())+(src.label?' · '+(src.link?'<a href="'+qe(src.link)+'" target="_blank" rel="noopener" style="color:#71717a;">'+esc(src.label)+'</a>':esc(src.label)):'')+'</div></div>'+
+        '<button class="btn btn-outline btn-sm" title="Remove" onclick="brDel(\''+x.id+'\')">×</button></div>';}).join('')+'</div>';}).join('');
+  b.innerHTML='<div class="card"><div class="card-title" style="margin-bottom:4px;">Client brief</div><div style="font-size:12px;color:#71717a;margin-bottom:10px;">Everything the client has asked for, sorted by topic. Add items yourself or straight from an email below.</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;"><select id="br-cat" style="width:auto;">'+opts+'</select><textarea id="br-txt" rows="1" placeholder="e.g. Fridge: Fisher & Paykel RF610, 790 wide" style="flex:1;min-width:220px;"></textarea><button class="btn btn-blue btn-sm" onclick="brAddForm()">Add</button></div>'+
+    (B.length?groups:'<div style="font-size:12.5px;color:#a1a1aa;margin-top:10px;">Nothing in the brief yet.</div>')+'</div>';}
+function brAdd(cat,text,src){var j=siJob();if(!j||!text)return;var F=finInit(j);F.clientBrief=(F.clientBrief||[]).concat([{id:'b'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),cat:cat,text:text,at:Date.now(),src:src||{type:'manual'}}]);saveData();briefBox();}
+function brAddForm(){var t=((document.getElementById('br-txt')||{}).value||'').trim();if(!t)return;brAdd(document.getElementById('br-cat').value,t,{type:'manual'});}
+function brDel(id){var j=siJob();if(!j)return;if(!confirm('Remove this item from the brief?'))return;var F=finInit(j);F.clientBrief=(F.clientBrief||[]).filter(function(x){return x.id!==id;});saveData();briefBox();}
+
+// ===== v394: OUTLOOK / MICROSOFT 365 EMAIL WITH THE CLIENT =====
+var MS_SC='openid profile offline_access User.Read Mail.Read Mail.Send',_msMsgs={},_msOpen={},_msPre=[],_msKey='';
+function msCfg(){try{return JSON.parse(localStorage.getItem('cbk-ms')||'{}')||{};}catch(e){return {};}}
+function msSetCfg(o){var c=Object.assign(msCfg(),o);try{localStorage.setItem('cbk-ms',JSON.stringify(c));}catch(e){}return c;}
+function msOn(){var c=msCfg();return !!(c.clientId&&c.rt);}
+function msRedir(){return location.origin+location.pathname;}
+function msB64u(buf){var s='',a=new Uint8Array(buf);for(var i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function msSaveId(){var v=((document.getElementById('ms-cid')||{}).value||'').trim();if(!/^[0-9a-f-]{36}$/i.test(v)){alert('That does not look like an Application (client) ID — it should look like 1a2b3c4d-....');return;}msSetCfg({clientId:v});_msKey='';msBox();}
+async function msConnect(){var c=msCfg();if(!c.clientId){alert('Enter the Application (client) ID first.');return;}
+  var v=msB64u(crypto.getRandomValues(new Uint8Array(48))),ch=msB64u(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v))),st='ms_'+Math.random().toString(36).slice(2);
+  try{sessionStorage.setItem('cbk-ms-pkce',JSON.stringify({v:v,st:st,job:currentJobId||''}));}catch(e){}
+  location.href='https://login.microsoftonline.com/'+(c.tenant||'common')+'/oauth2/v2.0/authorize?'+new URLSearchParams({client_id:c.clientId,response_type:'code',redirect_uri:msRedir(),response_mode:'query',scope:MS_SC,state:st,code_challenge:ch,code_challenge_method:'S256',prompt:'select_account'}).toString();}
+async function msToken(body){var c=msCfg();body.client_id=c.clientId;body.scope=MS_SC;
+  var r=await fetch('https://login.microsoftonline.com/'+(c.tenant||'common')+'/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(body).toString()});
+  var d=await r.json().catch(function(){return {};});if(!r.ok||!d.access_token)throw new Error(d.error_description||d.error||'Sign-in failed');
+  msSetCfg({at:d.access_token,exp:Date.now()+((d.expires_in||3600)-120)*1000,rt:d.refresh_token||msCfg().rt});return d.access_token;}
+async function msHandleRedirect(){var q=new URLSearchParams(location.search),st=q.get('state');if(!st||!/^ms_/.test(st))return;var p={};try{p=JSON.parse(sessionStorage.getItem('cbk-ms-pkce')||'{}');sessionStorage.removeItem('cbk-ms-pkce');}catch(e){}
+  try{history.replaceState(null,'',location.pathname);}catch(e){}
+  if(q.get('error')){alert('Outlook: '+(q.get('error_description')||q.get('error')));}
+  else if(p.st!==st){alert('The Outlook sign-in expired — please press Connect again.');}
+  else{try{await msToken({grant_type:'authorization_code',code:q.get('code'),redirect_uri:msRedir(),code_verifier:p.v});var me=await msApi('/me?$select=mail,userPrincipalName,displayName');msSetCfg({me:String(me.mail||me.userPrincipalName||'').toLowerCase(),name:me.displayName||''});showMsg('✓ Outlook connected');}catch(e){alert('Outlook: '+e.message);}}
+  if(p.job)msReturn(p.job,0);}
+function msReturn(id,n){if(window.allJobs&&allJobs[id]&&typeof selectJob==='function'&&!document.querySelector('#role-ov:not([style*="none"])')){try{selectJob(id);var t=document.querySelector('.tab[onclick*="\'client\'"]');if(t)showTab('client',t);}catch(e){}return;}if(n<40)setTimeout(function(){msReturn(id,n+1);},500);}
+function msDisconnect(){if(!confirm('Disconnect Outlook on this device?'))return;msSetCfg({at:'',rt:'',me:'',name:''});_msMsgs={};_msKey='';msBox();}
+async function msAT(){var c=msCfg();if(c.at&&c.exp>Date.now())return c.at;if(!c.rt)throw new Error('Outlook is not connected — press Connect.');
+  try{return await msToken({grant_type:'refresh_token',refresh_token:c.rt});}catch(e){msSetCfg({at:'',rt:''});_msKey='';setTimeout(msBox,0);throw new Error('Outlook sign-in has expired — please press Connect again.');}}
+async function msApi(path,opt){opt=opt||{};var t=await msAT();var h={Authorization:'Bearer '+t};if(opt.body)h['Content-Type']='application/json';
+  var r=await fetch('https://graph.microsoft.com/v1.0'+path,{method:opt.method||'GET',headers:h,body:opt.body?JSON.stringify(opt.body):undefined});
+  if(r.status===202||r.status===204)return {};var d=await r.json().catch(function(){return {};});if(!r.ok)throw new Error((d.error&&d.error.message)||('Outlook error '+r.status));return d;}
+function msEm(j){return String((jhInfo(j).clientEmail)||'').trim().toLowerCase();}
+function msBox(force){var b=document.getElementById('ms-box');if(!b)return;var j=siJob();if(!j){b.innerHTML='';_msKey='';return;}var c=msCfg(),em=msEm(j);
+  var key=[j.id,c.clientId||'',msOn()?1:0,em].join('|');if(key===_msKey&&!force){msList();return;}_msKey=key;
+  var head='<div class="card-title" style="margin-bottom:4px;">Email with client <span style="font-weight:400;color:#a1a1aa;font-size:12px;">Outlook</span></div>';
+  if(!c.clientId){b.innerHTML='<div class="card">'+head+'<div style="font-size:12.5px;color:#52525b;line-height:1.6;">Connect your Outlook once and every email between you and this client shows here, with its attachments. You can also send from here.'+
+    '<details style="margin-top:8px;"><summary style="cursor:pointer;font-weight:600;">One-time setup (about 5 minutes)</summary><ol style="margin:8px 0 0 18px;padding:0;">'+
+    '<li>Open <a href="https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank" rel="noopener">Microsoft Entra › App registrations</a> (sign in with your Outlook account) and press <b>New registration</b>.</li>'+
+    '<li>Name: <b>CabLine</b>. Supported account types: <b>Accounts in any organizational directory and personal Microsoft accounts</b>.</li>'+
+    '<li>Redirect URI: choose <b>Single-page application (SPA)</b> and paste <code style="background:#f4f4f5;padding:1px 5px;border-radius:4px;user-select:all;">'+esc(msRedir())+'</code></li>'+
+    '<li>Press <b>Register</b>, copy the <b>Application (client) ID</b> and paste it below.</li></ol></details></div>'+
+    '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"><input id="ms-cid" placeholder="Application (client) ID" spellcheck="false" style="flex:1;min-width:240px;"/><button class="btn btn-blue btn-sm" onclick="msSaveId()">Save</button></div></div>';return;}
+  if(!msOn()){b.innerHTML='<div class="card">'+head+'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><span style="font-size:12.5px;color:#52525b;">Outlook is not connected on this device.</span><button class="btn btn-blue btn-sm" onclick="msConnect()">Connect Outlook</button><button class="btn btn-outline btn-sm" onclick="if(confirm(\'Change the Application ID?\')){msSetCfg({clientId:\'\'});_msKey=\'\';msBox();}">Change app ID</button></div></div>';return;}
+  var D=(j.finishes&&j.finishes.clientDocs)||[];
+  b.innerHTML='<div class="card">'+head+'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:#71717a;margin-bottom:10px;"><span>From <b style="color:#3f3f46;">'+esc(c.me||'you')+'</b> to <b style="color:#3f3f46;">'+(em?esc(em):'— add the client email above')+'</b></span><span><button class="btn btn-outline btn-sm" onclick="msLoad(true)">Refresh</button> <button class="btn btn-outline btn-sm" onclick="msDisconnect()">Disconnect</button></span></div>'+
+    (em?'<div style="border:1px solid #ececef;border-radius:8px;padding:10px 12px;margin-bottom:12px;"><input id="ms-subj" placeholder="Subject" value="'+qe((j.name||'')+' — ')+'" style="width:100%;margin-bottom:8px;"/><textarea id="ms-body" rows="4" placeholder="Message to the client…" style="width:100%;"></textarea>'+
+      '<div id="ms-pre" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;"></div>'+
+      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px;"><label class="btn btn-outline btn-sm" style="cursor:pointer;">Attach files<input id="ms-files" type="file" multiple style="display:none" onchange="msPreShow()"></label>'+
+      '<label style="font-size:12px;color:#52525b;display:inline-flex;gap:5px;align-items:center;"><input id="ms-link" type="checkbox" style="width:auto;margin:0;"> Include client page link</label>'+
+      '<label style="font-size:12px;color:#52525b;display:inline-flex;gap:5px;align-items:center;">Save attachments to <select id="ms-doc" style="width:auto;padding:4px 6px;"><option value="">— not saved —</option><option value="new">New shared document</option>'+D.map(function(d){return '<option value="'+d.id+'">'+esc(d.title)+' (next version)</option>';}).join('')+'</select></label>'+
+      '<button class="btn btn-blue btn-sm" style="margin-left:auto;" onclick="msSend()">Send email</button></div></div>':'')+
+    '<div id="ms-list"></div></div>';msPreShow();msList();if(em)msLoad(false);}
+function msPreShow(){var w=document.getElementById('ms-pre');if(!w)return;var inp=document.getElementById('ms-files'),fs=inp?Array.prototype.slice.call(inp.files||[]):[];
+  w.innerHTML=_msPre.map(function(f,i){return '<span style="font-size:12px;border:1px solid #e4e4e7;border-radius:6px;padding:2px 8px;">'+esc(f.name)+' <a href="#" onclick="_msPre.splice('+i+',1);msPreShow();return false;" style="color:#a1a1aa;text-decoration:none;">×</a></span>';}).join('')+fs.map(function(f){return '<span style="font-size:12px;border:1px solid #e4e4e7;border-radius:6px;padding:2px 8px;">'+esc(f.name)+'</span>';}).join('');}
+async function msLoad(force){var j=siJob();if(!j||!msOn())return;var em=msEm(j);if(!em)return;var cur=_msMsgs[j.id];if(cur&&!force&&cur.em===em&&(cur.loading||Date.now()-cur.at<120000))return;
+  _msMsgs[j.id]={em:em,loading:true,list:(cur&&cur.list)||[],at:Date.now()};msList();
+  try{var d=await msApi('/me/messages?$search='+encodeURIComponent('"participants:'+em+'"')+'&$top=60&$select=id,subject,from,toRecipients,receivedDateTime,bodyPreview,hasAttachments,webLink,isDraft');
+    var L=(d.value||[]).filter(function(m){return !m.isDraft;}).sort(function(a,z){return new Date(z.receivedDateTime)-new Date(a.receivedDateTime);});_msMsgs[j.id]={em:em,list:L,at:Date.now()};}
+  catch(e){_msMsgs[j.id]={em:em,list:(cur&&cur.list)||[],err:e.message,at:Date.now()};}msList();}
+function msFromClient(m,em){return String((m.from&&m.from.emailAddress&&m.from.emailAddress.address)||'').toLowerCase()===em;}
+function msSavedSrc(j){var S={};((j.finishes&&j.finishes.clientDocs)||[]).forEach(function(d){(d.versions||[]).forEach(function(v){if(v.src)S[v.src]=1;});});return S;}
+function msList(){var w=document.getElementById('ms-list');if(!w)return;var j=siJob();if(!j)return;var em=msEm(j),M=_msMsgs[j.id];if(!em){w.innerHTML='';return;}
+  if(!M){w.innerHTML='<div style="font-size:12.5px;color:#a1a1aa;">Loading emails…</div>';return;}
+  var S=msSavedSrc(j),D=(j.finishes&&j.finishes.clientDocs)||[],cats=BR_CATS.map(function(c){return '<option>'+esc(c)+'</option>';}).join('');
+  w.innerHTML=(M.err?'<div style="font-size:12.5px;color:#b45309;margin-bottom:8px;">'+esc(M.err)+'</div>':'')+(M.loading?'<div style="font-size:12px;color:#a1a1aa;margin-bottom:6px;">Checking Outlook…</div>':'')+
+    (M.list.length?M.list.map(function(m){var fc=msFromClient(m,em),O=_msOpen[m.id];
+      return '<div style="border-top:1px solid #f0f0f2;padding:9px 0;"><div style="display:flex;gap:8px;align-items:baseline;cursor:pointer;" onclick="msExpand(\''+m.id+'\')">'+
+        '<span style="font-size:10.5px;font-weight:600;border:1px solid #e4e4e7;border-radius:4px;padding:1px 6px;flex:none;color:'+(fc?'#3d5f8c':'#52525b')+';">'+(fc?'Client':'You')+'</span>'+
+        '<div style="flex:1;min-width:0;"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(m.subject||'(no subject)')+(m.hasAttachments?' <span style="font-weight:400;color:#a1a1aa;">· attachments</span>':'')+'</div>'+
+        (O?'':'<div style="font-size:12.5px;color:#71717a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(m.bodyPreview||'')+'</div>')+'</div>'+
+        '<span style="font-size:11.5px;color:#a1a1aa;flex:none;">'+jhFmt(m.receivedDateTime)+'</span></div>'+
+        (O?'<div style="margin:8px 0 0 0;">'+(O.loading?'<div style="font-size:12px;color:#a1a1aa;">Opening…</div>':O.err?'<div style="font-size:12px;color:#b45309;">'+esc(O.err)+'</div>':
+          '<div class="ms-body" data-mid="'+m.id+'" style="border:1px solid #ececef;border-radius:8px;overflow:hidden;"></div>'+
+          ((O.att||[]).length?'<div style="margin-top:8px;">'+O.att.map(function(a){var k=m.id+':'+a.id,done=S[k];return '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;padding:3px 0;"><button class="btn btn-outline btn-sm" onclick="msOpenAtt(\''+m.id+'\',\''+a.id+'\')">'+esc(a.name)+'</button><span style="color:#a1a1aa;">'+Math.max(1,Math.round((a.size||0)/1024))+' KB</span>'+
+            (done?'<span style="color:#52525b;">✓ in Shared documents</span>':'<select id="ms-ad-'+a.id.slice(-12).replace(/[^\w]/g,'')+'" style="width:auto;padding:3px 6px;font-size:12px;"><option value="new">New shared document</option>'+D.map(function(d){return '<option value="'+d.id+'">'+esc(d.title)+' (next version)</option>';}).join('')+'</select><button class="btn btn-outline btn-sm" onclick="msSaveAtt(\''+m.id+'\',\''+a.id+'\')">Save as version</button>')+'</div>';}).join('')+'</div>':'')+
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;margin-top:8px;"><select id="ms-bc-'+m.id.slice(-12).replace(/[^\w]/g,'')+'" style="width:auto;">'+cats+'</select><textarea id="ms-bt-'+m.id.slice(-12).replace(/[^\w]/g,'')+'" rows="2" placeholder="What does the client want? (copy the important part here)" style="flex:1;min-width:200px;"></textarea><button class="btn btn-outline btn-sm" onclick="msToBrief(\''+m.id+'\')">Add to brief</button>'+
+          (m.webLink?'<a class="btn btn-outline btn-sm" style="text-decoration:none;" href="'+qe(m.webLink)+'" target="_blank" rel="noopener">Open in Outlook</a>':'')+'</div>')+'</div>':'')+'</div>';}).join(''):(M.loading?'':'<div style="font-size:12.5px;color:#a1a1aa;">No emails with '+esc(em)+' yet.</div>'));
+  w.querySelectorAll('.ms-body').forEach(function(el){var O=_msOpen[el.getAttribute('data-mid')];if(!O||O.body==null)return;var f=document.createElement('iframe');f.setAttribute('sandbox','allow-popups allow-popups-to-escape-sandbox');f.style.cssText='width:100%;height:220px;border:0;background:#fff;';
+    f.srcdoc='<base target="_blank"><style>body{font:13.5px/1.5 -apple-system,Segoe UI,Arial,sans-serif;color:#27272a;margin:10px 12px;}img{max-width:100%;height:auto;}</style>'+O.body;el.appendChild(f);
+    f.onload=function(){try{f.style.height=Math.min(520,Math.max(80,f.contentDocument.body.scrollHeight+24))+'px';}catch(e){}};});}
+async function msExpand(mid){if(_msOpen[mid]){delete _msOpen[mid];msList();return;}_msOpen[mid]={loading:true};msList();
+  try{var m=await msApi('/me/messages/'+mid+'?$select=body,uniqueBody'),a={value:[]};try{a=await msApi('/me/messages/'+mid+'/attachments?$select=id,name,contentType,size,isInline');}catch(e){}
+    var bd=(m.uniqueBody&&m.uniqueBody.content)||(m.body&&m.body.content)||'',tp=((m.uniqueBody&&m.uniqueBody.content)?m.uniqueBody.contentType:(m.body&&m.body.contentType))||'html';
+    if(String(tp).toLowerCase()==='text')bd='<div style="white-space:pre-wrap;">'+esc(bd)+'</div>';
+    _msOpen[mid]={body:bd,att:(a.value||[]).filter(function(x){return !x.isInline&&!/itemAttachment|referenceAttachment/.test(x['@odata.type']||'');})};}
+  catch(e){_msOpen[mid]={err:e.message};}msList();}
+function msMsg(mid){var j=siJob(),M=j&&_msMsgs[j.id];return M?(M.list.filter(function(m){return m.id===mid;})[0]||null):null;}
+async function msAttData(mid,aid){var a=await msApi('/me/messages/'+mid+'/attachments/'+aid);if(!a.contentBytes)throw new Error('This attachment cannot be downloaded.');return {name:a.name||'file',mime:a.contentType||'application/octet-stream',size:a.size||0,data:'data:'+(a.contentType||'application/octet-stream')+';base64,'+a.contentBytes};}
+async function msOpenAtt(mid,aid){try{showMsg('Opening…');var A=await msAttData(mid,aid);var bl=await (await fetch(A.data)).blob(),u=URL.createObjectURL(bl);
+  if(/pdf|image/.test(A.mime)){var w=window.open(u,'_blank');if(!w)location.href=u;}else{var l=document.createElement('a');l.href=u;l.download=A.name;document.body.appendChild(l);l.click();l.remove();}}catch(e){alert(e.message);}}
+async function clStoreData(data,name,mime,size,jobId){var id=clFileId();_siCache[id]=data;try{await window.storage.set('cbkph:'+id,data);}catch(e){}
+  try{if(window.cloud&&cloud.db&&cloud.user&&navigator.onLine)await upPut(id,data,jobId||'');else upEnqueue(id,jobId||'');}catch(e){try{upEnqueue(id,jobId||'');}catch(_){}}
+  return {id:id,name:name,mime:mime||'',size:size||0};}
+function clAddVersion(j,did,title,ver){var F=finInit(j);if(!did||did==='new'){did='d'+Date.now().toString(36)+Math.random().toString(36).slice(2,4);F.clientDocs=clUnionDocs(F.clientDocs,[{id:did,title:title,at:ver.at,versions:[ver]}]);}
+  else{var d=(F.clientDocs||[]).filter(function(x){return x.id===did;})[0];if(!d)return null;F.clientDocs=clUnionDocs(F.clientDocs,[{id:did,title:d.title,at:d.at,versions:[ver]}]);}
+  var nd=F.clientDocs.filter(function(x){return x.id===did;})[0];return nd.versions.filter(function(v){return v.id===ver.id;})[0];}
+async function msSaveAtt(mid,aid){var j=siJob(),m=msMsg(mid);if(!j||!m)return;var sel=document.getElementById('ms-ad-'+aid.slice(-12).replace(/[^\w]/g,'')),did=sel?sel.value:'new';
+  try{showMsg('Saving…');var A=await msAttData(mid,aid);if(A.size>25*1048576){alert('This file is larger than 25 MB.');return;}
+    var title='';if(did==='new'){title=prompt('Name for this document:',A.name.replace(/\.[^.]+$/,''));if(title===null)return;title=title.trim()||A.name;}
+    var r=await clStoreData(A.data,A.name,A.mime,A.size,j.id),fc=msFromClient(m,msEm(j));clToken(j);
+    var v=clAddVersion(j,did,title,{id:'v'+Date.now().toString(36),by:fc?'client':'designer',file:r,note:'By email: '+(m.subject||''),at:new Date(m.receivedDateTime).getTime()||Date.now(),src:mid+':'+aid});
+    await clDesignerSave(j);_msKey='';msBox();showMsg('✓ Saved as v'+(v?v.v:''));}catch(e){alert(e.message);}}
+function msToBrief(mid){var j=siJob(),m=msMsg(mid);if(!j||!m)return;var k=mid.slice(-12).replace(/[^\w]/g,''),t=((document.getElementById('ms-bt-'+k)||{}).value||'').trim();if(!t){alert('Type (or paste) what the client asked for first.');return;}
+  brAdd(document.getElementById('ms-bc-'+k).value,t,{type:'email',ref:mid,link:m.webLink||'',label:'Email '+new Date(m.receivedDateTime).toLocaleDateString('en-AU',{day:'numeric',month:'short'})+' · '+(m.subject||'')});document.getElementById('ms-bt-'+k).value='';showMsg('✓ Added to the brief');}
+async function msEmailVersion(did,vid){var j=siJob();if(!j)return;var d=((j.finishes&&j.finishes.clientDocs)||[]).filter(function(x){return x.id===did;})[0],v=d&&(d.versions||[]).filter(function(x){return x.id===vid;})[0];if(!v)return;
+  var data='';try{data=await siGetPhoto(v.file.id);}catch(e){}if(!data){alert('Could not load the file.');return;}
+  _msPre=[{name:v.file.name,mime:v.file.mime,data:data}];_msKey='';msBox(true);var s=document.getElementById('ms-subj');if(s)s.value=(j.name||'')+' — '+(d.title||'')+' v'+v.v;var bx=document.getElementById('ms-box');if(bx)bx.scrollIntoView({behavior:'smooth',block:'start'});}
+function msRaw(f){return new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.onerror=rej;fr.readAsDataURL(f);});}
+async function msSend(){var j=siJob();if(!j)return;var em=msEm(j);if(!em){alert('Add the client email first.');return;}
+  var subj=(document.getElementById('ms-subj').value||'').trim(),txt=document.getElementById('ms-body').value||'',inp=document.getElementById('ms-files'),fs=inp?Array.prototype.slice.call(inp.files||[]):[],did=document.getElementById('ms-doc').value,link=document.getElementById('ms-link').checked;
+  if(!txt.trim()&&!fs.length&&!_msPre.length){alert('Write a message or attach a file.');return;}
+  var att=_msPre.slice();for(var i=0;i<fs.length;i++)att.push({name:fs[i].name,mime:fs[i].type||'application/octet-stream',size:fs[i].size,data:await msRaw(fs[i]),local:true});
+  var tot=att.reduce(function(a,f){return a+f.data.length*0.75;},0);if(tot>3*1048576){alert('Attachments are '+(tot/1048576).toFixed(1)+' MB. Outlook allows about 3 MB from here — share big files with "Share a document" and tick "Include client page link".');return;}
+  var url='';if(link){var jj=await clEnsure();if(!jj)return;url=clLink(jj);}
+  var C=clCompany(),html='<div style="font-family:Arial,sans-serif;font-size:14px;">'+esc(txt).replace(/\n/g,'<br>')+(url?'<p><a href="'+qe(url)+'">Open your project page</a></p>':'')+'</div>';
+  try{showMsg('Sending…');await msApi('/me/sendMail',{method:'POST',body:{message:{subject:subj||(j.name||'Project'),body:{contentType:'HTML',content:html},toRecipients:[{emailAddress:{address:em,name:jhInfo(j).client||''}}],
+    attachments:att.map(function(f){return {'@odata.type':'#microsoft.graph.fileAttachment',name:f.name,contentType:f.mime,contentBytes:f.data.split(",")[1]};})},saveToSentItems:true}});}
+  catch(e){alert('Could not send: '+e.message);return;}
+  var loc=att.filter(function(f){return f.local;});if(did&&loc.length){clToken(j);for(var k=0;k<loc.length;k++){var f=loc[k],r=await clStoreData(f.data,f.name,f.mime,f.size,j.id);var title=(did==='new'?(f.name.replace(/\.[^.]+$/,'')):'');
+    var v=clAddVersion(j,did,title,{id:'v'+Date.now().toString(36)+k,by:'designer',file:r,note:'Emailed: '+(subj||''),at:Date.now()});if(did==='new'&&v){var F=finInit(j);did=F.clientDocs[F.clientDocs.length-1].id;}}await clDesignerSave(j);}
+  _msPre=[];_msKey='';msBox();showMsg('✓ Email sent');setTimeout(function(){msLoad(true);},4000);}
+setTimeout(function(){msHandleRedirect().catch(function(){});},300);
 // ===== v259: PRODUCTION DRAWINGS (PDF) in Installation =====
 function tomb(id){var j=siJob();if(!j)return;j.deleted=j.deleted||[];if(j.deleted.indexOf(id)<0)j.deleted.push(id);}
 function drMB(n){return (n/1048576).toFixed(1)+' MB';}
