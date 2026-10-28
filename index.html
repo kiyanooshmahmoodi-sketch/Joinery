@@ -3,6 +3,7 @@
 <head>
 <meta name="color-scheme" content="only light">
 <style>:root{color-scheme:only light;}</style>
+<script>window.__diag={errs:[],t0:Date.now()};addEventListener('error',function(e){try{__diag.errs.push((e.message||(e.target&&(e.target.src||e.target.href)&&('load failed: '+(e.target.src||e.target.href)))||'error').slice(0,160));}catch(_){}} ,true);addEventListener('unhandledrejection',function(e){try{__diag.errs.push(('promise: '+((e.reason&&(e.reason.code||e.reason.message))||e.reason)).slice(0,160));}catch(_){}});</script>
 <script>window.CLIENT_MODE=(function(){try{return new URLSearchParams(location.search).get("client")||"";}catch(e){return "";}})();if(window.CLIENT_MODE)document.documentElement.classList.add("client-mode");</script>
 <style>html.client-mode body>*:not(#cl-ov){display:none!important;}</style>
 
@@ -1254,7 +1255,7 @@ html,body{overflow-x:hidden;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v412 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v413 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8339,7 +8340,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v412 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v413 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9558,12 +9559,13 @@ async function _unpack(d){
 }
 function cloudInit(){
   var cfg=_cfg();
-  if(!cfg||typeof firebase==='undefined'){_cstat(cfg?'☁ Offline (no internet)':'☁ Set up','#4b5563');return;}
+  if(!cfg||typeof firebase==='undefined'){_cstat(cfg?'☁ Offline (no internet)':'☁ Set up','#4b5563');__diag.fb='missing';return;}
+  __diag.fb='ok';
   try{
     if(!firebase.apps.length)firebase.initializeApp(cfg);
     cloud.auth=firebase.auth();cloud.db=firebase.firestore();
     try{cloud.db.enablePersistence({synchronizeTabs:true}).catch(function(){});}catch(e){}
-    cloud.auth.onAuthStateChanged(function(u){
+    __diag.authWait=Date.now();cloud.auth.onAuthStateChanged(function(u){__diag.auth=u?(u.isAnonymous?'anonymous':'signed in'):'signed out';
       if(window.CLIENT_MODE){if(u){cloud.user=u;cloud.ready=true;clientLoad();}else cloud.auth.signInAnonymously().catch(function(e){console.error('anon sign-in',e);});return;}
       // v405: staff sign in with email + password; anonymous sign-in is only for client links
       cloud.authReady=true;
@@ -9572,7 +9574,7 @@ function cloudInit(){
       if(!u){try{cloudStop();}catch(e){}cloud.started=false;_cstat('☁ Signed out','#4b5563');}
       if(typeof rcOnCloudReady==='function')rcOnCloudReady();
     });
-  }catch(e){console.error('cloudInit',e);_cstat('☁ Error','#8f3224');}
+  }catch(e){console.error('cloudInit',e);_cstat('☁ Error','#8f3224');__diag.errs.push('cloudInit: '+(e&&e.message));}
 }
 function cloudCloseOv(){document.getElementById('cloud-ov').style.display='none';}
 function cloudBtn(){
@@ -10545,7 +10547,13 @@ var _cloudFirstDone=false;
 function cloudFlush(){if(!_cloudFirstDone||!window.cloud||!cloud.db||!cloud.user||!navigator.onLine)return;cloud.sigH=cloud.sigH||{};
   Object.keys(allJobs||{}).forEach(function(id){try{if(cloud.sigH[id]!==_hs(JSON.stringify(allJobs[id])))cloudPushJob(id);}catch(e){}});}
 
-window.addEventListener('load',function(){setTimeout(cloudInit,300);});
+// v413: start the cloud as soon as the page is ready (not only after every image/font has loaded); if the Firebase files did not load, fetch them again
+function cloudBoot(){if(cloud._boot)return;cloud._boot=1;
+  if(typeof firebase!=='undefined'){cloudInit();return;}
+  __diag.fbRetry=1;var L=['app','auth','firestore'],k=0;
+  (function next(){if(k>=L.length){cloudInit();return;}var sc=document.createElement('script');sc.src='https://www.gstatic.com/firebasejs/10.12.2/firebase-'+L[k++]+'-compat.js?r='+Date.now();sc.onload=next;sc.onerror=function(){__diag.errs.push('could not load Firebase ('+L[k-1]+')');cloudInit();};document.head.appendChild(sc);})();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(cloudBoot,200);});else setTimeout(cloudBoot,200);
+window.addEventListener('load',function(){setTimeout(cloudBoot,300);});
 </script>
 
 
@@ -10597,7 +10605,7 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
       <div id="ro-word">Cab<span>Line</span></div>
       <div id="ro-tag">Joinery projects — from drawing to install</div>
       <div id="role-ver"></div>
-      <div id="ro-load"><i></i><div id="ro-slowmsg">Can't reach the server — check the internet. <a href="#" onclick="location.reload();return false;">Retry</a></div></div>
+      <div id="ro-load"><i></i><div id="ro-slowmsg">Can't reach the server — check the internet. <a href="#" onclick="location.reload();return false;">Retry</a><div id="ro-diag" style="font-size:11px;color:#64748b;margin-top:10px;line-height:1.5;word-break:break-word;"></div></div></div>
     </div>
     <div id="ro-card" style="background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 2px rgba(24,24,27,.06),0 12px 32px rgba(24,24,27,.08);border:1px solid #ececef;">
       <div id="role-err" style="color:#8f3224;font-size:12px;min-height:16px;margin-bottom:6px;"></div>
@@ -10778,7 +10786,8 @@ function rcShow(id){['rc-connecting','rc-signin','rc-create','rc-verify','rc-pen
   // v412: while connecting, no "Connecting…" box — just a thin moving line under the name; after 12 s say why and offer Retry
   var ov=document.getElementById('role-ov');if(!ov)return;var w=id==='rc-connecting';ov.classList.toggle('ro-wait',w);clearTimeout(window._roWaitT);
   var ld=document.getElementById('ro-load');if(ld)ld.classList.remove('ro-slow');
-  if(w)window._roWaitT=setTimeout(function(){if(ov.classList.contains('ro-wait')&&ld)ld.classList.add('ro-slow');},12000);}
+  if(w)window._roWaitT=setTimeout(function(){if(ov.classList.contains('ro-wait')&&ld){ld.classList.add('ro-slow');var D=window.__diag||{},dg=document.getElementById('ro-diag');
+    if(dg)dg.textContent='Internet: '+(navigator.onLine?'yes':'no')+' · Firebase: '+(D.fb||'not started')+(D.fbRetry?' (retried)':'')+' · Sign-in check: '+(D.auth||(D.authWait?'no answer':'not started'))+((D.errs||[]).length?' · '+D.errs.slice(-2).join(' | '):'');}},12000);}
 function _ukey(e){return String(e||'').trim().toLowerCase();}
 function rcOnCloudReady(){var ov=document.getElementById('role-ov');if(!SESSION.role||ov.style.display!=='none'||!cloud.user){if(SESSION.role&&!cloud.user){location.reload();return;}rcStart();}}
 var ADMIN_EMAIL='kiyanoosh.mahmoodi@gmail.com';
