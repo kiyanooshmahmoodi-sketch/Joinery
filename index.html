@@ -1010,6 +1010,22 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
 .jx .jx-none{text-align:center;color:var(--mu);padding:40px 20px;border:1px dashed var(--ln);border-radius:10px;font-size:13px;margin-top:20px;}
 .jx .jx-card.late{color:#3b2a4d;} .jx .jx-card.late .jx-in,.jx .jx-card.late .jx-sel{background:#fbf9fd;}
 </style>
+<style id="calm-v409">
+/* v409: one consistent layout on every page + a tidy phone layout */
+#view-installation,#view-tracker,#view-dispatch{max-width:1140px;margin-left:auto;margin-right:auto;padding-left:18px;padding-right:18px;box-sizing:border-box;}
+html,body{overflow-x:hidden;}
+.view-switch,.tabs{scrollbar-width:none;}
+.view-switch::-webkit-scrollbar,.tabs::-webkit-scrollbar{display:none;}
+@media(max-width:760px){
+  #view-installation,#view-tracker,#view-dispatch{padding-left:12px;padding-right:12px;}
+  .view-switch{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;justify-content:flex-start!important;gap:2px;padding:0 8px;-webkit-overflow-scrolling:touch;}
+  .view-switch .view-btn{white-space:nowrap;flex:none;}
+  .tabs{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .tabs .tab{white-space:nowrap;flex:none;}
+  .topbar-right button[onclick="saveProject()"],.topbar-right button[onclick="saveProjectAs()"],.topbar-right button[onclick="openProject()"],#bk-btn,#save-file-status,#proj-count{display:none!important;}
+  .topbar-right{gap:6px!important;}
+}
+</style>
 </head>
 <body>
 
@@ -1209,7 +1225,7 @@ input::placeholder,textarea::placeholder{color:#b4b4bb;font-weight:400;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v408 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v409 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -5336,9 +5352,9 @@ function renderHardware(){
       '<input placeholder="🔍 Search rods..." oninput="filterHardware(this.value)" style="width:200px;font-size:12px;padding:8px 12px;"/>'+
     '</div>'+
     // MANUAL ENTRY FORM
-    '<div style="background:linear-gradient(135deg,#e8f4f4,#fff);border:1px solid #a5f3fc;border-left:4px solid #2c7a7b;border-radius:10px;padding:14px;margin-bottom:14px;">'+
-      '<div style="font-weight:700;color:#235f60;margin-bottom:10px;">➕ Add Closet Rod manually</div>'+
-      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px dashed #67e8f9;border-radius:8px;padding:8px 11px;margin-bottom:10px;">'+
+    '<div style="background:#fafafa;border:1px solid #ececef;border-radius:10px;padding:14px;margin-bottom:14px;">'+
+      '<div style="font-weight:600;color:#27272a;margin-bottom:10px;">Add closet rod manually</div>'+
+      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px dashed #d4d4d8;border-radius:8px;padding:8px 11px;margin-bottom:10px;">'+
         '<span style="font-size:12px;font-weight:700;color:#235f60;">✂️ Auto-deduct from length:</span>'+
         '<input id="cr-deduct" type="number" min="0" value="'+getRodDeduct()+'" onchange="setRodDeduct(this.value)" oninput="updateRodPreview()" style="width:70px;padding:6px 8px;font-size:13px;text-align:center;font-weight:700;"/>'+
         '<span style="font-size:12px;color:#235f60;font-weight:700;">mm</span>'+
@@ -8568,7 +8584,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v408 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v409 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9092,9 +9108,9 @@ function renderKickboard(){
     '<div class="card">'+
       '<div class="card-title">\ud83d\udcca Progress</div>'+
       '<div style="display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 14px;">'+
-        '<div style="flex:1;min-width:100px;text-align:center;background:#fbf6e8;border-radius:10px;padding:12px;"><div style="font-size:26px;font-weight:700;color:#b7791f;">'+c.made+'</div><div style="font-size:11px;font-weight:700;color:#7a5316;">MADE</div></div>'+
-        '<div style="flex:1;min-width:100px;text-align:center;background:#eef7f2;border-radius:10px;padding:12px;"><div style="font-size:26px;font-weight:700;color:#2f7d5b;">'+c.shipped+'</div><div style="font-size:11px;font-weight:700;color:#1f5a40;">SHIPPED</div></div>'+
-        '<div style="flex:1;min-width:100px;text-align:center;background:#edf2f9;border-radius:10px;padding:12px;"><div style="font-size:26px;font-weight:700;color:#3a6ea5;">'+toShip+'</div><div style="font-size:11px;font-weight:700;color:#2f4b8f;">TO SHIP</div></div>'+
+        '<div style="flex:1;min-width:100px;text-align:center;background:#fafafa;border:1px solid #ececef;border-radius:10px;padding:12px;"><div style="font-size:26px;font-weight:600;color:#27272a;">'+c.made+'</div><div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#71717a;">MADE</div></div>'+
+        '<div style="flex:1;min-width:100px;text-align:center;background:#fafafa;border:1px solid #ececef;border-radius:10px;padding:12px;"><div style="font-size:26px;font-weight:600;color:#27272a;">'+c.shipped+'</div><div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#71717a;">SHIPPED</div></div>'+
+        '<div style="flex:1;min-width:100px;text-align:center;background:#fafafa;border:1px solid #ececef;border-radius:10px;padding:12px;"><div style="font-size:26px;font-weight:600;color:#27272a;">'+toShip+'</div><div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#71717a;">TO SHIP</div></div>'+
       '</div>'+
       '<div style="background:#e5e7eb;border-radius:10px;height:18px;overflow:hidden;">'+
         '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#2f7d5b,#3d8f6a);transition:width .3s;"></div>'+
