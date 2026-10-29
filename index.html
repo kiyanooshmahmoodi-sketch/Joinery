@@ -1295,7 +1295,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v430 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v431 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8407,7 +8407,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v430 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v431 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10466,10 +10466,10 @@ function dfToProd(){var j=allJobs[_dfSel];if(!j)return;if(!(j.units||[]).length)
   var p=dfProg(j);if(p.n<p.t&&!confirm('The checklist is not finished ('+p.n+' of '+p.t+'). Send to Production anyway?'))return;
   jhSet(j.id,'stage','production',true);showMsg('✓ Sent to Production');_dfSel=null;renderDrafting();dfBadge();}
 // v430: Client Information & Approval lives in Drafting now (its own tab here)
-var _dfTab='work';
+var _dfTab='client';   // v431: Client Information first, then Drafting
 function dfTab(t){_dfTab=t;if(t==='client'&&_dfSel&&_dfSel!==currentJobId)selectJob(_dfSel);renderDrafting();}
 function dfTabs(){var T=document.getElementById('df-tabs');if(!T)return;var b=function(k,l){var on=_dfTab===k;return '<button onclick="dfTab(\''+k+'\')" class="btn btn-sm '+(on?'':'btn-outline')+'" style="'+(on?'background:#27272a;color:#fff;border-color:#27272a;':'')+'">'+l+'</button>';};
-  T.innerHTML=b('work','Drafting')+b('client','Client Information &amp; Approval');
+  T.innerHTML=b('client','Client Information &amp; Approval')+b('work','Drafting');
   var pc=document.getElementById('panel-client'),host=document.getElementById('df-client-host'),R=document.getElementById('df-root');
   if(pc&&host&&pc.parentNode!==host)host.appendChild(pc);
   if(R)R.style.display=_dfTab==='client'?'none':'';if(host)host.style.display=_dfTab==='client'?'':'none';

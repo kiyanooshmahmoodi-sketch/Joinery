@@ -96,7 +96,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
 {console.log('Drafting');const p=await iso(await b.newPage());p.on('dialog',d=>d.accept());await p.goto(FILE);await p.waitForTimeout(T*900);
   const r=await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);
     allJobs.d1={id:'d1',name:'Bondi',info:{stageManual:'drafting',stageAutoAt:'design'},drawings:[{kind:'cm',id:'c1',name:'CM.jpg',mime:'image/jpeg',size:1}],units:[]};
-    allJobs.d2={id:'d2',name:'Other',info:{},drawings:[],units:[]};selectJob('d1');switchView('drafting');const t=document.getElementById('df-root').innerText;
+    allJobs.d2={id:'d2',name:'Other',info:{},drawings:[],units:[]};selectJob('d1');switchView('drafting');dfTab('work');const t=document.getElementById('df-root').innerText;
     dfTick('q2',true);const kept=!!(allJobs.d1.info.drafting&&allJobs.d1.info.drafting.check.q2);dfToProd();const blocked=jhStage(allJobs.d1);
     units=allJobs.d1.units=[{id:'K1',type:'cabinet',parts:[]}];dfToProd();return {list:/Bondi/.test(t)&&!/Other/.test(t),cm:/CM\.jpg/.test(t),kept,blocked,after:jhStage(allJobs.d1),
       nav:[...document.querySelectorAll('.view-switch .view-btn')].filter(b=>b.style.display!=='none').map(b=>b.textContent.trim().replace(/\s*\d+$/,'')).join('|')};});
