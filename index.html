@@ -1295,7 +1295,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v428 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v429 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8408,7 +8408,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v428 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v429 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10437,18 +10437,22 @@ function appSetLoad(){if(!(window.cloud&&cloud.db&&cloud.user))return;
   },function(){});}
 // ===== v425: DRAFTING page — between Jobs and Cabinets & Hardware =====
 // Jobs in the Drafting stage · everything the drafter needs to start · a dated checklist · upload the drafter's output and send the job to Production
-var DF_CHECK=[['cm','Check measure done'],['sel','Client selections signed off'],['mat','Material schedule complete'],['draw','Production drawings drawn'],['inst','Installation drawings uploaded'],['xl','Cabinet Excel ready'],['hw','Hardware checked']];
+var DF_CHECK=[['q1',"Check the production drawing against the approved drawing."],['q2',"Check the drawing against the CM file and ensure all pipe locations are drawn correctly."],['q3',"Check material names in all rooms."],['q4',"Mention PTO in U-back where applicable."],['q5',"Mention carcass in U-back if colour cabinets are used."],['q6',"Wherever colour edging is used, cabinets should be White Satin."],['q7',"Remove top edges in finger-pull cabinets."],['q8',"Write appliance sizes in the drawing for the installer."],['q9',"Mention any gaps in the drawing for the installer."],['q10',"Remove all “N” references and replace them with numbers."],['q11',"Check hinge plate space in blind cabinets; it should be between 80–90 mm."],['q12',"Blind cabinet door width should not be less than 420 mm."],['q13',"For base and wall blind cabinets, allow a 20 mm gap between the cabinet and wall on one side."],['q14',"For base and wall corner cabinets, allow a 20 mm gap on both sides."],['q15',"For islands with a depth greater than 900 mm, structural support (16 mm Raw HMR) is required."],['q16',"Check all hinges in wireframe mode."],['q17',"Wall cabinets: 2 hinges require 1 shelf; 3 hinges require 2 shelves."],['q18',"When two cabinets are stacked on top of each other, provide a 2 mm gap between them (especially important for two-step cabinets)."],['q19',"Panels between appliances must have colour edging."],['q20',"Check appliance support requirements."],['q21',"Add 20 mm to all panels and kick faces in Laundry and Alfresco areas."],['q22',"Show all kickboard sizes in the drawing."],['q23',"Add a cutout in the sink cabinet if a dishwasher is next to the sink cabinet."],['q24',"Add 20 mm to the height and length of all bulkheads."],['q25',"Thermolaminate doors must be clearly mentioned in the drawing."],['q26',"All information should be placed within the drawing area, not in Multiprint."],['q27',"For all floating shelves, include dimensions between shelves."],['q28',"Mention stone thickness."],['q29',"If stone thickness is 60 mm or more, check appliance height carefully."],['q30',"Before sending for review, check all panels in the cut list (part sizes should not exceed panel size)."]];   // v429: Production Drawing – Self QC Checklist
 var _dfSel=null;
 function dfData(j){var I=jhInfo(j);I.drafting=(I.drafting&&typeof I.drafting==='object')?I.drafting:{};var d=I.drafting;   /* kept in info so every save keeps it */if(!d.check||typeof d.check!=='object')d.check={};if(!Array.isArray(d.custom))d.custom=[];return d;}
 function dfJobs(){return Object.values(allJobs||{}).filter(function(j){return (typeof jobOK!=='function'||jobOK(j))&&jhStage(j)==='drafting';}).sort(jhByDue);}
 function dfFiles(j,k){return (j.drawings||[]).filter(function(x){return drKind(x)===k;});}
 function dfAuto(j,k){var F=j.finishes||{};
-  if(k==='cm')return dfFiles(j,'cm').length?'CM file uploaded':'';
+  if(k==='q2')return dfFiles(j,'cm').length?dfFiles(j,'cm').length+' CM file(s) uploaded':'No CM file uploaded yet';
+  if(k==='q1')return clApOk(j)?'Client selections approved':'';
+  if(k==='q25'){var th=(j.units||[]).filter(function(u){return /thermo/i.test(JSON.stringify(u.parts||[]));}).length;return th?th+' cabinets with thermolaminate parts':'';}
+  if(k==='q4'){var pt=getPTOCountJ(j);return pt?pt+' PTO in this job':'';}
   if(k==='sel')return clApOk(j)?'Approved for production':((F.clientSign&&F.clientSign.at)?'Client signed — not approved yet':'');
   if(k==='inst')return dfFiles(j,'prod').length?dfFiles(j,'prod').length+' uploaded':'';
   if(k==='xl')return (j.units||[]).length?(j.units||[]).length+' cabinets & parts imported':'';
   if(k==='mat'){var n=0;((F.ms)||[]).forEach(function(sp){(sp.items||[]).forEach(function(it){if(it.brand||it.colour)n++;});});return n?n+' materials filled in':'';}
   return '';}
+function getPTOCountJ(j){try{return (j.units||[]).reduce(function(a,u){return a+hwPtoQty(u);},0);}catch(e){return 0;}}
 function dfItems(j){var d=dfData(j);return DF_CHECK.map(function(x){return {k:x[0],t:x[1]};}).concat(d.custom.map(function(c){return {k:'c:'+c.id,t:c.t,custom:true};}));}
 function dfDone(j,k){var c=dfData(j).check[k];return !!(c&&c.at);}
 function dfProg(j){var it=dfItems(j);return {n:it.filter(function(x){return dfDone(j,x.k);}).length,t:it.length};}
@@ -10486,10 +10490,10 @@ function renderDrafting(){var R=document.getElementById('df-root');if(!R)return;
           '<button class="btn btn-outline btn-sm" onclick="switchView(\'cabinetlist\');showTab(\'client\',document.querySelector(\'.tab[onclick*=&quot;client&quot;]\'))">Client notes ('+nNotes+')</button>'+
           (ap?'<button class="btn btn-outline btn-sm" onclick="clApPrint()">Print approved selections</button>':'')+
         '</div><div style="font-size:12.5px;margin-top:8px;color:'+(ap?'#2f5d40':'#71717a')+';">'+(ap?'✓ Client selections approved '+jhFmt(new Date(ap.at).toISOString()):(sg&&sg.at?'Client signed '+jhFmt(new Date(sg.at).toISOString())+' — waiting for your approval':'Client has not signed off the selections yet'))+'</div></div>'+
-      '<div class="card"><div class="card-title" style="margin-bottom:6px;">Drafting checklist</div>'+
+      '<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:6px;"><div class="card-title" style="margin:0;">Production Drawing – Self QC Checklist</div><span style="font-size:12px;color:#71717a;">'+dfProg(j).n+' of '+dfProg(j).t+' checked</span></div>'+
         dfItems(j).map(function(x){var c=d.check[x.k],au=dfAuto(j,x.k);return '<div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid #f4f4f5;">'+
           '<input type="checkbox" '+(c?'checked ':'')+'onchange="dfTick(\''+x.k+'\',this.checked)" style="width:17px;height:17px;margin:0;accent-color:#27272a;cursor:pointer;">'+
-          '<div style="flex:1;min-width:0;"><div style="font-size:13.5px;'+(c?'color:#71717a;text-decoration:line-through;':'')+'">'+esc(x.t)+'</div>'+
+          '<div style="flex:1;min-width:0;"><div style="font-size:13.5px;line-height:1.45;'+(c?'color:#71717a;text-decoration:line-through;':'')+'">'+(x.custom?'':'<span style="color:#a1a1aa;font-variant-numeric:tabular-nums;margin-right:6px;">'+x.k.slice(1)+'.</span>')+esc(x.t)+'</div>'+
           ((c||au)?'<div style="font-size:11.5px;color:#a1a1aa;">'+(c?'Done '+jhFmt(new Date(c.at).toISOString())+(c.by?' · '+esc(c.by):''):'')+(au?(c?' · ':'')+esc(au):'')+'</div>':'')+'</div>'+
           (x.custom?'<button class="btn btn-outline btn-sm" title="Remove" onclick="dfDelItem(\''+x.k.slice(2)+'\')">×</button>':'')+'</div>';}).join('')+
         '<div style="display:flex;gap:8px;margin-top:8px;"><input id="df-new" placeholder="Add a checklist item…" onkeydown="if(event.key===\'Enter\')dfAddItem()" style="flex:1;"/><button class="btn btn-outline btn-sm" onclick="dfAddItem()">Add</button></div>'+

@@ -97,7 +97,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   const r=await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);
     allJobs.d1={id:'d1',name:'Bondi',info:{stageManual:'drafting',stageAutoAt:'design'},drawings:[{kind:'cm',id:'c1',name:'CM.jpg',mime:'image/jpeg',size:1}],units:[]};
     allJobs.d2={id:'d2',name:'Other',info:{},drawings:[],units:[]};selectJob('d1');switchView('drafting');const t=document.getElementById('df-root').innerText;
-    dfTick('cm',true);const kept=!!(allJobs.d1.info.drafting&&allJobs.d1.info.drafting.check.cm);dfToProd();const blocked=jhStage(allJobs.d1);
+    dfTick('q2',true);const kept=!!(allJobs.d1.info.drafting&&allJobs.d1.info.drafting.check.q2);dfToProd();const blocked=jhStage(allJobs.d1);
     units=allJobs.d1.units=[{id:'K1',type:'cabinet',parts:[]}];dfToProd();return {list:/Bondi/.test(t)&&!/Other/.test(t),cm:/CM\.jpg/.test(t),kept,blocked,after:jhStage(allJobs.d1),
       nav:[...document.querySelectorAll('.view-switch .view-btn')].filter(b=>b.style.display!=='none').map(b=>b.textContent.trim().replace(/\s*\d+$/,'')).join('|')};});
   ok('drafting lists only drafting jobs with their CM files',r.list&&r.cm);ok('checklist tick is saved',r.kept);
