@@ -1080,6 +1080,26 @@ html,body{overflow-x:hidden;}
 #role-ov.ro-standby #ro-card,#role-ov.ro-standby #ro-load{display:none!important}
 #role-ov.ro-standby #ro-standby-msg{display:block;position:fixed;z-index:2;left:0;right:0;bottom:7vh;text-align:center;font-size:13px;letter-spacing:.08em;color:#94a3b8;opacity:0;animation:roFade 1s ease 3.6s forwards}
 </style>
+<style id="vs-css">
+/* v427: left job list on Cabinets & Hardware, QC & Dispatch, Installation, Maintenance */
+.vs-on{display:grid!important;grid-template-columns:240px minmax(0,1fr);gap:18px;max-width:1440px!important;margin:0 auto!important;padding:0 18px!important;box-sizing:border-box;align-items:start}
+.vs-on[style*="display: none"],.vs-on[style*="display:none"]{display:none!important}
+.vs-main{min-width:0}
+.vs-main>.content{max-width:none!important;padding-left:0!important;padding-right:0!important}
+.vs-side{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto;padding:16px 0 20px;scrollbar-width:thin}
+.vs-head{font-size:15px;font-weight:600;color:#18181b;margin-bottom:10px}
+.vs-grp{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#71717a;margin:12px 0 6px;display:flex;justify-content:space-between}
+.vs-grp i{font-style:normal;color:#a1a1aa;font-weight:500}
+.vs-job{display:block;width:100%;text-align:left;background:#fff;border:1px solid #e4e4e7;border-left:3px solid #e4e4e7;border-radius:8px;padding:9px 11px;margin-bottom:7px;cursor:pointer;font-family:inherit}
+.vs-job:hover{border-color:#a1a1aa}
+.vs-job.on{border-color:#27272a;box-shadow:0 0 0 1px #27272a}
+.vs-job b{display:block;font-size:13.5px;font-weight:600;color:#18181b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vs-job span{display:block;font-size:11.5px;color:#71717a;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vs-none{font-size:12px;color:#a1a1aa;padding:2px 0 6px}
+@media(max-width:900px){.vs-on{grid-template-columns:1fr;padding:0 12px!important}
+  .vs-side{position:static;max-height:none;display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px;align-items:center}
+  .vs-head,.vs-grp,.vs-none{display:none}.vs-job{flex:none;width:180px;margin:0}}
+</style>
 </head>
 <body>
 
@@ -1275,7 +1295,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v426 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v427 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8388,7 +8408,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v426 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v427 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10003,7 +10023,7 @@ function renderMaint(force){mtBadge();var list=document.getElementById('mt-list'
   if(!jobs.length){list.innerHTML=adder+'<div style="text-align:center;color:#6b7280;padding:30px;border:1px dashed #d1d5db;border-radius:10px;">'+(q?'No job matches.':'No jobs in Maintenance yet.<br><small>A job comes here by itself once all its cabinets are scanned as installed (or pick Maintenance as the stage on its Jobs card).</small>')+'</div>';return;}
   list.innerHTML=adder+'<div style="display:flex;flex-direction:column;gap:14px;">'+jobs.map(function(j){var i=j.info||{},id=j.id,site=(j.finishes&&j.finishes.site)||'',M=i.maint||[],open=M.filter(function(m){return !m.done;}).length;
     var since=mtSince(j),dd=mtDays(j);
-    return '<div class="card" style="margin:0;border-left:6px solid #b45309;padding:16px 20px;">'+
+    return '<div class="card" data-mtjob="'+id+'" style="margin:0;border-left:6px solid #b45309;padding:16px 20px;scroll-margin-top:12px;">'+
       '<div style="display:flex;gap:8px;align-items:center;"><div style="flex:1;min-width:0;font-size:20px;font-weight:800;">'+esc(j.name||'Job')+'</div><button class="btn btn-outline btn-sm" onclick="mtPrint(\''+id+'\')">🖨️ Print</button>'+(open?'<span style="font-size:10px;font-weight:700;color:#fff;background:#b45309;border-radius:4px;padding:2px 6px;">'+open+' open</span>':'')+'</div>'+
       (since?'<div style="display:flex;align-items:center;gap:8px;margin-top:6px;"><span style="font-size:18px;font-weight:800;color:#b45309;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:2px 10px;white-space:nowrap;flex-shrink:0;">⏱ '+mtDaysTxt(dd)+'</span><span style="font-size:11px;color:#6b7280;">in maintenance · since '+jhFmt(since)+'</span></div>':'')+
       '<div style="font-size:12px;margin-top:6px;line-height:1.7;">'+
@@ -10495,6 +10515,27 @@ function sbHide(){if(!_sbOn)return;_sbOn=false;var ov=document.getElementById('r
 ['pointerdown','keydown','wheel','touchstart'].forEach(function(ev){document.addEventListener(ev,function(e){if(_sbOn){e.preventDefault();e.stopPropagation();sbHide();return;}sbArm();},true);});
 document.addEventListener('mousemove',function(){if(!_sbOn)sbArm();},{passive:true});
 sbArm();
+// ===== v427: job list on the left of every section — which jobs are in this part of the workflow =====
+var VS_STAGES={cabinetlist:[['drafting','Drafting'],['production','Production']],tracker:[['production','Production'],['qcd','QC & Dispatch']],dispatch:[['production','Production'],['qcd','QC & Dispatch']],
+  installation:[['qcd','QC & Dispatch'],['installation','Installation']],maint:[['maintenance','Maintenance']]};
+var VS_TITLE={cabinetlist:'Cabinets & Hardware',tracker:'QC & Dispatch',dispatch:'QC & Dispatch',installation:'Installation',maint:'Maintenance'};
+function vsWrap(v){var el=document.getElementById('view-'+v);if(!el)return null;var side=el.querySelector(':scope > .vs-side');
+  if(!side){var main=document.createElement('div');main.className='vs-main';while(el.firstChild)main.appendChild(el.firstChild);side=document.createElement('aside');side.className='vs-side';el.appendChild(side);el.appendChild(main);el.classList.add('vs-on');}
+  return side;}
+function vsPick(id){if(id!==currentJobId)selectJob(id);var v=_currentView;switchView(v);
+  if(v==='maint'){setTimeout(function(){var c=document.querySelector('#mt-list [data-mtjob="'+id+'"]');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},60);}}
+function renderSide(v){var G=VS_STAGES[v];if(!G)return;var side=vsWrap(v);if(!side)return;
+  var ok=function(j){return typeof jobOK!=='function'||jobOK(j);},all=Object.values(allJobs||{}).filter(ok),shown={};
+  var item=function(j){var inf=j.info||{},dc=jhDueCol(j),on=j.id===currentJobId,cn=0;try{cn=(j.units||[]).filter(function(u){return u.type==='cabinet';}).length;}catch(e){}shown[j.id]=1;
+    return '<button class="vs-job'+(on?' on':'')+'" onclick="vsPick(\''+j.id+'\')" style="border-left-color:'+(dc?dc.bd:'#e4e4e7')+'"><b>'+esc(j.name||'Job')+'</b>'+
+      '<span>'+esc(inf.client||'—')+(inf.dueDate&&v!=='maint'?' · '+jhDueText(inf.dueDate):'')+(v==='maint'&&typeof mtDays==='function'&&mtSince(j)?' · '+mtDaysTxt(mtDays(j)):'')+(cn?' · '+cn+' cab':'')+'</span></button>';};
+  var html=G.map(function(g){var L=all.filter(function(j){return jhStage(j)===g[0];}).sort(jhByDue);
+    return '<div class="vs-grp">'+esc(g[1])+' <i>'+L.length+'</i></div>'+(L.length?L.map(item).join(''):'<div class="vs-none">No jobs</div>');}).join('');
+  var cur=currentJobId&&allJobs[currentJobId];
+  if(cur&&!shown[cur.id]){var S=JH_STAGES.filter(function(x){return x.k===jhStage(cur);})[0]||{};html='<div class="vs-grp">Open now <i>'+esc(S.t||'')+'</i></div>'+item(cur)+html;}
+  side.innerHTML='<div class="vs-head">'+esc(VS_TITLE[v]||'')+' jobs</div>'+html;}
+(function(){var _sv=switchView;switchView=function(v){var r=_sv.apply(this,arguments);try{renderSide(_currentView);}catch(e){console.error(e);}return r;};})();
+(function(){var _sj=selectJob;selectJob=function(id){var r=_sj.apply(this,arguments);try{if(VS_STAGES[_currentView])renderSide(_currentView);}catch(e){}return r;};})();
 // ===== v259: PRODUCTION DRAWINGS (PDF) in Installation =====
 function tomb(id){var j=siJob();if(!j)return;j.deleted=j.deleted||[];if(j.deleted.indexOf(id)<0)j.deleted.push(id);}
 function drMB(n){return (n/1048576).toFixed(1)+' MB';}

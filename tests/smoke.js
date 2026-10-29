@@ -109,4 +109,12 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   await p.waitForTimeout(T*1500);const on=await p.evaluate(()=>document.getElementById('role-ov').style.display==='flex'&&_sbOn);
   await p.mouse.click(200,200);await p.waitForTimeout(T*700);const off=await p.evaluate(()=>document.getElementById('role-ov').style.display==='none'&&!_sbOn&&SESSION.role==='admin');
   ok('standby shows the opening screen when idle',on);ok('a tap brings the app back, still signed in',off);await p.close();}
+// ---------- 9. job list on the left of each section
+{console.log('Section job lists');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*700);
+  const r=await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);const J=(id,st,n)=>{allJobs[id]={id,name:id,info:{stageManual:st},drawings:[],units:Array.from({length:n},(_,i)=>({id:id+i,type:'cabinet',parts:[]}))};allJobs[id].info.stageAutoAt=jhAutoStage(allJobs[id]);};
+    J('P1','production',3);J('Q1','qcd',3);J('I1','installation',3);J('M1','maintenance',3);selectJob('P1');const o={};
+    [['cabinetlist','cabinetlist'],['tracker','tracker'],['installation','installation'],['maint','maint']].forEach(([v,el])=>{switchView(v);o[v]=document.querySelector('#view-'+el+' .vs-side').innerText;});
+    vsPick('Q1');o.picked=currentJobId;return o;});
+  ok('Cabinets & Hardware lists production jobs',/P1/.test(r.cabinetlist)&&!/I1/.test(r.cabinetlist));ok('QC & Dispatch lists QC jobs',/Q1/.test(r.tracker));
+  ok('Installation lists installation jobs',/I1/.test(r.installation));ok('Maintenance lists maintenance jobs',/M1/.test(r.maint));ok('tapping a job opens it',r.picked==='Q1');await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();
