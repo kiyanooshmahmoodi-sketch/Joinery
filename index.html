@@ -1295,7 +1295,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v435 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v436 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8427,7 +8427,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v435 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v436 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10543,8 +10543,13 @@ function sbShow(){var ov=document.getElementById('role-ov');if(!ov||!window.SESS
   try{if(currentJobId)saveCurrentJob();saveData();}catch(e){}
   _sbOn=true;var art=document.getElementById('ro-art');if(art){var c=art.cloneNode(true);art.parentNode.replaceChild(c,art);}   // replay the drawing
   var br=document.getElementById('ro-brand');if(br){var cb=br.cloneNode(true);br.parentNode.replaceChild(cb,br);}
-  ov.classList.remove('ro-out','ro-hold','ro-wait');ov.classList.add('ro-standby');ov.style.opacity='';ov.style.display='flex';}
-function sbHide(){if(!_sbOn)return;_sbOn=false;var ov=document.getElementById('role-ov');ov.classList.add('ro-out');
+  ov.classList.remove('ro-out','ro-hold','ro-wait');ov.classList.add('ro-standby');ov.style.opacity='';ov.style.display='flex';
+  clearInterval(_sbLoop);_sbLoop=setInterval(sbRedraw,SB_REDRAW_MS);}
+// v436: in standby the sketch fades away and is drawn again from the start, over and over
+var SB_REDRAW_MS=25000,_sbLoop=null;
+function sbRedraw(){if(!_sbOn){clearInterval(_sbLoop);return;}var art=document.getElementById('ro-art');if(!art)return;art.style.transition='opacity 1.2s ease';art.style.opacity='0';
+  setTimeout(function(){if(!_sbOn)return;var a=document.getElementById('ro-art');if(!a)return;var c=a.cloneNode(true);c.style.transition='none';c.style.opacity='1';a.parentNode.replaceChild(c,a);},1300);}
+function sbHide(){if(!_sbOn)return;_sbOn=false;clearInterval(_sbLoop);var _a=document.getElementById('ro-art');if(_a){_a.style.transition='';_a.style.opacity='';}var ov=document.getElementById('role-ov');ov.classList.add('ro-out');
   setTimeout(function(){ov.style.display='none';ov.classList.remove('ro-out','ro-standby');},450);sbArm();}
 ['pointerdown','keydown','wheel','touchstart'].forEach(function(ev){document.addEventListener(ev,function(e){if(_sbOn){e.preventDefault();e.stopPropagation();sbHide();return;}sbArm();},true);});
 document.addEventListener('mousemove',function(){if(!_sbOn)sbArm();},{passive:true});

@@ -105,8 +105,9 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('menu order: Jobs, Drafting, Cabinets & Hardware…',r.nav.indexOf('Jobs|Drafting|Cabinets & Hardware|QC & Dispatch|Installation|Maintenance')===0,r.nav);await p.close();}
 // ---------- 8. standby
 {console.log('Standby');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*600);
-  await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);document.getElementById('role-ov').style.display='none';SB_MS=800;sbArm();});
+  await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);document.getElementById('role-ov').style.display='none';SB_MS=800;SB_REDRAW_MS=700;sbArm();});
   await p.waitForTimeout(T*1500);const on=await p.evaluate(()=>document.getElementById('role-ov').style.display==='flex'&&_sbOn);
+  await p.evaluate(()=>{window._oldArt=document.getElementById('ro-art');});await p.waitForTimeout(T*2300);const redrawn=await p.evaluate(()=>{const a=document.getElementById('ro-art');return a!==window._oldArt;});ok('standby sketch is drawn again and again',redrawn);
   await p.mouse.click(200,200);await p.waitForTimeout(T*700);const off=await p.evaluate(()=>document.getElementById('role-ov').style.display==='none'&&!_sbOn&&SESSION.role==='admin');
   ok('standby shows the opening screen when idle',on);ok('a tap brings the app back, still signed in',off);await p.close();}
 // ---------- 9. job list on the left of each section
