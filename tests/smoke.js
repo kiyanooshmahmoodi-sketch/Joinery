@@ -92,4 +92,15 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   const q=await p.evaluate(()=>{const U=(id,hw,pto)=>({id,type:'cabinet',room:'K',isPTO:!!pto,parts:[{name:'UBack HW'}],hwModelOverride:hw});
     units=[U('A1','110 Hinge (2), 155 Hinge (2), PTO'),U('A2','110 hinge (2),PTO (1)'),U('A3','Bin',1)];return hwItems().map(i=>i.title+'='+i.total).join('|');});
   ok('"110 Hinge (2), 155 Hinge (2), PTO" counts 2 + 2 + 1 PTO',q==='🔘 PTO Mechanisms=3|110 Hinge=4|155 Hinge=2|Bin=1',q);await p.close();}
+// ---------- 7. drafting page
+{console.log('Drafting');const p=await iso(await b.newPage());p.on('dialog',d=>d.accept());await p.goto(FILE);await p.waitForTimeout(T*900);
+  const r=await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);
+    allJobs.d1={id:'d1',name:'Bondi',info:{stageManual:'drafting',stageAutoAt:'design'},drawings:[{kind:'cm',id:'c1',name:'CM.jpg',mime:'image/jpeg',size:1}],units:[]};
+    allJobs.d2={id:'d2',name:'Other',info:{},drawings:[],units:[]};selectJob('d1');switchView('drafting');const t=document.getElementById('df-root').innerText;
+    dfTick('cm',true);const kept=!!(allJobs.d1.info.drafting&&allJobs.d1.info.drafting.check.cm);dfToProd();const blocked=jhStage(allJobs.d1);
+    units=allJobs.d1.units=[{id:'K1',type:'cabinet',parts:[]}];dfToProd();return {list:/Bondi/.test(t)&&!/Other/.test(t),cm:/CM\.jpg/.test(t),kept,blocked,after:jhStage(allJobs.d1),
+      nav:[...document.querySelectorAll('.view-switch .view-btn')].filter(b=>b.style.display!=='none').map(b=>b.textContent.trim().replace(/\s*\d+$/,'')).join('|')};});
+  ok('drafting lists only drafting jobs with their CM files',r.list&&r.cm);ok('checklist tick is saved',r.kept);
+  ok('cannot go to Production without the Excel',r.blocked==='drafting');ok('Send to Production moves the job',r.after==='production',r.after);
+  ok('menu order: Jobs, Drafting, Cabinets & Hardware…',r.nav.indexOf('Jobs|Drafting|Cabinets & Hardware|QC & Dispatch|Installation|Maintenance')===0,r.nav);await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();

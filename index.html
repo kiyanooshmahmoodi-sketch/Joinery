@@ -1073,6 +1073,7 @@ html,body{overflow-x:hidden;}
 .topbar{padding-top:calc(env(titlebar-area-height,0px) + 12px)!important;-webkit-app-region:drag;app-region:drag;}
 .topbar button,.topbar input,.topbar a,.topbar select,.topbar label,.brand-logo,#user-chip{-webkit-app-region:no-drag;app-region:no-drag;}
 </style>
+<style id="df-css">@media(max-width:760px){.df-grid{grid-template-columns:1fr!important;}}</style>
 </head>
 <body>
 
@@ -1268,7 +1269,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v424 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v425 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1303,7 +1304,8 @@ html,body{overflow-x:hidden;}
 <!-- TOP-LEVEL VIEW SWITCHER -->
 <div class="view-switch">
   <button class="view-btn" id="vb-jobs" onclick="switchView('jobs')" style="display:none;">🏠 Jobs</button>
-  <button class="view-btn active" id="vb-cabinetlist" onclick="switchView('cabinetlist')">📋 Designer (Cabinet List)</button>
+  <button class="view-btn" id="vb-drafting" onclick="switchView('drafting')" style="display:none;">Drafting <span class="tbadge" id="vb-df-badge" style="display:none">0</span></button>
+  <button class="view-btn active" id="vb-cabinetlist" onclick="switchView('cabinetlist')">Cabinets &amp; Hardware</button>
   <button class="view-btn" id="vb-tracker" onclick="switchView(hasRole('dispatch')&&!hasRole('qc')?'dispatch':'tracker')">✅ QC &amp; Dispatch</button>
   <button class="view-btn" id="vb-dispatch" onclick="switchView('dispatch')">📦 Dispatch / Shipping</button>
   <button class="view-btn" id="vb-installation" onclick="switchView('installation')">🚚 Installation <span class="tbadge" id="vb-ii-badge" style="display:none">0</span></button>
@@ -1927,6 +1929,7 @@ html,body{overflow-x:hidden;}
 
 <!-- VIEW: ADMIN (only visible to the admin) -->
 <!-- VIEW: MAINTENANCE (v393) — jobs that are installed and now in Maintenance -->
+<div id="view-drafting" style="display:none;"><div class="content" id="df-root"></div></div>
 <div id="view-maint" style="display:none;"><div class="content">
   <div style="margin-bottom:10px;"><div style="font-size:18px;font-weight:700;">🔧 Maintenance</div><div style="font-size:12px;color:var(--gray);">Installed jobs that are now in Maintenance. Log each call-out or fix; mark the job Completed when nothing is left.</div></div>
   <div style="display:flex;justify-content:flex-end;margin:-6px 0 8px;"><button class="btn btn-outline btn-sm" onclick="mtPrint()">🖨️ Print all maintenance</button></div>
@@ -8379,7 +8382,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v424 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v425 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -8417,6 +8420,7 @@ function switchView(view){
   document.getElementById('view-cabinetlist').style.display=(view==='cabinetlist'?'block':'none');
   var _vj=document.getElementById('view-jobs');if(_vj)_vj.style.display=(view==='jobs'?'block':'none');
   var _vm=document.getElementById('view-maint');if(_vm)_vm.style.display=(view==='maint'?'block':'none');
+  var _vdf=document.getElementById('view-drafting');if(_vdf)_vdf.style.display=(view==='drafting'?'block':'none');var _bdf=document.getElementById('vb-drafting');if(_bdf)_bdf.classList.toggle('active',view==='drafting');
   var _bm=document.getElementById('vb-maint');if(_bm)_bm.classList.toggle('active',view==='maint');
   var _bj=document.getElementById('vb-jobs');if(_bj)_bj.classList.toggle('active',view==='jobs');
   document.getElementById('view-tracker').style.display=(view==='tracker'?'block':'none');
@@ -8456,6 +8460,7 @@ function switchView(view){
   if(view==='admin'){ensureViewActivePanel('view-admin','users');}
   if(view==='jobs'){try{renderJobsHome();}catch(e){}}
   if(view==='maint'){try{renderMaint();}catch(e){}}
+  if(view==='drafting'){try{renderDrafting();}catch(e){console.error(e);}}
   if(view==='dispatch'){
     renderDispatchStats();renderDispatchPendingList();renderDispatchLog();
     setTimeout(focusDispScanBox,60);
@@ -9903,7 +9908,7 @@ function jhCard(j){
     (hasRole('admin')?jhSec(id,'fin','Orders &amp; invoices',(j.drawings||[]).filter(function(x){return x.kind==='fin';}).length+' file(s)',(_jhFinOpen?jhFinHTML(j):jhFinLockHTML())):'')+
     '<div class="jx-foot"><button class="jx-btn jx-dark" onclick="jhOpen(\''+id+'\')">Open job</button><span class="jx-meta">'+(cn.n?(cn.n+' items'):'No cabinet list yet')+'</span></div>'+
   '</div>';}
-function renderJobsHome(){
+function renderJobsHome(){try{dfBadge();}catch(e){}
   var list=document.getElementById('jh-list'),fl=document.getElementById('jh-filter');if(!list||!fl)return;
   var pn=document.getElementById('panel-jobs');var _ae=document.activeElement;if(pn&&_ae&&pn.contains(_ae)&&_ae.id!=='jh-search'&&_ae.tagName==='INPUT'&&/^(text|tel|url|search|)$/i.test(_ae.type||''))return;   // v393: only hold the redraw while typing in a text box (not for dropdowns / dates)
   var q=((document.getElementById('jh-search')||{}).value||'').toLowerCase().trim();
@@ -10404,6 +10409,73 @@ function appSetLoad(){if(!(window.cloud&&cloud.db&&cloud.user))return;
     try{if(typeof briefBox==='function'&&document.getElementById('br-form')&&!_brEdit)briefBox();}catch(e){}
     try{if(typeof updateRodPreview==='function')updateRodPreview();var ri=document.getElementById('cr-deduct');if(ri&&document.activeElement!==ri)ri.value=getRodDeduct()||'';}catch(e){}
   },function(){});}
+// ===== v425: DRAFTING page — between Jobs and Cabinets & Hardware =====
+// Jobs in the Drafting stage · everything the drafter needs to start · a dated checklist · upload the drafter's output and send the job to Production
+var DF_CHECK=[['cm','Check measure done'],['sel','Client selections signed off'],['mat','Material schedule complete'],['draw','Production drawings drawn'],['inst','Installation drawings uploaded'],['xl','Cabinet Excel ready'],['hw','Hardware checked']];
+var _dfSel=null;
+function dfData(j){var I=jhInfo(j);I.drafting=(I.drafting&&typeof I.drafting==='object')?I.drafting:{};var d=I.drafting;   /* kept in info so every save keeps it */if(!d.check||typeof d.check!=='object')d.check={};if(!Array.isArray(d.custom))d.custom=[];return d;}
+function dfJobs(){return Object.values(allJobs||{}).filter(function(j){return (typeof jobOK!=='function'||jobOK(j))&&jhStage(j)==='drafting';}).sort(jhByDue);}
+function dfFiles(j,k){return (j.drawings||[]).filter(function(x){return drKind(x)===k;});}
+function dfAuto(j,k){var F=j.finishes||{};
+  if(k==='cm')return dfFiles(j,'cm').length?'CM file uploaded':'';
+  if(k==='sel')return clApOk(j)?'Approved for production':((F.clientSign&&F.clientSign.at)?'Client signed — not approved yet':'');
+  if(k==='inst')return dfFiles(j,'prod').length?dfFiles(j,'prod').length+' uploaded':'';
+  if(k==='xl')return (j.units||[]).length?(j.units||[]).length+' cabinets & parts imported':'';
+  if(k==='mat'){var n=0;((F.ms)||[]).forEach(function(sp){(sp.items||[]).forEach(function(it){if(it.brand||it.colour)n++;});});return n?n+' materials filled in':'';}
+  return '';}
+function dfItems(j){var d=dfData(j);return DF_CHECK.map(function(x){return {k:x[0],t:x[1]};}).concat(d.custom.map(function(c){return {k:'c:'+c.id,t:c.t,custom:true};}));}
+function dfDone(j,k){var c=dfData(j).check[k];return !!(c&&c.at);}
+function dfProg(j){var it=dfItems(j);return {n:it.filter(function(x){return dfDone(j,x.k);}).length,t:it.length};}
+function dfBadge(){var b=document.getElementById('vb-df-badge');if(!b)return;var n=dfJobs().length;b.textContent=n;b.style.display=n?'':'none';}
+function dfPick(id){_dfSel=id;if(id!==currentJobId)selectJob(id);renderDrafting();}
+function dfTick(k,on){var j=allJobs[_dfSel];if(!j)return;var d=dfData(j);if(on)d.check[k]={at:Date.now(),by:(window.SESSION&&SESSION.name)||''};else delete d.check[k];jhSave(j.id);renderDrafting();}
+function dfAddItem(){var j=allJobs[_dfSel];if(!j)return;var i=document.getElementById('df-new'),t=(i&&i.value||'').trim();if(!t)return;dfData(j).custom.push({id:Date.now().toString(36),t:t});jhSave(j.id);renderDrafting();}
+function dfDelItem(id){var j=allJobs[_dfSel];if(!j||!confirm('Remove this checklist item?'))return;var d=dfData(j);d.custom=d.custom.filter(function(c){return c.id!==id;});delete d.check['c:'+id];jhSave(j.id);renderDrafting();}
+function dfNote(v){var j=allJobs[_dfSel];if(!j)return;dfData(j).note=v;jhSave(j.id);}
+async function dfUpload(inp){if(_dfSel&&_dfSel!==currentJobId)selectJob(_dfSel);await drUpload(inp,'prod');renderDrafting();}
+function dfToProd(){var j=allJobs[_dfSel];if(!j)return;if(!(j.units||[]).length){alert('Import the cabinet Excel first — the job moves to Production once the cabinets are in.');return;}
+  var p=dfProg(j);if(p.n<p.t&&!confirm('The checklist is not finished ('+p.n+' of '+p.t+'). Send to Production anyway?'))return;
+  jhSet(j.id,'stage','production',true);showMsg('✓ Sent to Production');_dfSel=null;renderDrafting();dfBadge();}
+function renderDrafting(){var R=document.getElementById('df-root');if(!R)return;dfBadge();var L=dfJobs();
+  if(_dfSel&&!L.some(function(j){return j.id===_dfSel;}))_dfSel=null;
+  if(!_dfSel)_dfSel=(L.filter(function(j){return j.id===currentJobId;})[0]||L[0]||{}).id||null;
+  var j=_dfSel&&allJobs[_dfSel];
+  var list=L.length?L.map(function(x){var inf=x.info||{},dc=jhDueCol(x),p=dfProg(x),on=x.id===_dfSel;
+      return '<button onclick="dfPick(\''+x.id+'\')" style="display:block;width:100%;text-align:left;background:#fff;border:1px solid '+(on?'#27272a':'#e4e4e7')+';border-left:3px solid '+(dc?dc.bd:'#e4e4e7')+';border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;font-family:inherit;">'+
+        '<div style="font-weight:600;font-size:14px;color:#18181b;">'+esc(x.name||'Job')+'</div>'+
+        '<div style="font-size:12px;color:#71717a;margin-top:2px;">'+esc(inf.client||'—')+(inf.dueDate?' · '+jhDueText(inf.dueDate):'')+'</div>'+
+        '<div style="height:3px;background:#f0f0f2;border-radius:2px;margin-top:8px;"><div style="height:3px;width:'+Math.round(p.n/p.t*100)+'%;background:#fbbf24;border-radius:2px;"></div></div>'+
+        '<div style="font-size:11px;color:#a1a1aa;margin-top:4px;">'+p.n+' of '+p.t+' done</div></button>';}).join('')
+    :'<div style="font-size:13px;color:#a1a1aa;padding:10px 0;">No jobs in Drafting. On the Jobs page, press “Move to Drafting” on a job.</div>';
+  var body='';
+  if(j){var inf=j.info||{},F=j.finishes||{},d=dfData(j),fileRow=function(x){return '<div style="display:flex;gap:8px;align-items:center;padding:5px 0;border-top:1px solid #f4f4f5;font-size:13px;"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(drName(x))+'</span><span style="font-size:11px;color:#a1a1aa;">'+esc(x.date||'')+'</span><button class="btn btn-outline btn-sm" onclick="drOpenAny(\''+x.id+'\')">Open</button></div>';};
+    var grp=function(k,t){var f=dfFiles(j,k);return '<div style="margin-top:10px;"><div style="font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#52525b;">'+t+' <span style="font-weight:400;color:#a1a1aa;">('+f.length+')</span></div>'+(f.length?f.map(fileRow).join(''):'<div style="font-size:12.5px;color:#a1a1aa;padding:4px 0;">None yet</div>')+'</div>';};
+    var sg=F.clientSign,ap=clApOk(j)?F.approval:null,nNotes=(F.clientBrief||[]).length;
+    body='<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;"><div><div style="font-size:20px;font-weight:600;">'+esc(j.name||'Job')+'</div><div style="font-size:12.5px;color:#71717a;margin-top:2px;">'+esc([inf.client,(F.site||'')].filter(Boolean).join(' · ')||'—')+(inf.dueDate?' · Delivery '+jhFmt(inf.dueDate+'T00:00:00')+' ('+jhDueText(inf.dueDate)+')':'')+'</div></div>'+
+        '<button class="btn btn-outline btn-sm" onclick="switchView(\'jobs\')">Open in Jobs</button></div></div>'+
+      '<div class="card"><div class="card-title" style="margin-bottom:2px;">Reference for drafting</div><div style="font-size:12px;color:#71717a;">Everything to draw from — open any file.</div>'+
+        grp('arch','Architectural plans')+grp('d3','3D / design files')+grp('cm','CM files')+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;border-top:1px solid #f0f0f2;padding-top:12px;">'+
+          '<button class="btn btn-outline btn-sm" onclick="switchView(\'cabinetlist\');showTab(\'finishes\',document.querySelector(\'.tab[onclick*=&quot;finishes&quot;]\'))">Finishes &amp; Material schedule</button>'+
+          '<button class="btn btn-outline btn-sm" onclick="switchView(\'cabinetlist\');showTab(\'client\',document.querySelector(\'.tab[onclick*=&quot;client&quot;]\'))">Client notes ('+nNotes+')</button>'+
+          (ap?'<button class="btn btn-outline btn-sm" onclick="clApPrint()">Print approved selections</button>':'')+
+        '</div><div style="font-size:12.5px;margin-top:8px;color:'+(ap?'#2f5d40':'#71717a')+';">'+(ap?'✓ Client selections approved '+jhFmt(new Date(ap.at).toISOString()):(sg&&sg.at?'Client signed '+jhFmt(new Date(sg.at).toISOString())+' — waiting for your approval':'Client has not signed off the selections yet'))+'</div></div>'+
+      '<div class="card"><div class="card-title" style="margin-bottom:6px;">Drafting checklist</div>'+
+        dfItems(j).map(function(x){var c=d.check[x.k],au=dfAuto(j,x.k);return '<div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid #f4f4f5;">'+
+          '<input type="checkbox" '+(c?'checked ':'')+'onchange="dfTick(\''+x.k+'\',this.checked)" style="width:17px;height:17px;margin:0;accent-color:#27272a;cursor:pointer;">'+
+          '<div style="flex:1;min-width:0;"><div style="font-size:13.5px;'+(c?'color:#71717a;text-decoration:line-through;':'')+'">'+esc(x.t)+'</div>'+
+          ((c||au)?'<div style="font-size:11.5px;color:#a1a1aa;">'+(c?'Done '+jhFmt(new Date(c.at).toISOString())+(c.by?' · '+esc(c.by):''):'')+(au?(c?' · ':'')+esc(au):'')+'</div>':'')+'</div>'+
+          (x.custom?'<button class="btn btn-outline btn-sm" title="Remove" onclick="dfDelItem(\''+x.k.slice(2)+'\')">×</button>':'')+'</div>';}).join('')+
+        '<div style="display:flex;gap:8px;margin-top:8px;"><input id="df-new" placeholder="Add a checklist item…" onkeydown="if(event.key===\'Enter\')dfAddItem()" style="flex:1;"/><button class="btn btn-outline btn-sm" onclick="dfAddItem()">Add</button></div>'+
+        '<textarea placeholder="Drafting notes…" onchange="dfNote(this.value)" rows="2" style="width:100%;margin-top:10px;">'+esc(d.note||'')+'</textarea></div>'+
+      '<div class="card"><div class="card-title" style="margin-bottom:2px;">Drafter output</div><div style="font-size:12px;color:#71717a;">Upload the installation drawings and import the cabinet Excel, then send the job to Production.</div>'+
+        grp('prod','Installation drawings')+
+        '<label class="btn btn-outline btn-sm" style="cursor:pointer;margin-top:8px;">Upload installation drawings (PDF)<input type="file" accept="application/pdf,.pdf" multiple style="display:none" onchange="dfUpload(this)"></label>'+
+        '<div style="margin-top:12px;border-top:1px solid #f0f0f2;padding-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><span style="font-size:13px;flex:1;min-width:180px;">Cabinet Excel: <b>'+((j.units||[]).length?(j.units||[]).length+' cabinets &amp; parts':'not imported yet')+'</b></span>'+
+          '<button class="btn btn-outline btn-sm" onclick="jhImport(\''+j.id+'\')">Import Excel</button>'+
+          '<button class="btn btn-blue btn-sm" onclick="dfToProd()">Send to Production →</button></div></div>';}
+  R.innerHTML='<div style="margin-bottom:14px;"><div style="font-size:24px;font-weight:600;">Drafting</div><div style="font-size:13px;color:#71717a;margin-top:2px;">Jobs being drawn — reference files, checklist and the drafter’s output, then on to Production.</div></div>'+
+    '<div style="display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:16px;align-items:start;" class="df-grid"><div>'+list+'</div><div>'+(body||'')+'</div></div>';}
 // ===== v259: PRODUCTION DRAWINGS (PDF) in Installation =====
 function tomb(id){var j=siJob();if(!j)return;j.deleted=j.deleted||[];if(j.deleted.indexOf(id)<0)j.deleted.push(id);}
 function drMB(n){return (n/1048576).toFixed(1)+' MB';}
@@ -10669,7 +10741,7 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
 </div>
 <script>
 // ROLES (v207): choose who you are when the app opens. Each role only sees its own sections.
-var ROLE_VIEWS={admin:['jobs','cabinetlist','tracker','dispatch','installation','maint','admin'],designer:['jobs','cabinetlist','maint'],qc:['tracker','dispatch'],dispatch:['dispatch','tracker'],installer:['installation','drawings','tracker','dispatch','maint']};
+var ROLE_VIEWS={admin:['jobs','drafting','cabinetlist','tracker','dispatch','installation','maint','admin'],designer:['jobs','drafting','cabinetlist','maint'],qc:['tracker','dispatch'],dispatch:['dispatch','tracker'],installer:['installation','drawings','tracker','dispatch','maint']};
 var ROLE_HOME={admin:'jobs',designer:'jobs',qc:'tracker',dispatch:'dispatch',installer:'installation'};
 var ROLE_LABEL={admin:'Admin',designer:'Designer',qc:'QC Checker',dispatch:'Dispatch / Shipping',installer:'Installer'};
 var SESSION={role:'',name:'',roles:[]};
@@ -10736,7 +10808,7 @@ function applyRole(r,nm,em,roles){
   b.classList.toggle('no-qc-edit',!H('qc'));
   b.classList.toggle('no-settings',!H('admin'));
   var allowed=roleViews();
-  ['jobs','cabinetlist','tracker','dispatch','installation','maint','admin'].forEach(function(v){
+  ['jobs','drafting','cabinetlist','tracker','dispatch','installation','maint','admin'].forEach(function(v){
     var el=document.getElementById('vb-'+v);if(el)el.style.display=(v!=='dispatch'&&allowed.indexOf(v)>-1)?'':'none';   // v393: Dispatch lives inside the QC & Dispatch page
   });
   var qs=document.getElementById('qc-scan-box');var card=qs&&qs.closest('.card');if(card)card.style.display=H('qc')?'':'none';
