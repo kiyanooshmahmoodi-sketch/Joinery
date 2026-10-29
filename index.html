@@ -1295,7 +1295,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v429 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v430 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1362,7 +1362,6 @@ html,body{overflow-x:hidden;}
 <!-- VIEW: CABINET LIST (Cabinet & Part List, Glass Door, Steccawood & Laminate, Kickboard, Import) -->
 <div id="view-cabinetlist">
 <div class="tabs">
-  <div class="tab" onclick="showTab('client',this)">Client Information &amp; Approval</div>
   <div class="tab" onclick="showTab('finishes',this)">📋 Finishes &amp; Appliances</div>
   <div class="tab active" onclick="showTab('units',this)">📦 Cabinet & Part List <span class="tbadge" id="tb-rem">0</span></div>
   <div class="tab" onclick="showTab('hardware',this)">🛒 Purchasing</div>
@@ -1955,7 +1954,7 @@ html,body{overflow-x:hidden;}
 
 <!-- VIEW: ADMIN (only visible to the admin) -->
 <!-- VIEW: MAINTENANCE (v393) — jobs that are installed and now in Maintenance -->
-<div id="view-drafting" style="display:none;"><div class="content" id="df-root"></div></div>
+<div id="view-drafting" style="display:none;"><div class="content"><div id="df-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;"></div><div id="df-root"></div><div id="df-client-host"></div></div></div>
 <div id="view-maint" style="display:none;"><div class="content">
   <div style="margin-bottom:10px;"><div style="font-size:18px;font-weight:700;">🔧 Maintenance</div><div style="font-size:12px;color:var(--gray);">Installed jobs that are now in Maintenance. Log each call-out or fix; mark the job Completed when nothing is left.</div></div>
   <div style="display:flex;justify-content:flex-end;margin:-6px 0 8px;"><button class="btn btn-outline btn-sm" onclick="mtPrint()">🖨️ Print all maintenance</button></div>
@@ -8408,7 +8407,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v429 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v430 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10466,7 +10465,16 @@ async function dfUpload(inp){if(_dfSel&&_dfSel!==currentJobId)selectJob(_dfSel);
 function dfToProd(){var j=allJobs[_dfSel];if(!j)return;if(!(j.units||[]).length){alert('Import the cabinet Excel first — the job moves to Production once the cabinets are in.');return;}
   var p=dfProg(j);if(p.n<p.t&&!confirm('The checklist is not finished ('+p.n+' of '+p.t+'). Send to Production anyway?'))return;
   jhSet(j.id,'stage','production',true);showMsg('✓ Sent to Production');_dfSel=null;renderDrafting();dfBadge();}
-function renderDrafting(){var R=document.getElementById('df-root');if(!R)return;dfBadge();var L=dfJobs();
+// v430: Client Information & Approval lives in Drafting now (its own tab here)
+var _dfTab='work';
+function dfTab(t){_dfTab=t;if(t==='client'&&_dfSel&&_dfSel!==currentJobId)selectJob(_dfSel);renderDrafting();}
+function dfTabs(){var T=document.getElementById('df-tabs');if(!T)return;var b=function(k,l){var on=_dfTab===k;return '<button onclick="dfTab(\''+k+'\')" class="btn btn-sm '+(on?'':'btn-outline')+'" style="'+(on?'background:#27272a;color:#fff;border-color:#27272a;':'')+'">'+l+'</button>';};
+  T.innerHTML=b('work','Drafting')+b('client','Client Information &amp; Approval');
+  var pc=document.getElementById('panel-client'),host=document.getElementById('df-client-host'),R=document.getElementById('df-root');
+  if(pc&&host&&pc.parentNode!==host)host.appendChild(pc);
+  if(R)R.style.display=_dfTab==='client'?'none':'';if(host)host.style.display=_dfTab==='client'?'':'none';
+  if(pc){pc.classList.toggle('active',_dfTab==='client');if(_dfTab==='client'){try{renderClientInfo();}catch(e){}}}}
+function renderDrafting(){dfTabs();var R=document.getElementById('df-root');if(!R)return;dfBadge();if(_dfTab==='client')return;var L=dfJobs();
   if(_dfSel&&!L.some(function(j){return j.id===_dfSel;}))_dfSel=null;
   if(!_dfSel)_dfSel=(L.filter(function(j){return j.id===currentJobId;})[0]||L[0]||{}).id||null;
   var j=_dfSel&&allJobs[_dfSel];
@@ -10487,7 +10495,7 @@ function renderDrafting(){var R=document.getElementById('df-root');if(!R)return;
         grp('arch','Architectural plans')+grp('d3','3D / design files')+grp('cm','CM files')+
         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;border-top:1px solid #f0f0f2;padding-top:12px;">'+
           '<button class="btn btn-outline btn-sm" onclick="switchView(\'cabinetlist\');showTab(\'finishes\',document.querySelector(\'.tab[onclick*=&quot;finishes&quot;]\'))">Finishes &amp; Material schedule</button>'+
-          '<button class="btn btn-outline btn-sm" onclick="switchView(\'cabinetlist\');showTab(\'client\',document.querySelector(\'.tab[onclick*=&quot;client&quot;]\'))">Client notes ('+nNotes+')</button>'+
+          '<button class="btn btn-outline btn-sm" onclick="dfTab(\'client\')">Client notes ('+nNotes+')</button>'+
           (ap?'<button class="btn btn-outline btn-sm" onclick="clApPrint()">Print approved selections</button>':'')+
         '</div><div style="font-size:12.5px;margin-top:8px;color:'+(ap?'#2f5d40':'#71717a')+';">'+(ap?'✓ Client selections approved '+jhFmt(new Date(ap.at).toISOString()):(sg&&sg.at?'Client signed '+jhFmt(new Date(sg.at).toISOString())+' — waiting for your approval':'Client has not signed off the selections yet'))+'</div></div>'+
       '<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:6px;"><div class="card-title" style="margin:0;">Production Drawing – Self QC Checklist</div><span style="font-size:12px;color:#71717a;">'+dfProg(j).n+' of '+dfProg(j).t+' checked</span></div>'+

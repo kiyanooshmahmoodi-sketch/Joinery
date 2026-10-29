@@ -51,7 +51,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
 {console.log('Client sign-off');const ctx=await iso(await b.newContext());const p=await ctx.newPage();p.on('dialog',d=>d.accept('Client wants another oven'));
   await p.addInitScript(DBMOCK);await p.goto(FILE);await p.waitForTimeout(T*1000);
   const tok=await p.evaluate(async()=>{cloud.db=mkdb();cloud.user={uid:'x'};cloud.ready=true;window.firebase=window.__fb;SESSION.name='Kiya';
-    allJobs.j1={id:'j1',name:'Bondi',info:{client:'Ali'},drawings:[]};currentJobId='j1';showTab('client',document.querySelector('.tab[onclick*="client"]'));ciPick('j1');
+    allJobs.j1={id:'j1',name:'Bondi',info:{client:'Ali'},drawings:[]};currentJobId='j1';switchView('drafting');dfTab('client');ciPick('j1');
     apInit(allJobs.j1).ss=[{id:'s1',name:'Kitchen',stone:'Calacatta'}];await clEnsure();await clPublish('j1');return allJobs.j1.info.clientToken;});
   const c=await ctx.newPage();c.on('dialog',d=>d.accept());await c.addInitScript(DBMOCK+';window.__DB='+JSON.stringify(await p.evaluate(()=>window.__DB))+';');await c.goto(FILE+'?client='+tok);await c.waitForTimeout(T*700);
   const sign=(db,why)=>c.evaluate(async([db,why])=>{if(db)window.__DB=db;cloud.db=mkdb();cloud.user={uid:'c'};window.firebase=window.__fb;clientLoad();await new Promise(r=>setTimeout(r,250));_clTab='ss';clientRender();
@@ -75,7 +75,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('deleted and added notes both applied',JSON.stringify(r.finishes.clientBrief.map(x=>x.id))==='["b"]');await p.close();}
 // ---------- 5. client notes
 {console.log('Client notes');const p=await iso(await b.newPage());p.on('dialog',d=>d.accept('Lighting'));await p.goto(FILE);await p.waitForTimeout(T*900);
-  const r=await p.evaluate(async()=>{allJobs.j1={id:'j1',name:'B',info:{},drawings:[]};showTab('client',document.querySelector('.tab[onclick*="client"]'));ciPick('j1');
+  const r=await p.evaluate(async()=>{allJobs.j1={id:'j1',name:'B',info:{},drawings:[]};switchView('drafting');dfTab('client');ciPick('j1');
     const pdf=()=>new File([new Uint8Array([37,80,68,70])],'m.pdf',{type:'application/pdf'});const v=[];
     for(let i=0;i<2;i++){brNew();v.push(document.getElementById('br-ver').value);_brFiles=[pdf()];document.getElementById('br-txt').value='change '+i;await brSave();}
     brNew();document.getElementById('br-cat').value='Stone';document.getElementById('br-txt').value='Calacatta';await brSave();
