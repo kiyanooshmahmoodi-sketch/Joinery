@@ -1257,7 +1257,7 @@ html,body{overflow-x:hidden;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v419 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v420 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4378,21 +4378,26 @@ function buildHWSummary(){
 }
 // TOTAL hardware to order: each line of every cabinet's hardware text is counted on its own
 // (drawer labels like |A| |B| |C| are removed), added over all cabinets.
+// v420: read one cabinet's hardware comment into items: "110 Hinge (2), 155 Hinge (2), PTO" = 2 × 110 Hinge, 2 × 155 Hinge, 1 × PTO
+function hwParseUnit(u){var out=[];if(!(u&&u.type==='cabinet'&&hasHW(u)))return out;
+  var txt=getHWModelDisplay(u)||'';
+  // split at every drawer label (|A| |B| |C| — shown as IAI in some fonts), at line breaks and at commas/semicolons,
+  // and after every "(n)" followed by more text, so "155 Hinge (2) Bi Fold Hinge (2)" is still two items
+  txt=String(txt).replace(/\((\d+)\)\s*[,;،‚，﹐、.\-–—+&]*\s*(?=[^\s,;،‚，﹐、])/g,'($1)\n');
+  String(txt).split(/\s*(?:\|\s*[A-H]\s*\||\bI[A-H]I(?=[A-Za-z0-9])|[\r\n\u2028\u2029\v]+|[,;،‚，﹐、])\s*/).forEach(function(line){
+    var t=line.trim().replace(/\s+/g,' ');if(!t)return;
+    var qty=1,m=/^(.*?)\s*[x×]?\s*\((\d+)\)\s*$/i.exec(t);   // "110 Hinge (4)" = 4 on this cabinet; no number = 1
+    if(m&&m[1]){t=m[1].trim();qty=parseInt(m[2],10)||1;}
+    if(t)out.push({name:t,qty:qty,pto:/^pto(\s*mechanisms?)?$/i.test(t)});});
+  return out;}
+function hwPtoQty(u){if(!u||u.type!=='cabinet')return 0;var c=0;hwParseUnit(u).forEach(function(x){if(x.pto)c+=x.qty;});return Math.max(u.isPTO?1:0,c);}
 function buildHWTotals(){
-  var counts={},cabs={};   // v419: cabs[name] = which cabinets use it, and how many on each
-  units.filter(function(u){return u.type==='cabinet'&&hasHW(u);}).forEach(function(u){
-    var txt=getHWModelDisplay(u)||'';
-    // split at every drawer label (|A| |B| |C| — shown as IAI in some fonts) and at line breaks,
-    // so "A runner + B runner" written on one line is still counted as two items
-    // v393: also break after every "(n)" that is followed by more text, so "155 Hinge (2) ,Bi Fold Hinge (2)" — with any kind of comma, or none — is two items
-    txt=String(txt).replace(/\((\d+)\)\s*[,;،‚，﹐、.\-–—+&]*\s*(?=[^\s,;،‚，﹐、])/g,'($1)\n');
-    String(txt).split(/\s*(?:\|\s*[A-H]\s*\||\bI[A-H]I(?=[A-Za-z0-9])|[\r\n\u2028\u2029\v]+|[,;،‚，﹐、])\s*/).forEach(function(line){   // v393: a comma (or ;) also separates items: "155 Hinge (2), Bi Fold Hinge (2)" = 2 + 2
-      var t=line.trim();
-      if(!t)return;
-      var qty=1,m=/^(.*?)\s*\((\d+)\)\s*$/.exec(t);   // "110 Hinge (4)" = 4 hinges on this cabinet
-      if(m&&m[1]){t=m[1].trim();qty=parseInt(m[2],10)||1;}
-      counts[t]=(counts[t]||0)+qty;
-      var cl=cabs[t]=cabs[t]||[],ex=cl.filter(function(c){return c.id===u.id;})[0];if(ex)ex.qty+=qty;else cl.push({id:u.id,room:u.room||'',qty:qty});
+  var counts={},cabs={},disp={};   // v419: cabs[name] = which cabinets use it, and how many on each · v420: "110 hinge" and "110 Hinge" are the same item; PTO goes to PTO Mechanisms
+  units.forEach(function(u){
+    hwParseUnit(u).forEach(function(x){if(x.pto)return;
+      var key=x.name.toLowerCase();if(!disp[key])disp[key]=x.name;var t=disp[key];
+      counts[t]=(counts[t]||0)+x.qty;
+      var cl=cabs[t]=cabs[t]||[],ex=cl.filter(function(c){return c.id===u.id;})[0];if(ex)ex.qty+=x.qty;else cl.push({id:u.id,room:u.room||'',qty:x.qty});
     });
   });
   // family = name without its trailing size (Spice rack 150 / Spice rack 200 -> Spice rack)
@@ -4703,8 +4708,8 @@ var _railColorMap={
   silver:{label:'Silver',hex:'#9ca3af'}
 };
 
-function getPTOCount(){
-  return units.filter(function(u){return u.type==='cabinet'&&u.isPTO;}).length;
+function getPTOCount(){   // v420: cabinets marked PTO, plus "PTO" written in the hardware comment (counted once per cabinet unless a number is given)
+  return units.reduce(function(a,u){return a+hwPtoQty(u);},0);
 }
 
 /* removed unused getJoiningCount */
@@ -4849,7 +4854,7 @@ function hwItemsHTML(){
 // v419: which cabinets each hardware item goes into — tap "Cabinets" to see the cabinet numbers (grouped by room, with the quantity on each)
 var _hwCabOpen={};
 function hwCabToggle(k){_hwCabOpen[k]=!_hwCabOpen[k];renderHardware();}
-function hwCabsHTML(it,k){var G=it.cabGroups;if(it.key==='pto')G=[{model:'PTO',cabs:units.filter(function(u){return u.type==='cabinet'&&u.isPTO;}).map(function(u){return {id:u.id,room:u.room||'',qty:1};})}];
+function hwCabsHTML(it,k){var G=it.cabGroups;if(it.key==='pto')G=[{model:'PTO',cabs:units.filter(function(u){return hwPtoQty(u)>0;}).map(function(u){return {id:u.id,room:u.room||'',qty:hwPtoQty(u)};})}];
   if(!G||!G.length)return '';var n={};G.forEach(function(g){g.cabs.forEach(function(c){n[c.id]=1;});});var cnt=Object.keys(n).length;if(!cnt)return '';
   var open=!!_hwCabOpen[it.key],multi=G.length>1;
   var body=open?'<div style="margin-top:8px;border-top:1px solid #f0f0f2;padding-top:8px;">'+G.map(function(g){
@@ -8363,7 +8368,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v419 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v420 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');

@@ -88,5 +88,8 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     allJobs.j1={id:'j1',name:'B',info:{},drawings:[],units:[U('K01','Kitchen','110 Hinge (4), Bi Fold Hinge (2)'),U('L01','Laundry','110 Hinge (2)')]};selectJob('j1');
     switchView('cabinetlist');showTab('hardware',document.querySelector('.tab[onclick*="hardware"]'));renderHardware();
     [...document.querySelectorAll('#hw-list button')].filter(b=>/^Cabinets/.test(b.textContent))[0].click();return document.getElementById('hw-list').innerText;});
-  ok('hardware item lists its cabinets with quantities',/K01 ×4/.test(r)&&/L01 ×2/.test(r));await p.close();}
+  ok('hardware item lists its cabinets with quantities',/K01 ×4/.test(r)&&/L01 ×2/.test(r));
+  const q=await p.evaluate(()=>{const U=(id,hw,pto)=>({id,type:'cabinet',room:'K',isPTO:!!pto,parts:[{name:'UBack HW'}],hwModelOverride:hw});
+    units=[U('A1','110 Hinge (2), 155 Hinge (2), PTO'),U('A2','110 hinge (2),PTO (1)'),U('A3','Bin',1)];return hwItems().map(i=>i.title+'='+i.total).join('|');});
+  ok('"110 Hinge (2), 155 Hinge (2), PTO" counts 2 + 2 + 1 PTO',q==='🔘 PTO Mechanisms=3|110 Hinge=4|155 Hinge=2|Bin=1',q);await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();
