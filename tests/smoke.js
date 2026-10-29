@@ -123,6 +123,6 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     allJobs.b1={id:'b1',name:'B',info:{},drawings:[],units:[P('W1','BH Support Right'),P('W1','BH Support Left'),P('W1','BH Support Bottom'),P('W1','BH Support Front'),P('W1','Bulkhead F/D'),P('W2','BH Support Right'),P('W2','Bulkhead F/D')]};
     selectJob('b1');renderSummary();return {n:bhStructures().length,cat:getCat('Bulkhead F/D'),scat:getCat('BH Support Front'),txt:document.getElementById('sum-bh').innerText};});
   ok('BH Support parts make one structure per bulkhead',r.n===2,r.n);ok('Bulkhead F/D stays a Bulkhead part',r.cat==='Bulkhead'&&r.scat==='Bulkhead Structure');ok('Summary shows the structures',/2\s*structures to build/.test(r.txt));
-  const r2=await p.evaluate(()=>{const lg=[];const sm=showMsg;showMsg=m=>lg.push(m);reapplyRules();showMsg=sm;const B=units.filter(u=>u.isBHS);return {n:B.length,w1:(B.find(u=>u.cabId==='W1')||{parts:[]}).parts.length,fd:units.filter(u=>u.parts[0].name==='Bulkhead F/D').length,lg};});
-  ok('BH Support pieces become one scannable unit per cabinet',r2.n===2&&r2.w1===4&&r2.fd===2,JSON.stringify(r2));await p.close();}
+  const r2=await p.evaluate(()=>{const lg=[];const sm=showMsg;showMsg=m=>lg.push(m);reapplyRules();showMsg=sm;const B=units.filter(u=>u.isBHS);return {nm:uName(B[0]),cat:getCat(uName(B[0])),n:B.length,w1:(B.find(u=>u.cabId==='W1')||{parts:[]}).parts.length,fd:units.filter(u=>u.parts[0].name==='Bulkhead F/D').length,lg};});
+  ok('BH Support pieces become one scannable unit per cabinet',r2.nm==='Bulkhead Structure'&&r2.cat==='Bulkhead Structure'&&r2.n===2&&r2.w1===4&&r2.fd===2,JSON.stringify(r2));await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();

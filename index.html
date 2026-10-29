@@ -1295,7 +1295,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v434 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v435 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -2541,8 +2541,9 @@ function qrSVG(text, px){
 }
 
 
+function uName(u){if(!u)return '';if(u.isBHS)return 'Bulkhead Structure';var p=u.parts&&u.parts[0];return p?(typeof p==='string'?p:p.name||''):'';}   // v435: display name of a unit (a BH Support group shows as Bulkhead Structure)
 function isBHSupport(name){return /\b(bh|bulk\s*head)\s*[-_]?\s*support\b/i.test(String(name||''));}   // v433: BH Support Right/Left/Bottom/Front = parts of the bulkhead structure
-function getCat(name){var n=name.toLowerCase();if(isBHSupport(name))return 'Bulkhead Structure';
+function getCat(name){var n=name.toLowerCase();if(isBHSupport(name)||/^\s*bulkhead\s+structure\s*$/i.test(name))return 'Bulkhead Structure';
   // These are checked FIRST, before the generic "join" catch-all, because a
   // drafter may write e.g. "Joining - MDF Glass Door" — the specific glass
   // door / floating shelf identity must win over the generic Joining bucket.
@@ -3806,7 +3807,7 @@ function renderSummary(){
     return'<div'+extra+'><div style="font-size:24px;font-weight:700;color:'+s.c+';">'+s.n+'</div><div style="font-size:11px;color:var(--gray);margin-top:3px;">'+s.l+(clickable?' <span style="color:'+s.c+';font-weight:700;">›</span>':'')+'</div></div>';
   }).join('');
   var catC={},catI={};parts.forEach(function(u){
-    var n=u.parts[0]?(typeof u.parts[0]==='string'?u.parts[0]:u.parts[0].name||''):'';
+    var n=uName(u)||'';
     var cat=getCat(n);
     // Sum qty of pieces in this unit
     var pieces=u.parts.reduce(function(s,p){
@@ -3880,7 +3881,7 @@ function openDetail(cat){
   detailUnits=units.filter(function(u){
     if(u.type!=='panel')return false;
     if(isAllParts)return true;
-    var n=u.parts[0]?(typeof u.parts[0]==='string'?u.parts[0]:u.parts[0].name||''):'';
+    var n=uName(u)||'';
     return getCat(n)===cat;
   });
   var isGlass=!isAllParts&&cat.toLowerCase().indexOf('glass')!==-1;
@@ -3909,7 +3910,7 @@ function openDetail(cat){
   if(isAllParts){
     var byCat={};
     detailUnits.forEach(function(u){
-      var n=u.parts[0]?(typeof u.parts[0]==='string'?u.parts[0]:u.parts[0].name||''):'';
+      var n=uName(u)||'';
       var c=getCat(n);byCat[c]=(byCat[c]||0)+1;
     });
     var pills=Object.keys(byCat).sort(function(a,b){return byCat[b]-byCat[a];}).map(function(c){
@@ -4007,6 +4008,7 @@ function filterDetail(q){
       var comment=u.parts.map(function(p){return typeof p==='object'?(p.comment||''):'';}).filter(Boolean).join(' ');
       var w=u.parts[0]&&typeof u.parts[0]==='object'?u.parts[0].w||'—':'—';
       var h=u.parts[0]&&typeof u.parts[0]==='object'?u.parts[0].h||'—':'—';
+      if(u.isBHS){w=u.parts.length+' pcs';h='—';}
       var handing=getDoorHanding(pname,comment);
       var handingCell=showHanding?
         '<td style="text-align:center;">'+
@@ -4016,13 +4018,13 @@ function filterDetail(q){
         '</td>':'';
       var dimsCell=isGlass?
         '<td style="font-family:monospace;font-weight:700;font-size:13px;color:#3a6ea5;">'+
-          (w!=='—'&&h!=='—'?'<span style="background:#e0f2fe;border-radius:6px;padding:3px 8px;">'+w+' × '+h+'</span>':'—')+
+          (w!=='—'&&h!=='—'?'<span style="background:#e0f2fe;border-radius:6px;padding:3px 8px;">'+w+' × '+h+'</span>':(u.isBHS?w:'—'))+
         '</td>' :
-        '<td style="font-size:11px;color:var(--gray);font-family:monospace;">'+w+' × '+h+'</td>';
+        '<td style="font-size:11px;color:var(--gray);font-family:monospace;">'+(u.isBHS?w:w+' × '+h)+'</td>';
       // Category cell for ALL_PARTS mode
       var catCell='';
       if(isAllParts){
-        var firstName=u.parts[0]?(typeof u.parts[0]==='string'?u.parts[0]:u.parts[0].name||''):'';
+        var firstName=uName(u)||'';
         var thisCat=getCat(firstName);
         var cc=catColP[thisCat]||'#4b5563';
         catCell='<td><span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;background:'+cc+';color:#fff;white-space:nowrap;">'+thisCat+'</span></td>';
@@ -4075,7 +4077,7 @@ function printDetail(){
   if(isAllParts){
     var byCat={};
     detailUnits.forEach(function(u){
-      var n=u.parts[0]?(typeof u.parts[0]==='string'?u.parts[0]:u.parts[0].name||''):'';
+      var n=uName(u)||'';
       var c=getCat(n);byCat[c]=(byCat[c]||0)+1;
     });
     typeStats=Object.keys(byCat).sort(function(a,b){return byCat[b]-byCat[a];}).map(function(c){
@@ -4123,12 +4125,13 @@ function printDetail(){
           var comment=u.parts.map(function(p){return typeof p==='object'?(p.comment||''):'';}).filter(Boolean).join(' ');
           var w=u.parts[0]&&typeof u.parts[0]==='object'?u.parts[0].w||'—':'—';
           var h=u.parts[0]&&typeof u.parts[0]==='object'?u.parts[0].h||'—':'—';
+          if(u.isBHS){w=u.parts.length+' pcs';h='—';}
           var handing=getDoorHanding(pname,comment);
           var handingTd=showHanding?'<td style="text-align:center;font-weight:800;font-size:14px;">'+(handing==='L'?'<span style="background:#dbeafe;color:#1d4ed8;padding:3px 10px;border-radius:6px;border:1.5px solid #93c5fd;">◀ L</span>':handing==='R'?'<span style="background:#fce7f3;color:#be185d;padding:3px 10px;border-radius:6px;border:1.5px solid #f9a8d4;">R ▶</span>':'—')+'</td>':'';
           // Category cell for ALL_PARTS mode
           var catTd='';
           if(isAllParts){
-            var firstNm=u.parts[0]?(typeof u.parts[0]==='string'?u.parts[0]:u.parts[0].name||''):'';
+            var firstNm=uName(u)||'';
             var thisC=getCat(firstNm);
             var cc=catCol[thisC]||'#64748b';
             catTd='<td><span class="type-pill" style="background:'+cc+';">'+thisC+'</span></td>';
@@ -4592,7 +4595,7 @@ function printAllParts(){
     // Finished End/Kick Face/Underpanel/etc. all just show a single total.
     var groups={};
     matParts.forEach(function(u){
-      var rawName=u.parts[0]?(typeof u.parts[0]==='string'?u.parts[0]:u.parts[0].name||''):'(unnamed)';
+      var rawName=uName(u)||'(unnamed)';
       var cat=getCat(rawName);
       var dispCat=_partFamily(cat);
       var key=dispCat;
@@ -4654,7 +4657,7 @@ function printAllPartsDetailed(){
   });
   var sections=matNames.map(function(mat){
     var withMeta=byMat[mat].map(function(u){
-      var pname=u.parts[0]?(typeof u.parts[0]==='string'?u.parts[0]:u.parts[0].name||''):'(unnamed)';
+      var pname=uName(u)||'(unnamed)';
       return{id:u.id,room:u.room||'No Room',cat:getCat(pname),name:pname};
     });
     withMeta.sort(function(a,b){
@@ -6230,7 +6233,7 @@ function setAllEdge(mat,val){
 function edgeEditor(m,list,color){
   var emp=list.filter(function(u){return !edgeOf(u);}).length;
   var rows=list.map(function(u){
-    var nm=u.type==='cabinet'?'🗄️ Cabinet':'🚪 '+esc((u.parts&&u.parts[0]&&u.parts[0].name)||'Part');
+    var nm=u.type==='cabinet'?'🗄️ Cabinet':'🚪 '+esc(uName(u)||'Part');
     return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:5px;">'+
       '<div style="flex:0 0 46%;min-width:0;font-size:11px;"><b style="font-family:monospace;">'+esc(u.id)+'</b><div style="color:#4b5563;font-size:10px;">'+nm+(u.room?' · '+esc(u.room):'')+'</div></div>'+
       '<input value="'+qe(u.edge||'')+'" placeholder="'+(edgeFromComment(u)?qe(edgeFromComment(u))+' (from UBack comment)':'Edge colour…')+'" spellcheck="false" onchange="setUnitEdge(\''+String(u.id).replace(/'/g,"\\'")+'\',this.value)" '+
@@ -6434,7 +6437,7 @@ function printSummary(){
   // Independent parts categories
   var catC={};
   parts.forEach(function(u){
-    var n=u.parts[0]?(typeof u.parts[0]==='string'?u.parts[0]:u.parts[0].name||''):'';
+    var n=uName(u)||'';
     var cat=getCat(n);
     if(!catC[cat])catC[cat]={count:0,shipped:0,units:[]};
     catC[cat].count++;
@@ -8424,7 +8427,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v434 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v435 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
