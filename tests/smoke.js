@@ -103,4 +103,10 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('drafting lists only drafting jobs with their CM files',r.list&&r.cm);ok('checklist tick is saved',r.kept);
   ok('cannot go to Production without the Excel',r.blocked==='drafting');ok('Send to Production moves the job',r.after==='production',r.after);
   ok('menu order: Jobs, Drafting, Cabinets & Hardware…',r.nav.indexOf('Jobs|Drafting|Cabinets & Hardware|QC & Dispatch|Installation|Maintenance')===0,r.nav);await p.close();}
+// ---------- 8. standby
+{console.log('Standby');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*600);
+  await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);document.getElementById('role-ov').style.display='none';SB_MS=800;sbArm();});
+  await p.waitForTimeout(T*1500);const on=await p.evaluate(()=>document.getElementById('role-ov').style.display==='flex'&&_sbOn);
+  await p.mouse.click(200,200);await p.waitForTimeout(T*700);const off=await p.evaluate(()=>document.getElementById('role-ov').style.display==='none'&&!_sbOn&&SESSION.role==='admin');
+  ok('standby shows the opening screen when idle',on);ok('a tap brings the app back, still signed in',off);await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();
