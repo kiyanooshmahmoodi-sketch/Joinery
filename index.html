@@ -1257,7 +1257,7 @@ html,body{overflow-x:hidden;}
     </div>
     <div>
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v418 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v419 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -4379,7 +4379,7 @@ function buildHWSummary(){
 // TOTAL hardware to order: each line of every cabinet's hardware text is counted on its own
 // (drawer labels like |A| |B| |C| are removed), added over all cabinets.
 function buildHWTotals(){
-  var counts={};
+  var counts={},cabs={};   // v419: cabs[name] = which cabinets use it, and how many on each
   units.filter(function(u){return u.type==='cabinet'&&hasHW(u);}).forEach(function(u){
     var txt=getHWModelDisplay(u)||'';
     // split at every drawer label (|A| |B| |C| — shown as IAI in some fonts) and at line breaks,
@@ -4392,13 +4392,14 @@ function buildHWTotals(){
       var qty=1,m=/^(.*?)\s*\((\d+)\)\s*$/.exec(t);   // "110 Hinge (4)" = 4 hinges on this cabinet
       if(m&&m[1]){t=m[1].trim();qty=parseInt(m[2],10)||1;}
       counts[t]=(counts[t]||0)+qty;
+      var cl=cabs[t]=cabs[t]||[],ex=cl.filter(function(c){return c.id===u.id;})[0];if(ex)ex.qty+=qty;else cl.push({id:u.id,room:u.room||'',qty:qty});
     });
   });
   // family = name without its trailing size (Spice rack 150 / Spice rack 200 -> Spice rack)
   var fam={};
   Object.keys(counts).sort().forEach(function(name){
     var f=name.replace(/\s+\d+(\s*x\s*\d+)?\s*(mm)?$/i,'').trim()||name;
-    (fam[f]=fam[f]||{family:f,total:0,items:[]});fam[f].total+=counts[name];fam[f].items.push({model:name,count:counts[name]});
+    (fam[f]=fam[f]||{family:f,total:0,items:[]});fam[f].total+=counts[name];fam[f].items.push({model:name,count:counts[name],cabs:cabs[name]||[]});
   });
   return Object.keys(fam).sort().map(function(k){return fam[k];});
 }
@@ -4795,7 +4796,7 @@ var _hwEd={};
 function hwItems(){
   var items=[{key:'pto',title:'🔘 PTO Mechanisms',total:getPTOCount(),subs:[],note:getPTOCount()>0?'One mechanism per PTO cabinet — to be sent from warehouse':'No PTO cabinets in this job'}];
   var tot=buildHWTotals();
-  if(tot.length){tot.forEach(function(f){var multi=f.items.length>1;items.push({key:'hw:'+f.family,title:multi?f.family+' — total':f.items[0].model,total:f.total,subs:multi?f.items.map(function(r){return{name:r.model,n:r.count,orig:r.model};}):[]});});}
+  if(tot.length){tot.forEach(function(f){var multi=f.items.length>1;items.push({key:'hw:'+f.family,title:multi?f.family+' — total':f.items[0].model,total:f.total,cabGroups:f.items.map(function(r){return{model:r.model,cabs:r.cabs};}),subs:multi?f.items.map(function(r){return{name:r.model,n:r.count,orig:r.model};}):[]});});}
   else{buildHWSummary().forEach(function(r){items.push({key:'hws:'+r.model,title:r.model,total:r.count,subs:[],note:'cabinets with exactly this set'});});}
   var lay0=_hwLay();
   items.forEach(function(it){var ov=lay0.over[it.key];if(ov){if(ov.name){it.origTitle=it.title;it.title=ov.name;it.edited=true;}if(ov.qty!==undefined&&ov.qty!==''){it.origTotal=it.total;it.total=ov.qty;it.edited=true;}if(ov.subs){it.subs.forEach(function(r){var o=ov.subs[r.orig];if(o){if(o.name)r.name=o.name;if(o.n!==undefined)r.n=o.n;if(o.model)r.model=o.model;it.edited=true;}});}}
@@ -4826,7 +4827,7 @@ function hwItemsHTML(){
         (true
           ?'<div style="font-size:10px;font-weight:700;color:#6b7280;margin-bottom:3px;">HARDWARE NAME &nbsp;·&nbsp; PURCHASE LINK &nbsp;·&nbsp; TOTAL</div><div style="display:flex;gap:8px;align-items:center;"><input value="'+qe(it.title)+'" list="hw-names-dl" placeholder="Hardware name ▾" title="Pick from the list or type your own" spellcheck="false" onfocus="hwNameFocus(this)" onblur="hwNameBlur(this)" onchange="hwSet(\''+k+'\',\'name\',this.value)" style="flex:1;min-width:0;padding:6px 9px;font-size:13px;font-weight:700;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/><input type="url" value="'+qe((lay.links&&lay.links[it.key])||'')+'" placeholder="🔗 Paste purchase link" spellcheck="false" onchange="hwSetLink(\''+k+'\',this.value)" style="flex:1;min-width:0;padding:6px 9px;font-size:12px;color:#2f4b8f;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;"/>'+((lay.links&&lay.links[it.key])||''?'<button class="btn btn-outline btn-sm" style="padding:3px 7px;" onclick="hwCopyLink(\''+k+'\')" title="Copy link">📋</button><button class="btn btn-outline btn-sm" style="padding:3px 7px;" onclick="hwOpenLink(\''+k+'\')" title="Open link">↗</button>':'')+'<input type="number" min="0" value="'+qe(it.total)+'" onchange="hwSet(\''+k+'\',\'qty\',this.value)" style="width:80px;padding:6px 8px;font-size:15px;font-weight:700;text-align:center;border:1px solid #d1d5db;border-radius:6px;font-family:\'JetBrains Mono\',monospace;"/></div>'
           :'<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;"><span style="font-size:14px;font-weight:700;color:#1f2937;">'+esc(it.title)+(it.edited?' <span style="font-size:10px;font-weight:700;color:#b7791f;background:#f6ecd5;border-radius:4px;padding:1px 5px;">edited</span>':'')+'</span><span style="font-size:20px;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:#2f4b8f;">'+it.total+'</span></div>')+
-        (it.note?'<div style="font-size:12px;color:#6b7280;margin-top:3px;">'+esc(it.note)+'</div>':'')+
+        (it.note?'<div style="font-size:12px;color:#6b7280;margin-top:3px;">'+esc(it.note)+'</div>':'')+hwCabsHTML(it,k)+
         it.subs.map(function(r,j){var sty='padding:4px 8px;font-size:12px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;';return '<div style="display:flex;gap:6px;align-items:center;margin-top:5px;padding-left:10px;flex-wrap:wrap;"><input value="'+qe(r.name)+'" placeholder="Size / name (e.g. Hinge 110)" spellcheck="false" onchange="hwSet(\''+k+'\',\'subname\',this.value,'+j+')" style="flex:2;min-width:120px;'+sty+'"/><input value="'+qe(r.model||'')+'" placeholder="Model (e.g. Blum)" spellcheck="false" onchange="hwSet(\''+k+'\',\'submodel\',this.value,'+j+')" style="flex:1.5;min-width:90px;color:#2f4b8f;font-weight:600;'+sty+'"/><input type="number" min="0" value="'+qe(r.n)+'" onchange="hwSet(\''+k+'\',\'subqty\',this.value,'+j+')" style="width:64px;padding:4px 6px;font-size:13px;font-weight:700;text-align:center;border:1px solid #d1d5db;border-radius:6px;font-family:\'JetBrains Mono\',monospace;"/>'+(r.manual?'<button class="btn btn-outline btn-sm" style="padding:2px 7px;" onclick="hwDelSub(\''+k+'\','+j+')" title="Remove this row">🗑</button>':'')+'</div>';}).join('')+
         '<button class="btn btn-outline btn-sm" style="margin-top:8px;padding:3px 10px;font-size:12px;" onclick="hwAddSub(\''+k+'\')">➕ Add size / model row</button>'+
         '</div>'+
@@ -4845,6 +4846,18 @@ function hwItemsHTML(){
     '<button class="btn btn-primary btn-sm" onclick="hwAddCustom()">Add</button>'+
   '</div>';
 }
+// v419: which cabinets each hardware item goes into — tap "Cabinets" to see the cabinet numbers (grouped by room, with the quantity on each)
+var _hwCabOpen={};
+function hwCabToggle(k){_hwCabOpen[k]=!_hwCabOpen[k];renderHardware();}
+function hwCabsHTML(it,k){var G=it.cabGroups;if(it.key==='pto')G=[{model:'PTO',cabs:units.filter(function(u){return u.type==='cabinet'&&u.isPTO;}).map(function(u){return {id:u.id,room:u.room||'',qty:1};})}];
+  if(!G||!G.length)return '';var n={};G.forEach(function(g){g.cabs.forEach(function(c){n[c.id]=1;});});var cnt=Object.keys(n).length;if(!cnt)return '';
+  var open=!!_hwCabOpen[it.key],multi=G.length>1;
+  var body=open?'<div style="margin-top:8px;border-top:1px solid #f0f0f2;padding-top:8px;">'+G.map(function(g){
+      var byRoom={};g.cabs.forEach(function(c){(byRoom[c.room||'—']=byRoom[c.room||'—']||[]).push(c);});
+      return (multi?'<div style="font-size:12px;font-weight:600;color:#27272a;margin:6px 0 4px;">'+esc(g.model)+' <span style="color:#a1a1aa;font-weight:400;">· '+g.cabs.reduce(function(a,c){return a+c.qty;},0)+'</span></div>':'')+
+        Object.keys(byRoom).sort().map(function(r){return '<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:12.5px;margin:3px 0;"><span style="color:#71717a;min-width:90px;">'+esc(r)+'</span>'+
+          byRoom[r].map(function(c){return '<span style="border:1px solid #e4e4e7;border-radius:5px;padding:1px 7px;font-family:\'JetBrains Mono\',monospace;font-size:12px;color:#27272a;">'+esc(c.id)+(c.qty>1?' <span style="color:#a1a1aa;">×'+c.qty+'</span>':'')+'</span>';}).join('')+'</div>';}).join('');}).join('')+'</div>':'';
+  return '<button class="btn btn-outline btn-sm" style="margin-top:8px;padding:3px 10px;font-size:12px;" onclick="hwCabToggle(\''+k+'\')">'+(open?'Hide cabinets':'Cabinets ('+cnt+')')+'</button>'+body;}
 // ===== v393: Hardware name defaults list + purchase link =====
 var HW_NAME_DEFAULTS=['Hinge','Spicerack','Bin','Laundry basket','PTO Mechanisms','Jewelry drawer','Clothes basket','Wardrobe lift','Trouser rack','Shoes rack','Rotating shoes rack','Rotating storage','Ironing board'];
 var HW_NAME_CUSTOM=[],_hwNamesLoaded=false;
@@ -8350,7 +8363,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v418 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v419 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');

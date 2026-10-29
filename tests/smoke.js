@@ -82,4 +82,11 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     const B=allJobs.j1.finishes.clientBrief;brDone(B[0].id,true);const struck=[...document.querySelectorAll('#br-list div')].some(d=>/line-through/.test(d.style.textDecoration));
     brSetCat('Stone');const st=document.getElementById('br-list').innerText;brSetCat('');brDel(B[1].id);return {v,struck,st,n:allJobs.j1.finishes.clientBrief.length};});
   ok('versions count up',r.v.join()==='1,2');ok('done notes are struck through',r.struck);ok('topic filter works',/Calacatta/.test(r.st)&&!/change/.test(r.st));ok('delete works',r.n===2);await p.close();}
+// ---------- 6. hardware: which cabinets use each item
+{console.log('Hardware cabinets');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*900);
+  const r=await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);const U=(id,room,hw)=>({id,type:'cabinet',room,parts:[{name:'UBack HW'}],hwModelOverride:hw});
+    allJobs.j1={id:'j1',name:'B',info:{},drawings:[],units:[U('K01','Kitchen','110 Hinge (4), Bi Fold Hinge (2)'),U('L01','Laundry','110 Hinge (2)')]};selectJob('j1');
+    switchView('cabinetlist');showTab('hardware',document.querySelector('.tab[onclick*="hardware"]'));renderHardware();
+    [...document.querySelectorAll('#hw-list button')].filter(b=>/^Cabinets/.test(b.textContent))[0].click();return document.getElementById('hw-list').innerText;});
+  ok('hardware item lists its cabinets with quantities',/K01 ×4/.test(r)&&/L01 ×2/.test(r));await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();
