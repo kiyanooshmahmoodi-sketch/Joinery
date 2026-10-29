@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="CabLine">
 <meta name="application-name" content="CabLine">
-<meta name="theme-color" content="#111827">
+<meta name="theme-color" content="#0f172a">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1063,12 +1063,15 @@ html,body{overflow-x:hidden;}
 .topbar{background:#0f172a!important;}
 .brand{gap:12px!important;align-items:center!important;}
 .brand-logo{background:transparent!important;box-shadow:none!important;width:auto!important;height:auto!important;padding:0!important;display:flex;align-items:center;}
-.brand-word{font-family:'Poppins',Inter,system-ui,sans-serif;font-weight:700;font-size:24px;line-height:1;color:#fff;letter-spacing:-.01em;}
+.brand-word{font-family:'Poppins',Inter,system-ui,sans-serif;font-weight:700;font-size:31px;line-height:1;color:#fff;letter-spacing:-.01em;}
 .brand-word span{color:#fbbf24;}
 .tbtn{border-color:rgba(255,255,255,.16)!important;color:#e2e8f0!important;}
 .tbtn:hover{background:rgba(251,191,36,.08)!important;border-color:rgba(251,191,36,.45)!important;}
 .view-btn.active{border-bottom-color:#fbbf24!important;}
-@media(max-width:760px){.brand-word{font-size:20px;}}
+@media(max-width:760px){.brand-word{font-size:24px;}.brand-logo svg{width:30px;height:34px;}}
+/* v422: installed app — no separate window title bar; our navy header goes right to the top (Window Controls Overlay) */
+.topbar{padding-top:calc(env(titlebar-area-height,0px) + 12px)!important;-webkit-app-region:drag;app-region:drag;}
+.topbar button,.topbar input,.topbar a,.topbar select,.topbar label,.brand-logo,#user-chip{-webkit-app-region:no-drag;app-region:no-drag;}
 </style>
 </head>
 <body>
@@ -1254,7 +1257,7 @@ html,body{overflow-x:hidden;}
 <div class="topbar">
   <div class="brand">
     <div class="brand-logo" id="brand-logo" onclick="try{if(currentJobId)saveCurrentJob();}catch(e){}roleInit();" title="CabLine" style="cursor:pointer;">
-      <svg width="30" height="34" viewBox="0 0 30 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <svg width="38" height="43" viewBox="0 0 30 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="2" y="1" width="26" height="28" rx="3" fill="#fff"/>
         <path d="M15 1.5V16.5M2.5 17H27.5" stroke="#0f172a" stroke-width="1.6"/>
         <rect x="11.4" y="6.5" width="1.6" height="5" rx=".8" fill="#3b82f6"/><rect x="17" y="6.5" width="1.6" height="5" rx=".8" fill="#3b82f6"/>
@@ -1265,7 +1268,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v421 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v422 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8376,7 +8379,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v421 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v422 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
