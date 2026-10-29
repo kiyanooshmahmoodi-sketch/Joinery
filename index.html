@@ -1295,7 +1295,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v433 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v434 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -2747,6 +2747,11 @@ function handleExcel(files){
               // NOT the row's total qty (column 0) — that's the SUM across all cabinets.
               var perCabQty=cab.qty||1;
               var entry={name:partName,h:h,w:w,qty:perCabQty,comment:comment,edgeband:edgeband,mat:mat};
+              // v434: BH Support pieces with the same cabinet number are assembled into ONE bulkhead structure → one unit, one scan (however many pieces)
+              if(isBHSupport(partName)){var bid=cab.id+'_bhs';
+                if(!groups[bid])groups[bid]={id:bid,cabId:cab.id,room:cab.room,parts:[],mat:mat,status:'factory',shippedAt:null,type:'panel',isBHS:true,isPTO:false,isJoining:false};
+                var bx=groups[bid].parts.find(function(p){return p.name===partName&&p.w===w&&p.h===h;});if(bx)bx.qty+=perCabQty;else groups[bid].parts.push(entry);
+                return;}
               if(type==='panel'){
                 // Each panel PIECE becomes its own scannable unit so it can be
                 // individually scanned. Multiple rows with the same part name get
@@ -4322,7 +4327,7 @@ function _partsDetails(u,pnames){
 // v287: re-sort an ALREADY imported project with the current rules (no re-import needed).
 // Items with any scan/QC/dispatch/install activity are never touched.
 function _unitBusy(u){
-  return !!((u.qcLog&&u.qcLog.length)||(u.dispatchLog&&u.dispatchLog.length)||(u.installLog&&u.installLog.length)||u.qcStatus||u.installed||u.shippedAt||(u.status&&u.status!=='factory'));
+  return !!((u.qcLog&&u.qcLog.length)||(u.dispatchLog&&u.dispatchLog.length)||(u.installLog&&u.installLog.length)||(u.qcStatus&&u.qcStatus!=='pending')||u.installed||u.shippedAt||(u.status&&u.status!=='factory'));
 }
 function reapplyRules(){
   var split=0,merged=0,busy=0,newUnits=[],removeIds={};
@@ -4363,6 +4368,12 @@ function reapplyRules(){
     if(!ex)cab.parts.push({name:p.name,h:p.h,w:p.w,qty:1,comment:p.comment,edgeband:p.edgeband,mat:p.mat});else ex.qty=(parseInt(ex.qty)||1)+1;
     removeIds[u.id]=1;merged++;
   });
+  // C) v434: loose BH Support pieces with the same cabinet number → one bulkhead structure unit
+  var bhG={};units.forEach(function(u){if(u.isBHS||removeIds[u.id]||!u.parts||u.parts.length!==1)return;var p=u.parts[0];if(!p||typeof p!=='object'||!isBHSupport(p.name))return;var k=u.cabId||u.id;(bhG[k]=bhG[k]||[]).push(u);});
+  Object.keys(bhG).forEach(function(k){var L=bhG[k];if(L.some(_unitBusy)){busy+=L.length;return;}
+    var ex=units.find(function(x){return x.isBHS&&(x.cabId||x.id)===k;}),bu=ex||{id:k+'_bhs',cabId:k,room:L[0].room,parts:[],mat:L[0].mat,status:'factory',shippedAt:null,type:'panel',isBHS:true,isPTO:false,isJoining:false};
+    L.forEach(function(u){var p=u.parts[0],f=bu.parts.find(function(x){return x.name===p.name&&x.w===p.w&&x.h===p.h;});if(f)f.qty=(parseInt(f.qty)||1)+(parseInt(p.qty)||1);else bu.parts.push(Object.assign({},p));removeIds[u.id]=1;merged++;});
+    if(!ex)newUnits.push(bu);});
   if(!split&&!merged){showMsg(busy?'Nothing changed — '+busy+' item(s) already scanned/shipped were left alone':'✓ Everything already follows the current rules');return;}
   units=units.filter(function(u){return !removeIds[u.id];}).concat(newUnits);
   saveData();try{refresh();}catch(e){}
@@ -8413,7 +8424,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v433 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v434 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
