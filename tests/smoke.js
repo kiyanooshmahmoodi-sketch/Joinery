@@ -115,6 +115,6 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     J('P1','production',3);J('Q1','qcd',3);J('I1','installation',3);J('M1','maintenance',3);selectJob('P1');const o={};
     [['cabinetlist','cabinetlist'],['tracker','tracker'],['installation','installation'],['maint','maint']].forEach(([v,el])=>{switchView(v);o[v]=document.querySelector('#view-'+el+' .vs-side').innerText;});
     vsPick('Q1');o.picked=currentJobId;return o;});
-  ok('Cabinets & Hardware lists production jobs',/P1/.test(r.cabinetlist)&&!/I1/.test(r.cabinetlist));ok('QC & Dispatch lists QC jobs',/Q1/.test(r.tracker));
-  ok('Installation lists installation jobs',/I1/.test(r.installation));ok('Maintenance lists maintenance jobs',/M1/.test(r.maint));ok('tapping a job opens it',r.picked==='Q1');await p.close();}
+  ok('Cabinets & Hardware lists only production jobs',/P1/.test(r.cabinetlist)&&!/Q1|I1|M1/.test(r.cabinetlist));ok('QC & Dispatch lists only QC jobs',/Q1/.test(r.tracker)&&!/P1|I1|M1/.test(r.tracker));
+  ok('Installation lists only installation jobs',/I1/.test(r.installation)&&!/P1|Q1|M1/.test(r.installation));ok('Maintenance lists only maintenance jobs',/M1/.test(r.maint)&&!/P1|Q1|I1/.test(r.maint));ok('tapping a job opens it',r.picked==='Q1');await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();

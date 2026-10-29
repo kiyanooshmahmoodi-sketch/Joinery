@@ -1295,7 +1295,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v427 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v428 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8408,7 +8408,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v427 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v428 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10516,8 +10516,7 @@ function sbHide(){if(!_sbOn)return;_sbOn=false;var ov=document.getElementById('r
 document.addEventListener('mousemove',function(){if(!_sbOn)sbArm();},{passive:true});
 sbArm();
 // ===== v427: job list on the left of every section — which jobs are in this part of the workflow =====
-var VS_STAGES={cabinetlist:[['drafting','Drafting'],['production','Production']],tracker:[['production','Production'],['qcd','QC & Dispatch']],dispatch:[['production','Production'],['qcd','QC & Dispatch']],
-  installation:[['qcd','QC & Dispatch'],['installation','Installation']],maint:[['maintenance','Maintenance']]};
+var VS_STAGES={cabinetlist:[['production','Production']],tracker:[['qcd','QC & Dispatch']],dispatch:[['qcd','QC & Dispatch']],installation:[['installation','Installation']],maint:[['maintenance','Maintenance']]};   // v428: each section shows only the jobs in its own stage
 var VS_TITLE={cabinetlist:'Cabinets & Hardware',tracker:'QC & Dispatch',dispatch:'QC & Dispatch',installation:'Installation',maint:'Maintenance'};
 function vsWrap(v){var el=document.getElementById('view-'+v);if(!el)return null;var side=el.querySelector(':scope > .vs-side');
   if(!side){var main=document.createElement('div');main.className='vs-main';while(el.firstChild)main.appendChild(el.firstChild);side=document.createElement('aside');side.className='vs-side';el.appendChild(side);el.appendChild(main);el.classList.add('vs-on');}
@@ -10532,7 +10531,6 @@ function renderSide(v){var G=VS_STAGES[v];if(!G)return;var side=vsWrap(v);if(!si
   var html=G.map(function(g){var L=all.filter(function(j){return jhStage(j)===g[0];}).sort(jhByDue);
     return '<div class="vs-grp">'+esc(g[1])+' <i>'+L.length+'</i></div>'+(L.length?L.map(item).join(''):'<div class="vs-none">No jobs</div>');}).join('');
   var cur=currentJobId&&allJobs[currentJobId];
-  if(cur&&!shown[cur.id]){var S=JH_STAGES.filter(function(x){return x.k===jhStage(cur);})[0]||{};html='<div class="vs-grp">Open now <i>'+esc(S.t||'')+'</i></div>'+item(cur)+html;}
   side.innerHTML='<div class="vs-head">'+esc(VS_TITLE[v]||'')+' jobs</div>'+html;}
 (function(){var _sv=switchView;switchView=function(v){var r=_sv.apply(this,arguments);try{renderSide(_currentView);}catch(e){console.error(e);}return r;};})();
 (function(){var _sj=selectJob;selectJob=function(id){var r=_sj.apply(this,arguments);try{if(VS_STAGES[_currentView])renderSide(_currentView);}catch(e){}return r;};})();
