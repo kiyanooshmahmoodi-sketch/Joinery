@@ -1295,7 +1295,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v431 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v432 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8407,7 +8407,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v431 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v432 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9851,7 +9851,7 @@ function jhByDue(a,b){var da=(a.info||{}).dueDate||'',db=(b.info||{}).dueDate||'
 function jhFilterSet(k){_jhFilter=k;renderJobsHome();}
 function jhGo(id,view){if(id!==currentJobId)selectJob(id);switchView(view);}
 function jhOpen(id){if(id!==currentJobId)selectJob(id);switchView('cabinetlist');var t=document.querySelector(".tabs .tab[onclick*=\"'finishes'\"]");if(t)showTab('finishes',t);}
-async function jhNew(){await newJob();try{var nj=allJobs[currentJobId];if(nj){jhInfo(nj).stageLog=[];jhTrack(nj);saveData();}}catch(e){}
+async function jhNew(){await newJob();try{var nj=allJobs[currentJobId];if(nj){jhInfo(nj).stageLog=[];jhTrack(nj);saveData();jhOpenAll(nj.id);}}catch(e){}
   _jhFilter='all';var se=document.getElementById('jh-search');if(se)se.value='';renderJobsHome();
   setTimeout(function(){var el=document.querySelector('[data-jh-name="'+currentJobId+'"]');if(el){el.scrollIntoView({block:'center'});el.focus();el.select();}},80);}
 function jhDelete(id){var j=allJobs[id];if(!j)return;
@@ -9879,11 +9879,13 @@ function jhFinHTML(j){var id=j.id,L=(j.drawings||[]).filter(function(x){return x
 function jhAddPlan(id,kind){if(id!==currentJobId)selectJob(id);renderJobsHome();var f=document.getElementById((kind==='d3'||kind==='cm')?'jh-file3':'jh-file');f.dataset.kind=kind||'arch';f.click();}   /* d3 also resets jh-file3 to d3 */
 async function jhUpload(inp,kind){try{await drUpload(inp,kind||'arch');}catch(e){}try{var _a=document.activeElement;if(_a&&_a.blur)_a.blur();}catch(e){}renderJobsHome();}
 // v393: job card sections can be minimised (name + stage always stay open); state is remembered on this device
-var _jhCol={};try{_jhCol=JSON.parse(localStorage.getItem('cbk-jh-col')||'{}')||{};}catch(e){_jhCol={};}
-function jhColSave(){try{localStorage.setItem('cbk-jh-col',JSON.stringify(_jhCol));}catch(e){}}
-function jhIsCol(id,k){return !!(_jhCol[id]&&_jhCol[id][k]);}
-function jhToggle(id,k){_jhCol[id]=_jhCol[id]||{};if(_jhCol[id][k])delete _jhCol[id][k];else _jhCol[id][k]=1;jhColSave();try{var _a=document.activeElement;if(_a&&_a.blur)_a.blur();}catch(e){}renderJobsHome();}
-function jhColAll(on){Object.keys(allJobs||{}).forEach(function(id){_jhCol[id]=on?{client:1,factory:1,due:1,files:1,fin:1}:{};});jhColSave();renderJobsHome();}
+// v432: job card sections are minimised by default; a NEW job opens fully so you can fill it in.
+// What you open stays open only until the app is closed — next time every job opens minimised again.
+var _jhOpen={},JH_SECS=['client','factory','due','files','fin'];
+function jhIsCol(id,k){return !(_jhOpen[id]&&_jhOpen[id][k]);}
+function jhToggle(id,k){_jhOpen[id]=_jhOpen[id]||{};if(_jhOpen[id][k])delete _jhOpen[id][k];else _jhOpen[id][k]=1;try{var _a=document.activeElement;if(_a&&_a.blur)_a.blur();}catch(e){}renderJobsHome();}
+function jhColAll(on){Object.keys(allJobs||{}).forEach(function(id){if(on)delete _jhOpen[id];else{_jhOpen[id]={};JH_SECS.forEach(function(k){_jhOpen[id][k]=1;});}});renderJobsHome();}
+function jhOpenAll(id){_jhOpen[id]={};JH_SECS.forEach(function(k){_jhOpen[id][k]=1;});}
 function jhSec(id,k,title,summ,html){var c=jhIsCol(id,k);
   return '<div class="jx-sec"><div class="jx-sec-h" onclick="jhToggle(\''+id+'\',\''+k+'\')">'+'<svg class="jx-chev'+(c?'':' open')+'" width="10" height="10" viewBox="0 0 10 10"><path d="M3 2l4 3-4 3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'+'<span class="jx-sec-t">'+title+'</span>'+
     (c&&summ?'<span class="jx-sec-s">'+esc(String(summ))+'</span>':'<span style="flex:1"></span>')+'</div>'+(c?'':'<div class="jx-sec-b">'+html+'</div>')+'</div>';}
