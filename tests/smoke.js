@@ -117,4 +117,10 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     vsPick('Q1');o.picked=currentJobId;return o;});
   ok('Cabinets & Hardware lists only production jobs',/P1/.test(r.cabinetlist)&&!/Q1|I1|M1/.test(r.cabinetlist));ok('QC & Dispatch lists only QC jobs',/Q1/.test(r.tracker)&&!/P1|I1|M1/.test(r.tracker));
   ok('Installation lists only installation jobs',/I1/.test(r.installation)&&!/P1|Q1|M1/.test(r.installation));ok('Maintenance lists only maintenance jobs',/M1/.test(r.maint)&&!/P1|Q1|I1/.test(r.maint));ok('tapping a job opens it',r.picked==='Q1');await p.close();}
+// ---------- 10. bulkhead structures
+{console.log('Bulkhead structures');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*700);
+  const r=await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);const P=(cab,name)=>({id:cab+name,cabId:cab,room:'K',type:'panel',status:'factory',parts:[{name,w:100,h:150,qty:1,mat:'White Chamar'}]});
+    allJobs.b1={id:'b1',name:'B',info:{},drawings:[],units:[P('W1','BH Support Right'),P('W1','BH Support Left'),P('W1','BH Support Bottom'),P('W1','BH Support Front'),P('W1','Bulkhead F/D'),P('W2','BH Support Right'),P('W2','Bulkhead F/D')]};
+    selectJob('b1');renderSummary();return {n:bhStructures().length,cat:getCat('Bulkhead F/D'),scat:getCat('BH Support Front'),txt:document.getElementById('sum-bh').innerText};});
+  ok('BH Support parts make one structure per bulkhead',r.n===2,r.n);ok('Bulkhead F/D stays a Bulkhead part',r.cat==='Bulkhead'&&r.scat==='Bulkhead Structure');ok('Summary shows the structures',/2\s*structures to build/.test(r.txt));await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();

@@ -1295,7 +1295,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v432 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v433 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1464,6 +1464,11 @@ html,body{overflow-x:hidden;}
     <div class="card-title">🗄️ By Cabinet Type</div>
     <div class="card-sub">Click any type to see the full list — type is detected from part names & comments</div>
     <div id="sum-cabs-type" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;"></div>
+  </div>
+  <div class="card" id="sum-bh-card" style="display:none;">
+    <div class="card-title">Bulkhead Structures</div>
+    <div class="card-sub">The frame behind each flush-with-door bulkhead (BH Support Right / Left / Bottom / Front) — one structure per bulkhead to build</div>
+    <div id="sum-bh"></div>
   </div>
   <div class="card">
     <div class="card-title">🚪 Independent Parts</div>
@@ -2536,7 +2541,8 @@ function qrSVG(text, px){
 }
 
 
-function getCat(name){var n=name.toLowerCase();
+function isBHSupport(name){return /\b(bh|bulk\s*head)\s*[-_]?\s*support\b/i.test(String(name||''));}   // v433: BH Support Right/Left/Bottom/Front = parts of the bulkhead structure
+function getCat(name){var n=name.toLowerCase();if(isBHSupport(name))return 'Bulkhead Structure';
   // These are checked FIRST, before the generic "join" catch-all, because a
   // drafter may write e.g. "Joining - MDF Glass Door" — the specific glass
   // door / floating shelf identity must win over the generic Joining bucket.
@@ -8407,7 +8413,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v432 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v433 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10548,6 +10554,16 @@ function renderSide(v){var G=VS_STAGES[v];if(!G)return;var side=vsWrap(v);if(!si
   side.innerHTML='<div class="vs-head">'+esc(VS_TITLE[v]||'')+' jobs</div>'+html;}
 (function(){var _sv=switchView;switchView=function(v){var r=_sv.apply(this,arguments);try{renderSide(_currentView);}catch(e){console.error(e);}return r;};})();
 (function(){var _sj=selectJob;selectJob=function(id){var r=_sj.apply(this,arguments);try{if(VS_STAGES[_currentView])renderSide(_currentView);}catch(e){}return r;};})();
+// ===== v433: BULKHEAD STRUCTURES — BH Support Right/Left/Bottom/Front behind a "Bulkhead F/D" (flush with door) =====
+function bhStructures(){var m={};(units||[]).forEach(function(u){(u.parts||[]).forEach(function(p){var nm=typeof p==='string'?p:(p&&p.name)||'';if(!isBHSupport(nm))return;
+    var key=u.cabId||u.id,o=m[key]=m[key]||{cab:key,room:u.room||'',parts:[],mat:'',units:[]};o.parts.push({name:nm,w:p.w||'',h:p.h||'',qty:p.qty||1,mat:p.mat||u.mat||''});if(!o.mat)o.mat=p.mat||u.mat||'';o.units.push(u);});});
+  return Object.keys(m).sort().map(function(k){var o=m[k];o.shipped=o.units.every(function(u){return u.status==='shipped';});return o;});}
+function bhRender(){var card=document.getElementById('sum-bh-card'),box=document.getElementById('sum-bh');if(!card||!box)return;var L=bhStructures();card.style.display=L.length?'':'none';if(!L.length)return;
+  var shipped=L.filter(function(o){return o.shipped;}).length;
+  box.innerHTML='<div style="display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;margin-bottom:10px;"><div style="font-size:28px;font-weight:600;">'+L.length+'</div><div style="font-size:13px;color:#52525b;">structure'+(L.length>1?'s':'')+' to build · '+shipped+' shipped · '+(L.length-shipped)+' still to go</div></div>'+
+    '<div style="overflow-x:auto;"><table class="sum-table"><thead><tr><th>Cabinet</th><th>Room</th><th>Parts (size)</th><th>Material</th><th>Status</th></tr></thead><tbody>'+
+    L.map(function(o){return '<tr><td><b>'+esc(o.cab)+'</b></td><td>'+esc(o.room)+'</td><td style="font-size:12.5px;line-height:1.6;">'+o.parts.map(function(x){return esc(x.name.replace(/^\s*(bh|bulk\s*head)\s*[-_]?\s*support\s*/i,''))+' '+esc(x.w)+' × '+esc(x.h)+(x.qty>1?' ×'+x.qty:'');}).join('<br>')+'</td><td style="font-size:12.5px;">'+esc(o.mat)+'</td><td>'+(o.shipped?'Shipped':'To build')+'</td></tr>';}).join('')+'</tbody></table></div>';}
+(function(){var _rs=renderSummary;renderSummary=function(){var r;try{r=_rs.apply(this,arguments);}finally{try{bhRender();}catch(e){console.error(e);}}return r;};})();
 // ===== v259: PRODUCTION DRAWINGS (PDF) in Installation =====
 function tomb(id){var j=siJob();if(!j)return;j.deleted=j.deleted||[];if(j.deleted.indexOf(id)<0)j.deleted.push(id);}
 function drMB(n){return (n/1048576).toFixed(1)+' MB';}
