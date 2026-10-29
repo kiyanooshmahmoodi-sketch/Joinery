@@ -1058,6 +1058,18 @@ html,body{overflow-x:hidden;}
 @media(max-width:640px){#ro-main{margin-top:6vh!important}#ro-art .g1 path{opacity:.1}}
 @media(prefers-reduced-motion:reduce){#ro-art .d{animation:none;stroke-dashoffset:0}#ro-art .t,#ro-brand,#ro-card{animation:none;opacity:1;transform:none}}
 </style>
+<style id="brand-v421">
+/* v421: header in the app-icon colours — navy, white "Cab", yellow "Line" */
+.topbar{background:#0f172a!important;}
+.brand{gap:12px!important;align-items:center!important;}
+.brand-logo{background:transparent!important;box-shadow:none!important;width:auto!important;height:auto!important;padding:0!important;display:flex;align-items:center;}
+.brand-word{font-family:'Poppins',Inter,system-ui,sans-serif;font-weight:700;font-size:24px;line-height:1;color:#fff;letter-spacing:-.01em;}
+.brand-word span{color:#fbbf24;}
+.tbtn{border-color:rgba(255,255,255,.16)!important;color:#e2e8f0!important;}
+.tbtn:hover{background:rgba(251,191,36,.08)!important;border-color:rgba(251,191,36,.45)!important;}
+.view-btn.active{border-bottom-color:#fbbf24!important;}
+@media(max-width:760px){.brand-word{font-size:20px;}}
+</style>
 </head>
 <body>
 
@@ -1241,23 +1253,19 @@ html,body{overflow-x:hidden;}
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="brand">
-    <div class="brand-logo" id="brand-logo" onclick="try{if(currentJobId)saveCurrentJob();}catch(e){}roleInit();" title="Switch user / role" style="cursor:pointer;">
-      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="6" y="8" width="32" height="32" rx="3" fill="white"/>
-        <rect x="15" y="4" width="14" height="6" rx="2" fill="#111827"/>
-        <rect x="17" y="6" width="10" height="2" rx="1" fill="white"/>
-        <rect x="11" y="16" width="22" height="3" rx="1.5" fill="#e5e7eb"/>
-        <rect x="11" y="16" width="18" height="3" rx="1.5" fill="#111827"/>
-        <rect x="11" y="23" width="22" height="3" rx="1.5" fill="#e5e7eb"/>
-        <rect x="11" y="23" width="13" height="3" rx="1.5" fill="#111827"/>
-        <rect x="11" y="30" width="22" height="3" rx="1.5" fill="#e5e7eb"/>
-        <rect x="11" y="30" width="20" height="3" rx="1.5" fill="#111827"/>
-        <circle cx="35" cy="35" r="2" fill="#cf9a3c"/>
+    <div class="brand-logo" id="brand-logo" onclick="try{if(currentJobId)saveCurrentJob();}catch(e){}roleInit();" title="CabLine" style="cursor:pointer;">
+      <svg width="30" height="34" viewBox="0 0 30 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="2" y="1" width="26" height="28" rx="3" fill="#fff"/>
+        <path d="M15 1.5V16.5M2.5 17H27.5" stroke="#0f172a" stroke-width="1.6"/>
+        <rect x="11.4" y="6.5" width="1.6" height="5" rx=".8" fill="#3b82f6"/><rect x="17" y="6.5" width="1.6" height="5" rx=".8" fill="#3b82f6"/>
+        <rect x="12" y="21.6" width="6" height="1.6" rx=".8" fill="#3b82f6"/>
+        <rect x="5" y="29" width="4" height="3.4" rx=".8" fill="#fff"/><rect x="21" y="29" width="4" height="3.4" rx=".8" fill="#fff"/>
       </svg>
     </div>
-    <div>
+    <div class="brand-word">Cab<span>Line</span></div>
+    <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v420 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v421 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8368,13 +8376,13 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v420 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v421 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
   var nameEl=document.getElementById('brand-name');
   var subEl=document.getElementById('brand-sub');
-  if(logoEl)logoEl.innerHTML=BRAND_LOGOS[view]||BRAND_LOGOS.tracker;
+  /* v421: the header always shows the CabLine logo */
   if(nameEl)nameEl.textContent=BRAND_NAMES[view]||BRAND_NAMES.tracker;
   if(subEl)subEl.textContent=BRAND_SUBS[view]||BRAND_SUBS.tracker;
 }
