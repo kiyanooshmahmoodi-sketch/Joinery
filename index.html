@@ -1295,7 +1295,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v436 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v437 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -2769,7 +2769,7 @@ function handleExcel(files){
                 // Carcass parts of a UBack cabinet — group into ONE cabinet unit
                 if(!groups[cab.id])groups[cab.id]={id:cab.id,cabId:cab.id,room:cab.room,parts:[],mat:mat,status:'factory',shippedAt:null,type:'panel',isPTO:false,isJoining:false};
                 if(isUBack(partName))groups[cab.id].mat=mat;   // the cabinet's material is its UBack's material (not whichever file happened to be read first)
-                if(!groups[cab.id].parts.find(function(p){return p.name===partName;}))groups[cab.id].parts.push(entry);
+                if(!groups[cab.id].parts.find(function(p){return p.name===partName&&p.w===w&&p.h===h;}))groups[cab.id].parts.push(entry);   // v437: same name but a different size is a different piece (a corner cabinet has two UBacks) — still ONE cabinet
                 if(isPTO)groups[cab.id].isPTO=true;
                 if(isJoining)groups[cab.id].isJoining=true;
                 // This cabinet number has a UBack → it is a CABINET
@@ -8427,7 +8427,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v436 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v437 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');

@@ -126,4 +126,12 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('BH Support parts make one structure per bulkhead',r.n===2,r.n);ok('Bulkhead F/D stays a Bulkhead part',r.cat==='Bulkhead'&&r.scat==='Bulkhead Structure');ok('Summary shows the structures',/2\s*structures to build/.test(r.txt));
   const r2=await p.evaluate(()=>{const lg=[];const sm=showMsg;showMsg=m=>lg.push(m);reapplyRules();showMsg=sm;const B=units.filter(u=>u.isBHS);return {nm:uName(B[0]),cat:getCat(uName(B[0])),n:B.length,w1:(B.find(u=>u.cabId==='W1')||{parts:[]}).parts.length,fd:units.filter(u=>u.parts[0].name==='Bulkhead F/D').length,lg};});
   ok('BH Support pieces become one scannable unit per cabinet',r2.nm==='Bulkhead Structure'&&r2.cat==='Bulkhead Structure'&&r2.n===2&&r2.w1===4&&r2.fd===2,JSON.stringify(r2));await p.close();}
+// ---------- 11. corner cabinet with two UBacks
+{console.log('Corner cabinet');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*700);
+  await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);
+    const rows=[['Qty','H','W','Part','Cab'],[1,700,279,'CBK-Door(R)','R1:105'],[1,700,340,'UEnd (R)','R1:105'],[1,600,617,'Bottom','R1:105'],[1,700,617,'UBack HW','R1:105'],[1,700,633.5,'UBack HW','R1:105']];
+    window.XLSX={read:()=>({SheetNames:['S'],Sheets:{S:{}}}),utils:{sheet_to_json:()=>rows}};
+    window.FileReader=class{readAsArrayBuffer(){setTimeout(()=>this.onload({target:{result:new ArrayBuffer(1)}}),10);}};handleExcel([{name:'White HMR 16mm.xlsx'}]);});
+  await p.waitForTimeout(T*800);const r=await p.evaluate(()=>{const c=pendingUnits.filter(u=>u.type==='cabinet');return {n:c.length,ub:c[0]?c[0].parts.filter(x=>isUBack(x.name)).length:0,hw:c[0]?hasHW(c[0]):false};});
+  ok('corner cabinet with two UBacks is ONE cabinet',r.n===1,JSON.stringify(r));ok('both UBacks are kept in its part list',r.ub===2&&r.hw);await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();
