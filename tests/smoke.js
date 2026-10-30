@@ -140,4 +140,10 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   await p.evaluate(()=>{rcShow('rc-connecting');applyRole('admin','Kiya','',['admin']);document.getElementById('role-ov').style.display='none';roAutoRetry();
     document.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));});
   await p.waitForTimeout(T*800);ok('the "stuck, try again" reload never fires once you are in the app',navs===0,navs);await p.close();}
+// ---------- 13. header logo opens the opening screen; a tap comes back
+{console.log('Logo');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*700);
+  await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);clearTimeout(window._roHideT);document.getElementById('role-ov').style.display='none';});
+  await p.click('#brand-logo');await p.waitForTimeout(T*400);const on=await p.evaluate(()=>document.getElementById('role-ov').style.display==='flex'&&_sbOn&&!document.getElementById('role-ov').classList.contains('ro-wait'));
+  await p.evaluate(()=>{SB_MS=600000;});await p.mouse.click(300,300);await p.waitForTimeout(T*800);const off=await p.evaluate(()=>document.getElementById('role-ov').style.display==='none'&&SESSION.role==='admin');
+  ok('logo shows the opening screen',on);ok('a tap goes back into the app',off);await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();

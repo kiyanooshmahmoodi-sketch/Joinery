@@ -1356,7 +1356,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="brand">
-    <div class="brand-logo" id="brand-logo" onclick="try{if(currentJobId)saveCurrentJob();}catch(e){}try{switchView('jobs');}catch(e){}" title="CabLine — Jobs" style="cursor:pointer;">
+    <div class="brand-logo" id="brand-logo" onclick="event.stopPropagation();setTimeout(function(){try{sbShow();}catch(e){}},0);" title="CabLine" style="cursor:pointer;">
       <svg width="38" height="43" viewBox="0 0 30 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="2" y="1" width="26" height="28" rx="3" fill="#fff"/>
         <path d="M15 1.5V16.5M2.5 17H27.5" stroke="#0f172a" stroke-width="1.6"/>
@@ -1368,7 +1368,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v452 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v453 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8501,7 +8501,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v452 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v453 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
