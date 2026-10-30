@@ -1076,6 +1076,24 @@ html,body{overflow-x:hidden;}
 #ro-veil{background:radial-gradient(ellipse 60% 40% at 50% 12%,rgba(246,241,231,.9),rgba(246,241,231,0))}
 @media(prefers-reduced-motion:reduce){#ro-art .wcg,#ro-art #wc-light,#ro-art .pl{animation:none;opacity:1}}
 </style>
+<style id="ro-door">
+/* v442: the sign-in box is a cabinet door — matte cream face, slim bronze pull, opens a little while you type and swings open on sign-in */
+#ro-main{perspective:1400px}
+#ro-card{position:relative;background:linear-gradient(100deg,#fdfbf7 0%,#f8f4ec 100%)!important;border:0!important;border-radius:2px!important;padding:32px 42px 28px 30px!important;
+  box-shadow:0 1px 0 rgba(42,36,30,.08),0 18px 36px -12px rgba(60,40,20,.28)!important;transform-origin:left center;transform:rotateY(0);
+  animation:roFade .8s ease .45s forwards!important;transition:transform .7s cubic-bezier(.2,.7,.2,1),box-shadow .7s,opacity .5s}
+#ro-card::before{content:"";position:absolute;right:15px;top:50%;width:4px;height:96px;margin-top:-48px;border-radius:2px;background:linear-gradient(90deg,#8a6a3e,#d8b67c 45%,#a8834f);box-shadow:1px 1px 2px rgba(0,0,0,.18)}
+#ro-card::after{content:"";position:absolute;top:0;bottom:0;right:-7px;width:7px;border-radius:0 2px 2px 0;background:repeating-linear-gradient(180deg,rgba(90,60,30,.10) 0 1px,transparent 1px 6px),linear-gradient(90deg,#d9b88f,#c59f74);opacity:0;transition:opacity .5s}
+#ro-card:focus-within{transform:rotateY(-8deg);box-shadow:0 1px 0 rgba(42,36,30,.08),18px 26px 40px -14px rgba(60,40,20,.34)!important}
+#ro-card:focus-within::after{opacity:1}
+#ro-card.ro-open{transform:rotateY(-78deg)!important;opacity:0!important;transition:transform 1s cubic-bezier(.5,0,.2,1),opacity .5s ease .5s}
+#ro-card div[style*="font-size:14px;font-weight:700"],#ro-card div[style*="font-size: 14px; font-weight: 700"]{font:600 11px Inter,system-ui,sans-serif!important;letter-spacing:.24em;text-transform:uppercase;color:#8a7f73!important;margin-bottom:20px!important}
+#ro-card input:not([type=checkbox]):not([type=radio]){border:0!important;border-bottom:1px solid #d9d1c5!important;border-radius:0!important;background:transparent!important;padding:9px 0 10px!important;margin-bottom:14px!important;outline:none;transition:border-color .25s}
+#ro-card input:not([type=checkbox]):not([type=radio]):focus{border-bottom-color:#1c1917!important;box-shadow:none!important;outline:none!important}
+#ro-card button[style*="background:#27272a"],#ro-card button[style*="background:#2f4b8f"],#ro-card button[style*="background: rgb(39, 39, 42)"],#ro-card button[style*="background: rgb(47, 75, 143)"]{background:#1c1917!important;border-radius:2px!important;font-weight:500!important;letter-spacing:.06em;margin-top:6px}
+#ro-card button[style*="background:none"],#ro-card button[style*="background: none"]{color:#57534e!important;font-weight:500!important}
+@media(prefers-reduced-motion:reduce){#ro-card,#ro-card.ro-open{transition:none;transform:none!important}}
+</style>
 <style id="brand-v421">
 /* v421: header in the app-icon colours — navy, white "Cab", yellow "Line" */
 .topbar{background:#0f172a!important;}
@@ -1316,7 +1334,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v441 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v442 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8449,7 +8467,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v441 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v442 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10938,6 +10956,11 @@ var RO_SPLASH_MS=3900;
 function roHideSplash(){var ov=document.getElementById('role-ov');if(!ov)return;
   var left=RO_SPLASH_MS-(Date.now()-((window.__diag&&__diag.t0)||0));
   if(ov.style.display==='none')return;
+  // v442: if the sign-in door is on screen, swing it open first, then fade the opening screen away
+  var cd=document.getElementById('ro-card');
+  if(cd&&cd.offsetParent&&!ov.classList.contains('ro-hold')&&!ov.classList.contains('ro-wait')&&!ov.classList.contains('ro-standby')&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){
+    cd.classList.add('ro-open');clearTimeout(window._roHideT);
+    window._roHideT=setTimeout(function(){ov.classList.add('ro-out');setTimeout(function(){ov.style.display='none';ov.classList.remove('ro-hold','ro-out');cd.classList.remove('ro-open');},520);},Math.max(900,left));return;}
   if(left<=0||window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ov.style.display='none';ov.classList.remove('ro-hold','ro-out');return;}
   ov.classList.add('ro-hold');clearTimeout(window._roHideT);
   window._roHideT=setTimeout(function(){ov.classList.add('ro-out');setTimeout(function(){ov.style.display='none';ov.classList.remove('ro-hold','ro-out');},520);},left);}
