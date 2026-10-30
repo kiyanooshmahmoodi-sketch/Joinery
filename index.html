@@ -1368,7 +1368,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v450 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v451 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8501,7 +8501,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v450 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v451 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10615,6 +10615,7 @@ var SB_MS=5*60*1000,_sbT=null,_sbOn=false;
 function sbArm(){clearTimeout(_sbT);if(_sbOn)return;_sbT=setTimeout(sbShow,SB_MS);}
 function sbShow(){var ov=document.getElementById('role-ov');if(!ov||!window.SESSION||!SESSION.role||ov.style.display!=='none'){sbArm();return;}
   try{if(currentJobId)saveCurrentJob();saveData();}catch(e){}
+  clearTimeout(window._roHideT);   // v451: a pending 'hide the opening screen' timer must not close standby
   _sbOn=true;var art=document.getElementById('ro-art');if(art){var c=art.cloneNode(true);art.parentNode.replaceChild(c,art);}   // replay the drawing
   var br=document.getElementById('ro-brand');if(br){var cb=br.cloneNode(true);br.parentNode.replaceChild(cb,br);}
   ov.classList.remove('ro-out','ro-hold','ro-wait');ov.classList.add('ro-standby');ov.style.opacity='';ov.style.display='flex';
@@ -11257,7 +11258,11 @@ function checkForUpdate(){
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
     if(j&&Number(j.version)>APP_VERSION){
       document.getElementById('upd-ver').textContent='v'+j.version;
-      if(_updSafe()){applyUpdate();return;}
+      // v451: no reload loops — if we already reloaded for this version and the server still sent the old page, wait 10 min before trying again by itself
+      var tr=null;try{tr=JSON.parse(sessionStorage.getItem('upd-try')||'null');}catch(e){}
+      if(tr&&tr.v===Number(j.version)&&Date.now()-tr.t<600000){document.getElementById('upd-bar').style.display='block';return;}
+      var ov=document.getElementById('role-ov');if(window._sbOn||(ov&&ov.style.display!=='none'&&SESSION.role)){return;}   // never reload over the opening screen / standby
+      if(_updSafe()){try{sessionStorage.setItem('upd-try',JSON.stringify({v:Number(j.version),t:Date.now()}));}catch(e){}applyUpdate();return;}
       document.getElementById('upd-bar').style.display='block';
     }
   }).catch(function(){});
