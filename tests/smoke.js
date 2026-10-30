@@ -146,4 +146,11 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   await p.click('#brand-logo');await p.waitForTimeout(T*400);const on=await p.evaluate(()=>document.getElementById('role-ov').style.display==='flex'&&_sbOn&&!document.getElementById('role-ov').classList.contains('ro-wait'));
   await p.evaluate(()=>{SB_MS=600000;});await p.mouse.click(300,300);await p.waitForTimeout(T*800);const off=await p.evaluate(()=>document.getElementById('role-ov').style.display==='none'&&SESSION.role==='admin');
   ok('logo shows the opening screen',on);ok('a tap goes back into the app',off);await p.close();}
+// ---------- 14. Drafting holds the job until Send to Production
+{console.log('Drafting hold');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*700);
+  const r=await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);allJobs.dh={id:'dh',name:'DH',info:{},drawings:[],units:[]};
+    jhSet('dh','stage','drafting',true);const a=jhStage(allJobs.dh);
+    allJobs.dh.units=[{id:'R1C1',cabId:'R1C1',room:'R1',type:'cabinet',status:'factory',parts:[{name:'UBack',mat:'HMR'}]}];const b=jhStage(allJobs.dh);
+    _dfSel='dh';window.confirm=()=>true;dfToProd();const c=jhStage(allJobs.dh);return [a,b,c].join(',');});
+  ok('importing the Excel keeps the job in Drafting; Send to Production moves it',r==='drafting,drafting,production',r);await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();

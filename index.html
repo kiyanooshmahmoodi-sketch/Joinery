@@ -1377,7 +1377,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v464 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v465 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8510,7 +8510,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v464 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v465 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9889,7 +9889,10 @@ var JH_STAGES=[{k:'design',t:'Waiting to Start',i:'📥',c:'#8a8f98'},{k:'drafti
 function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
 function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'maintenance';/* v393: everything installed → Maintenance; Completed is chosen by hand */if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
 var _jhFilter='all';
-function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
+function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';
+  if(inf.stageManual==='drafting'&&inf.dfHold)return 'drafting';   // v465: a job in Drafting stays there (even after its Excel is imported) until the drafter presses Send to Production
+  if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';
+  if(inf.stageManual==='drafting')inf.dfHold=true;return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
 function jhStage(j){return jhManual(j)||jhAutoStage(j);}
 // v393: date stamp every stage change (auto from scans, or set by hand)
 function jhParseDate(t){if(!t)return null;var m=String(t).match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ap]m)?/i);
@@ -9922,7 +9925,7 @@ function jhSet(id,field,val,noDraw){var j=allJobs[id];if(!j)return;val=String(va
     renderJobsHome();showMsg('📊 Upload the Excel files first — the job moves to Production once they are added');jhImport(id);return;}
   if(field==='name'){j.name=val||'Unnamed Job';if(id===currentJobId){document.getElementById('proj-input').value=j.name;document.getElementById('proj-display').textContent=j.name;}}
   else if(field==='site'){j.finishes=(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}};j.finishes.site=val;}
-  else if(field==='stage'){var inf=jhInfo(j);delete inf.stage;if(!val||val==='auto'||val===jhAutoStage(j)){delete inf.stageManual;delete inf.stageAutoAt;}else{inf.stageManual=val;inf.stageAutoAt=jhAutoStage(j);}jhTrack(j,true);}
+  else if(field==='stage'){var inf=jhInfo(j);delete inf.stage;if(!val||val==='auto'||val===jhAutoStage(j)){delete inf.stageManual;delete inf.stageAutoAt;}else{inf.stageManual=val;inf.stageAutoAt=jhAutoStage(j);}if(val==='drafting')inf.dfHold=true;else delete inf.dfHold;jhTrack(j,true);}
   else jhInfo(j)[field]=val;
   // v393: the countdown starts the FIRST time a delivery date is set; changing the date later keeps that start,
   // so the colour moves to wherever the new date puts it (it does not restart at blue).
