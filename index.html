@@ -1107,11 +1107,11 @@ html,body{overflow-x:hidden;}
 </style>
 <style id="ro-tagline">
 /* v445: the slogan IS the line — yellow capitals exactly as tall as the line, which carries on to the left and right */
-#ro-tag{display:flex!important;align-items:center;gap:.55em;width:var(--ro-word-w,360px);margin:20px auto 0!important;font:600 15px Poppins,Inter,system-ui,sans-serif!important;
+#ro-tag{display:flex!important;align-items:center;gap:.55em;width:min(calc(var(--ro-word-w,360px) * 1.6),92vw);margin:20px 0 0 50%!important;transform:translateX(-50%);font:600 15px Poppins,Inter,system-ui,sans-serif!important;
   text-transform:uppercase;letter-spacing:.16em!important;color:#fbbf24!important;line-height:1;white-space:nowrap}
 #ro-tag span{display:block;line-height:1;padding-left:.16em}
 #ro-tag i{flex:1;height:.72em;background:#fbbf24;border-radius:1px;transform:translateY(var(--tag-dy,0))}
-@media(max-width:520px){#ro-tag{font-size:10.5px!important;gap:.45em;letter-spacing:.12em!important}}
+@media(max-width:520px){#ro-tag{font-size:10.5px!important;gap:.45em;letter-spacing:.12em!important;width:min(calc(var(--ro-word-w,210px) * 1.5),92vw)}}
 </style>
 <script>/* v446: the slogan line is exactly as wide as the CabLine word */
 (function(){function fit(){var w=document.getElementById('ro-word'),t=document.getElementById('ro-tag');if(!w||!t)return;var r=document.createRange();r.selectNodeContents(w);var W=r.getBoundingClientRect().width;if(W>0)t.style.setProperty('--ro-word-w',Math.round(W)+'px');}
@@ -1356,7 +1356,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v446 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v447 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8489,7 +8489,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v446 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v447 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
