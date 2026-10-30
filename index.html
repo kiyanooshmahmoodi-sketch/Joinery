@@ -866,9 +866,9 @@ textarea{resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;}
 /* v393: calm theme for the whole app — neutral palette, one dark accent, quiet type (same look as the Jobs page) */
 :root{--primary:#18181b;--primary-2:#27272a;--primary-soft:#f4f4f5;--primary-glow:rgba(0,0,0,0);
   --blue:#3d5f8c;--green:#4f7d5f;--red:#a94b3f;--yellow:#9a7322;--purple:#6b5585;--pink:#8a5a6a;
-  --gray:#52525b;--gray-2:#3f3f46;--gray-3:#71717a;--light:#f4f4f5;--border:#e4e4e7;--border-soft:#ececef;--bg:#f7f7f8;--dark:#18181b;--text:#18181b;
+  --gray:#52525b;--gray-2:#3f3f46;--gray-3:#71717a;--light:#f4f4f5;--border:#e4e4e7;--border-soft:#ececef;--bg:#f6f1e7;--dark:#18181b;--text:#18181b;
   --shadow-xs:none;--shadow-sm:0 1px 2px rgba(0,0,0,.03);--shadow-md:0 1px 3px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.04);--shadow-glow:none;--r-lg:10px;--r-md:8px;}
-body{background:#f7f7f8!important;background-image:none!important;color:#18181b;letter-spacing:0;}
+body{background:#f6f1e7!important;background-image:none!important;color:#18181b;letter-spacing:0;}
 ::selection{background:#18181b;}
 /* header */
 .topbar{background:#18181b!important;box-shadow:none!important;border-bottom:0!important;padding:12px 22px!important;}
@@ -1090,6 +1090,9 @@ html,body{overflow-x:hidden;}
 /* v422: installed app — no separate window title bar; our navy header goes right to the top (Window Controls Overlay) */
 .topbar{padding-top:calc(env(titlebar-area-height,0px) + 12px)!important;-webkit-app-region:drag;app-region:drag;}
 .topbar button,.topbar input,.topbar a,.topbar select,.topbar label,.brand-logo,#user-chip{-webkit-app-region:no-drag;app-region:no-drag;}
+</style>
+<style id="paper-v441">/* v441: inside pages on the same cream paper as the opening screen */
+.view-switch,.tabs{background:#f6f1e7!important;}
 </style>
 <style id="df-css">@media(max-width:760px){.df-grid{grid-template-columns:1fr!important;}}</style>
 <style id="sb-css">
@@ -1313,7 +1316,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v440 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v441 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8446,7 +8449,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v440 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v441 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
