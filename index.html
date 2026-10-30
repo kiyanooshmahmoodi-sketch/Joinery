@@ -1115,6 +1115,10 @@ html,body{overflow-x:hidden;}
 #ro-veil{background:radial-gradient(ellipse 60% 40% at 50% 12%,rgba(19,17,16,.9),rgba(19,17,16,0))}
 
 #ro-art{--ro-ink:#e8dfd0}
+/* v454: softer, paler colour; weaker LED strip; brighter pendants */
+#ro-art #wc-all,#ro-art .wcg.b4,#ro-art .wcg.b7{filter:saturate(.72) contrast(.82) brightness(1.18)}
+#ro-art #wc-light>rect{opacity:.42}
+#ro-art .pl{filter:brightness(1.3) drop-shadow(0 0 16px rgba(255,214,140,.55))}
 #ro-art [mask="url(#mFade)"]{mask:none!important}
 </style>
 <style id="ro-tagline">
@@ -1368,7 +1372,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v453 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v454 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8501,7 +8505,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v453 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v454 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
