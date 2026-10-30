@@ -1356,7 +1356,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="brand">
-    <div class="brand-logo" id="brand-logo" onclick="try{if(currentJobId)saveCurrentJob();}catch(e){}roleInit();" title="CabLine" style="cursor:pointer;">
+    <div class="brand-logo" id="brand-logo" onclick="try{if(currentJobId)saveCurrentJob();}catch(e){}try{switchView('jobs');}catch(e){}" title="CabLine — Jobs" style="cursor:pointer;">
       <svg width="38" height="43" viewBox="0 0 30 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="2" y="1" width="26" height="28" rx="3" fill="#fff"/>
         <path d="M15 1.5V16.5M2.5 17H27.5" stroke="#0f172a" stroke-width="1.6"/>
@@ -1368,7 +1368,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v451 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v452 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8501,7 +8501,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v451 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v452 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10996,10 +10996,10 @@ function roHideSplash(){var ov=document.getElementById('role-ov');if(!ov)return;
   var cd=document.getElementById('ro-card');
   if(cd&&cd.offsetParent&&!ov.classList.contains('ro-hold')&&!ov.classList.contains('ro-wait')&&!ov.classList.contains('ro-standby')&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){
     cd.classList.add('ro-open');clearTimeout(window._roHideT);
-    window._roHideT=setTimeout(function(){ov.classList.add('ro-out');setTimeout(function(){ov.style.display='none';ov.classList.remove('ro-hold','ro-out');cd.classList.remove('ro-open');},520);},Math.max(900,left));return;}
-  if(left<=0||window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ov.style.display='none';ov.classList.remove('ro-hold','ro-out');return;}
+    window._roHideT=setTimeout(function(){ov.classList.add('ro-out');setTimeout(function(){ov.style.display='none';ov.classList.remove('ro-hold','ro-out','ro-wait');clearTimeout(window._roWaitT);cd.classList.remove('ro-open');},520);},Math.max(900,left));return;}
+  if(left<=0||window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ov.style.display='none';ov.classList.remove('ro-hold','ro-out','ro-wait');clearTimeout(window._roWaitT);return;}
   ov.classList.add('ro-hold');clearTimeout(window._roHideT);
-  window._roHideT=setTimeout(function(){ov.classList.add('ro-out');setTimeout(function(){ov.style.display='none';ov.classList.remove('ro-hold','ro-out');},520);},left);}
+  window._roHideT=setTimeout(function(){ov.classList.add('ro-out');setTimeout(function(){ov.style.display='none';ov.classList.remove('ro-hold','ro-out','ro-wait');clearTimeout(window._roWaitT);},520);},left);}
 function applyRole(r,nm,em,roles){
   roles=(roles&&roles.length)?roles.slice():[r];
   r=ROLE_ORDER.filter(function(x){return roles.indexOf(x)>-1;})[0]||r;   // main section = where the app opens
@@ -11077,7 +11077,7 @@ function rcShow(id){['rc-connecting','rc-signin','rc-create','rc-verify','rc-pen
   // v412: while connecting, no "Connecting…" box — just a thin moving line under the name; after 12 s say why and offer Retry
   var ov=document.getElementById('role-ov');if(!ov)return;var w=id==='rc-connecting';ov.classList.toggle('ro-wait',w);clearTimeout(window._roWaitT);
   var ld=document.getElementById('ro-load');if(ld)ld.classList.remove('ro-slow');
-  if(w)window._roWaitT=setTimeout(function(){if(ov.classList.contains('ro-wait')&&ld){ld.classList.add('ro-slow');roAutoRetry();var D=window.__diag||{},dg=document.getElementById('ro-diag');
+  if(w)window._roWaitT=setTimeout(function(){if(ov.classList.contains('ro-wait')&&ov.style.display!=='none'&&ld){ld.classList.add('ro-slow');roAutoRetry();var D=window.__diag||{},dg=document.getElementById('ro-diag');
     if(dg)dg.textContent='Internet: '+(navigator.onLine?'yes':'no')+' · Firebase: '+(D.fb||'not started')+(D.fbRetry?' (retried)':'')+' · Sign-in check: '+(D.auth||(D.authWait?'no answer':'not started'))+((D.errs||[]).length?' · '+D.errs.slice(-2).join(' | '):'');}},12000);}
 function _ukey(e){return String(e||'').trim().toLowerCase();}
 function rcOnCloudReady(){var ov=document.getElementById('role-ov');if(window._sbOn&&SESSION.role&&cloud.user)return;   // v450: standby stays standby — a tap brings the app back
@@ -11087,7 +11087,8 @@ function rcOnCloudReady(){var ov=document.getElementById('role-ov');if(window._s
 function roRetry(){try{sessionStorage.setItem('ro-retry',String((parseInt(sessionStorage.getItem('ro-retry')||'0',10)||0)+1));}catch(e){}
   var go=function(){location.replace(location.pathname+'?v='+Date.now()+location.hash);};
   try{if('caches' in window){caches.keys().then(function(k){return Promise.all(k.map(function(n){return caches.open(n).then(function(c){return Promise.all([c.delete('./'),c.delete('./index.html'),c.delete(location.pathname)]);});}));}).then(go,go);return;}}catch(e){}go();}
-function roAutoRetry(){var n=0;try{n=parseInt(sessionStorage.getItem('ro-retry')||'0',10)||0;}catch(e){}if(n<2&&navigator.onLine)roRetry();}
+function roAutoRetry(){var ov=document.getElementById('role-ov');if(!ov||ov.style.display==='none'||!ov.classList.contains('ro-wait')||window._sbOn||(window.SESSION&&SESSION.role))return;   // v452: only while the opening screen is really on show and nobody is signed in to the app yet
+  var n=0;try{n=parseInt(sessionStorage.getItem('ro-retry')||'0',10)||0;}catch(e){}if(n<2&&navigator.onLine)roRetry();}
 function roForceSignOut(e){if(e){e.preventDefault();e.stopPropagation();}
   var done=false,go=function(){if(done)return;done=true;try{indexedDB.deleteDatabase('firebaseLocalStorageDb');}catch(x){}try{sessionStorage.removeItem('ro-retry');}catch(x){}setTimeout(function(){location.replace(location.pathname+'?v='+Date.now());},300);};
   try{SESSION.role='';Promise.resolve(cloud.auth&&cloud.auth.signOut()).then(go,go);}catch(x){go();}setTimeout(go,3000);}

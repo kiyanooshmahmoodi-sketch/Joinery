@@ -134,4 +134,10 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     window.FileReader=class{readAsArrayBuffer(){setTimeout(()=>this.onload({target:{result:new ArrayBuffer(1)}}),10);}};handleExcel([{name:'White HMR 16mm.xlsx'}]);});
   await p.waitForTimeout(T*800);const r=await p.evaluate(()=>{const c=pendingUnits.filter(u=>u.type==='cabinet');return {n:c.length,ub:c[0]?c[0].parts.filter(x=>isUBack(x.name)).length:0,hw:c[0]?hasHW(c[0]):false};});
   ok('corner cabinet with two UBacks is ONE cabinet',r.n===1,JSON.stringify(r));ok('both UBacks are kept in its part list',r.ub===2&&r.hw);await p.close();}
+// ---------- 12. no surprise reloads while working
+{console.log('No surprise reloads');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*700);
+  let navs=0;p.on('framenavigated',f=>{if(f===p.mainFrame())navs++;});
+  await p.evaluate(()=>{rcShow('rc-connecting');applyRole('admin','Kiya','',['admin']);document.getElementById('role-ov').style.display='none';roAutoRetry();
+    document.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));});
+  await p.waitForTimeout(T*800);ok('the "stuck, try again" reload never fires once you are in the app',navs===0,navs);await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();
