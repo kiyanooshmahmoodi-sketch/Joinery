@@ -1105,6 +1105,14 @@ html,body{overflow-x:hidden;}
 #role-ov.ro-standby #ro-standby-msg{color:#a8a29e}
 #ro-veil{background:radial-gradient(ellipse 60% 40% at 50% 12%,rgba(19,17,16,.9),rgba(19,17,16,0))}
 </style>
+<style id="ro-tagline">
+/* v445: the slogan IS the line — yellow capitals exactly as tall as the line, which carries on to the left and right */
+#ro-tag{display:flex!important;align-items:center;gap:.55em;width:min(620px,90vw);margin:22px auto 0!important;font:600 17px Poppins,Inter,system-ui,sans-serif!important;
+  text-transform:uppercase;letter-spacing:.16em!important;color:#fbbf24!important;line-height:1;white-space:nowrap}
+#ro-tag span{display:block;line-height:1;padding-left:.16em}
+#ro-tag i{flex:1;height:.72em;background:#fbbf24;border-radius:1px;transform:translateY(var(--tag-dy,0))}
+@media(max-width:520px){#ro-tag{font-size:12.5px!important;gap:.5em}}
+</style>
 <style id="brand-v421">
 /* v421: header in the app-icon colours — navy, white "Cab", yellow "Line" */
 .topbar{background:#0f172a!important;}
@@ -1345,7 +1353,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v444 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v445 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8478,7 +8486,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v444 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v445 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10856,7 +10864,7 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
   <div id="ro-standby-msg">Tap or press any key to continue</div><div id="ro-main" style="width:min(400px,100%);margin-top:9vh;position:relative;z-index:1;">
     <div id="ro-brand">
       <div id="ro-word">Cab<span>Line</span></div>
-      <div id="ro-tag">From drawing to install</div>
+      <div id="ro-tag"><i></i><span>From drawing to install</span><i></i></div>
       <div id="role-ver"></div>
       <div id="ro-load"><i></i><div id="ro-slowmsg">Can't reach the server — check the internet. <a href="#" onclick="location.reload();return false;">Retry</a><div id="ro-diag" style="font-size:11px;color:#64748b;margin-top:10px;line-height:1.5;word-break:break-word;"></div></div></div>
     </div>
