@@ -1094,6 +1094,17 @@ html,body{overflow-x:hidden;}
 #ro-card button[style*="background:none"],#ro-card button[style*="background: none"]{color:#57534e!important;font-weight:500!important}
 @media(prefers-reduced-motion:reduce){#ro-card,#ro-card.ro-open{transition:none;transform:none!important}}
 </style>
+<style id="ro-dark">
+/* v444: TRY-OUT — opening screen & standby on a warm black background (remove this block to go back to cream) */
+#role-ov{background:#131110!important;}
+#ro-art path.d{stroke:#e8dfd0}#ro-art .g1 path.d{opacity:.55}#ro-art .g2 path.d{opacity:.28}#ro-art path.m{fill:#131110}
+#ro-art #paperg{opacity:0}
+#ro-art ellipse[fill="url(#gArc)"],#ro-art rect[fill="#b9b4ad"]{display:none}
+#ro-art path[fill="#f4f1ec"],#ro-art rect[fill="#f4f1ec"]{opacity:.42!important}
+#ro-word{color:#fff}#ro-word span{color:#fbbf24}#ro-tag{color:#f5efe4}#role-ver{color:#a8a29e}
+#role-ov.ro-standby #ro-standby-msg{color:#a8a29e}
+#ro-veil{background:radial-gradient(ellipse 60% 40% at 50% 12%,rgba(19,17,16,.9),rgba(19,17,16,0))}
+</style>
 <style id="brand-v421">
 /* v421: header in the app-icon colours — navy, white "Cab", yellow "Line" */
 .topbar{background:#0f172a!important;}
@@ -1334,7 +1345,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v443 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v444 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8467,7 +8478,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v443 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v444 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
