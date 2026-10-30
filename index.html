@@ -1084,7 +1084,7 @@ html,body{overflow-x:hidden;}
   animation:roFade .8s ease .45s forwards!important;transition:transform .7s cubic-bezier(.2,.7,.2,1),box-shadow .7s,opacity .5s}
 #ro-card::before{content:"";position:absolute;right:15px;top:50%;width:4px;height:96px;margin-top:-48px;border-radius:2px;background:linear-gradient(90deg,#8a6a3e,#d8b67c 45%,#a8834f);box-shadow:1px 1px 2px rgba(0,0,0,.18)}
 #ro-card::after{content:"";position:absolute;top:0;bottom:0;right:-7px;width:7px;border-radius:0 2px 2px 0;background:repeating-linear-gradient(180deg,rgba(90,60,30,.10) 0 1px,transparent 1px 6px),linear-gradient(90deg,#d9b88f,#c59f74);opacity:0;transition:opacity .5s}
-#ro-card:focus-within{transform:rotateY(-8deg);box-shadow:0 1px 0 rgba(42,36,30,.08),18px 26px 40px -14px rgba(60,40,20,.34)!important}
+#ro-card:focus-within{transform:none;box-shadow:0 1px 0 rgba(42,36,30,.08),18px 26px 40px -14px rgba(60,40,20,.34)!important}
 #ro-card:focus-within::after{opacity:1}
 #ro-card.ro-open{transform:rotateY(-78deg)!important;opacity:0!important;transition:transform 1s cubic-bezier(.5,0,.2,1),opacity .5s ease .5s}
 #ro-card div[style*="font-size:14px;font-weight:700"],#ro-card div[style*="font-size: 14px; font-weight: 700"]{font:600 11px Inter,system-ui,sans-serif!important;letter-spacing:.24em;text-transform:uppercase;color:#8a7f73!important;margin-bottom:20px!important}
@@ -1334,7 +1334,7 @@ html,body{overflow-x:hidden;}
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v442 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v443 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8467,7 +8467,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v442 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v443 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
