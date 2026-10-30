@@ -153,4 +153,11 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     allJobs.dh.units=[{id:'R1C1',cabId:'R1C1',room:'R1',type:'cabinet',status:'factory',parts:[{name:'UBack',mat:'HMR'}]}];const b=jhStage(allJobs.dh);
     _dfSel='dh';window.confirm=()=>true;dfToProd();const c=jhStage(allJobs.dh);return [a,b,c].join(',');});
   ok('importing the Excel keeps the job in Drafting; Send to Production moves it',r==='drafting,drafting,production',r);await p.close();}
+// ---------- 15. Production holds the job until Send to QC & Dispatch
+{console.log('Production hold');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*700);
+  const r=await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);window.confirm=()=>true;
+    allJobs.ph={id:'ph',name:'PH',info:{},drawings:[],units:[{id:'R1C1',cabId:'R1C1',room:'R1',type:'cabinet',status:'factory',parts:[{name:'UBack',mat:'HMR'}]}]};
+    const a=jhStage(allJobs.ph);allJobs.ph.units[0].qcStatus='approved';allJobs.ph.units[0].qcLog=[{status:'approved'}];const b=jhStage(allJobs.ph);
+    selectJob('ph');switchView('cabinetlist');const bar=document.getElementById('pr-bar').style.display!=='none';prToQC();const c=jhStage(allJobs.ph);return [a,b,bar,c].join(',');});
+  ok('Production waits for the button, then the job goes to QC & Dispatch',r==='production,production,true,qcd',r);await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();

@@ -1377,7 +1377,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v465 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v466 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1455,6 +1455,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
   <div class="tab" onclick="showTab('drawings',this)">📐 Drawings</div>
 </div>
 <div class="content" id="cabinetlist-content">
+<div id="pr-bar" style="display:none;"></div>
 <!-- FINISHES & APPLIANCES CHECKLIST -->
 <div class="panel" id="panel-drawings">
   <div style="margin-bottom:10px;"><div style="font-size:18px;font-weight:700;">📐 Drawings — upload PDF plans</div><div style="font-size:12px;color:var(--gray);">Upload the Installation Drawings, Architectural Drawings and 3D / Design files here (files added on the Jobs page appear here too). The installer sees them in his Drawings tab (view only).</div></div>
@@ -8510,7 +8511,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v465 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v466 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9890,10 +9891,14 @@ function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.fo
 function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'maintenance';/* v393: everything installed → Maintenance; Completed is chosen by hand */if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
 var _jhFilter='all';
 function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';
-  if(inf.stageManual==='drafting'&&inf.dfHold)return 'drafting';   // v465: a job in Drafting stays there (even after its Excel is imported) until the drafter presses Send to Production
+  if(inf.stageManual==='drafting'&&inf.dfHold)return 'drafting';
+  if(inf.stageManual==='production'&&inf.prodHold)return 'production';   // v466: Production holds the job until Send to QC & Dispatch   // v465: a job in Drafting stays there (even after its Excel is imported) until the drafter presses Send to Production
   if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';
-  if(inf.stageManual==='drafting')inf.dfHold=true;return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
-function jhStage(j){return jhManual(j)||jhAutoStage(j);}
+  if(inf.stageManual==='drafting')inf.dfHold=true;
+  if(inf.stageManual==='production'&&inf.prodHold)return 'production';return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
+function jhStage(j){var m=jhManual(j);if(m)return m;var a=jhAutoStage(j);
+  if(a==='production'&&j&&j.info){j.info.stageManual='production';j.info.prodHold=true;j.info.stageAutoAt='production';}   // v466: a job that reaches Production waits there until it is sent on
+  return a;}
 // v393: date stamp every stage change (auto from scans, or set by hand)
 function jhParseDate(t){if(!t)return null;var m=String(t).match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ap]m)?/i);
   if(m){var h=+m[4];if(m[7]){var pm=/p/i.test(m[7]);if(pm&&h<12)h+=12;if(!pm&&h===12)h=0;}var d=new Date(+m[3],+m[2]-1,+m[1],h,+m[5],+(m[6]||0));return isNaN(d)?null:d;}
@@ -9925,7 +9930,7 @@ function jhSet(id,field,val,noDraw){var j=allJobs[id];if(!j)return;val=String(va
     renderJobsHome();showMsg('📊 Upload the Excel files first — the job moves to Production once they are added');jhImport(id);return;}
   if(field==='name'){j.name=val||'Unnamed Job';if(id===currentJobId){document.getElementById('proj-input').value=j.name;document.getElementById('proj-display').textContent=j.name;}}
   else if(field==='site'){j.finishes=(j.finishes&&typeof j.finishes==='object')?j.finishes:{site:'',v:{}};j.finishes.site=val;}
-  else if(field==='stage'){var inf=jhInfo(j);delete inf.stage;if(!val||val==='auto'||val===jhAutoStage(j)){delete inf.stageManual;delete inf.stageAutoAt;}else{inf.stageManual=val;inf.stageAutoAt=jhAutoStage(j);}if(val==='drafting')inf.dfHold=true;else delete inf.dfHold;jhTrack(j,true);}
+  else if(field==='stage'){var inf=jhInfo(j);delete inf.stage;if(!val||val==='auto'||val===jhAutoStage(j)){delete inf.stageManual;delete inf.stageAutoAt;}else{inf.stageManual=val;inf.stageAutoAt=jhAutoStage(j);}if(val==='drafting')inf.dfHold=true;else delete inf.dfHold;if(val==='production'){inf.stageManual='production';inf.prodHold=true;inf.stageAutoAt=jhAutoStage(j);}else delete inf.prodHold;jhTrack(j,true);}
   else jhInfo(j)[field]=val;
   // v393: the countdown starts the FIRST time a delivery date is set; changing the date later keeps that start,
   // so the colour moves to wherever the new date puts it (it does not restart at blue).
@@ -10663,6 +10668,16 @@ function renderSide(v){var G=VS_STAGES[v];if(!G)return;var side=vsWrap(v);if(!si
   side.innerHTML='<div class="vs-head">'+esc(VS_TITLE[v]||'')+' jobs</div>'+html;}
 (function(){var _sv=switchView;switchView=function(v){var r=_sv.apply(this,arguments);try{renderSide(_currentView);}catch(e){console.error(e);}return r;};})();
 (function(){var _sj=selectJob;selectJob=function(id){var r=_sj.apply(this,arguments);try{if(VS_STAGES[_currentView])renderSide(_currentView);}catch(e){}return r;};})();
+
+// ===== v466: Production → QC & Dispatch by hand =====
+function prBar(){var b=document.getElementById('pr-bar');if(!b)return;var j=currentJobId&&allJobs[currentJobId];if(!j){b.style.display='none';return;}var st=jhStage(j);
+  if(st!=='production'){b.style.display='none';return;}
+  b.style.display='';b.innerHTML='<div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;"><div style="flex:1;min-width:200px;"><div style="font-size:15px;font-weight:600;">'+esc(j.name||'Job')+' · Production</div><div style="font-size:12.5px;color:#71717a;margin-top:2px;">When production is ready, send it on — the job moves to QC &amp; Dispatch.</div></div><button class="btn btn-blue" onclick="prToQC()">Send to QC &amp; Dispatch →</button></div>';}
+function prToQC(){var j=currentJobId&&allJobs[currentJobId];if(!j)return;if(!confirm('Send "'+(j.name||'this job')+'" to QC & Dispatch?'))return;
+  var inf=jhInfo(j);delete inf.prodHold;inf.stageManual='qcd';inf.stageAutoAt=jhAutoStage(j);try{jhTrack(j,true);}catch(e){}try{jhSave(j.id);}catch(e){try{saveCurrentJob();saveData();}catch(x){}}
+  showMsg('✓ Sent to QC & Dispatch');prBar();try{renderSide(_currentView);}catch(e){}}
+(function(){var _sv=switchView;switchView=function(v){var r=_sv.apply(this,arguments);try{if(v==='cabinetlist')prBar();}catch(e){}return r;};})();
+(function(){var _sj=selectJob;selectJob=function(id){var r=_sj.apply(this,arguments);try{if(_currentView==='cabinetlist')prBar();}catch(e){}return r;};})();
 // ===== v433: BULKHEAD STRUCTURES — BH Support Right/Left/Bottom/Front behind a "Bulkhead F/D" (flush with door) =====
 function bhStructures(){var m={};(units||[]).forEach(function(u){(u.parts||[]).forEach(function(p){var nm=typeof p==='string'?p:(p&&p.name)||'';if(!isBHSupport(nm))return;
     var key=u.cabId||u.id,o=m[key]=m[key]||{cab:key,room:u.room||'',parts:[],mat:'',units:[]};o.parts.push({name:nm,w:p.w||'',h:p.h||'',qty:p.qty||1,mat:p.mat||u.mat||''});if(!o.mat)o.mat=p.mat||u.mat||'';o.units.push(u);});});
