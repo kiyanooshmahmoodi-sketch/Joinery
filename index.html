@@ -1377,7 +1377,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v462 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v463 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8510,7 +8510,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v462 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v463 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10999,7 +10999,10 @@ function submitAdminCode(){
   applyRole('admin',nm);
 }
 // v418: when the app opens, let the CabLine drawing finish before going in, then fade out
-var RO_SPLASH_MS=3900;
+var RO_SPLASH_MS=11500;   // v463: the opening plays all the way — sketch, colour, then the lights — before the app opens
+// a tap or a key while it plays goes straight in
+['pointerdown','keydown'].forEach(function(ev){document.addEventListener(ev,function(){var ov=document.getElementById('role-ov');if(!ov||ov.style.display==='none'||!ov.classList.contains('ro-hold')||ov.classList.contains('ro-out')||window._sbOn)return;
+  clearTimeout(window._roHideT);ov.classList.add('ro-out');setTimeout(function(){ov.style.display='none';ov.classList.remove('ro-hold','ro-out','ro-wait');clearTimeout(window._roWaitT);},520);},true);});
 function roHideSplash(){var ov=document.getElementById('role-ov');if(!ov)return;try{sessionStorage.removeItem('ro-retry');}catch(e){}
   var left=RO_SPLASH_MS-(Date.now()-((window.__diag&&__diag.t0)||0));
   if(ov.style.display==='none')return;
