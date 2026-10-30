@@ -1070,6 +1070,8 @@ html,body{overflow-x:hidden;}
 #ro-art .b1{animation-delay:4s}#ro-art .b2{animation-delay:4.9s}#ro-art .b3{animation-delay:5.6s}#ro-art .b4{animation-delay:6.2s}#ro-art .b5{animation-delay:6.8s}#ro-art .b6{animation-delay:7.2s}#ro-art .b7{animation-delay:7.4s}
 #ro-art #wc-light{opacity:0;animation:roFade 1.6s ease 9.2s forwards}
 #ro-art .pl{opacity:0;animation:roFade 1s ease forwards}#ro-art .p0{animation-delay:9.8s}#ro-art .p1{animation-delay:10.3s}
+#ro-stuck{display:none;margin-top:16px;width:300px;margin-left:-80px;text-align:center;font-size:12px;letter-spacing:.04em;color:#a8a29e}#ro-stuck a{color:#fbbf24;text-decoration:none}
+#ro-load.ro-slow #ro-stuck{display:block}
 #ro-slowmsg,#ro-diag{display:none!important}   /* v440: no server/internet messages on the opening screen */
 #ro-tag{font-size:clamp(15px,1.5vw,19px);font-weight:500;color:#1c1917;letter-spacing:.04em;margin-top:16px}
 #role-ver{margin-top:10px}
@@ -1366,7 +1368,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <div class="brand-word">Cab<span>Line</span></div>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v449 · Software Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v450 · Software Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8499,7 +8501,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v449 · Software Design by Kiya'};
+var BRAND_SUBS={tracker:'v450 · Software Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10880,7 +10882,7 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
       <div id="ro-word">Cab<span>Line</span></div>
       <div id="ro-tag"><i></i><span>From drawing to install</span><i></i></div>
       <div id="role-ver"></div>
-      <div id="ro-load"><i></i><div id="ro-slowmsg">Can't reach the server — check the internet. <a href="#" onclick="location.reload();return false;">Retry</a><div id="ro-diag" style="font-size:11px;color:#64748b;margin-top:10px;line-height:1.5;word-break:break-word;"></div></div></div>
+      <div id="ro-load"><i></i><div id="ro-stuck">Tap anywhere to try again · <a href="#" id="ro-out-link" onclick="roForceSignOut(event)">Sign out</a></div><div id="ro-slowmsg">Can't reach the server — check the internet. <a href="#" onclick="location.reload();return false;">Retry</a><div id="ro-diag" style="font-size:11px;color:#64748b;margin-top:10px;line-height:1.5;word-break:break-word;"></div></div></div>
     </div>
     <div id="ro-card" style="background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 2px rgba(24,24,27,.06),0 12px 32px rgba(24,24,27,.08);border:1px solid #ececef;">
       <div id="role-err" style="color:#8f3224;font-size:12px;min-height:16px;margin-bottom:6px;"></div>
@@ -10986,7 +10988,7 @@ function submitAdminCode(){
 }
 // v418: when the app opens, let the CabLine drawing finish before going in, then fade out
 var RO_SPLASH_MS=3900;
-function roHideSplash(){var ov=document.getElementById('role-ov');if(!ov)return;
+function roHideSplash(){var ov=document.getElementById('role-ov');if(!ov)return;try{sessionStorage.removeItem('ro-retry');}catch(e){}
   var left=RO_SPLASH_MS-(Date.now()-((window.__diag&&__diag.t0)||0));
   if(ov.style.display==='none')return;
   // v442: if the sign-in door is on screen, swing it open first, then fade the opening screen away
@@ -11074,10 +11076,22 @@ function rcShow(id){['rc-connecting','rc-signin','rc-create','rc-verify','rc-pen
   // v412: while connecting, no "Connecting…" box — just a thin moving line under the name; after 12 s say why and offer Retry
   var ov=document.getElementById('role-ov');if(!ov)return;var w=id==='rc-connecting';ov.classList.toggle('ro-wait',w);clearTimeout(window._roWaitT);
   var ld=document.getElementById('ro-load');if(ld)ld.classList.remove('ro-slow');
-  if(w)window._roWaitT=setTimeout(function(){if(ov.classList.contains('ro-wait')&&ld){ld.classList.add('ro-slow');var D=window.__diag||{},dg=document.getElementById('ro-diag');
+  if(w)window._roWaitT=setTimeout(function(){if(ov.classList.contains('ro-wait')&&ld){ld.classList.add('ro-slow');roAutoRetry();var D=window.__diag||{},dg=document.getElementById('ro-diag');
     if(dg)dg.textContent='Internet: '+(navigator.onLine?'yes':'no')+' · Firebase: '+(D.fb||'not started')+(D.fbRetry?' (retried)':'')+' · Sign-in check: '+(D.auth||(D.authWait?'no answer':'not started'))+((D.errs||[]).length?' · '+D.errs.slice(-2).join(' | '):'');}},12000);}
 function _ukey(e){return String(e||'').trim().toLowerCase();}
-function rcOnCloudReady(){var ov=document.getElementById('role-ov');if(!SESSION.role||ov.style.display!=='none'||!cloud.user){if(SESSION.role&&!cloud.user){location.reload();return;}rcStart();}}
+function rcOnCloudReady(){var ov=document.getElementById('role-ov');if(window._sbOn&&SESSION.role&&cloud.user)return;   // v450: standby stays standby — a tap brings the app back
+  if(!SESSION.role||ov.style.display!=='none'||!cloud.user){if(SESSION.role&&!cloud.user){location.reload();return;}rcStart();}}
+
+// v450: if the opening screen gets stuck "connecting", a tap tries again (a fresh load, like Ctrl+Shift+R); it also tries again by itself after 12 s, at most twice in a row
+function roRetry(){try{sessionStorage.setItem('ro-retry',String((parseInt(sessionStorage.getItem('ro-retry')||'0',10)||0)+1));}catch(e){}
+  var go=function(){location.replace(location.pathname+'?v='+Date.now()+location.hash);};
+  try{if('caches' in window){caches.keys().then(function(k){return Promise.all(k.map(function(n){return caches.open(n).then(function(c){return Promise.all([c.delete('./'),c.delete('./index.html'),c.delete(location.pathname)]);});}));}).then(go,go);return;}}catch(e){}go();}
+function roAutoRetry(){var n=0;try{n=parseInt(sessionStorage.getItem('ro-retry')||'0',10)||0;}catch(e){}if(n<2&&navigator.onLine)roRetry();}
+function roForceSignOut(e){if(e){e.preventDefault();e.stopPropagation();}
+  var done=false,go=function(){if(done)return;done=true;try{indexedDB.deleteDatabase('firebaseLocalStorageDb');}catch(x){}try{sessionStorage.removeItem('ro-retry');}catch(x){}setTimeout(function(){location.replace(location.pathname+'?v='+Date.now());},300);};
+  try{SESSION.role='';Promise.resolve(cloud.auth&&cloud.auth.signOut()).then(go,go);}catch(x){go();}setTimeout(go,3000);}
+document.addEventListener('pointerdown',function(e){var ov=document.getElementById('role-ov');
+  var ld=document.getElementById('ro-load');if(!ov||ov.style.display==='none'||!ov.classList.contains('ro-wait')||!ld||!ld.classList.contains('ro-slow')||window._sbOn)return;if(e.target&&e.target.id==='ro-out-link')return;roRetry();},true);
 var ADMIN_EMAIL='kiyanoosh.mahmoodi@gmail.com';
 function rcErr(t,ok){var er=document.getElementById('role-err');er.style.color=ok?'#276a4c':'#8f3224';er.textContent=t||'';}
 function rcAuthMsg(e){var c=(e&&e.code)||'';return /invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)?'Wrong email or password.':c==='auth/email-already-in-use'?'This email already has an account — sign in instead.':c==='auth/weak-password'?'The password must be at least 6 characters.':c==='auth/invalid-email'?'Please type a valid email.':c==='auth/too-many-requests'?'Too many tries. Wait a few minutes and try again.':c==='auth/network-request-failed'?'No internet connection.':c==='auth/operation-not-allowed'?'Email/Password sign-in is not turned on in Firebase yet.':((e&&e.message)||'Something went wrong.');}
