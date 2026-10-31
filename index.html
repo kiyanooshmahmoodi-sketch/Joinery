@@ -1377,7 +1377,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v471 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v472 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8511,7 +8511,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v471 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v472 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10733,15 +10733,15 @@ function qtDoc(q,ed){
       inp=function(k,v,cls,type){return ed?'<input class="qt-in '+(cls||'')+'" type="'+(type||'text')+'" value="'+qtEsc(v||'')+'" oninput="qtSet(\''+k+'\',this.value)">':esc(v||'');},
       lines=function(v){return String(v||'').split('\n').map(function(x){return x.trim();}).filter(Boolean);},
       roman=['i','ii','iii','iv','v','vi','vii','viii','ix','x','xi','xii','xiii','xiv','xv','xvi','xvii','xviii','xix','xx'];
-  var p1='<section class="qt-page"><h1 class="qt-title">Quote</h1>'+
+  var p1='<section class="qt-page qt-p1"><h1 class="qt-title">Quote</h1>'+
     '<div class="qt-meta"><b>Date: '+(ed?'</b>'+inp('date',q.date,'qt-w-date','date')+'<b>':qtDate(q.date))+'</b><br><b>Project Ref: '+(ed?'</b>'+inp('ref',q.ref,'qt-w-ref')+'<b>':esc(q.ref))+'</b></div>'+
-    ta('intro',q.intro,'qt-p')+ta('intro2',q.intro2,'qt-p qt-red')+
+    (ed?ta('intro',q.intro,'qt-p')+ta('intro2',q.intro2,'qt-p qt-red'):String(q.intro||'').split(/\n\s*\n/).map(function(par,i,A){return '<div class="qt-p">'+esc(par).replace(/\n/g,'<br>')+(i===A.length-1&&q.intro2?' <span class="qt-red">'+esc(q.intro2)+'</span>':'')+'</div>';}).join('')+(!String(q.intro||'').trim()&&q.intro2?'<div class="qt-p qt-red">'+esc(q.intro2)+'</div>':''))+
     '<h2 class="qt-h">Specification &amp; Inclusions</h2>'+(ed?'<div class="qt-hint">One line per bullet</div>'+ta('incl',q.incl,'qt-p'):'<ul class="qt-ul">'+lines(q.incl).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>')+
     '<h2 class="qt-h">Quotation</h2><table class="qt-sum"><tr><td>'+(ed?inp('qline',q.qline,'qt-w-full'):esc(q.qline))+'</td><td class="qt-amt">'+(ed?'<b>$ </b><input id="qt-subov" class="qt-in qt-num" style="width:70%;font-weight:700;" value="'+qtEsc(q.subOv||'')+'" placeholder="'+qtMoney(S.sub).replace('$ ','')+'" oninput="qtSet(\'subOv\',this.value)" title="Empty = the schedule total. Type a price to set it by hand.">':'<b>'+qtMoney(SQ.sub)+'</b>')+'</td></tr><tr><td>GST (10%)</td><td class="qt-amt" data-qsum="gst">'+qtMoney(SQ.gst)+'</td></tr><tr class="qt-tot"><td>Total Investment (incl. GST)</td><td class="qt-amt" data-qsum="tot">'+qtMoney(SQ.tot)+'</td></tr></table>'+
     '<h2 class="qt-h">Exclusions</h2>'+ta('excl',q.excl,'qt-p')+'</section>';
-  var p2='<section class="qt-page"><h2 class="qt-h" style="margin-top:0;">Terms:</h2>'+ta('termsIntro',q.termsIntro,'qt-p')+
+  var p2='<section class="qt-page qt-p2"><h2 class="qt-h qt-terms-h" style="margin-top:0;">Terms:</h2>'+ta('termsIntro',q.termsIntro,'qt-p')+
     (ed?'<div class="qt-hint">One line per term (numbered i, ii, iii… on paper)</div>'+ta('terms',q.terms,'qt-p'):'<ol class="qt-ol">'+lines(q.terms).map(function(x,i){return '<li><span>'+(roman[i]||(i+1))+'.</span>'+esc(x)+'</li>';}).join('')+'</ol>')+
-    '<h2 class="qt-h">Bank Details:</h2>'+ta('bank',q.bank,'qt-p')+'</section>';
+    '<div class="qt-bank"><h2 class="qt-h qt-bank-h">Bank Details:</h2>'+ta('bank',q.bank,'qt-p')+'</div></section>';
   var rows=(q.rows||[]).map(function(r,i){return '<tr><td class="qt-area">'+(ed?'<textarea class="qt-in qt-c" oninput="qtGrow(this);qtRow('+i+',\'area\',this.value)">'+esc(r.area||'')+'</textarea><button class="qt-x" onclick="qtDelRow('+i+')" title="Remove">×</button>':'<b>'+esc(r.area||'')+'</b>')+'</td>'+
       '<td class="qt-desc">'+(ed?'<textarea class="qt-in" oninput="qtGrow(this);qtRow('+i+',\'desc\',this.value)">'+esc(r.desc||'')+'</textarea>':String(r.desc||'').split('\n').map(function(l){return /:\s*$/.test(l)&&!/^\s*-/.test(l)?'<b>'+esc(l)+'</b>':esc(l);}).join('<br>'))+'</td>'+
       '<td class="qt-pr">'+(ed?'<span>$</span><input class="qt-in qt-num" value="'+qtEsc(r.price||'')+'" oninput="qtRow('+i+',\'price\',this.value)" placeholder="0">':'<span>$</span><span>'+(qtNum(r.price)?Math.round(qtNum(r.price)).toLocaleString('en-AU'):'')+'</span>')+'</td></tr>';}).join('');
@@ -10749,18 +10749,18 @@ function qtDoc(q,ed){
     (ed?'<tr class="qt-noprint"><td colspan="3"><button class="btn btn-outline btn-sm" onclick="qtAddRow()">+ Add area</button></td></tr>':'')+
     '<tr class="qt-gap"><td></td><td></td><td></td></tr>'+'<tr class="qt-sub qt-s1"><td></td><td>Sub Total</td><td class="qt-pr"><span>$</span><span data-sumn="sub">'+Math.round(S.sub).toLocaleString('en-AU')+'</span></td></tr>'+'<tr class="qt-sub qt-s2"><td></td><td>GST</td><td class="qt-pr"><span>$</span><span data-sumn="gst">'+Math.round(S.gst).toLocaleString('en-AU')+'</span></td></tr>'+'<tr class="qt-sub qt-s3"><td></td><td>Total</td><td class="qt-pr"><span>$</span><span data-sumn="tot">'+Math.round(S.tot).toLocaleString('en-AU')+'</span></td></tr></tbody></table></section>';
   return p1+p2+p3;}
-var QT_CSS='.qt-page{background:#fff;width:210mm;min-height:297mm;box-sizing:border-box;padding:18mm 17mm;margin:0 auto 18px;color:#111;font:10.5pt Calibri,Carlito,Arial,sans-serif;line-height:1.45;box-shadow:0 2px 14px rgba(0,0,0,.12)}'+
- '.qt-title{text-align:center;font-size:15pt;margin:4mm 0 8mm}.qt-meta{margin-bottom:6mm}.qt-p{margin:0 0 3mm;text-align:justify;white-space:normal}.qt-red{color:#c00000;font-weight:700}'+
- '.qt-h{color:#a0522d;font-size:11.5pt;margin:7mm 0 3mm}.qt-ul{margin:0;padding-left:7mm}.qt-ul li{margin-bottom:1.2mm}.qt-ol{list-style:none;margin:0 0 4mm;padding:0}.qt-ol li{display:flex;gap:4mm;margin-bottom:1.2mm;padding-left:4mm}.qt-ol li span{width:7mm;text-align:right;flex:none}'+
- '.qt-sum{width:100%;border-collapse:collapse;margin-top:2mm}.qt-sum td{border:1px solid #d9d9d9;padding:3mm 3mm}.qt-amt{text-align:right;width:28%;white-space:nowrap}.qt-tot td{background:#5b3a1e;color:#fff;font-weight:700;border-color:#5b3a1e}'+
+var QT_CSS='.qt-page{background:#fff;width:210mm;min-height:297mm;box-sizing:border-box;padding:18mm 17mm;margin:0 auto 18px;color:#111;font:11pt Calibri,Carlito,Arial,sans-serif;line-height:1.4;box-shadow:0 2px 14px rgba(0,0,0,.12)}'+
+ '.qt-title{text-align:center;font-size:15pt;margin:4mm 0 8mm}.qt-meta{margin-bottom:6mm}.qt-p{margin:0 0 4mm;text-align:justify;white-space:normal}.qt-red{color:#ee0000;font-weight:700}'+
+ '.qt-h{color:#5a3a22;font-size:11.5pt;margin:7mm 0 3mm}.qt-p2{color:#4472c4}.qt-p2 .qt-terms-h{color:#4472c4;font-weight:400}.qt-bank{color:#c00000;margin-top:10mm}.qt-bank .qt-bank-h{color:#c00000;font-weight:700;text-decoration:underline}.qt-ul{margin:0;padding-left:7mm}.qt-ul li{margin-bottom:1.2mm}.qt-ol{list-style:none;margin:0 0 4mm;padding:0}.qt-ol li{display:flex;gap:4mm;margin-bottom:1.2mm;padding-left:4mm}.qt-ol li span{width:7mm;text-align:right;flex:none}'+
+ '.qt-sum{width:100%;border-collapse:collapse;margin-top:2mm}.qt-sum td{border:1px solid #dddddd;padding:3mm 3mm}.qt-amt{text-align:right;width:28%;white-space:nowrap}.qt-tot td{background:#5a3a22;color:#fff;font-weight:700;border-color:#5a3a22}'+
  '.qt-sch{width:100%;border-collapse:collapse;font-size:9pt;line-height:1.22}.qt-sch th,.qt-sch td{border:1px solid #000;padding:1.2mm 1.5mm;vertical-align:middle}.qt-sch thead{display:table-header-group}.qt-sch thead th{background:#4472c4;color:#fff;font-weight:400;padding:3.2mm 2mm}.qt-sch-t{font-size:12pt;font-weight:700!important;padding:4mm!important}.qt-sch tbody tr{page-break-inside:avoid;break-inside:avoid}.qt-sch td.qt-desc{padding:.8mm 1.2mm 2.6mm}'+
  '.qt-area{text-align:center;font-weight:700;position:relative}.qt-desc{white-space:normal}.qt-pr{white-space:nowrap}.qt-pr span:first-child{float:left}.qt-pr{text-align:right}.qt-gap td{height:4mm;padding:0!important}.qt-sub td{padding:2.2mm 2mm}.qt-sub td:nth-child(2){text-align:left}.qt-s1 td{background:#b4c6e7}.qt-s2 td{background:#a6a6a6}.qt-s3 td{background:#4472c4;color:#fff;font-size:11pt}.qt-page,.qt-page *{-webkit-print-color-adjust:exact;print-color-adjust:exact}.qt-desc b{font-weight:700}'+
- '@media print{.qt-page{box-shadow:none;margin:0;width:auto;min-height:0;padding:0;page-break-after:always}.qt-page:last-child{page-break-after:auto}.qt-noprint{display:none}@page{size:A4;margin:12mm 12mm}}';
+ '@media print{.qt-page{box-shadow:none;margin:0;width:auto;min-height:0;padding:0;page-break-after:always}.qt-p1,.qt-p2{padding:16mm 13mm 0}.qt-page:last-child{page-break-after:auto}.qt-noprint{display:none}@page{size:A4;margin:12mm 12mm}}';
 function qtOpen(id){var j=allJobs[id];if(!j||!qtCan())return;_qtJob=id;qtData(j,true);var ov=document.getElementById('qt-ov');
   if(!ov){ov=document.createElement('div');ov.id='qt-ov';document.body.appendChild(ov);var st=document.createElement('style');st.textContent=QT_CSS+
     'body.qt-open .topbar,body.qt-open .topbar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}#qt-ov{-webkit-app-region:no-drag;app-region:no-drag;position:fixed;inset:0;z-index:9000;background:#f6f1e7;overflow:auto;padding:env(titlebar-area-height,0px) 12px 40px}#qt-bar{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#f6f1e7;padding:12px 4px;margin:0 auto 10px;max-width:210mm;border-bottom:1px solid #e7dfcf}'+
     '#qt-ov .qt-in{width:100%;box-sizing:border-box;border:1px dashed transparent;border-radius:3px;background:transparent;font:inherit;color:inherit;padding:1px 3px;resize:none;overflow:hidden;line-height:inherit}#qt-ov .qt-in:hover{border-color:#d6cfc4}#qt-ov .qt-in:focus{outline:none;border-color:#e0a20b;background:#fffdf5}'+
-    '#qt-ov .qt-w-date{width:160px;display:inline-block}#qt-ov .qt-w-ref{width:70%;display:inline-block;font-weight:700}#qt-ov .qt-c{text-align:center;font-weight:700}#qt-ov .qt-num{width:80%;text-align:right;display:inline-block}#qt-ov .qt-hint{font-size:8.5pt;color:#a8a29e;margin-bottom:1mm}#qt-ov .qt-in.qt-red{color:#c00000;font-weight:700}'+
+    '#qt-ov .qt-w-date{width:160px;display:inline-block}#qt-ov .qt-w-ref{width:70%;display:inline-block;font-weight:700}#qt-ov .qt-c{text-align:center;font-weight:700}#qt-ov .qt-num{width:80%;text-align:right;display:inline-block}#qt-ov .qt-hint{font-size:8.5pt;color:#a8a29e;margin-bottom:1mm}#qt-ov .qt-in.qt-red{color:#ee0000;font-weight:700}'+
     '#qt-ov .qt-x{position:absolute;top:2px;left:2px;border:0;background:#fee2e2;color:#991b1b;border-radius:3px;width:18px;height:18px;line-height:16px;cursor:pointer;font-size:13px;opacity:.0}#qt-ov tr:hover .qt-x{opacity:1}';
     document.head.appendChild(st);}
   ov.style.display='block';document.body.classList.add('qt-open');qtPaint();}
