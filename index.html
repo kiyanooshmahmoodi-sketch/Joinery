@@ -1377,7 +1377,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v469 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v470 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8511,7 +8511,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v469 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v470 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10682,7 +10682,7 @@ var QT_DEF={
   incl:['Carcasses in 16mm HMR board; doors, fronts and finished panels in selected 16 mm colour finish as per design intent. Carcass open & glass door cabinets – 16 mm Colour','Hardware (Soft close) – All Hinges – Titus; All Drawers GF - Hafele Alto Slim; FF – Riva Slimline','We have not included Glass doors in this quote. Quote will be updated after finalising the type of profile, glass thickness & glass colour.','Any area changes to Polyurethane finish, Cost to be increased by 20%','Using BLUM Hinges & Runners would be charged $2,500 extra','Ground Floor Height (Joinery) – 2,700 mm & First Floor Height (Joinery) – 2,400 mm','Manufacture, delivery and on-site installation.'],
   qline:'Supply & install of all custom joinery (as scheduled Below)',
   excl:'Electrical, plumbing and gas works; appliances and sinks/taps (supply by others unless noted); tiling; painting of walls and ceilings; and any structural works.',
-  termsIntro:'[Company name] reserves the following rights in relation to the goods until all monies owed by the customer are cleared.',
+  termsIntro:'We reserve the following rights in relation to the goods until all monies owed by the customer are cleared.',
   terms:['Legal ownership of the goods and/or await payment.','The right retake possession of the goods and/or awaits payment.','The right to keep or resell or reuse any goods repossessed pursuant to (ii) hereof.','This quote for goods and services is subject to the NSW Building and Construction Industry Security payments act 1999.','Payment Method: 10% of the total price deposit, 30% of the total price after final check measure, 30% of the total price upon delivery of kitchen cabinetries and remainder on completion of works in scope.','Once signed and deposit paid, we reserve the right to retain the deposit amount.','We do not refund any amounts paid.','Cabinetry will not be installed until 90% of the total invoice is paid in full.','Transport charges applicable for outside 50km from the Manufacturing unit.','Parking should be provided by the Builder / Client at least 2 vehicles. Else, the Parking fee should be reimbursed by the Builder / Client.'],
   bank:'Account Name: \nBank: \nBSB: \nAccount Number: ',
   schedHead:'Supply & Installation of {area} 2700 mm height with NO Bulkheads\n- 16mm MDF Polytec matt / equivalent color boards\n- White HMR carcass for door cabinets & Color carcass for Open / Glass door cabinets\n- Hinges: Titus; Draw Runners: Hafele Alto slim\n\n'
@@ -10721,6 +10721,7 @@ function qtSaveSoon(){clearTimeout(_qtT);_qtT=setTimeout(function(){if(_qtJob)qt
 function qtSet(k,v){var j=allJobs[_qtJob];if(!j)return;qtCur(j)[k]=v;qtSaveSoon();qtSumsPaint();}
 function qtRow(i,k,v){var j=allJobs[_qtJob];if(!j)return;var r=qtCur(j).rows[i];if(!r)return;r[k]=v;qtSaveSoon();qtSumsPaint();}
 function qtAddRow(){var j=allJobs[_qtJob];if(!j)return;qtCur(j).rows.push({area:'',desc:QT_DEF.schedHead.replace('{area}',''),price:''});qtPersist(_qtJob);qtPaint();}
+function qtAddStd(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),have={};(q.rows||[]).forEach(function(r){have[String(r.area||'').trim().toLowerCase()]=1;});var n=0;QT_ROWS.forEach(function(r){if(!have[r.area.toLowerCase()]){q.rows.push(JSON.parse(JSON.stringify(r)));n++;}});qtPersist(_qtJob);qtPaint();showMsg(n?'✓ Added '+n+' area(s)':'All standard areas are already in this quote');}
 function qtDelRow(i){var j=allJobs[_qtJob];if(!j||!confirm('Remove this area from the schedule?'))return;qtCur(j).rows.splice(i,1);qtPersist(_qtJob);qtPaint();}
 function qtPick(i){var j=allJobs[_qtJob];if(!j)return;qtData(j,true).cur=+i;qtPersist(_qtJob);qtPaint();}
 function qtNewVer(){var j=allJobs[_qtJob];if(!j)return;var Q=qtData(j,true),c=JSON.parse(JSON.stringify(qtCur(j)));c.v=Math.max.apply(null,Q.versions.map(function(x){return x.v||1;}))+1;c.date=qtToday();c.at=Date.now();Q.versions.push(c);Q.cur=Q.versions.length-1;qtPersist(_qtJob);qtPaint();showMsg('✓ New version V'+c.v);}
@@ -10757,21 +10758,25 @@ var QT_CSS='.qt-page{background:#fff;width:210mm;min-height:297mm;box-sizing:bor
  '@media print{.qt-page{box-shadow:none;margin:0;width:auto;min-height:0;padding:0;page-break-after:always}.qt-page:last-child{page-break-after:auto}.qt-noprint{display:none}@page{size:A4;margin:16mm 15mm}}';
 function qtOpen(id){var j=allJobs[id];if(!j||!qtCan())return;_qtJob=id;qtData(j,true);var ov=document.getElementById('qt-ov');
   if(!ov){ov=document.createElement('div');ov.id='qt-ov';document.body.appendChild(ov);var st=document.createElement('style');st.textContent=QT_CSS+
-    '#qt-ov{position:fixed;inset:0;z-index:9000;background:#f6f1e7;overflow:auto;padding:0 12px 40px}#qt-bar{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#f6f1e7;padding:12px 4px;margin:0 auto 10px;max-width:210mm;border-bottom:1px solid #e7dfcf}'+
+    'body.qt-open .topbar,body.qt-open .topbar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}#qt-ov{-webkit-app-region:no-drag;app-region:no-drag;position:fixed;inset:0;z-index:9000;background:#f6f1e7;overflow:auto;padding:env(titlebar-area-height,0px) 12px 40px}#qt-bar{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#f6f1e7;padding:12px 4px;margin:0 auto 10px;max-width:210mm;border-bottom:1px solid #e7dfcf}'+
     '#qt-ov .qt-in{width:100%;box-sizing:border-box;border:1px dashed transparent;border-radius:3px;background:transparent;font:inherit;color:inherit;padding:1px 3px;resize:none;overflow:hidden;line-height:inherit}#qt-ov .qt-in:hover{border-color:#d6cfc4}#qt-ov .qt-in:focus{outline:none;border-color:#e0a20b;background:#fffdf5}'+
     '#qt-ov .qt-w-date{width:160px;display:inline-block}#qt-ov .qt-w-ref{width:70%;display:inline-block;font-weight:700}#qt-ov .qt-c{text-align:center;font-weight:700}#qt-ov .qt-num{width:80%;text-align:right;display:inline-block}#qt-ov .qt-hint{font-size:8.5pt;color:#a8a29e;margin-bottom:1mm}#qt-ov .qt-in.qt-red{color:#c00000;font-weight:700}'+
     '#qt-ov .qt-x{position:absolute;top:2px;left:2px;border:0;background:#fee2e2;color:#991b1b;border-radius:3px;width:18px;height:18px;line-height:16px;cursor:pointer;font-size:13px;opacity:.0}#qt-ov tr:hover .qt-x{opacity:1}';
     document.head.appendChild(st);}
-  ov.style.display='block';qtPaint();}
-function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.display='none';if(_qtJob)qtPersist(_qtJob);_qtJob=null;try{renderJobsHome();}catch(e){}}
+  ov.style.display='block';document.body.classList.add('qt-open');qtPaint();}
+function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.display='none';document.body.classList.remove('qt-open');if(_qtJob)qtPersist(_qtJob);_qtJob=null;try{renderJobsHome();}catch(e){}}
 function qtPaint(){var j=allJobs[_qtJob],ov=document.getElementById('qt-ov');if(!j||!ov)return;var Q=qtData(j,true),q=qtCur(j);
   ov.innerHTML='<div id="qt-bar"><div style="font-weight:600;font-size:15px;margin-right:auto;">Quote · '+esc(j.name||'Job')+'</div>'+
     '<select onchange="qtPick(this.value)" style="width:auto;padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;background:#fff;font:inherit;">'+Q.versions.map(function(x,i){return '<option value="'+i+'"'+(i===Q.cur?' selected':'')+'>V'+(x.v||i+1)+' · '+qtDate(x.date)+'</option>';}).join('')+'</select>'+
-    '<button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button><button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
+    '<button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button><button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
   ov.querySelectorAll('textarea.qt-in').forEach(qtGrow);}
-function qtPrint(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j);var w=window.open('','_blank');if(!w){alert('Allow pop-ups to print the quote.');return;}
-  var name=String((q.v<10?'0':'')+'Quote - '+(q.ref||j.name||'Job')+' - V'+q.v).replace(/[\\/:*?"<>|]/g,'');
-  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(name)+'</title><style>body{margin:0;background:#eee}'+QT_CSS+'</style></head><body>'+qtDoc(q,false)+'<script>setTimeout(function(){window.print();},300);<\/script></body></html>');w.document.close();}
+function qtPrint(){var j=allJobs[_qtJob];if(!j)return;qtSaveNow();var q=qtCur(j);
+  var name=String((q.v<10?'0':'')+q.v+'_Quote - '+(q.ref||j.name||'Job')+' - V'+q.v).replace(/[\\/:*?"<>|]/g,'');
+  // v470: print from a hidden frame inside the app (works in the installed app too — no pop-up window needed)
+  var old=document.getElementById('qt-print');if(old)old.remove();var f=document.createElement('iframe');f.id='qt-print';f.setAttribute('style','position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden');document.body.appendChild(f);
+  var d=f.contentWindow.document;d.open();d.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(name)+'</title><style>body{margin:0;background:#fff}'+QT_CSS+'</style></head><body>'+qtDoc(q,false)+'</body></html>');d.close();
+  var t0=document.title;setTimeout(function(){try{document.title=name;f.contentWindow.focus();f.contentWindow.print();}catch(e){alert('Could not open printing: '+e.message);}setTimeout(function(){document.title=t0;},1500);},350);}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&_qtJob&&document.getElementById('qt-ov')&&document.getElementById('qt-ov').style.display!=='none')qtClose();});
 function qtSumm(j){var Q=qtData(j,false);if(!Q||!Q.versions.length)return 'No quote yet';var q=Q.versions[Q.cur!=null?Q.cur:Q.versions.length-1];return 'V'+(q.v||1)+' · '+qtMoney(qtSumsQ(q).tot)+' incl. GST';}
 function qtSaveNow(){clearTimeout(_qtT);if(_qtJob){qtPersist(_qtJob);showMsg('✓ Quote saved');}}
 function qtSecHTML(j){var Q=qtData(j,false);return '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><div style="flex:1;min-width:180px;font-size:13px;color:#57534e;">'+(Q?esc(qtSumm(j))+' · '+Q.versions.length+' version(s)':'Make the quote for this job — areas, prices, terms. Prints as the quote PDF.')+'</div><button class="jx-btn jx-dark" onclick="qtOpen(\''+j.id+'\')">'+(Q?'Open quote':'Create quote')+'</button></div>';}
