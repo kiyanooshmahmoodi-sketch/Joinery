@@ -163,8 +163,10 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
 // ---------- 16. Quotation: edit, versions, totals
 {console.log('Quotation');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*700);
   const r=await p.evaluate(()=>{applyRole('admin','Kiya','',['admin']);allJobs.qj={id:'qj',name:'Q',info:{},finishes:{site:'1 Test St',v:{}},drawings:[],units:[]};
-    qtOpen('qj');const q=qtCur(allJobs.qj);q.rows[0].price='1000';qtAddRow();qtCur(allJobs.qj).rows[1].price='500';const s1=qtSums(qtCur(allJobs.qj));
-    qtNewVer();qtCur(allJobs.qj).subOv='2000';const s2=qtSumsQ(qtCur(allJobs.qj));qtClose();const Q=allJobs.qj.info.quote;
+    qtOpen('qj');const q=qtCur(allJobs.qj);q.rows.forEach(r=>r.price='');q.rows[0].price='1000';q.rows[1].price='500';const s1=qtSums(qtCur(allJobs.qj));
+    qtNewVer();qtCur(allJobs.qj).subOv='2000';const s2=qtSumsQ(qtCur(allJobs.qj));qtClose();const Q=QT_STORE.qj;if(allJobs.qj.info.quote)return 'quote left inside the job';
     return [s1.sub,s1.gst,s1.tot,Q.versions.length,Q.versions[1].v,s2.tot,qtCur(allJobs.qj).ref].join(',');});
-  ok('quote totals, GST, versions and hand-set price',r==='1500,150,1650,2,2,2200,1 Test St',r);await p.close();}
+  ok('quote totals, GST, versions and hand-set price',r==='1500,150,1650,2,2,2200,1 Test St',r);
+  const r2=await p.evaluate(()=>{applyRole('installer','Ali','',['installer']);const a=qtCan();applyRole('installer','Ali','',['installer','quote']);const b=qtCan();return [a,b].join(',');});
+  ok('only the admin or people given Quotation can open quotes',r2==='false,true',r2);await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();

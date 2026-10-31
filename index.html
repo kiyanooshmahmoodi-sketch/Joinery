@@ -1377,7 +1377,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v468 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v469 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8511,7 +8511,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v468 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v469 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10041,7 +10041,7 @@ function jhCard(j){
     jhSec(id,'files','Drawings &amp; files',jhFileSumm(j),FG.map(function(g){var L=(j.drawings||[]).filter(function(x){return drKind(x)===g[0];});
       return '<div class="jx-fg"><div class="jx-fg-h"><span>'+g[1]+(L.length?' <em>'+L.length+'</em>':'')+'</span><button class="jx-link" onclick="jhAddPlan(\''+id+'\',\''+g[0]+'\')">+ '+g[2]+'</button></div>'+
         (L.length?L.map(function(x){return '<div class="jx-file"><span class="jx-fname" title="'+qe(drName(x))+'">'+esc(drName(x))+'</span><button class="jx-link" onclick="drOpenAny(\''+x.id+'\')">Open</button></div>';}).join(''):'<div class="jx-empty">None yet</div>')+'</div>';}).join(''))+
-    (hasRole('admin')?jhSec(id,'quote','Quotation',qtSumm(j),qtSecHTML(j)):'')+
+    (qtCan()?jhSec(id,'quote','Quotation',qtSumm(j),qtSecHTML(j)):'')+
     (hasRole('admin')?jhSec(id,'fin','Orders &amp; invoices',(j.drawings||[]).filter(function(x){return x.kind==='fin';}).length+' file(s)',(_jhFinOpen?jhFinHTML(j):jhFinLockHTML())):'')+
     '<div class="jx-foot"><button class="jx-btn jx-dark" onclick="jhOpen(\''+id+'\')">Open job</button><span class="jx-meta">'+(cn.n?(cn.n+' items'):'No cabinet list yet')+'</span></div>'+
   '</div>';}
@@ -10687,11 +10687,27 @@ var QT_DEF={
   bank:'Account Name: \nBank: \nBSB: \nAccount Number: ',
   schedHead:'Supply & Installation of {area} 2700 mm height with NO Bulkheads\n- 16mm MDF Polytec matt / equivalent color boards\n- White HMR carcass for door cabinets & Color carcass for Open / Glass door cabinets\n- Hinges: Titus; Draw Runners: Hafele Alto slim\n\n'
 };
+// v469: every new quote starts with all the areas from Kiya's standard quote — edit, remove or add as needed
+var QT_ROWS=[{"area": "Formal Living", "desc": "Supply & Installation of Formal living 2700 mm height with NO Bulkheads\n- 16mm MDF Polytec matt / equivalent color boards\n- White HMR carcass for door cabinets & Color carcass for Open / Glass door cabinets\n- Hinges: Titus; Draw Runners: Hafele Alto slim\n\n- 2x carcass, full-height, 16mm color board, finished both sides\n- 8x adjustable/fixed display shelves, front-edge banded\n- 1x fixed back panel\n- Provision for LED strip lighting\n- 2x base cabinet door front, Titus soft-close hinges\n- 2x adjustable shelf inside base cabinet\n- Kick/base, scribes, and ceiling fillers", "price": ""}, {"area": "Living Room", "desc": "Supply & Installation of Living 2700 mm height with NO Bulkheads\n- 16mm MDF Polytec matt / equivalent color boards\n- White HMR carcass for door cabinets & Color carcass for Open / Glass door cabinets\n- Hinges: Titus; Draw Runners: Hafele Alto slim\n\n- 2x tall display towers (LH & RH), full-height 2700H, 4 open shelves each, both sides\n- Provision for Integrated LED strip lighting to each shelves\n- 1x central floating/wall-hung media cabinet spanning between towers, with stone top\n\nNote: stone benchtop to the floating cabinet is a separate supply item — flag for stonemason pricing.", "price": ""}, {"area": "Kitchen", "desc": "Supply & Installation of Main Kitchen 2700 mm height with NO Bulkheads\n- 16mm MDF Polytec matt / equivalent color boards\n- White HMR carcass for door cabinets & Color carcass for Open / Glass door cabinets\n- Hinges: Titus; Draw Runners: Hafele Alto slim\n\nTall/full-height run (LH):\n- Tall pantry & appliance towers, floor-to-ceiling (~2700H)\n- Double wall oven housing + microwave/coffee unit\n- Provision for Internal LED\n- Bin\n- Finished end panels to walkway\n\nMain back run:\n- Base cabinets (~900H), drawers + doors, with fingerpull handles\n- Cooktop base + drawers\n- Upper wall cabinets to ceiling – mix of solid doors + glazed display cabinets\n- With Provision for internal LED\n- Fridge Integration\n- 2 medium MDF Glass doors\n\nIsland:\n- Large island carcass (~3000–3600L), full waterfall ends\n- Base cabinetry/drawers to one side, finished panel to seating side\n- Sink + tap cut-outs, undermount sink provision\n- Curves island", "price": ""}, {"area": "Pantry", "desc": "Supply & Installation of Pantry 2700 mm height with NO Bulkheads\n- 16mm MDF Polytec matt / equivalent color boards\n- White HMR carcass for door cabinets & Color carcass for Open / Glass door cabinets\n- Hinges: Titus; Draw Runners: Hafele Alto slim\n\nBase run (L-shape, both walls):\n- Base cabinets, cooktop base with drawers\n- Return wall base cabinets with doors\n- Sink + cooktop cut-outs/provisions\n\nWall/upper cabinets:\n- Solid Color wall cabinets with under-cabinet LED provision\n- Top-box upper cabinets, wall units\n- Bulkhead fillers/scribes to ceiling\n- 2 medium MDF Glass doors\n- Bin\n\nTall unit (RH):\nTall floor-to-ceiling unit / open shelving tower to right return", "price": ""}, {"area": "Laundry", "desc": "Supply & Installation of Laundry 2700 mm height with NO Bulkheads\n- 16mm MDF Polytec matt / equivalent color boards\n- White HMR carcass for door cabinets & Color carcass for Open / Glass door cabinets\n- Hinges: Titus; Draw Runners: Hafele Alto slim\n\nBase run:\n- Front-loader washer + dryer under-bench space (open, no doors) ~LH\n- Base cabinet to RH of appliances: under-sink cabinet (doors) + door units\n- Handleless/push-to-open, Sink cut-out (undermount)\n- Brass kick/toe strip (feature)\n- new design including Laundry Basket, Space for Robo Vaccum\n\nWall cabinets:\n- Full-width overhead wall cabinets to ceiling (~5 doors), handleless\n- Under-cabinet LED strip lighting\n- Bulkhead fillers/scribes to ceiling", "price": ""}, {"area": "Guest Bed", "desc": "Supply & Installation of Guest Bed 2700 mm height with NO Bulkheads\n- 16mm MDF Polytec matt / equivalent color boards\n- White HMR carcass for door cabinets & Color carcass for Open / Glass door cabinets\n- Hinges: Titus; Draw Runners: Riva slimline\n- Bulkheads\n\nWardrobe:\n- Built-in robe carcass with Adjustable shelves\n- 4x Hinge door panels\n\nInternal fit-out:\n- Hanging rails (long + double hang), top shelves\n- Adjustable shelves stack to one bay", "price": ""}, {"area": "FF Hall", "desc": "Supply & Installation of FF Hall with NO Bulkheads\n- 16mm MDF Polytec matt / equivalent color boards\n- White HMR carcass for door cabinets & Color carcass for Open / Glass door cabinets\n- Hinges: Titus; Draw Runners: Hafele Alto slim\n- curved ends\n\nFloating media cabinet:\n- 1x wall-hung floating cabinet (~1800–2400L × ~400D × ~250–300H)\n- handleless/push-to-open drawer or flip-door fronts\n- Ventilation/cable cut-outs to rear as needed", "price": ""}, {"area": "Master Bed", "desc": "Supply & Installation of Master Bed 2400 mm height with NO Bulkheads\n- 16mm MDF Polytec matt / equivalent color boards\n- White HMR carcass for door cabinets & Color carcass for Open / Glass door cabinets\n- Hinges: Titus; Draw Runners: Riva slimline\n\nOpen robe sections (LH ~3 bays):\n- Floor-to-ceiling carcasses 2400, finished\n- Hanging rails (double + long hang), adjustable shelves, top shelves\n- Lower drawer banks (3–4 drawers per bay), handleless\n- Integrated LED strip provision to each shelf/rail\n\nTall hinged wardrobe (RH):\n- Tall hinged Aluminium glass door cabinet – single long-hang bay with shoe storage\n- Open shoe-rack niche to base", "price": ""}, {"area": "Bed 2, 3 & 4", "desc": "Supply & Installation of Bedroom Robes with 2400 mm height with NO Bulkheads\n- 16mm MDF Polytec matt / equivalent color boards\n- White HMR carcass for door cabinets & Color carcass for Open / Glass door cabinets\n- Hinges: Titus; Draw Runners: Riva slimline\n- Bulkheads\n\nWardrobe:\n- Built-in robe carcass with Adjustable shelves\n- Hinge door panels\n\nInternal fit-out:\n- Hanging rails (long + double hang), top shelves\n- Adjustable shelves stack to one bay", "price": ""}];
 function qtToday(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function qtNew(j){var inf=j.info||{},site=(j.finishes&&j.finishes.site)||inf.address||'';
   return {v:1,date:qtToday(),ref:site||j.name||'',intro:QT_DEF.intro,intro2:QT_DEF.intro2,incl:QT_DEF.incl.join('\n'),qline:QT_DEF.qline,excl:QT_DEF.excl,termsIntro:QT_DEF.termsIntro,terms:QT_DEF.terms.join('\n'),bank:QT_DEF.bank,
-    rows:[{area:'Kitchen',desc:QT_DEF.schedHead.replace('{area}','Kitchen'),price:''}],at:Date.now()};}
-function qtData(j,make){var I=jhInfo(j);if(!I.quote&&make)I.quote={versions:[qtNew(j)],cur:0};return I.quote||null;}
+    rows:JSON.parse(JSON.stringify(QT_ROWS)),at:Date.now()};}
+// v469: quotes are kept apart from the job (Firestore 'quotes/{jobId}'), so only the admin and people given "Quotation" can read them — the server enforces it
+var QT_STORE={};
+function qtCan(){try{return hasRole('quote');}catch(e){return false;}}
+function qtLocal(id,v){try{if(v===undefined){var t=localStorage.getItem('cbk-quote:'+id);return t?JSON.parse(t):null;}localStorage.setItem('cbk-quote:'+id,JSON.stringify(v));}catch(e){return null;}}
+function qtData(j,make){var id=j.id,Q=QT_STORE[id];if(!Q){var I=j.info||{};if(I.quote&&typeof I.quote==='object')Q=I.quote;else Q=qtLocal(id);if(Q)QT_STORE[id]=Q;}
+  if(!Q&&make){Q=QT_STORE[id]={versions:[qtNew(j)],cur:0};}return Q||null;}
+function qtPersist(id){var Q=QT_STORE[id],j=allJobs[id];if(!Q||!qtCan())return;Q.updatedAt=Date.now();qtLocal(id,Q);
+  try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('quotes').doc(id).set(JSON.parse(JSON.stringify(Q))).catch(function(e){console.warn('quote save',e);});}catch(e){}
+  if(j&&j.info&&j.info.quote){delete j.info.quote;try{jhSave(id);}catch(e){}}}   // never leave prices inside the job
+var _qtUnsub=null;
+function qtLoadAll(){if(!qtCan())return;
+  // move any quote still kept inside a job into the locked store
+  Object.keys(allJobs||{}).forEach(function(id){var j=allJobs[id];if(j&&j.info&&j.info.quote){QT_STORE[id]=QT_STORE[id]||j.info.quote;qtPersist(id);}});
+  try{if(window.cloud&&cloud.db&&cloud.user&&!_qtUnsub){_qtUnsub=cloud.db.collection('quotes').onSnapshot(function(sn){var ch=false;(sn.docs||[]).forEach(function(d){if(_qtJob===d.id)return;var v=d.data();if(v&&v.versions){QT_STORE[d.id]=v;qtLocal(d.id,v);ch=true;}});
+      if(ch&&_currentView==='jobs'){try{renderJobsHome();}catch(e){}}},function(e){console.warn('quotes',e);});}}catch(e){}}
 function qtCur(j){var Q=qtData(j,true);if(Q.cur==null||!Q.versions[Q.cur])Q.cur=Q.versions.length-1;return Q.versions[Q.cur];}
 function qtNum(v){var n=parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n;}
 function qtSums(q){var sub=Math.round((q.rows||[]).reduce(function(a,r){return a+qtNum(r.price);},0));var gst=Math.round(sub*0.1);return {sub:sub,gst:gst,tot:sub+gst};}
@@ -10701,13 +10717,13 @@ function qtMoney(n){return '$ '+Math.round(n).toLocaleString('en-AU');}
 function qtEsc(s){return esc(s).replace(/"/g,'&quot;');}
 function qtDate(d){var t=new Date(d+'T00:00:00');return isNaN(t)?'':('0'+t.getDate()).slice(-2)+'/'+('0'+(t.getMonth()+1)).slice(-2)+'/'+t.getFullYear();}
 var _qtJob=null,_qtT=null;
-function qtSaveSoon(){clearTimeout(_qtT);_qtT=setTimeout(function(){if(_qtJob)jhSave(_qtJob);},600);}
+function qtSaveSoon(){clearTimeout(_qtT);_qtT=setTimeout(function(){if(_qtJob)qtPersist(_qtJob);},600);}
 function qtSet(k,v){var j=allJobs[_qtJob];if(!j)return;qtCur(j)[k]=v;qtSaveSoon();qtSumsPaint();}
 function qtRow(i,k,v){var j=allJobs[_qtJob];if(!j)return;var r=qtCur(j).rows[i];if(!r)return;r[k]=v;qtSaveSoon();qtSumsPaint();}
-function qtAddRow(){var j=allJobs[_qtJob];if(!j)return;qtCur(j).rows.push({area:'',desc:QT_DEF.schedHead.replace('{area}',''),price:''});jhSave(_qtJob);qtPaint();}
-function qtDelRow(i){var j=allJobs[_qtJob];if(!j||!confirm('Remove this area from the schedule?'))return;qtCur(j).rows.splice(i,1);jhSave(_qtJob);qtPaint();}
-function qtPick(i){var j=allJobs[_qtJob];if(!j)return;qtData(j,true).cur=+i;jhSave(_qtJob);qtPaint();}
-function qtNewVer(){var j=allJobs[_qtJob];if(!j)return;var Q=qtData(j,true),c=JSON.parse(JSON.stringify(qtCur(j)));c.v=Math.max.apply(null,Q.versions.map(function(x){return x.v||1;}))+1;c.date=qtToday();c.at=Date.now();Q.versions.push(c);Q.cur=Q.versions.length-1;jhSave(_qtJob);qtPaint();showMsg('✓ New version V'+c.v);}
+function qtAddRow(){var j=allJobs[_qtJob];if(!j)return;qtCur(j).rows.push({area:'',desc:QT_DEF.schedHead.replace('{area}',''),price:''});qtPersist(_qtJob);qtPaint();}
+function qtDelRow(i){var j=allJobs[_qtJob];if(!j||!confirm('Remove this area from the schedule?'))return;qtCur(j).rows.splice(i,1);qtPersist(_qtJob);qtPaint();}
+function qtPick(i){var j=allJobs[_qtJob];if(!j)return;qtData(j,true).cur=+i;qtPersist(_qtJob);qtPaint();}
+function qtNewVer(){var j=allJobs[_qtJob];if(!j)return;var Q=qtData(j,true),c=JSON.parse(JSON.stringify(qtCur(j)));c.v=Math.max.apply(null,Q.versions.map(function(x){return x.v||1;}))+1;c.date=qtToday();c.at=Date.now();Q.versions.push(c);Q.cur=Q.versions.length-1;qtPersist(_qtJob);qtPaint();showMsg('✓ New version V'+c.v);}
 function qtSumsPaint(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),S=qtSums(q),Q=qtSumsQ(q);document.querySelectorAll('#qt-ov [data-sum]').forEach(function(e){e.textContent=qtMoney(S[e.getAttribute('data-sum')]);});document.querySelectorAll('#qt-ov [data-qsum]').forEach(function(e){e.textContent=qtMoney(Q[e.getAttribute('data-qsum')]);});var o=document.getElementById('qt-subov');if(o)o.placeholder=qtMoney(S.sub).replace('$ ','');}
 function qtGrow(t){t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px';}
 // the document — the same layout on screen (editable) and on paper
@@ -10739,7 +10755,7 @@ var QT_CSS='.qt-page{background:#fff;width:210mm;min-height:297mm;box-sizing:bor
  '.qt-sch{width:100%;border-collapse:collapse;font-size:9pt}.qt-sch th,.qt-sch td{border:1px solid #000;padding:1.6mm 2mm;vertical-align:middle}.qt-sch thead th{background:#4472c4;color:#fff;font-weight:400}.qt-sch-t{font-size:11pt;padding:3mm!important}'+
  '.qt-area{text-align:center;font-weight:700;position:relative}.qt-desc{white-space:normal}.qt-pr{white-space:nowrap}.qt-pr span:first-child{float:left}.qt-pr{text-align:right}.qt-sub td{border:0;padding:1.4mm 2mm}.qt-sub td:nth-child(2){text-align:left;padding-left:2mm}'+
  '@media print{.qt-page{box-shadow:none;margin:0;width:auto;min-height:0;padding:0;page-break-after:always}.qt-page:last-child{page-break-after:auto}.qt-noprint{display:none}@page{size:A4;margin:16mm 15mm}}';
-function qtOpen(id){var j=allJobs[id];if(!j)return;_qtJob=id;qtData(j,true);var ov=document.getElementById('qt-ov');
+function qtOpen(id){var j=allJobs[id];if(!j||!qtCan())return;_qtJob=id;qtData(j,true);var ov=document.getElementById('qt-ov');
   if(!ov){ov=document.createElement('div');ov.id='qt-ov';document.body.appendChild(ov);var st=document.createElement('style');st.textContent=QT_CSS+
     '#qt-ov{position:fixed;inset:0;z-index:9000;background:#f6f1e7;overflow:auto;padding:0 12px 40px}#qt-bar{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#f6f1e7;padding:12px 4px;margin:0 auto 10px;max-width:210mm;border-bottom:1px solid #e7dfcf}'+
     '#qt-ov .qt-in{width:100%;box-sizing:border-box;border:1px dashed transparent;border-radius:3px;background:transparent;font:inherit;color:inherit;padding:1px 3px;resize:none;overflow:hidden;line-height:inherit}#qt-ov .qt-in:hover{border-color:#d6cfc4}#qt-ov .qt-in:focus{outline:none;border-color:#e0a20b;background:#fffdf5}'+
@@ -10747,7 +10763,7 @@ function qtOpen(id){var j=allJobs[id];if(!j)return;_qtJob=id;qtData(j,true);var 
     '#qt-ov .qt-x{position:absolute;top:2px;left:2px;border:0;background:#fee2e2;color:#991b1b;border-radius:3px;width:18px;height:18px;line-height:16px;cursor:pointer;font-size:13px;opacity:.0}#qt-ov tr:hover .qt-x{opacity:1}';
     document.head.appendChild(st);}
   ov.style.display='block';qtPaint();}
-function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.display='none';if(_qtJob)jhSave(_qtJob);_qtJob=null;try{renderJobsHome();}catch(e){}}
+function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.display='none';if(_qtJob)qtPersist(_qtJob);_qtJob=null;try{renderJobsHome();}catch(e){}}
 function qtPaint(){var j=allJobs[_qtJob],ov=document.getElementById('qt-ov');if(!j||!ov)return;var Q=qtData(j,true),q=qtCur(j);
   ov.innerHTML='<div id="qt-bar"><div style="font-weight:600;font-size:15px;margin-right:auto;">Quote · '+esc(j.name||'Job')+'</div>'+
     '<select onchange="qtPick(this.value)" style="width:auto;padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;background:#fff;font:inherit;">'+Q.versions.map(function(x,i){return '<option value="'+i+'"'+(i===Q.cur?' selected':'')+'>V'+(x.v||i+1)+' · '+qtDate(x.date)+'</option>';}).join('')+'</select>'+
@@ -10757,7 +10773,7 @@ function qtPrint(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j);var w=windo
   var name=String((q.v<10?'0':'')+'Quote - '+(q.ref||j.name||'Job')+' - V'+q.v).replace(/[\\/:*?"<>|]/g,'');
   w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(name)+'</title><style>body{margin:0;background:#eee}'+QT_CSS+'</style></head><body>'+qtDoc(q,false)+'<script>setTimeout(function(){window.print();},300);<\/script></body></html>');w.document.close();}
 function qtSumm(j){var Q=qtData(j,false);if(!Q||!Q.versions.length)return 'No quote yet';var q=Q.versions[Q.cur!=null?Q.cur:Q.versions.length-1];return 'V'+(q.v||1)+' · '+qtMoney(qtSumsQ(q).tot)+' incl. GST';}
-function qtSaveNow(){clearTimeout(_qtT);if(_qtJob){jhSave(_qtJob);showMsg('✓ Quote saved');}}
+function qtSaveNow(){clearTimeout(_qtT);if(_qtJob){qtPersist(_qtJob);showMsg('✓ Quote saved');}}
 function qtSecHTML(j){var Q=qtData(j,false);return '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><div style="flex:1;min-width:180px;font-size:13px;color:#57534e;">'+(Q?esc(qtSumm(j))+' · '+Q.versions.length+' version(s)':'Make the quote for this job — areas, prices, terms. Prints as the quote PDF.')+'</div><button class="jx-btn jx-dark" onclick="qtOpen(\''+j.id+'\')">'+(Q?'Open quote':'Create quote')+'</button></div>';}
 // ===== v433: BULKHEAD STRUCTURES — BH Support Right/Left/Bottom/Front behind a "Bulkhead F/D" (flush with door) =====
 function bhStructures(){var m={};(units||[]).forEach(function(u){(u.parts||[]).forEach(function(p){var nm=typeof p==='string'?p:(p&&p.name)||'';if(!isBHSupport(nm))return;
@@ -11051,7 +11067,7 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
 </div>
 <script>
 // ROLES (v207): choose who you are when the app opens. Each role only sees its own sections.
-var ROLE_VIEWS={admin:['jobs','drafting','cabinetlist','tracker','dispatch','installation','maint','admin'],designer:['jobs','drafting','cabinetlist','maint'],qc:['tracker','dispatch'],dispatch:['dispatch','tracker'],installer:['installation','drawings','tracker','dispatch','maint']};
+var ROLE_VIEWS={quote:['jobs'],admin:['jobs','drafting','cabinetlist','tracker','dispatch','installation','maint','admin'],designer:['jobs','drafting','cabinetlist','maint'],qc:['tracker','dispatch'],dispatch:['dispatch','tracker'],installer:['installation','drawings','tracker','dispatch','maint']};
 var ROLE_HOME={admin:'jobs',designer:'jobs',qc:'tracker',dispatch:'dispatch',installer:'installation'};
 var ROLE_LABEL={admin:'Admin',designer:'Designer',qc:'QC Checker',dispatch:'Dispatch / Shipping',installer:'Installer'};
 var SESSION={role:'',name:'',roles:[]};
@@ -11113,7 +11129,7 @@ function roHideSplash(){var ov=document.getElementById('role-ov');if(!ov)return;
   if(left<=0||window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ov.style.display='none';ov.classList.remove('ro-hold','ro-out','ro-wait');clearTimeout(window._roWaitT);return;}
   ov.classList.add('ro-hold');clearTimeout(window._roHideT);
   window._roHideT=setTimeout(function(){ov.classList.add('ro-out');setTimeout(function(){ov.style.display='none';ov.classList.remove('ro-hold','ro-out','ro-wait');clearTimeout(window._roWaitT);},520);},left);}
-function applyRole(r,nm,em,roles){
+function applyRole(r,nm,em,roles){setTimeout(function(){try{qtLoadAll();}catch(e){}},1500);
   roles=(roles&&roles.length)?roles.slice():[r];
   r=ROLE_ORDER.filter(function(x){return roles.indexOf(x)>-1;})[0]||r;   // main section = where the app opens
   SESSION.role=r;SESSION.roles=roles;SESSION.name=nm;SESSION.email=em||'';if(roles.indexOf('admin')>-1||!em){SESSION.jobs='all';SESSION.jobRoles=null;}
@@ -11248,6 +11264,7 @@ function rcWatch(em){
     var JR=ujNorm(u);
     if(SESSION.role&&SESSION.email===em){if(JSON.stringify(JR)!==JSON.stringify(SESSION.jobRoles||null)){SESSION.jobRoles=JR;jobAccessApply();roleScanUI();}return;}
     var roles=JR?ujUnion(JR):(u.roles||[]).filter(function(r){return ROLE_VIEWS[r];});
+    if((u.roles||[]).indexOf('quote')>-1&&roles.indexOf('quote')<0)roles.push('quote');   // v469: Quotation is given to a person, not per job
     if(!roles.length){rcErr('The admin has not given you a section'+(JR?' on any job':'')+' yet.');document.getElementById('rc-pend-email').textContent=em;rcShow('rc-pending');return;}
     rcErr('');applyRole(roles[0],u.name||nm0||em,em,roles);SESSION.jobs='all';SESSION.jobRoles=JR;jobAccessApply();roleScanUI();rcBegin();
   },function(e){rcErr(e&&e.code==='permission-denied'?'No permission — the Firebase rules are not set up yet.':'Cannot reach the server. Check the internet.');rcShow('rc-signin');});
@@ -11278,7 +11295,7 @@ function _fmtTs(t){try{return t&&t.toDate?t.toDate().toLocaleString():'—';}cat
 function renderUsers(){
   var box=document.getElementById('users-list');if(!box)return;
   if(!_userList.length){box.innerHTML='<div style="color:#6b7280;padding:14px;text-align:center;">No one has requested access yet.</div>';return;}
-  var RL=[['designer','Designer'],['qcd','QC & Dispatch'],['installer','Installer']];   // v393: QC + Dispatch are one choice
+  var RL=[['designer','Designer'],['qcd','QC & Dispatch'],['installer','Installer'],['quote','Quotation (prices)']];   // v393: QC + Dispatch are one choice
   box.innerHTML=_userList.map(function(u,i){
     var st=u.status==='approved'?['#276a4c','#dff0e7','Approved']:u.status==='blocked'?['#8f3224','#f6e0dc','Blocked']:['#9a6618','#f6ecd5','Pending'];
     var projs=(u.projects||[]).slice(-6).map(function(p){return esc(p);}).join(', ')||'—';
@@ -11337,7 +11354,7 @@ function jobAccessApply(){   // after login / when the admin changes this person
 /* removed unused userRandom */
 function userSave(i){
   var u=_userList[i];if(!u)return;
-  var roles=ujExpand(['designer','qcd','installer'].filter(function(r){var c=document.getElementById('ur-'+i+'-'+r);return c&&c.checked;}));
+  var roles=ujExpand(['designer','qcd','installer','quote'].filter(function(r){var c=document.getElementById('ur-'+i+'-'+r);return c&&c.checked;}));
   var code=document.getElementById('ucode-'+i).value.trim();
   var jobs=ujRead(i);if(jobs!=='all')roles=ujUnion(jobs);
   if(!roles.length){alert(jobs==='all'?'Tick at least one section for this person.':'Tick at least one section on one job.');return;}

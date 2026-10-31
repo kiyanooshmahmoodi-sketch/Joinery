@@ -1,5 +1,5 @@
 rules_version = '2';
-// CabLine — Firestore security rules (v405)
+// CabLine — Firestore security rules (v469)
 // Paste this whole file into Firebase console › Firestore Database › Rules, then press Publish.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -19,6 +19,15 @@ service cloud.firestore {
     // Projects: only approved staff
     match /jobs/{id} {
       allow read, write: if isStaff();
+    }
+
+    // Quotes (prices): only the admin and people the admin gave "Quotation"
+    function canQuote() {
+      return isAdmin() || (isStaff()
+        && get(/databases/$(database)/documents/users/$(myEmail())).data.get('roles', []).hasAny(['quote']));
+    }
+    match /quotes/{id} {
+      allow read, write: if canQuote();
     }
 
     // Shared settings (hardware names, colours, email setup)
