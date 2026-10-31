@@ -1377,7 +1377,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v470 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v471 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8511,7 +8511,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v470 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v471 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10725,7 +10725,7 @@ function qtAddStd(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),have={};(q
 function qtDelRow(i){var j=allJobs[_qtJob];if(!j||!confirm('Remove this area from the schedule?'))return;qtCur(j).rows.splice(i,1);qtPersist(_qtJob);qtPaint();}
 function qtPick(i){var j=allJobs[_qtJob];if(!j)return;qtData(j,true).cur=+i;qtPersist(_qtJob);qtPaint();}
 function qtNewVer(){var j=allJobs[_qtJob];if(!j)return;var Q=qtData(j,true),c=JSON.parse(JSON.stringify(qtCur(j)));c.v=Math.max.apply(null,Q.versions.map(function(x){return x.v||1;}))+1;c.date=qtToday();c.at=Date.now();Q.versions.push(c);Q.cur=Q.versions.length-1;qtPersist(_qtJob);qtPaint();showMsg('✓ New version V'+c.v);}
-function qtSumsPaint(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),S=qtSums(q),Q=qtSumsQ(q);document.querySelectorAll('#qt-ov [data-sum]').forEach(function(e){e.textContent=qtMoney(S[e.getAttribute('data-sum')]);});document.querySelectorAll('#qt-ov [data-qsum]').forEach(function(e){e.textContent=qtMoney(Q[e.getAttribute('data-qsum')]);});var o=document.getElementById('qt-subov');if(o)o.placeholder=qtMoney(S.sub).replace('$ ','');}
+function qtSumsPaint(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),S=qtSums(q),Q=qtSumsQ(q);document.querySelectorAll('#qt-ov [data-sum]').forEach(function(e){e.textContent=qtMoney(S[e.getAttribute('data-sum')]);});document.querySelectorAll('#qt-ov [data-sumn]').forEach(function(e){e.textContent=Math.round(S[e.getAttribute('data-sumn')]).toLocaleString('en-AU');});document.querySelectorAll('#qt-ov [data-qsum]').forEach(function(e){e.textContent=qtMoney(Q[e.getAttribute('data-qsum')]);});var o=document.getElementById('qt-subov');if(o)o.placeholder=qtMoney(S.sub).replace('$ ','');}
 function qtGrow(t){t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px';}
 // the document — the same layout on screen (editable) and on paper
 function qtDoc(q,ed){
@@ -10743,19 +10743,19 @@ function qtDoc(q,ed){
     (ed?'<div class="qt-hint">One line per term (numbered i, ii, iii… on paper)</div>'+ta('terms',q.terms,'qt-p'):'<ol class="qt-ol">'+lines(q.terms).map(function(x,i){return '<li><span>'+(roman[i]||(i+1))+'.</span>'+esc(x)+'</li>';}).join('')+'</ol>')+
     '<h2 class="qt-h">Bank Details:</h2>'+ta('bank',q.bank,'qt-p')+'</section>';
   var rows=(q.rows||[]).map(function(r,i){return '<tr><td class="qt-area">'+(ed?'<textarea class="qt-in qt-c" oninput="qtGrow(this);qtRow('+i+',\'area\',this.value)">'+esc(r.area||'')+'</textarea><button class="qt-x" onclick="qtDelRow('+i+')" title="Remove">×</button>':'<b>'+esc(r.area||'')+'</b>')+'</td>'+
-      '<td class="qt-desc">'+(ed?'<textarea class="qt-in" oninput="qtGrow(this);qtRow('+i+',\'desc\',this.value)">'+esc(r.desc||'')+'</textarea>':esc(r.desc||'').replace(/\n/g,'<br>'))+'</td>'+
+      '<td class="qt-desc">'+(ed?'<textarea class="qt-in" oninput="qtGrow(this);qtRow('+i+',\'desc\',this.value)">'+esc(r.desc||'')+'</textarea>':String(r.desc||'').split('\n').map(function(l){return /:\s*$/.test(l)&&!/^\s*-/.test(l)?'<b>'+esc(l)+'</b>':esc(l);}).join('<br>'))+'</td>'+
       '<td class="qt-pr">'+(ed?'<span>$</span><input class="qt-in qt-num" value="'+qtEsc(r.price||'')+'" oninput="qtRow('+i+',\'price\',this.value)" placeholder="0">':'<span>$</span><span>'+(qtNum(r.price)?Math.round(qtNum(r.price)).toLocaleString('en-AU'):'')+'</span>')+'</td></tr>';}).join('');
-  var p3='<section class="qt-page"><table class="qt-sch"><thead><tr><th colspan="3" class="qt-sch-t">Joinery Schedule - '+esc(q.ref||'')+'</th></tr><tr><th style="width:18%">Area</th><th>Description</th><th style="width:17%">Custom</th></tr></thead><tbody>'+rows+
+  var p3='<section class="qt-page"><table class="qt-sch"><thead><tr><th colspan="3" class="qt-sch-t">Joinery Schedule - '+esc(q.ref||'')+'</th></tr><tr><th style="width:16%">Area</th><th>Description</th><th style="width:15%">Custom</th></tr></thead><tbody>'+rows+
     (ed?'<tr class="qt-noprint"><td colspan="3"><button class="btn btn-outline btn-sm" onclick="qtAddRow()">+ Add area</button></td></tr>':'')+
-    '<tr class="qt-sub"><td></td><td>Sub Total</td><td class="qt-pr" data-sum="sub">'+qtMoney(S.sub)+'</td></tr><tr class="qt-sub"><td></td><td>GST</td><td class="qt-pr" data-sum="gst">'+qtMoney(S.gst)+'</td></tr><tr class="qt-sub"><td></td><td><b>Total</b></td><td class="qt-pr"><b data-sum="tot">'+qtMoney(S.tot)+'</b></td></tr></tbody></table></section>';
+    '<tr class="qt-gap"><td></td><td></td><td></td></tr>'+'<tr class="qt-sub qt-s1"><td></td><td>Sub Total</td><td class="qt-pr"><span>$</span><span data-sumn="sub">'+Math.round(S.sub).toLocaleString('en-AU')+'</span></td></tr>'+'<tr class="qt-sub qt-s2"><td></td><td>GST</td><td class="qt-pr"><span>$</span><span data-sumn="gst">'+Math.round(S.gst).toLocaleString('en-AU')+'</span></td></tr>'+'<tr class="qt-sub qt-s3"><td></td><td>Total</td><td class="qt-pr"><span>$</span><span data-sumn="tot">'+Math.round(S.tot).toLocaleString('en-AU')+'</span></td></tr></tbody></table></section>';
   return p1+p2+p3;}
 var QT_CSS='.qt-page{background:#fff;width:210mm;min-height:297mm;box-sizing:border-box;padding:18mm 17mm;margin:0 auto 18px;color:#111;font:10.5pt Calibri,Carlito,Arial,sans-serif;line-height:1.45;box-shadow:0 2px 14px rgba(0,0,0,.12)}'+
  '.qt-title{text-align:center;font-size:15pt;margin:4mm 0 8mm}.qt-meta{margin-bottom:6mm}.qt-p{margin:0 0 3mm;text-align:justify;white-space:normal}.qt-red{color:#c00000;font-weight:700}'+
  '.qt-h{color:#a0522d;font-size:11.5pt;margin:7mm 0 3mm}.qt-ul{margin:0;padding-left:7mm}.qt-ul li{margin-bottom:1.2mm}.qt-ol{list-style:none;margin:0 0 4mm;padding:0}.qt-ol li{display:flex;gap:4mm;margin-bottom:1.2mm;padding-left:4mm}.qt-ol li span{width:7mm;text-align:right;flex:none}'+
  '.qt-sum{width:100%;border-collapse:collapse;margin-top:2mm}.qt-sum td{border:1px solid #d9d9d9;padding:3mm 3mm}.qt-amt{text-align:right;width:28%;white-space:nowrap}.qt-tot td{background:#5b3a1e;color:#fff;font-weight:700;border-color:#5b3a1e}'+
- '.qt-sch{width:100%;border-collapse:collapse;font-size:9pt}.qt-sch th,.qt-sch td{border:1px solid #000;padding:1.6mm 2mm;vertical-align:middle}.qt-sch thead th{background:#4472c4;color:#fff;font-weight:400}.qt-sch-t{font-size:11pt;padding:3mm!important}'+
- '.qt-area{text-align:center;font-weight:700;position:relative}.qt-desc{white-space:normal}.qt-pr{white-space:nowrap}.qt-pr span:first-child{float:left}.qt-pr{text-align:right}.qt-sub td{border:0;padding:1.4mm 2mm}.qt-sub td:nth-child(2){text-align:left;padding-left:2mm}'+
- '@media print{.qt-page{box-shadow:none;margin:0;width:auto;min-height:0;padding:0;page-break-after:always}.qt-page:last-child{page-break-after:auto}.qt-noprint{display:none}@page{size:A4;margin:16mm 15mm}}';
+ '.qt-sch{width:100%;border-collapse:collapse;font-size:9pt;line-height:1.22}.qt-sch th,.qt-sch td{border:1px solid #000;padding:1.2mm 1.5mm;vertical-align:middle}.qt-sch thead{display:table-header-group}.qt-sch thead th{background:#4472c4;color:#fff;font-weight:400;padding:3.2mm 2mm}.qt-sch-t{font-size:12pt;font-weight:700!important;padding:4mm!important}.qt-sch tbody tr{page-break-inside:avoid;break-inside:avoid}.qt-sch td.qt-desc{padding:.8mm 1.2mm 2.6mm}'+
+ '.qt-area{text-align:center;font-weight:700;position:relative}.qt-desc{white-space:normal}.qt-pr{white-space:nowrap}.qt-pr span:first-child{float:left}.qt-pr{text-align:right}.qt-gap td{height:4mm;padding:0!important}.qt-sub td{padding:2.2mm 2mm}.qt-sub td:nth-child(2){text-align:left}.qt-s1 td{background:#b4c6e7}.qt-s2 td{background:#a6a6a6}.qt-s3 td{background:#4472c4;color:#fff;font-size:11pt}.qt-page,.qt-page *{-webkit-print-color-adjust:exact;print-color-adjust:exact}.qt-desc b{font-weight:700}'+
+ '@media print{.qt-page{box-shadow:none;margin:0;width:auto;min-height:0;padding:0;page-break-after:always}.qt-page:last-child{page-break-after:auto}.qt-noprint{display:none}@page{size:A4;margin:12mm 12mm}}';
 function qtOpen(id){var j=allJobs[id];if(!j||!qtCan())return;_qtJob=id;qtData(j,true);var ov=document.getElementById('qt-ov');
   if(!ov){ov=document.createElement('div');ov.id='qt-ov';document.body.appendChild(ov);var st=document.createElement('style');st.textContent=QT_CSS+
     'body.qt-open .topbar,body.qt-open .topbar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}#qt-ov{-webkit-app-region:no-drag;app-region:no-drag;position:fixed;inset:0;z-index:9000;background:#f6f1e7;overflow:auto;padding:env(titlebar-area-height,0px) 12px 40px}#qt-bar{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#f6f1e7;padding:12px 4px;margin:0 auto 10px;max-width:210mm;border-bottom:1px solid #e7dfcf}'+
