@@ -1377,7 +1377,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v467 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v468 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8511,7 +8511,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v467 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v468 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9990,7 +9990,7 @@ async function jhUpload(inp,kind){try{await drUpload(inp,kind||'arch');}catch(e)
 // v393: job card sections can be minimised (name + stage always stay open); state is remembered on this device
 // v432: job card sections are minimised by default; a NEW job opens fully so you can fill it in.
 // What you open stays open only until the app is closed — next time every job opens minimised again.
-var _jhOpen={},JH_SECS=['client','factory','due','files','fin'];
+var _jhOpen={},JH_SECS=['client','factory','due','files','quote','fin'];
 function jhIsCol(id,k){return !(_jhOpen[id]&&_jhOpen[id][k]);}
 function jhToggle(id,k){_jhOpen[id]=_jhOpen[id]||{};if(_jhOpen[id][k])delete _jhOpen[id][k];else _jhOpen[id][k]=1;try{var _a=document.activeElement;if(_a&&_a.blur)_a.blur();}catch(e){}renderJobsHome();}
 function jhColAll(on){Object.keys(allJobs||{}).forEach(function(id){if(on)delete _jhOpen[id];else{_jhOpen[id]={};JH_SECS.forEach(function(k){_jhOpen[id][k]=1;});}});renderJobsHome();}
@@ -10041,6 +10041,7 @@ function jhCard(j){
     jhSec(id,'files','Drawings &amp; files',jhFileSumm(j),FG.map(function(g){var L=(j.drawings||[]).filter(function(x){return drKind(x)===g[0];});
       return '<div class="jx-fg"><div class="jx-fg-h"><span>'+g[1]+(L.length?' <em>'+L.length+'</em>':'')+'</span><button class="jx-link" onclick="jhAddPlan(\''+id+'\',\''+g[0]+'\')">+ '+g[2]+'</button></div>'+
         (L.length?L.map(function(x){return '<div class="jx-file"><span class="jx-fname" title="'+qe(drName(x))+'">'+esc(drName(x))+'</span><button class="jx-link" onclick="drOpenAny(\''+x.id+'\')">Open</button></div>';}).join(''):'<div class="jx-empty">None yet</div>')+'</div>';}).join(''))+
+    (hasRole('admin')?jhSec(id,'quote','Quotation',qtSumm(j),qtSecHTML(j)):'')+
     (hasRole('admin')?jhSec(id,'fin','Orders &amp; invoices',(j.drawings||[]).filter(function(x){return x.kind==='fin';}).length+' file(s)',(_jhFinOpen?jhFinHTML(j):jhFinLockHTML())):'')+
     '<div class="jx-foot"><button class="jx-btn jx-dark" onclick="jhOpen(\''+id+'\')">Open job</button><span class="jx-meta">'+(cn.n?(cn.n+' items'):'No cabinet list yet')+'</span></div>'+
   '</div>';}
@@ -10175,7 +10176,7 @@ async function mtPrint(onlyId){
   w.document.close();window._printProjName='';}
 // v393: EVERY print window gets the project name + the date and time it was printed, at the top
 (function(){var _wo=window.open;window.open=function(){var w=_wo.apply(window,arguments);
-  try{if(w&&!arguments[0]){var proj=window._printProjName;var stamp=function(){try{var d=w.document;if(!d||!d.body||d.getElementById('cbk-print-stamp'))return;if(!d.body.innerHTML.trim()||/Preparing…/.test(d.body.textContent))return;
+  try{if(w&&!arguments[0]){var proj=window._printProjName;var stamp=function(){try{var d=w.document;if(!d||!d.body||d.getElementById('cbk-print-stamp'))return;if(!d.body.innerHTML.trim()||/Preparing…/.test(d.body.textContent))return;if(d.querySelector('.qt-page'))return;   /* v468: the quote is a client document — no internal print stamp */
       var nm=window._printProjName||proj||((typeof siJob==='function'&&siJob())?siJob().name:'')||'—';var t=new Date();
       var el=d.createElement('div');el.id='cbk-print-stamp';el.setAttribute('style','font-family:Arial,sans-serif;font-size:12px;color:#111;border:1px solid #94a3b8;background:#f8fafc;border-radius:6px;padding:6px 10px;margin:0 0 12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;-webkit-print-color-adjust:exact;print-color-adjust:exact;');
       el.innerHTML='<span>Project: <b>'+String(nm).replace(/[<>&]/g,'')+'</b></span><span>Printed: <b>'+t.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})+' · '+t.toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'})+'</b></span>';
@@ -10674,6 +10675,90 @@ function prToQC(){var j=currentJobId&&allJobs[currentJobId];if(!j)return;if(!con
   showMsg('✓ Sent to QC & Dispatch');prBar();try{renderSide(_currentView);}catch(e){}}
 (function(){var _sv=switchView;switchView=function(v){var r=_sv.apply(this,arguments);try{if(v==='cabinetlist')prBar();}catch(e){}return r;};})();
 (function(){var _sj=selectJob;selectJob=function(id){var r=_sj.apply(this,arguments);try{if(_currentView==='cabinetlist')prBar();}catch(e){}return r;};})();
+// ===== v468: QUOTATION — per job, versions V1, V2…, editable, prints like the CabLine quote format (admin only) =====
+var QT_DEF={
+  intro:'Thank you for the opportunity to quote on the above project. Following our review of the interior design documentation and drawings supplied, we are pleased to provide our quotation for the manufacture and installation of the custom joinery detailed below.\n\nOur quotation is based on the design intent, dimensions and specifications shown on the supplied drawings.',
+  intro2:'The works comprise the areas specified in the Schedule:',
+  incl:['Carcasses in 16mm HMR board; doors, fronts and finished panels in selected 16 mm colour finish as per design intent. Carcass open & glass door cabinets – 16 mm Colour','Hardware (Soft close) – All Hinges – Titus; All Drawers GF - Hafele Alto Slim; FF – Riva Slimline','We have not included Glass doors in this quote. Quote will be updated after finalising the type of profile, glass thickness & glass colour.','Any area changes to Polyurethane finish, Cost to be increased by 20%','Using BLUM Hinges & Runners would be charged $2,500 extra','Ground Floor Height (Joinery) – 2,700 mm & First Floor Height (Joinery) – 2,400 mm','Manufacture, delivery and on-site installation.'],
+  qline:'Supply & install of all custom joinery (as scheduled Below)',
+  excl:'Electrical, plumbing and gas works; appliances and sinks/taps (supply by others unless noted); tiling; painting of walls and ceilings; and any structural works.',
+  termsIntro:'[Company name] reserves the following rights in relation to the goods until all monies owed by the customer are cleared.',
+  terms:['Legal ownership of the goods and/or await payment.','The right retake possession of the goods and/or awaits payment.','The right to keep or resell or reuse any goods repossessed pursuant to (ii) hereof.','This quote for goods and services is subject to the NSW Building and Construction Industry Security payments act 1999.','Payment Method: 10% of the total price deposit, 30% of the total price after final check measure, 30% of the total price upon delivery of kitchen cabinetries and remainder on completion of works in scope.','Once signed and deposit paid, we reserve the right to retain the deposit amount.','We do not refund any amounts paid.','Cabinetry will not be installed until 90% of the total invoice is paid in full.','Transport charges applicable for outside 50km from the Manufacturing unit.','Parking should be provided by the Builder / Client at least 2 vehicles. Else, the Parking fee should be reimbursed by the Builder / Client.'],
+  bank:'Account Name: \nBank: \nBSB: \nAccount Number: ',
+  schedHead:'Supply & Installation of {area} 2700 mm height with NO Bulkheads\n- 16mm MDF Polytec matt / equivalent color boards\n- White HMR carcass for door cabinets & Color carcass for Open / Glass door cabinets\n- Hinges: Titus; Draw Runners: Hafele Alto slim\n\n'
+};
+function qtToday(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function qtNew(j){var inf=j.info||{},site=(j.finishes&&j.finishes.site)||inf.address||'';
+  return {v:1,date:qtToday(),ref:site||j.name||'',intro:QT_DEF.intro,intro2:QT_DEF.intro2,incl:QT_DEF.incl.join('\n'),qline:QT_DEF.qline,excl:QT_DEF.excl,termsIntro:QT_DEF.termsIntro,terms:QT_DEF.terms.join('\n'),bank:QT_DEF.bank,
+    rows:[{area:'Kitchen',desc:QT_DEF.schedHead.replace('{area}','Kitchen'),price:''}],at:Date.now()};}
+function qtData(j,make){var I=jhInfo(j);if(!I.quote&&make)I.quote={versions:[qtNew(j)],cur:0};return I.quote||null;}
+function qtCur(j){var Q=qtData(j,true);if(Q.cur==null||!Q.versions[Q.cur])Q.cur=Q.versions.length-1;return Q.versions[Q.cur];}
+function qtNum(v){var n=parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n;}
+function qtSums(q){var sub=Math.round((q.rows||[]).reduce(function(a,r){return a+qtNum(r.price);},0));var gst=Math.round(sub*0.1);return {sub:sub,gst:gst,tot:sub+gst};}
+// the Quotation box on page 1 uses the schedule total, unless a price is typed in by hand
+function qtSumsQ(q){if(String(q.subOv||'').trim()==='')return qtSums(q);var sub=Math.round(qtNum(q.subOv)),gst=Math.round(sub*0.1);return {sub:sub,gst:gst,tot:sub+gst};}
+function qtMoney(n){return '$ '+Math.round(n).toLocaleString('en-AU');}
+function qtEsc(s){return esc(s).replace(/"/g,'&quot;');}
+function qtDate(d){var t=new Date(d+'T00:00:00');return isNaN(t)?'':('0'+t.getDate()).slice(-2)+'/'+('0'+(t.getMonth()+1)).slice(-2)+'/'+t.getFullYear();}
+var _qtJob=null,_qtT=null;
+function qtSaveSoon(){clearTimeout(_qtT);_qtT=setTimeout(function(){if(_qtJob)jhSave(_qtJob);},600);}
+function qtSet(k,v){var j=allJobs[_qtJob];if(!j)return;qtCur(j)[k]=v;qtSaveSoon();qtSumsPaint();}
+function qtRow(i,k,v){var j=allJobs[_qtJob];if(!j)return;var r=qtCur(j).rows[i];if(!r)return;r[k]=v;qtSaveSoon();qtSumsPaint();}
+function qtAddRow(){var j=allJobs[_qtJob];if(!j)return;qtCur(j).rows.push({area:'',desc:QT_DEF.schedHead.replace('{area}',''),price:''});jhSave(_qtJob);qtPaint();}
+function qtDelRow(i){var j=allJobs[_qtJob];if(!j||!confirm('Remove this area from the schedule?'))return;qtCur(j).rows.splice(i,1);jhSave(_qtJob);qtPaint();}
+function qtPick(i){var j=allJobs[_qtJob];if(!j)return;qtData(j,true).cur=+i;jhSave(_qtJob);qtPaint();}
+function qtNewVer(){var j=allJobs[_qtJob];if(!j)return;var Q=qtData(j,true),c=JSON.parse(JSON.stringify(qtCur(j)));c.v=Math.max.apply(null,Q.versions.map(function(x){return x.v||1;}))+1;c.date=qtToday();c.at=Date.now();Q.versions.push(c);Q.cur=Q.versions.length-1;jhSave(_qtJob);qtPaint();showMsg('✓ New version V'+c.v);}
+function qtSumsPaint(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),S=qtSums(q),Q=qtSumsQ(q);document.querySelectorAll('#qt-ov [data-sum]').forEach(function(e){e.textContent=qtMoney(S[e.getAttribute('data-sum')]);});document.querySelectorAll('#qt-ov [data-qsum]').forEach(function(e){e.textContent=qtMoney(Q[e.getAttribute('data-qsum')]);});var o=document.getElementById('qt-subov');if(o)o.placeholder=qtMoney(S.sub).replace('$ ','');}
+function qtGrow(t){t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px';}
+// the document — the same layout on screen (editable) and on paper
+function qtDoc(q,ed){
+  var S=qtSums(q),SQ=qtSumsQ(q),ta=function(k,v,cls){return ed?'<textarea class="qt-in '+(cls||'')+'" oninput="qtGrow(this);qtSet(\''+k+'\',this.value)">'+esc(v||'')+'</textarea>':'<div class="'+(cls||'')+'">'+esc(v||'').replace(/\n/g,'<br>')+'</div>';},
+      inp=function(k,v,cls,type){return ed?'<input class="qt-in '+(cls||'')+'" type="'+(type||'text')+'" value="'+qtEsc(v||'')+'" oninput="qtSet(\''+k+'\',this.value)">':esc(v||'');},
+      lines=function(v){return String(v||'').split('\n').map(function(x){return x.trim();}).filter(Boolean);},
+      roman=['i','ii','iii','iv','v','vi','vii','viii','ix','x','xi','xii','xiii','xiv','xv','xvi','xvii','xviii','xix','xx'];
+  var p1='<section class="qt-page"><h1 class="qt-title">Quote</h1>'+
+    '<div class="qt-meta"><b>Date: '+(ed?'</b>'+inp('date',q.date,'qt-w-date','date')+'<b>':qtDate(q.date))+'</b><br><b>Project Ref: '+(ed?'</b>'+inp('ref',q.ref,'qt-w-ref')+'<b>':esc(q.ref))+'</b></div>'+
+    ta('intro',q.intro,'qt-p')+ta('intro2',q.intro2,'qt-p qt-red')+
+    '<h2 class="qt-h">Specification &amp; Inclusions</h2>'+(ed?'<div class="qt-hint">One line per bullet</div>'+ta('incl',q.incl,'qt-p'):'<ul class="qt-ul">'+lines(q.incl).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>')+
+    '<h2 class="qt-h">Quotation</h2><table class="qt-sum"><tr><td>'+(ed?inp('qline',q.qline,'qt-w-full'):esc(q.qline))+'</td><td class="qt-amt">'+(ed?'<b>$ </b><input id="qt-subov" class="qt-in qt-num" style="width:70%;font-weight:700;" value="'+qtEsc(q.subOv||'')+'" placeholder="'+qtMoney(S.sub).replace('$ ','')+'" oninput="qtSet(\'subOv\',this.value)" title="Empty = the schedule total. Type a price to set it by hand.">':'<b>'+qtMoney(SQ.sub)+'</b>')+'</td></tr><tr><td>GST (10%)</td><td class="qt-amt" data-qsum="gst">'+qtMoney(SQ.gst)+'</td></tr><tr class="qt-tot"><td>Total Investment (incl. GST)</td><td class="qt-amt" data-qsum="tot">'+qtMoney(SQ.tot)+'</td></tr></table>'+
+    '<h2 class="qt-h">Exclusions</h2>'+ta('excl',q.excl,'qt-p')+'</section>';
+  var p2='<section class="qt-page"><h2 class="qt-h" style="margin-top:0;">Terms:</h2>'+ta('termsIntro',q.termsIntro,'qt-p')+
+    (ed?'<div class="qt-hint">One line per term (numbered i, ii, iii… on paper)</div>'+ta('terms',q.terms,'qt-p'):'<ol class="qt-ol">'+lines(q.terms).map(function(x,i){return '<li><span>'+(roman[i]||(i+1))+'.</span>'+esc(x)+'</li>';}).join('')+'</ol>')+
+    '<h2 class="qt-h">Bank Details:</h2>'+ta('bank',q.bank,'qt-p')+'</section>';
+  var rows=(q.rows||[]).map(function(r,i){return '<tr><td class="qt-area">'+(ed?'<textarea class="qt-in qt-c" oninput="qtGrow(this);qtRow('+i+',\'area\',this.value)">'+esc(r.area||'')+'</textarea><button class="qt-x" onclick="qtDelRow('+i+')" title="Remove">×</button>':'<b>'+esc(r.area||'')+'</b>')+'</td>'+
+      '<td class="qt-desc">'+(ed?'<textarea class="qt-in" oninput="qtGrow(this);qtRow('+i+',\'desc\',this.value)">'+esc(r.desc||'')+'</textarea>':esc(r.desc||'').replace(/\n/g,'<br>'))+'</td>'+
+      '<td class="qt-pr">'+(ed?'<span>$</span><input class="qt-in qt-num" value="'+qtEsc(r.price||'')+'" oninput="qtRow('+i+',\'price\',this.value)" placeholder="0">':'<span>$</span><span>'+(qtNum(r.price)?Math.round(qtNum(r.price)).toLocaleString('en-AU'):'')+'</span>')+'</td></tr>';}).join('');
+  var p3='<section class="qt-page"><table class="qt-sch"><thead><tr><th colspan="3" class="qt-sch-t">Joinery Schedule - '+esc(q.ref||'')+'</th></tr><tr><th style="width:18%">Area</th><th>Description</th><th style="width:17%">Custom</th></tr></thead><tbody>'+rows+
+    (ed?'<tr class="qt-noprint"><td colspan="3"><button class="btn btn-outline btn-sm" onclick="qtAddRow()">+ Add area</button></td></tr>':'')+
+    '<tr class="qt-sub"><td></td><td>Sub Total</td><td class="qt-pr" data-sum="sub">'+qtMoney(S.sub)+'</td></tr><tr class="qt-sub"><td></td><td>GST</td><td class="qt-pr" data-sum="gst">'+qtMoney(S.gst)+'</td></tr><tr class="qt-sub"><td></td><td><b>Total</b></td><td class="qt-pr"><b data-sum="tot">'+qtMoney(S.tot)+'</b></td></tr></tbody></table></section>';
+  return p1+p2+p3;}
+var QT_CSS='.qt-page{background:#fff;width:210mm;min-height:297mm;box-sizing:border-box;padding:18mm 17mm;margin:0 auto 18px;color:#111;font:10.5pt Calibri,Carlito,Arial,sans-serif;line-height:1.45;box-shadow:0 2px 14px rgba(0,0,0,.12)}'+
+ '.qt-title{text-align:center;font-size:15pt;margin:4mm 0 8mm}.qt-meta{margin-bottom:6mm}.qt-p{margin:0 0 3mm;text-align:justify;white-space:normal}.qt-red{color:#c00000;font-weight:700}'+
+ '.qt-h{color:#a0522d;font-size:11.5pt;margin:7mm 0 3mm}.qt-ul{margin:0;padding-left:7mm}.qt-ul li{margin-bottom:1.2mm}.qt-ol{list-style:none;margin:0 0 4mm;padding:0}.qt-ol li{display:flex;gap:4mm;margin-bottom:1.2mm;padding-left:4mm}.qt-ol li span{width:7mm;text-align:right;flex:none}'+
+ '.qt-sum{width:100%;border-collapse:collapse;margin-top:2mm}.qt-sum td{border:1px solid #d9d9d9;padding:3mm 3mm}.qt-amt{text-align:right;width:28%;white-space:nowrap}.qt-tot td{background:#5b3a1e;color:#fff;font-weight:700;border-color:#5b3a1e}'+
+ '.qt-sch{width:100%;border-collapse:collapse;font-size:9pt}.qt-sch th,.qt-sch td{border:1px solid #000;padding:1.6mm 2mm;vertical-align:middle}.qt-sch thead th{background:#4472c4;color:#fff;font-weight:400}.qt-sch-t{font-size:11pt;padding:3mm!important}'+
+ '.qt-area{text-align:center;font-weight:700;position:relative}.qt-desc{white-space:normal}.qt-pr{white-space:nowrap}.qt-pr span:first-child{float:left}.qt-pr{text-align:right}.qt-sub td{border:0;padding:1.4mm 2mm}.qt-sub td:nth-child(2){text-align:left;padding-left:2mm}'+
+ '@media print{.qt-page{box-shadow:none;margin:0;width:auto;min-height:0;padding:0;page-break-after:always}.qt-page:last-child{page-break-after:auto}.qt-noprint{display:none}@page{size:A4;margin:16mm 15mm}}';
+function qtOpen(id){var j=allJobs[id];if(!j)return;_qtJob=id;qtData(j,true);var ov=document.getElementById('qt-ov');
+  if(!ov){ov=document.createElement('div');ov.id='qt-ov';document.body.appendChild(ov);var st=document.createElement('style');st.textContent=QT_CSS+
+    '#qt-ov{position:fixed;inset:0;z-index:9000;background:#f6f1e7;overflow:auto;padding:0 12px 40px}#qt-bar{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#f6f1e7;padding:12px 4px;margin:0 auto 10px;max-width:210mm;border-bottom:1px solid #e7dfcf}'+
+    '#qt-ov .qt-in{width:100%;box-sizing:border-box;border:1px dashed transparent;border-radius:3px;background:transparent;font:inherit;color:inherit;padding:1px 3px;resize:none;overflow:hidden;line-height:inherit}#qt-ov .qt-in:hover{border-color:#d6cfc4}#qt-ov .qt-in:focus{outline:none;border-color:#e0a20b;background:#fffdf5}'+
+    '#qt-ov .qt-w-date{width:160px;display:inline-block}#qt-ov .qt-w-ref{width:70%;display:inline-block;font-weight:700}#qt-ov .qt-c{text-align:center;font-weight:700}#qt-ov .qt-num{width:80%;text-align:right;display:inline-block}#qt-ov .qt-hint{font-size:8.5pt;color:#a8a29e;margin-bottom:1mm}#qt-ov .qt-in.qt-red{color:#c00000;font-weight:700}'+
+    '#qt-ov .qt-x{position:absolute;top:2px;left:2px;border:0;background:#fee2e2;color:#991b1b;border-radius:3px;width:18px;height:18px;line-height:16px;cursor:pointer;font-size:13px;opacity:.0}#qt-ov tr:hover .qt-x{opacity:1}';
+    document.head.appendChild(st);}
+  ov.style.display='block';qtPaint();}
+function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.display='none';if(_qtJob)jhSave(_qtJob);_qtJob=null;try{renderJobsHome();}catch(e){}}
+function qtPaint(){var j=allJobs[_qtJob],ov=document.getElementById('qt-ov');if(!j||!ov)return;var Q=qtData(j,true),q=qtCur(j);
+  ov.innerHTML='<div id="qt-bar"><div style="font-weight:600;font-size:15px;margin-right:auto;">Quote · '+esc(j.name||'Job')+'</div>'+
+    '<select onchange="qtPick(this.value)" style="width:auto;padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;background:#fff;font:inherit;">'+Q.versions.map(function(x,i){return '<option value="'+i+'"'+(i===Q.cur?' selected':'')+'>V'+(x.v||i+1)+' · '+qtDate(x.date)+'</option>';}).join('')+'</select>'+
+    '<button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button><button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
+  ov.querySelectorAll('textarea.qt-in').forEach(qtGrow);}
+function qtPrint(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j);var w=window.open('','_blank');if(!w){alert('Allow pop-ups to print the quote.');return;}
+  var name=String((q.v<10?'0':'')+'Quote - '+(q.ref||j.name||'Job')+' - V'+q.v).replace(/[\\/:*?"<>|]/g,'');
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(name)+'</title><style>body{margin:0;background:#eee}'+QT_CSS+'</style></head><body>'+qtDoc(q,false)+'<script>setTimeout(function(){window.print();},300);<\/script></body></html>');w.document.close();}
+function qtSumm(j){var Q=qtData(j,false);if(!Q||!Q.versions.length)return 'No quote yet';var q=Q.versions[Q.cur!=null?Q.cur:Q.versions.length-1];return 'V'+(q.v||1)+' · '+qtMoney(qtSumsQ(q).tot)+' incl. GST';}
+function qtSaveNow(){clearTimeout(_qtT);if(_qtJob){jhSave(_qtJob);showMsg('✓ Quote saved');}}
+function qtSecHTML(j){var Q=qtData(j,false);return '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><div style="flex:1;min-width:180px;font-size:13px;color:#57534e;">'+(Q?esc(qtSumm(j))+' · '+Q.versions.length+' version(s)':'Make the quote for this job — areas, prices, terms. Prints as the quote PDF.')+'</div><button class="jx-btn jx-dark" onclick="qtOpen(\''+j.id+'\')">'+(Q?'Open quote':'Create quote')+'</button></div>';}
 // ===== v433: BULKHEAD STRUCTURES — BH Support Right/Left/Bottom/Front behind a "Bulkhead F/D" (flush with door) =====
 function bhStructures(){var m={};(units||[]).forEach(function(u){(u.parts||[]).forEach(function(p){var nm=typeof p==='string'?p:(p&&p.name)||'';if(!isBHSupport(nm))return;
     var key=u.cabId||u.id,o=m[key]=m[key]||{cab:key,room:u.room||'',parts:[],mat:'',units:[]};o.parts.push({name:nm,w:p.w||'',h:p.h||'',qty:p.qty||1,mat:p.mat||u.mat||''});if(!o.mat)o.mat=p.mat||u.mat||'';o.units.push(u);});});
