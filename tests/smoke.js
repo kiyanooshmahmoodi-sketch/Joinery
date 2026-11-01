@@ -254,7 +254,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     return J({error:{code:'nope',message:pth}},400);});
   const p=await ctx.newPage();await p.route(/gstatic\.com\/firebasejs/,r=>r.fulfill({body:FB,contentType:'text/javascript'}));let ans='CabLine Jobs';p.on('dialog',d=>d.accept(ans));
   await p.addInitScript(()=>{try{sessionStorage.setItem('ro-retry','9');}catch(e){}
-    window.msal={PublicClientApplication:function(){const acc={homeAccountId:'h1',username:'kiyanoosh.mahmoodi@gmail.com'};const tok=async()=>({accessToken:'tok',expiresOn:new Date(Date.now()+3600e3),account:acc});return {initialize:async()=>{},getAllAccounts:()=>[acc],acquireTokenSilent:tok,acquireTokenPopup:tok};}};});
+    window.msal={PublicClientApplication:function(){const acc={homeAccountId:'h1',username:'kiyanoosh.mahmoodi@gmail.com'};const tok=async()=>{if(window.__msFail)throw {errorCode:'interaction_required',message:'login needed'};return {accessToken:'tok',expiresOn:new Date(Date.now()+3600e3),account:acc};};return {initialize:async()=>{},getAllAccounts:()=>[acc],acquireTokenSilent:tok,acquireTokenPopup:tok};}};});
   await p.goto(SITE+'index.html');await p.waitForTimeout(T*1500);
   await p.evaluate(()=>{const a=JSON.parse(localStorage.getItem('__acc')||'{}');a['kiyanoosh.mahmoodi@gmail.com']={email:'kiyanoosh.mahmoodi@gmail.com',pw:'654321',v:true,name:'Kiya'};localStorage.setItem('__acc',JSON.stringify(a));});await p.reload();await p.waitForTimeout(T*1500);
   await p.evaluate(()=>{document.getElementById('rc-si-em').value='kiyanoosh.mahmoodi@gmail.com';document.getElementById('rc-si-pw').value='654321';rcSignIn();});await p.waitForTimeout(T*1500);
@@ -289,6 +289,11 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('if open links are blocked, a server copy is kept instead',await p.evaluate(()=>{const e=(allJobs.j1.finishes.clientShared||[])[0]||{},x=JSON.parse(localStorage.getItem('__db'))['photos/pdrw00000000001'];return e.srv===true&&!e.url&&!!(x&&x.d&&x.drv);}));
   await p.evaluate(()=>drShare('pdrw00000000001'));await p.waitForTimeout(T*800);
   ok('stop sharing frees the server copy again',await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pdrw00000000001'];return !(allJobs.j1.finishes.clientShared||[]).length&&x.drv&&!x.d;}));
+  // someone without the company Microsoft account (an installer): the photo is parked on the server, then the office moves it into the drive
+  await p.evaluate(async()=>{window.__msFail=true;_msTok=null;const id='pins00000000001';await window.storage.set('cbkph:'+id,'data:image/jpeg;base64,/9j/4AAQ');allJobs.j1.installIssues=[{id:'ii1',text:'Gap at panel',photos:[id]}];saveAllJobs();await upEnqueue(id,'j1');});await p.waitForTimeout(T*1500);
+  ok('without the company Microsoft account, a photo is parked on the server (not stuck on the phone)',await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pins00000000001'];return !!(x&&x.d&&x.relay===true&&!x.drv)&&!_upQ.some(q=>q.id==='pins00000000001');}));
+  const mv=await p.evaluate(async()=>{window.__msFail=false;_msTok=null;return await drvRelay();});
+  t=tree();ok('the office moves parked files into the right job folder and frees the server',mv===1&&t.some(x=>/Smith Kitchen\/13 - Site Issues & Notes\//.test(x))&&await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pins00000000001'];return !!(x.drv&&!x.d&&!x.relay);}),t.join(' | '));
   // new job → new folder; rename → folder renamed
   await p.evaluate(()=>{allJobs.j2={id:'j2',name:'Jones Laundry',info:{},drawings:[],units:[]};document.getElementById('proj-input').value='Smith Kitchen Reno';autoSave();});await p.waitForTimeout(T*3500);
   t=tree();ok('a new job gets its folder and a renamed job renames its folder',t.includes('CabLine Jobs/Jones Laundry')&&t.includes('CabLine Jobs/Smith Kitchen Reno')&&!t.includes('CabLine Jobs/Smith Kitchen'),t.join(' | '));

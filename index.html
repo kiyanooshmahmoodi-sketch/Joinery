@@ -1388,7 +1388,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v488 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v489 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -7084,7 +7084,7 @@ async function siStorePhoto(data){
 async function siGetPhoto(id){
   if(_siCache[id])return _siCache[id];
   try{var r=await window.storage.get('cbkph:'+id);if(r&&r.value){_siCache[id]=r.value;return r.value;}}catch(e){}
-  try{if(window.cloud&&cloud.db){var d=await cloud.db.collection('photos').doc(id).get();if(d.exists){var dd=d.data(),v=dd.d;if(dd.drv&&!dd.d&&!dd.n){try{v=await drvFetch(dd.drv);}catch(e){if(e&&e.code==='ms-login'){_msNeed=true;try{upStat();}catch(x){}}return '';}_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}if(dd.n){var parts=await Promise.all(Array.from({length:dd.n},function(_,i){return cloud.db.collection('photos').doc(id+'~'+i).get();}));if(parts.some(function(x){return !x.exists;}))return '';v=parts.map(function(x){return x.data().d;}).join('');try{await window.storage.set('cbkph:'+id,v);}catch(e){}return v;}_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}}}catch(e){}
+  try{if(window.cloud&&cloud.db){var d=await cloud.db.collection('photos').doc(id).get();if(d.exists){var dd=d.data(),v=dd.d;if(dd.drv&&!dd.d&&!dd.n){try{v=await drvFetch(dd.drv);}catch(e){if(e&&e.code==='ms-login'&&drvWantsMs()){_msNeed=true;try{upStat();}catch(x){}}return '';}_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}if(dd.n){var parts=await Promise.all(Array.from({length:dd.n},function(_,i){return cloud.db.collection('photos').doc(id+'~'+i).get();}));if(parts.some(function(x){return !x.exists;}))return '';v=parts.map(function(x){return x.data().d;}).join('');try{await window.storage.set('cbkph:'+id,v);}catch(e){}return v;}_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}}}catch(e){}
   return '';}
 async function siPickPhotos(inp){
   var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';
@@ -8523,7 +8523,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v488 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v489 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10936,18 +10936,23 @@ async function upEnqueue(id,job){await upLoad();if(!_upQ.some(function(q){return
 function upIds(job){var out={};try{var s=JSON.stringify(job);var re=/\\?"(p[a-z0-9]{13})\\?"/g,m;while((m=re.exec(s)))out[m[1]]=1;}catch(e){}return Object.keys(out);}
 async function upScan(){await upLoad();var have={};_upQ.forEach(function(q){have[q.id]=1;});
   Object.keys(allJobs||{}).forEach(function(jid){upIds(allJobs[jid]).forEach(function(id){if(!_upOK[id]&&!have[id]&&!_upFail[id]){have[id]=1;_upQ.push({id:id,job:jid});}});});}
-async function upPut(id,d,job){var T=800000,col=cloud.db.collection('photos');
+async function upPut(id,d,job){var T=800000,col=cloud.db.collection('photos'),relay=false;
   if(!window.CLIENT_MODE&&window.SESSION&&SESSION.role){   // v483: staff files go to the company drive
     var forClient=window._upForceServer||drvForClient(id,job);   // v484: files on the client page also keep a copy on the server so the client can open them
-    if(drvCfg()&&!window._upForceServer){try{await drvUpload(id,d,job);}catch(e){if(!forClient||e.code==='ms-login')throw e;}if(!forClient)return;}
+    if(drvCfg()&&!window._upForceServer){var sent=false;try{await drvUpload(id,d,job);sent=true;}catch(e){
+        if(e.code==='drv-wait')throw e;
+        // v489: no company Microsoft account here (e.g. an installer with a personal email) — park the file on the server; the office moves it into the drive
+        if(e.code==='ms-login'||e.status===401||e.status===403){relay=true;if(e.code==='ms-login'&&drvWantsMs())_msNeed=true;}
+        else if(!forClient)throw e;}
+      if(sent&&!forClient)return;}
     else if(!forClient){var en=new Error('no drive');en.code='drv-none';throw en;}}
-  if(d.length<=T){await col.doc(id).set({d:d,job:job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});return;}
+  if(d.length<=T){await col.doc(id).set({d:d,n:0,job:job,org:SESSION.org||'',relay:relay,at:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});return;}
   var n=Math.ceil(d.length/T);
   for(var i=_upProg[id]||0;i<n;i++){
     await Promise.race([col.doc(id+'~'+i).set({d:d.slice(i*T,(i+1)*T),job:job,org:SESSION.org||''}),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},45000);})]);
     _upProg[id]=i+1;_upMsg=' — big file '+(i+1)+'/'+n;upStat();}
   _upMsg='';
-  await col.doc(id).set({d:'',n:n,job:job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}
+  await col.doc(id).set({d:'',n:n,job:job,org:SESSION.org||'',relay:relay,at:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}
 async function upKick(){
   await upLoad();if(Date.now()-_upScanT>30000){_upScanT=Date.now();await upScan();}
   if(_upBusy)return;
@@ -10967,7 +10972,7 @@ async function upKick(){
       }catch(e){
         if(e&&(e.code==='invalid-argument'||/exceeds|too large|size/i.test(e.message||''))){_upFail[id]=1;_upQ.shift();upSave();continue;}
         if(e&&e.code==='drv-wait'){_upQ.push(_upQ.shift());upSave();if((_upWaitN=(_upWaitN||0)+1)>_upQ.length){_upWaitN=0;break;}continue;}   // v483: not inside a job yet — try again later
-        if(e&&e.code==='ms-login')_msNeed=true;
+        if(e&&e.code==='ms-login'&&drvWantsMs())_msNeed=true;
         break;}  // no internet / server busy — try again later
     }
   }finally{_upBusy=false;}
@@ -11290,7 +11295,7 @@ function orgRoles(u,O){var cap=ujExpand(O.sections||[]),mine=u.orgAdmin?cap.slic
 function orgWatch(u,em,nm0){if(_orgUnsub&&ORG&&ORG._id===u.org){orgApply(u,em,nm0);return;}if(_orgUnsub){_orgUnsub();_orgUnsub=null;}
   _orgUnsub=cloud.db.collection('orgs').doc(u.org).onSnapshot(function(d){if(!d.exists){rcErr('Your company is not set up in CabLine.');rcShow('rc-blocked');return;}ORG=d.data()||{};ORG._id=u.org;orgApply(_rcUser||u,em,nm0);},
     function(e){rcErr('Cannot open your company: '+(e&&e.code||e));rcShow('rc-signin');});}
-function orgApply(u,em,nm0){var O=ORG;if(!O)return;try{drvCardRender();if(drvCfg()&&SESSION.role){drvRedeem();drvSyncSoon();upKick();}else upStat();}catch(e){}
+function orgApply(u,em,nm0){var O=ORG;if(!O)return;try{drvCardRender();if(drvCfg()&&SESSION.role){drvRedeem();drvSyncSoon();upKick();if(drvWantsMs())setTimeout(drvRelay,4000);}else upStat();}catch(e){}
   if(O.status==='deleting'||O.status==='deleted'){if(SESSION.role){rcSignOut();return;}rcErr('This company account is closed.');rcShow('rc-blocked');return;}
   var roles=orgRoles(u,O),ro=O.status==='suspended';
   if(!roles.length){rcErr('Your company admin has not given you a section yet.');document.getElementById('rc-pend-email').textContent=em;rcShow('rc-pending');return;}
@@ -11494,7 +11499,7 @@ async function msToken(interactive){if(_msTok&&_msTok.exp>Date.now()+60000)retur
   try{if(r.account)localStorage.setItem('cbk-ms-acct',r.account.homeAccountId);}catch(e){}
   _msTok={t:r.accessToken,exp:(r.expiresOn?new Date(r.expiresOn).getTime():Date.now()+3000000)};_msNeed=false;try{upStat();}catch(e){}return r.accessToken;}
 var _msNeed=false;
-async function msConnect(){try{await msToken(true);await drvRedeem(true);showMsg('✓ Connected to OneDrive');try{upKick();drvSyncSoon();}catch(e){}}catch(e){if(e&&/user_cancelled|popup_window_error|cancel/i.test(String(e.errorCode||e.message)))return;alert('Could not connect to Microsoft: '+(e.message||e));}}
+async function msConnect(){try{await msToken(true);await drvRedeem(true);showMsg('✓ Connected to OneDrive');try{upKick();drvSyncSoon();drvRelay();}catch(e){}}catch(e){if(e&&/user_cancelled|popup_window_error|cancel/i.test(String(e.errorCode||e.message)))return;alert('Could not connect to Microsoft: '+(e.message||e));}}
 // ---- Graph calls
 async function gf(path,opt){opt=opt||{};var t=await msToken(!!opt.interactive),h=Object.assign({Authorization:'Bearer '+t},opt.headers||{});
   var body=opt.body;if(body&&typeof body==='object'&&!(body instanceof Blob)&&!(body instanceof ArrayBuffer)){body=JSON.stringify(body);h['Content-Type']='application/json';}
@@ -11526,7 +11531,7 @@ async function drvSync(){var c=drvCfg();if(!c||_drvSyncing||(window.SESSION&&SES
     for(var i=0;i<ids.length;i++){var j=allJobs[ids[i]];if(!j||j.deletedAt)continue;var inf=j.info||{};
       if(!(inf.drv&&inf.drv.id&&inf.drv.root===c.itemId)){await drvJobFolder(ids[i],true);continue;}
       var want=drvJobName(j);if(inf.drv.name!==want){try{var r=await gf(drvItem(c.driveId,inf.drv.id),{method:'PATCH',body:{name:want}});inf.drv.name=r.name;jhSave(ids[i]);}catch(e){if(e.status===404){delete inf.drv;}else if(e.status===409){inf.drv.name=want;}}}}
-  }catch(e){if(e&&e.code==='ms-login'){_msNeed=true;try{upStat();}catch(x){}}}
+  }catch(e){if(e&&e.code==='ms-login'&&drvWantsMs()){_msNeed=true;try{upStat();}catch(x){}}}
   finally{_drvSyncing=false;}}
 setInterval(function(){try{if(window.SESSION&&SESSION.role&&drvCfg())drvSync();}catch(e){}},90000);
 // ---- files
@@ -11657,6 +11662,24 @@ function instBar(){if(instIsApp()||document.getElementById('inst-bar'))return;va
   b.innerHTML='<span>Install CabLine on this device</span><button onclick="instOpen()" style="border:0;background:#131110;color:#fbbf24;font-weight:700;border-radius:999px;padding:8px 16px;cursor:pointer;">Install</button><button onclick="document.getElementById(\'inst-bar\').remove()" aria-label="Close" style="border:0;background:none;font-size:18px;cursor:pointer;padding:0 6px;color:#131110;">✕</button>';
   document.body.appendChild(b);}
 try{if(/[?&]install=1/.test(location.search))setTimeout(instBar,600);}catch(e){}
+
+// ===== v489: files parked on the server by people without the company Microsoft account → moved into the drive by the office =====
+function drvWantsMs(){try{return !!(SESSION.owner||isOrgAdm()||hasRole('designer'));}catch(e){return false;}}
+var _relayBusy=false;
+async function drvRelay(){var c=drvCfg();if(!c||_relayBusy||!navigator.onLine||!(window.SESSION&&SESSION.role)||SESSION.ro)return 0;_relayBusy=true;var moved=0;
+  try{await msToken(false);
+    var q=cloud.db.collection('photos');if(q.where)q=q.where('org','==',SESSION.org||'').where('relay','==',true);
+    var sn=await q.get(),docs=[];sn.forEach(function(x){docs.push(x);});
+    for(var i=0;i<docs.length;i++){var id=docs[i].id,x=docs[i].data()||{};if(!x.relay)continue;
+      var d=x.d||'';if(!d&&x.n){var parts=[];for(var k=0;k<x.n;k++){var pp=await cloud.db.collection('photos').doc(id+'~'+k).get();if(!pp.exists){parts=null;break;}parts.push(pp.data().d);}if(!parts)continue;d=parts.join('');}
+      if(!d)continue;var keep=drvForClient(id,x.job);
+      try{var it=await drvUpload(id,d,x.job);}catch(e){if(e.code==='drv-wait')continue;throw e;}
+      if(keep)await cloud.db.collection('photos').doc(id).set({d:d,n:0,relay:false},{merge:true});
+      else for(var k2=0;k2<(x.n||0);k2++){cloud.db.collection('photos').doc(id+'~'+k2).delete().catch(function(){});}
+      moved++;}
+  }catch(e){}finally{_relayBusy=false;}
+  return moved;}
+setInterval(function(){try{if(drvCfg()&&drvWantsMs())drvRelay();}catch(e){}},120000);
 
 // v483 hooks: new job → its folder; renamed job → folder renamed; delete → ask about the folder
 (function(){
