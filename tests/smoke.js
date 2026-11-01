@@ -193,8 +193,8 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   await p.evaluate((oid)=>{const c=ownerCard(oid);c.querySelector('[data-k=ae]').value='kiya@n1group.com.au';c.querySelector('[data-k=an]').value='Kiya N1';ownerAddAdmin(oid);},oid);await p.waitForTimeout(T*800);
   ok('Owner adds a company admin',await p.evaluate((oid)=>{const u=JSON.parse(localStorage.getItem('__db'))['users/kiya@n1group.com.au'];return !!u&&u.orgAdmin===true&&u.org===oid;},oid));
   await p.waitForTimeout(T*500);
-  const inv=await p.evaluate((oid)=>{let u='';window.open=x=>{u=x;return {};};const b=ownerCard(oid).querySelector('button[onclick^="ownerInvite"]');if(!b)return {};b.click();return {u,inv:!!JSON.parse(localStorage.getItem('__db'))['users/kiya@n1group.com.au'].invitedAt};},oid);
-  ok('Send invite opens a ready Gmail email to the admin',/mail\.google\.com/.test(inv.u||'')&&/to=kiya%40n1group/.test(inv.u)&&/Joinery/.test(decodeURIComponent(inv.u))&&inv.inv,JSON.stringify(inv).slice(0,160));
+  const inv=await p.evaluate((oid)=>{let u='';window.open=x=>{u=x;return {};};const b=ownerCard(oid).querySelector('button[onclick^="ownerInvite"]');if(!b)return {};b.click();const h=ownerInviteHTML('N1 Group','Kiya N1','kiya@n1group.com.au');return {u,h:/email-header\.png/.test(h)&&/Hi Kiya,/.test(h)&&/admin of N1 Group/.test(h)&&/Joinery\//.test(h),inv:!!JSON.parse(localStorage.getItem('__db'))['users/kiya@n1group.com.au'].invitedAt};},oid);
+  ok('Send invite opens a ready Gmail email to the admin',/mail\.google\.com/.test(inv.u||'')&&/to=kiya%40n1group/.test(inv.u)&&/N1 Group admin/.test(decodeURIComponent(inv.u))&&inv.inv&&inv.h,JSON.stringify(inv).slice(0,160));
   await out();
   // company admin signs up with that email
   await signup('kiya@n1group.com.au');

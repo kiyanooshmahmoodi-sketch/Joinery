@@ -1382,7 +1382,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v476 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v477 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8516,7 +8516,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v476 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v477 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11357,10 +11357,16 @@ var APP_URL='https://kiyanooshmahmoodi-sketch.github.io/Joinery/';
 function ownerInviteText(co,nm,em){var first=String(nm||'').split(' ')[0]||'there';
   return {subj:'Your CabLine access — '+co+' admin',
     body:'Hi '+first+',\n\nYou have been set up as an admin of '+co+' on CabLine, our joinery project manager.\n\nTo get started:\n1. Open CabLine: '+APP_URL+'\n2. Tap "New here? Create an account" and sign up with this email: '+em+'\n3. Choose your password, then open the confirmation email and tap the link.\n4. Sign in. You will land in '+co+' as admin, ready to add your team.\n\nTip: in Chrome or Edge you can install CabLine as an app (Install icon in the address bar).\n\nKind regards,\nKiyanoosh Mahmoodi\nCabLine'};}
+function ownerInviteHTML(co,nm,em){var first=String(nm||'').split(' ')[0]||'there';return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f1e7;padding:24px 0;font-family:Segoe UI,Arial,sans-serif;"><tr><td align="center"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e7dfd0;"><tr><td style="background:#131110;"><img src="'+APP_URL+'email-header.png" width="600" alt="CabLine — From drawing to install" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr><tr><td style="padding:30px 36px 8px;color:#1c1a17;font-size:15px;line-height:1.6;"><p style="margin:0 0 14px;">Hi '+esc(first)+',</p><p style="margin:0 0 18px;">You have been set up as an <b>admin of '+esc(co)+'</b> on CabLine, our joinery project manager.</p><p style="margin:0 0 22px;text-align:center;"><a href="'+APP_URL+'" style="display:inline-block;background:#fbbf24;color:#131110;font-weight:700;text-decoration:none;padding:13px 30px;border-radius:8px;font-size:15px;">Open CabLine</a></p><p style="margin:0 0 8px;font-weight:700;">To get started</p><ol style="margin:0 0 18px;padding-left:20px;"><li style="margin-bottom:6px;">Tap <b>New here? Create an account</b> and sign up with this email: <b>'+esc(em)+'</b></li><li style="margin-bottom:6px;">Choose your password, then open the confirmation email and tap the link.</li><li>Sign in. You will land in '+esc(co)+' as admin, ready to add your team.</li></ol><p style="margin:0 0 22px;color:#6b645a;font-size:13px;">Tip: in Chrome or Edge you can install CabLine as an app (Install icon in the address bar).</p><p style="margin:0 0 12px;">Kind regards,<br><b>Kiyanoosh Mahmoodi</b></p><div style="height:14px;"></div></td></tr><tr><td style="background:#131110;color:#a59d90;font-size:11.5px;text-align:center;padding:14px;letter-spacing:.08em;">CABLINE · DESIGN BY KIYA</td></tr></table></td></tr></table>';}
 function ownerInvite(id,em){var o=(_own.orgs.filter(function(x){return x._id===id;})[0])||{},u=(_own.admins.filter(function(x){return x._id===em;})[0])||{};
   var t=ownerInviteText(o.name||'your company',u.name||'',em),e=encodeURIComponent;
   var url='https://mail.google.com/mail/?view=cm&fs=1&to='+e(em)+'&su='+e(t.subj)+'&body='+e(t.body)+'&authuser='+e(ADMIN_EMAIL);
+  // v477: copy the designed email (logo + button) so it can be pasted into Gmail; plain text stays as a fallback
+  var copied=false;try{var d=document.createElement('div');d.contentEditable='true';d.style.cssText='position:fixed;left:-9999px;top:0;width:640px;';d.innerHTML=ownerInviteHTML(o.name||'your company',u.name||'',em);document.body.appendChild(d);
+    var rg=document.createRange();rg.selectNodeContents(d);var sl=window.getSelection();sl.removeAllRanges();sl.addRange(rg);copied=document.execCommand('copy');sl.removeAllRanges();d.remove();}catch(x){}
+  if(copied)url='https://mail.google.com/mail/?view=cm&fs=1&to='+e(em)+'&su='+e(t.subj)+'&authuser='+e(ADMIN_EMAIL);
   var w=null;try{w=window.open(url,'_blank');}catch(x){}if(!w)location.href=url;
+  if(copied)showMsg('✉ Invite copied — in Gmail click in the message area, press Ctrl+V, then Send');
   cloud.db.collection('users').doc(em).set({invitedAt:Date.now()},{merge:true}).catch(function(){});}
 function ownerCard(id){return document.querySelector('#users-list [data-org="'+id+'"]');}
 function ownerNewOrg(){var n=(prompt('Company name')||'').trim();if(!n)return;cloud.db.collection('orgs').add({name:n,status:'active',sections:ORG_SECTIONS.map(function(x){return x[0];}),quote:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){showMsg('✓ Company created');}).catch(function(e){alert('Could not create: '+e.message);});}
