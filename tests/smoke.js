@@ -222,6 +222,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   // the Owner's device keeps nothing from the company
   await login('kiyanoosh.mahmoodi@gmail.com','654321');
   if(process.env.SHOT){await p.evaluate(()=>{try{roHideSplash();}catch(e){}var _o=document.getElementById('role-ov');if(_o)_o.style.display='none';switchView('admin');showTab('users',document.querySelector('#view-admin .tab'));});await p.waitForTimeout(1500);await p.screenshot({path:process.env.SHOT+'/owner.png'});}
+  await p.waitForTimeout(T*800);ok('company shows Active once its admin has joined',await p.evaluate((oid)=>/>Active</.test(ownerCard(oid).innerHTML)||/Paused/.test(ownerCard(oid).innerHTML),oid)&&await p.evaluate((oid)=>/>[^<]*Joined</.test(ownerCard(oid).innerHTML),oid));
   ok('Owner sees no company jobs',await p.evaluate(()=>Object.keys(allJobs).length===0&&SESSION.owner));
   const w=await p.evaluate(async()=>{const v=roleViews();allJobs.ow={id:'ow',name:'Owner test job',info:{},drawings:[],units:[]};await cloudPushJob('ow');return {v:v.length,org:(JSON.parse(localStorage.getItem('__db'))['jobs/ow']||{}).org,q:qtCan()};});
   ok('Owner has a full private workspace (all sections, own jobs)',w.v>=7&&w.org==='__owner'&&w.q,JSON.stringify(w));
