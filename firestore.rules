@@ -15,15 +15,19 @@ service cloud.firestore {
 
     function signedIn() { return request.auth != null; }
     function myEmail() { return request.auth.token.email.lower(); }
-    function realUser() {
+    function verified() {
       return signedIn() && request.auth.token.email != null && request.auth.token.email_verified == true;
     }
-    function isOwner() { return realUser() && myEmail() == 'kiyanoosh.mahmoodi@gmail.com'; }
+    function isOwner() { return verified() && myEmail() == 'kiyanoosh.mahmoodi@gmail.com'; }
 
     function meRef() { return /databases/$(database)/documents/users/$(myEmail()); }
     function me() { return get(meRef()).data; }
     function myOrg() { return me().get('org', ''); }
     function orgOf(o) { return get(/databases/$(database)/documents/orgs/$(o)).data; }
+    // a real person: confirmed their email, OR joined with the one-time invite code (their account is tied to their record)
+    function realUser() {
+      return verified() || (signedIn() && request.auth.token.email != null && exists(meRef()) && me().get('uid', '') == request.auth.uid);
+    }
 
     // an approved person of a company that still exists
     function isMember() {
@@ -111,6 +115,13 @@ service cloud.firestore {
           || (isOrgAdmin() && resource.data.get('org', '') == '' && inMyOrg(request.resource.data)
               && request.resource.data.get('orgAdmin', false) == false
               && request.resource.data.get('roles', []).hasOnly(allowedRoles()))
+          // joining with the one-time invite code: the code must match, it is used up, and the account is tied to this record
+          || (signedIn() && request.auth.token.email != null && em == myEmail()
+              && resource.data.get('codeHash', '') != ''
+              && request.resource.data.get('uid', '') == request.auth.uid
+              && hashing.sha256(request.resource.data.get('codeProof', '')).toHexString().lower() == resource.data.codeHash
+              && !('codeHash' in request.resource.data)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid', 'codeProof', 'codeHash', 'joinedAt']))
           // everyone keeps their own "last seen" up to date
           || (realUser() && em == myEmail()
               && request.resource.data.diff(resource.data).affectedKeys()
