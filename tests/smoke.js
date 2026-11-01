@@ -242,6 +242,9 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   const G={n:0,items:{root:{id:'root',name:'root',folder:{},parent:null}}};const mk=(name,parent,folder,content)=>{const id='it'+(++G.n);G.items[id]={id,name,parent,folder:folder?{}:undefined,content};return G.items[id];};
   const kids=pid=>Object.values(G.items).filter(x=>x.parent===pid);const out=x=>({id:x.id,name:x.name,folder:x.folder,size:(x.content||'').length,parentReference:{driveId:'D1'}});
   await ctx.route('https://graph.microsoft.com/**',async r=>{const req=r.request(),u=new URL(req.url()),pth=decodeURIComponent(u.pathname.replace('/v1.0',''));const m=req.method();const J=(o,st)=>r.fulfill({status:st||200,contentType:'application/json',body:JSON.stringify(o)});let mm;
+    if(pth==='/me/messages')return J({value:[{id:'m1',subject:'Kitchen colours',from:{emailAddress:{address:'client@x.com',name:'Jane Client'}},receivedDateTime:'2026-10-30T10:00:00Z',bodyPreview:'Hi Kiya',hasAttachments:true},{id:'m2',subject:'About the price',from:{emailAddress:{address:'client@x.com',name:'Jane Client'}},receivedDateTime:'2026-10-31T10:00:00Z',bodyPreview:'Can we discuss',hasAttachments:false}]});
+    if(pth==='/me/messages/m1')return J({subject:'Kitchen colours',body:{content:'Hi Kiya,\nWe chose Polar White for the uppers.'},from:{emailAddress:{address:'client@x.com',name:'Jane Client'}},receivedDateTime:'2026-10-30T10:00:00Z',toRecipients:[]});
+    if(pth==='/me/messages/m1/attachments')return J({value:[{name:'colours.pdf',contentType:'application/pdf',contentBytes:'JVBERi0z',isInline:false,size:8},{name:'logo.png',contentType:'image/png',contentBytes:'iVBO',isInline:true}]});
     if(pth==='/me/drive/root')return J(out(G.items.root));
     if(pth==='/me/drive/root/children')return J({value:kids('root').map(out)});
     if((mm=pth.match(/^\/drives\/D1\/items\/([^/:]+):\/(.+):\/content$/))&&m==='PUT'){const f=mk(mm[2],mm[1],false,req.postData()||'x');return J(out(f),201);}
@@ -289,6 +292,18 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('if open links are blocked, a server copy is kept instead',await p.evaluate(()=>{const e=(allJobs.j1.finishes.clientShared||[])[0]||{},x=JSON.parse(localStorage.getItem('__db'))['photos/pdrw00000000001'];return e.srv===true&&!e.url&&!!(x&&x.d&&x.drv);}));
   await p.evaluate(()=>drShare('pdrw00000000001'));await p.waitForTimeout(T*800);
   ok('stop sharing frees the server copy again',await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pdrw00000000001'];return !(allJobs.j1.finishes.clientShared||[]).length&&x.drv&&!x.d;}));
+  // client emails: the admin picks one email from Outlook; only that one goes to the job (and its file to the job folder)
+  await p.evaluate(()=>{allJobs.j1.info.clientEmail='client@x.com';});
+  await p.evaluate(()=>mlFind());await p.waitForTimeout(T*800);
+  const found=await p.evaluate(()=>document.getElementById('ml-ov').innerText);
+  await p.evaluate(()=>mlAdd(_mlRes.findIndex(m=>m.id==='m1')));await p.waitForTimeout(T*2500);
+  const ml=await p.evaluate(()=>{const L=(allJobs.j1.info.mails||[]);return {n:L.length,subj:L[0]&&L[0].subj,body:L[0]&&L[0].body,files:L[0]&&L[0].files.length};});
+  t=tree();
+  ok('Find emails lists the client emails from Outlook',/Kitchen colours/.test(found)&&/About the price/.test(found),found.slice(0,120));
+  ok('only the email you add goes to the job — with its text',ml.n===1&&ml.subj==='Kitchen colours'&&/Polar White/.test(ml.body)&&ml.files===1,JSON.stringify(ml));
+  ok('its attachment goes to the job folder (15 - Client Emails)',t.some(x=>/Smith Kitchen\/15 - Client Emails\/colours\.pdf$/.test(x)),t.join(' | '));
+  await p.evaluate(()=>{document.getElementById('ml-ov').style.display='none';mlRender();});
+  ok('the team sees the added email in the job',await p.evaluate(()=>/Kitchen colours/.test(document.getElementById('ml-card').innerText)&&!/About the price/.test(document.getElementById('ml-card').innerText)));
   // someone without the company Microsoft account (an installer): the photo is parked on the server, then the office moves it into the drive
   await p.evaluate(async()=>{window.__msFail=true;_msTok=null;const id='pins00000000001';await window.storage.set('cbkph:'+id,'data:image/jpeg;base64,/9j/4AAQ');allJobs.j1.installIssues=[{id:'ii1',text:'Gap at panel',photos:[id]}];saveAllJobs();await upEnqueue(id,'j1');});await p.waitForTimeout(T*1500);
   ok('without the company Microsoft account, a photo is parked on the server (not stuck on the phone)',await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pins00000000001'];return !!(x&&x.d&&x.relay===true&&!x.drv)&&!_upQ.some(q=>q.id==='pins00000000001');}));

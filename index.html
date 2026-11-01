@@ -1138,8 +1138,8 @@ html,body{overflow-x:hidden;}
 window.addEventListener('resize',fit);document.addEventListener('DOMContentLoaded',fit);window.addEventListener('load',fit);try{document.fonts.ready.then(fit);}catch(e){}setTimeout(fit,600);})();</script>
 <style id="org-css">
 /* v487: in the installed app the title bar is a drag area — while a popup is open, clicks must reach the popup */
-#inv-ov,#inv-ov *,#drvpk-ov,#drvpk-ov *,#drvdel-ov,#drvdel-ov *,#inst-ov,#inst-ov *,#inst-bar,#inst-bar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}
-body:has(#inv-ov[style*="flex"]) .topbar,body:has(#inv-ov[style*="flex"]) .topbar *,body:has(#drvpk-ov[style*="flex"]) .topbar,body:has(#drvpk-ov[style*="flex"]) .topbar *,body:has(#drvdel-ov[style*="flex"]) .topbar,body:has(#drvdel-ov[style*="flex"]) .topbar *,body:has(#inst-ov) .topbar,body:has(#inst-ov) .topbar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}
+#ml-ov,#ml-ov *,#inv-ov,#inv-ov *,#drvpk-ov,#drvpk-ov *,#drvdel-ov,#drvdel-ov *,#inst-ov,#inst-ov *,#inst-bar,#inst-bar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}
+body:has(#inv-ov[style*="flex"]) .topbar,body:has(#inv-ov[style*="flex"]) .topbar *,body:has(#drvpk-ov[style*="flex"]) .topbar,body:has(#drvpk-ov[style*="flex"]) .topbar *,body:has(#drvdel-ov[style*="flex"]) .topbar,body:has(#drvdel-ov[style*="flex"]) .topbar *,body:has(#ml-ov[style*="flex"]) .topbar,body:has(#ml-ov[style*="flex"]) .topbar *,body:has(#inst-ov) .topbar,body:has(#inst-ov) .topbar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}
 #inv-ov,#drvpk-ov{padding-top:calc(env(titlebar-area-height,0px) + 24px)!important}
 #inv-mail a,#inv-mail img{opacity:1!important;filter:none!important;pointer-events:none}
 #org-ro-bar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:8000;background:#92400e;color:#fff;font-size:13px;padding:9px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
@@ -1388,7 +1388,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v489 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v490 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1493,6 +1493,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     </div>
     <div id="cl-status" style="font-size:13px;color:#52525b;margin-top:12px;"></div>
   </div>
+  <div class="card" id="ml-card" style="display:none;"></div>
   <div id="brief-box"></div>
 </div>
 <div class="panel" id="panel-finishes">
@@ -8523,7 +8524,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v489 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v490 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10056,6 +10057,7 @@ function jhCard(j){
       return '<div class="jx-fg"><div class="jx-fg-h"><span>'+g[1]+(L.length?' <em>'+L.length+'</em>':'')+'</span><button class="jx-link" onclick="jhAddPlan(\''+id+'\',\''+g[0]+'\')">+ '+g[2]+'</button></div>'+
         (L.length?L.map(function(x){return '<div class="jx-file"><span class="jx-fname" title="'+qe(drName(x))+'">'+esc(drName(x))+'</span><button class="jx-link" onclick="drOpenAny(\''+x.id+'\')">Open</button></div>';}).join(''):'<div class="jx-empty">None yet</div>')+'</div>';}).join(''))+
     (qtCan()?jhSec(id,'quote','Quotation',qtSumm(j),qtSecHTML(j)):'')+
+    (mlCanSee()?jhSec(id,'mails','Client emails',((j.info&&j.info.mails)||[]).length?((j.info.mails.length)+' email(s)'):'',mlSecHTML(j)):'')+
     ((hasRole('admin')||hasRole('orgadmin'))?jhSec(id,'fin','Orders &amp; invoices',(j.drawings||[]).filter(function(x){return x.kind==='fin';}).length+' file(s)',(_jhFinOpen?jhFinHTML(j):jhFinLockHTML())):'')+
     '<div class="jx-foot"><button class="jx-btn jx-dark" onclick="jhOpen(\''+id+'\')">Open job</button><span class="jx-meta">'+(cn.n?(cn.n+' items'):'No cabinet list yet')+'</span></div>'+
   '</div>';}
@@ -11461,11 +11463,11 @@ function invMail(app){if(!_inv)return;var e=encodeURIComponent,url=app==='outloo
 function invGmail(){invMail('gmail');}
 // ===== v483: COMPANY DRIVE (OneDrive) — every job gets its own folder; files go to the company's drive, text stays on the server =====
 var MS_CLIENT_ID='9bcda083-035b-403e-ab96-e2a20741c80f',MS_SCOPES=['Files.ReadWrite.All','User.Read'],GRAPH='https://graph.microsoft.com/v1.0';
-var DRIVE_CATS=['Architectural Plans','3D & Design','CM Files','Shop Drawings','Production','Orders & Invoices','Quotes','Client Selections','QC Photos','Dispatch','Installation Drawings','Installation Photos','Site Issues & Notes','Maintenance'];
+var DRIVE_CATS=['Architectural Plans','3D & Design','CM Files','Shop Drawings','Production','Orders & Invoices','Quotes','Client Selections','QC Photos','Dispatch','Installation Drawings','Installation Photos','Site Issues & Notes','Maintenance','Client Emails'];
 function drvCatName(i){return (i<9?'0':'')+(i+1)+' - '+DRIVE_CATS[i];}
 // which folder a file belongs in — from where it sits inside the job
 function drvCatFor(path){var p=String(path||'').toLowerCase();
-  var R=[[/\bkind:arch\b/,0],[/\bkind:d3\b/,1],[/\bkind:cm\b/,2],[/\bkind:prod\b/,10],[/\bkind:fin\b/,7],[/maint/,13],[/quote/,6],[/order|invoice|purchas/,5],[/client|selection|sign/,7],[/issue|note|sketch|voice|doc/,12],[/qc/,8],[/disp|ship/,9],[/install|inst/,11],[/draft|shop/,3],[/production|excel|cut/,4]];
+  var R=[[/\bmails\b/,14],[/\bkind:arch\b/,0],[/\bkind:d3\b/,1],[/\bkind:cm\b/,2],[/\bkind:prod\b/,10],[/\bkind:fin\b/,7],[/maint/,13],[/quote/,6],[/order|invoice|purchas/,5],[/client|selection|sign/,7],[/issue|note|sketch|voice|doc/,12],[/qc/,8],[/disp|ship/,9],[/install|inst/,11],[/draft|shop/,3],[/production|excel|cut/,4]];
   for(var i=0;i<R.length;i++)if(R[i][0].test(p))return R[i][1];return -1;}
 function drvFindPath(o,id,path,depth){if(depth>8||o==null)return null;
   if(typeof o==='string')return (o===id||(o.length>id.length&&o.indexOf(id)>=0))?path:null;
@@ -11490,18 +11492,18 @@ async function msApp(){await msLoad();if(_msal)return _msal;
 function msAccount(app){var A=app.getAllAccounts()||[],em=(window.SESSION&&SESSION.email||'').toLowerCase();
   var keep='';try{keep=localStorage.getItem('cbk-ms-acct')||'';}catch(e){}
   return A.filter(function(a){return a.homeAccountId===keep;})[0]||A.filter(function(a){return String(a.username||'').toLowerCase()===em;})[0]||A[0]||null;}
-var _msTok=null;
-async function msToken(interactive){if(_msTok&&_msTok.exp>Date.now()+60000)return _msTok.t;
+var _msTok=null,_msTokX={};
+async function msToken(interactive,sc){sc=sc||MS_SCOPES;var key=sc.join(' ');var T0=key===MS_SCOPES.join(' ')?_msTok:(_msTokX[key]||null);if(T0&&T0.exp>Date.now()+60000)return T0.t;
   var app=await msApp(),acc=msAccount(app),r=null;
-  if(acc){try{r=await app.acquireTokenSilent({scopes:MS_SCOPES,account:acc});}catch(e){r=null;}}
+  if(acc){try{r=await app.acquireTokenSilent({scopes:sc,account:acc});}catch(e){r=null;}}
   if(!r){if(!interactive){var er=new Error('Microsoft sign-in needed');er.code='ms-login';throw er;}
-    r=await app.acquireTokenPopup({scopes:MS_SCOPES,loginHint:(window.SESSION&&SESSION.email)||undefined,prompt:'select_account'});}
+    r=await app.acquireTokenPopup({scopes:sc,loginHint:(window.SESSION&&SESSION.email)||undefined,prompt:'select_account'});}
   try{if(r.account)localStorage.setItem('cbk-ms-acct',r.account.homeAccountId);}catch(e){}
-  _msTok={t:r.accessToken,exp:(r.expiresOn?new Date(r.expiresOn).getTime():Date.now()+3000000)};_msNeed=false;try{upStat();}catch(e){}return r.accessToken;}
+  var TT={t:r.accessToken,exp:(r.expiresOn?new Date(r.expiresOn).getTime():Date.now()+3000000)};if(key===MS_SCOPES.join(' ')){_msTok=TT;_msNeed=false;}else _msTokX[key]=TT;try{upStat();}catch(e){}return r.accessToken;}
 var _msNeed=false;
 async function msConnect(){try{await msToken(true);await drvRedeem(true);showMsg('✓ Connected to OneDrive');try{upKick();drvSyncSoon();drvRelay();}catch(e){}}catch(e){if(e&&/user_cancelled|popup_window_error|cancel/i.test(String(e.errorCode||e.message)))return;alert('Could not connect to Microsoft: '+(e.message||e));}}
 // ---- Graph calls
-async function gf(path,opt){opt=opt||{};var t=await msToken(!!opt.interactive),h=Object.assign({Authorization:'Bearer '+t},opt.headers||{});
+async function gf(path,opt){opt=opt||{};var t=await msToken(!!opt.interactive,opt.scopes),h=Object.assign({Authorization:'Bearer '+t},opt.headers||{});
   var body=opt.body;if(body&&typeof body==='object'&&!(body instanceof Blob)&&!(body instanceof ArrayBuffer)){body=JSON.stringify(body);h['Content-Type']='application/json';}
   var r=await fetch(/^https:/.test(path)?path:GRAPH+path,{method:opt.method||'GET',headers:h,body:body});
   if(r.status===204)return null;if(opt.raw&&r.ok)return r;
@@ -11540,6 +11542,7 @@ function drvExt(d,name){if(name&&/\.[a-z0-9]{1,5}$/i.test(name))return '';var m=
 function drvBlob(d){var i=d.indexOf(','),meta=d.slice(5,i),b64=/;base64/.test(meta),s=d.slice(i+1),t=meta.split(';')[0]||'application/octet-stream';
   if(!b64)return new Blob([decodeURIComponent(s)],{type:t});var bin=atob(s),u=new Uint8Array(bin.length);for(var k=0;k<bin.length;k++)u[k]=bin.charCodeAt(k);return new Blob([u],{type:t});}
 function drvFileName(id,d,jid){var j=allJobs[jid]||{},dr=(j.drawings||[]).filter(function(x){return x.id===id;})[0];
+  if(!dr)((j.info&&j.info.mails)||[]).forEach(function(m){(m.files||[]).forEach(function(f){if(f.id===id)dr=f;});});
   var base=dr&&dr.name?drvSafe(dr.name.replace(/\.[^.]+$/,''))+(/\.[a-z0-9]{1,5}$/i.test(dr.name)?dr.name.match(/\.[a-z0-9]{1,5}$/i)[0]:''):(new Date().toISOString().slice(0,10)+' '+id);
   return base+drvExt(d,base);}
 async function drvPutFile(dId,parent,name,blob){
@@ -11680,6 +11683,61 @@ async function drvRelay(){var c=drvCfg();if(!c||_relayBusy||!navigator.onLine||!
   }catch(e){}finally{_relayBusy=false;}
   return moved;}
 setInterval(function(){try{if(drvCfg()&&drvWantsMs())drvRelay();}catch(e){}},120000);
+
+// ===== v490: client emails — the company admin picks emails from their own Outlook and adds them to the job; Jobs & Drafting people read them in CabLine =====
+var ML_SCOPES=['Mail.Read'];
+function mlCanPick(){try{return !!(SESSION.owner||isOrgAdm());}catch(e){return false;}}
+function mlCanSee(){try{return mlCanPick()||hasRole('jobs')||hasRole('drafting');}catch(e){return false;}}
+function mlList(j){var inf=j.info=j.info||{};return inf.mails=inf.mails||[];}
+var _mlOpen={};
+function mlRender(){var c=document.getElementById('ml-card');if(!c)return;var j=siJob();if(!j||!mlCanSee()){c.style.display='none';return;}c.style.display='';
+  var L=mlList(j).slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}),inf=j.info||{};
+  c.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;"><div><div class="card-title" style="margin-bottom:4px;">Client emails</div><div style="font-size:12px;color:#71717a;max-width:560px;">'+(mlCanPick()?'Only the emails you add here are shown to Jobs and Drafting. Everything else stays private in your Outlook.':'Emails with the client that were added for the team.')+'</div></div>'+
+    (mlCanPick()?'<button class="btn btn-blue btn-sm" onclick="mlFind()">Find emails with '+esc(inf.clientEmail||'the client')+'</button>':'')+'</div>'+
+    '<div style="margin-top:10px;">'+(L.length?L.map(function(m){var on=_mlOpen[m.mid];
+      return '<div style="border-top:1px solid #f0f0f2;padding:9px 0;"><div onclick="_mlOpen[\''+qe(m.mid)+'\']='+(!on)+';mlRender();" style="cursor:pointer;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;"><span style="font-size:12px;color:#71717a;min-width:92px;">'+esc(mlDate(m.date))+'</span><b style="font-size:13.5px;flex:1;min-width:160px;">'+esc(m.subj||'(no subject)')+'</b><span style="font-size:12px;color:#52525b;">'+esc(m.fromName||m.from||'')+(m.files&&m.files.length?' · '+m.files.length+' file'+(m.files.length>1?'s':''):'')+'</span></div>'+
+        (on?'<div style="white-space:pre-wrap;font-size:13px;line-height:1.55;background:#faf8f4;border-radius:8px;padding:10px 12px;margin-top:8px;max-height:420px;overflow:auto;">'+esc(m.body||'')+'</div>'+
+          (m.files&&m.files.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">'+m.files.map(function(f){return '<button class="btn btn-outline btn-sm" onclick="clOpenShared(\''+f.id+'\',\''+qe(f.name)+'\')">'+esc(f.name)+'</button>';}).join('')+'</div>':'')+
+          (mlCanPick()?'<div style="margin-top:8px;"><button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="mlRemove(\''+qe(m.mid)+'\')">Remove from job</button></div>':''):'')+'</div>';}).join(''):'<div style="font-size:13px;color:#a1a1aa;">No emails added yet.</div>')+'</div>';}
+function mlSecHTML(j){var L=((j.info&&j.info.mails)||[]).slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
+  return (L.length?L.map(function(m){return '<div class="jx-file"><span class="jx-fname" title="'+qe(m.subj||'')+'">'+esc(mlDate(m.date))+' · '+esc(m.subj||'(no subject)')+'</span><button class="jx-link" onclick="mlView(\''+j.id+'\',\''+qe(m.mid)+'\')">Read</button></div>';}).join(''):'<div class="jx-empty">No emails added yet.</div>')+
+    (mlCanPick()?'<div style="margin-top:6px;"><button class="jx-link" onclick="if(\''+j.id+'\'!==currentJobId)selectJob(\''+j.id+'\');mlFind()">+ Find emails with the client</button></div>':'');}
+function mlView(jid,mid){var j=allJobs[jid],m=j&&((j.info&&j.info.mails)||[]).filter(function(x){return x.mid===mid;})[0];if(!m)return;
+  var ov=document.getElementById('ml-ov');if(!ov){ov=document.createElement('div');ov.id='ml-ov';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(19,17,16,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(env(titlebar-area-height,0px) + 24px) 12px 24px;';ov.onclick=function(e){if(e.target===ov)ov.style.display='none';};document.body.appendChild(ov);}
+  ov.style.display='flex';ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:720px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);"><div style="display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid #eee;"><div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:15px;">'+esc(m.subj||'(no subject)')+'</div><div style="font-size:12px;color:#71717a;">'+esc(mlDate(m.date))+' · '+esc(m.fromName||m.from||'')+'</div></div><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'ml-ov\').style.display=\'none\'">Close</button></div>'+
+    '<div style="white-space:pre-wrap;font-size:13.5px;line-height:1.6;padding:14px 16px;">'+esc(m.body||'')+'</div>'+
+    (m.files&&m.files.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 16px;">'+m.files.map(function(f){return '<button class="btn btn-outline btn-sm" onclick="clOpenShared(\''+f.id+'\',\''+qe(f.name)+'\')">'+esc(f.name)+'</button>';}).join('')+'</div>':'')+'</div>';}
+function mlDate(d){try{return new Date(d).toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return d||'';}}
+var _mlRes=[];
+async function mlFind(){var j=siJob();if(!j)return;var inf=j.info||{},em=String(inf.clientEmail||'').trim();
+  if(!em){em=(prompt('Client email address:','')||'').trim();if(!em)return;inf.clientEmail=em;jhSave(j.id);}
+  var ov=document.getElementById('ml-ov');if(!ov){ov=document.createElement('div');ov.id='ml-ov';ov.setAttribute('data-raw-colour','');ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(19,17,16,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(env(titlebar-area-height,0px) + 24px) 12px 24px;';ov.onclick=function(e){if(e.target===ov)ov.style.display='none';};document.body.appendChild(ov);}
+  ov.style.display='flex';ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:720px;width:100%;padding:18px;">Looking in your Outlook…</div>';
+  try{var ems=em.split(/[;, ]+/).filter(Boolean),all={};
+    for(var i=0;i<ems.length;i++){var r=await gf('/me/messages?$search='+encodeURIComponent('"participants:'+ems[i]+'"')+'&$top=50&$select=id,subject,from,toRecipients,receivedDateTime,sentDateTime,bodyPreview,hasAttachments,webLink',{scopes:ML_SCOPES,interactive:true});
+      (r.value||[]).forEach(function(m){all[m.id]=m;});}
+    _mlRes=Object.keys(all).map(function(k){return all[k];}).sort(function(a,b){return String(b.receivedDateTime||b.sentDateTime).localeCompare(String(a.receivedDateTime||a.sentDateTime));});}
+  catch(e){ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:720px;width:100%;padding:18px;"><div style="color:#8f3224;">Could not read your Outlook: '+esc(e.message||e)+'</div><button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="document.getElementById(\'ml-ov\').style.display=\'none\'">Close</button></div>';return;}
+  mlFindShow();}
+function mlFindShow(){var j=siJob(),ov=document.getElementById('ml-ov');if(!j||!ov)return;var have={};mlList(j).forEach(function(m){have[m.mid]=1;});
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:720px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);"><div style="display:flex;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid #eee;position:sticky;top:0;background:#fff;border-radius:14px 14px 0 0;"><div style="flex:1;"><div style="font-weight:700;font-size:15px;">Emails with '+esc((j.info||{}).clientEmail||'')+'</div><div style="font-size:12px;color:#71717a;">From your Outlook — only what you add goes to the team.</div></div><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'ml-ov\').style.display=\'none\'">Done</button></div>'+
+    '<div style="padding:4px 16px 12px;">'+(_mlRes.length?_mlRes.map(function(m,i){var on=have[m.id],d=m.receivedDateTime||m.sentDateTime;
+      return '<div style="border-top:1px solid #f0f0f2;padding:10px 0;display:flex;gap:10px;align-items:flex-start;"><div style="flex:1;min-width:0;"><div style="font-size:12px;color:#71717a;">'+esc(mlDate(d))+' · '+esc((m.from&&m.from.emailAddress&&(m.from.emailAddress.name||m.from.emailAddress.address))||'')+(m.hasAttachments?' · has files':'')+'</div><div style="font-weight:600;font-size:13.5px;">'+esc(m.subject||'(no subject)')+'</div><div style="font-size:12.5px;color:#52525b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(m.bodyPreview||'')+'</div></div>'+
+        (on?'<span style="font-size:12px;color:#166534;font-weight:600;white-space:nowrap;padding-top:14px;">Added</span>':'<button class="btn btn-blue btn-sm" style="white-space:nowrap;margin-top:10px;" onclick="mlAdd('+i+',this)">Add to job</button>')+'</div>';}).join(''):'<div style="color:#a1a1aa;font-size:13px;padding:12px 0;">No emails found with this address.</div>')+'</div></div>';}
+async function mlAdd(i,btn){var j=siJob(),m=_mlRes[i];if(!j||!m)return;if(btn){btn.disabled=true;btn.textContent='Adding…';}
+  try{var full=await gf('/me/messages/'+encodeURIComponent(m.id)+'?$select=subject,body,from,toRecipients,ccRecipients,receivedDateTime,sentDateTime,webLink',{scopes:ML_SCOPES,headers:{Prefer:'outlook.body-content-type="text"'}});
+    var e={mid:m.id,subj:full.subject||'',from:(full.from&&full.from.emailAddress&&full.from.emailAddress.address)||'',fromName:(full.from&&full.from.emailAddress&&full.from.emailAddress.name)||'',
+      to:(full.toRecipients||[]).map(function(x){return x.emailAddress&&x.emailAddress.address;}).filter(Boolean),date:full.receivedDateTime||full.sentDateTime||'',
+      body:String((full.body&&full.body.content)||'').replace(/\r/g,'').replace(/\n{3,}/g,'\n\n').slice(0,30000),files:[],by:SESSION.name||'',at:Date.now()};
+    if(m.hasAttachments){var A=await gf('/me/messages/'+encodeURIComponent(m.id)+'/attachments',{scopes:ML_SCOPES});
+      (A.value||[]).filter(function(a){return a.contentBytes&&!a.isInline;}).forEach(function(a){var pid='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),d='data:'+(a.contentType||'application/octet-stream')+';base64,'+a.contentBytes;
+        _siCache[pid]=d;try{window.storage.set('cbkph:'+pid,d);}catch(x){}e.files.push({id:pid,name:a.name||'file',size:a.size||0});});}
+    var L=mlList(j);if(!L.some(function(x){return x.mid===e.mid;}))L.push(e);jhSave(j.id);
+    e.files.forEach(function(f){try{upEnqueue(f.id,j.id);}catch(x){}});
+    mlFindShow();mlRender();showMsg('✓ Added to the job'+(e.files.length?' — '+e.files.length+' file(s) go to the job folder':''));}
+  catch(er){if(btn){btn.disabled=false;btn.textContent='Add to job';}alert('Could not add the email: '+(er.message||er));}}
+function mlRemove(mid){var j=siJob();if(!j||!confirm('Remove this email from the job? (It stays in your Outlook.)'))return;var inf=j.info||{};inf.mails=(inf.mails||[]).filter(function(x){return x.mid!==mid;});jhSave(j.id);mlRender();}
+(function(){var _rc=window.renderClientInfo;if(typeof _rc==='function')window.renderClientInfo=renderClientInfo=function(){var r=_rc.apply(this,arguments);try{mlRender();}catch(e){}return r;};})();
 
 // v483 hooks: new job → its folder; renamed job → folder renamed; delete → ask about the folder
 (function(){
