@@ -1135,6 +1135,11 @@ html,body{overflow-x:hidden;}
   var L=document.getElementById('ro-led'),lb=L&&L.getBoundingClientRect();if(lb&&lb.width>40){t.style.width=Math.min(Math.round(lb.width),Math.round(window.innerWidth*.92))+'px';}}   // v456: the slogan line is exactly as long as the hidden LED strip under the cabinets
   window.addEventListener('resize',function(){setTimeout(fit,50);});
 window.addEventListener('resize',fit);document.addEventListener('DOMContentLoaded',fit);window.addEventListener('load',fit);try{document.fonts.ready.then(fit);}catch(e){}setTimeout(fit,600);})();</script>
+<style id="org-css">
+#org-ro-bar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:8000;background:#92400e;color:#fff;font-size:13px;padding:9px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+body.org-ro .content input:not([type=search]):not(.ro-ok),body.org-ro .content select,body.org-ro .content textarea{pointer-events:none;opacity:.75}
+body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-card,body.is-owner #mail-card{display:none!important}
+</style>
 <style id="brand-v421">
 /* v421: header in the app-icon colours — navy, white "Cab", yellow "Line" */
 .topbar{background:#0f172a!important;}
@@ -1377,7 +1382,7 @@ window.addEventListener('resize',fit);document.addEventListener('DOMContentLoade
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v473 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v474 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8511,7 +8516,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v473 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v474 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9770,7 +9775,9 @@ async function cloudStart(){
   cloudStop();
   try{var _r=await window.storage.get('cbk-cloudsig');cloud.sigH=(_r&&_r.value)?JSON.parse(_r.value):(cloud.sigH||{});}catch(e){cloud.sigH=cloud.sigH||{};}
   var first=true;
-  cloud.unsub=cloud.db.collection('jobs').onSnapshot(async function(snap){
+  if(!SESSION.org){_cstat(SESSION.owner?'☁ Owner':'☁ No company','#4b5563');return;}   // v474: the Owner has no jobs; everyone else sees only their company's
+  var _jq=cloud.db.collection('jobs');if(_jq.where)_jq=_jq.where('org','==',SESSION.org);
+  cloud.unsub=_jq.onSnapshot(async function(snap){
     var changedCur=false;
     for(var i=0;i<snap.docChanges().length;i++){
       var ch=snap.docChanges()[i],id=ch.doc.id;
@@ -9837,7 +9844,7 @@ async function cloudPushJob(id){
         var known=cloud.sig[id]||(base?JSON.stringify(base):null);if(rs!==known&&rs!==JSON.stringify(mine)){var remote=JSON.parse(rs);send=base?syncMerge(base,mine,remote):mergeJobs(mine,remote);mergedIn=true;}}
       out=JSON.stringify(send);var pk=await _pack(out);
       var sz=(pk.z||pk.json||'').length;if(sz>950000)throw {code:'too-big',size:sz};
-      pk.name=send.name||'';pk.updatedAt=firebase.firestore.FieldValue.serverTimestamp();pk.updatedBy=(window.SESSION&&SESSION.name)||'';
+      if(!SESSION.org)throw {code:'no-company'};pk.org=SESSION.org;pk.name=send.name||'';pk.updatedAt=firebase.firestore.FieldValue.serverTimestamp();pk.updatedBy=(window.SESSION&&SESSION.name)||'';
       t.set(ref,pk);});
     if(out){cloud.sig[id]=out;syncBaseSet(id,out);cloud.sigH=cloud.sigH||{};cloud.sigH[id]=_hs(out);sigSave();
       if(mergedIn){allJobs[id]=JSON.parse(out);try{window.storage.set('cbk-jobs-v1',JSON.stringify({allJobs:allJobs,currentJobId:currentJobId,managerPin:managerPin,notifyEmail:NOTIFY_EMAIL}));}catch(e){}if(id===currentJobId)cloudReloadCurrent();showMsg('☁ Merged with changes from another device');}}
@@ -10042,7 +10049,7 @@ function jhCard(j){
       return '<div class="jx-fg"><div class="jx-fg-h"><span>'+g[1]+(L.length?' <em>'+L.length+'</em>':'')+'</span><button class="jx-link" onclick="jhAddPlan(\''+id+'\',\''+g[0]+'\')">+ '+g[2]+'</button></div>'+
         (L.length?L.map(function(x){return '<div class="jx-file"><span class="jx-fname" title="'+qe(drName(x))+'">'+esc(drName(x))+'</span><button class="jx-link" onclick="drOpenAny(\''+x.id+'\')">Open</button></div>';}).join(''):'<div class="jx-empty">None yet</div>')+'</div>';}).join(''))+
     (qtCan()?jhSec(id,'quote','Quotation',qtSumm(j),qtSecHTML(j)):'')+
-    (hasRole('admin')?jhSec(id,'fin','Orders &amp; invoices',(j.drawings||[]).filter(function(x){return x.kind==='fin';}).length+' file(s)',(_jhFinOpen?jhFinHTML(j):jhFinLockHTML())):'')+
+    ((hasRole('admin')||hasRole('orgadmin'))?jhSec(id,'fin','Orders &amp; invoices',(j.drawings||[]).filter(function(x){return x.kind==='fin';}).length+' file(s)',(_jhFinOpen?jhFinHTML(j):jhFinLockHTML())):'')+
     '<div class="jx-foot"><button class="jx-btn jx-dark" onclick="jhOpen(\''+id+'\')">Open job</button><span class="jx-meta">'+(cn.n?(cn.n+' items'):'No cabinet list yet')+'</span></div>'+
   '</div>';}
 function renderJobsHome(){try{dfBadge();}catch(e){}
@@ -10301,7 +10308,7 @@ function clWatchAll(){if(!window.SESSION||!hasRole('designer'))return;Object.key
 setInterval(function(){try{clWatchAll();}catch(e){}},60000);
 async function clPublish(id){var j=allJobs[id];if(!j||!(window.cloud&&cloud.db&&cloud.user))return false;var ref=cloud.db.collection(CL_COL).doc(clToken(j));
   try{var d=await ref.get();if(d.exists&&clMerge(j,d.data())){if(id===currentJobId)saveData();else saveAllJobs();}}catch(e){}
-  await ref.set(clPayload(j),{merge:true});clWatch(id);return true;}
+  await ref.set(Object.assign(clPayload(j),{org:SESSION.org||''}),{merge:true});clWatch(id);return true;}
 function clPublishSoon(id){var j=id&&allJobs[id];if(!j||!(j.info&&j.info.clientToken))return;clearTimeout(_clPubT[id]);_clPubT[id]=setTimeout(function(){clPublish(id).catch(function(){});},2500);}
 async function clEnsure(){var j=siJob();if(!j){alert('Open a job first.');return null;}
   if(!(window.cloud&&cloud.db&&cloud.user)){alert('Cloud is not connected — the client link needs internet.');return null;}
@@ -10701,13 +10708,13 @@ function qtLocal(id,v){try{if(v===undefined){var t=localStorage.getItem('cbk-quo
 function qtData(j,make){var id=j.id,Q=QT_STORE[id];if(!Q){var I=j.info||{};if(I.quote&&typeof I.quote==='object')Q=I.quote;else Q=qtLocal(id);if(Q)QT_STORE[id]=Q;}
   if(!Q&&make){Q=QT_STORE[id]={versions:[qtNew(j)],cur:0};}return Q||null;}
 function qtPersist(id){var Q=QT_STORE[id],j=allJobs[id];if(!Q||!qtCan())return;Q.updatedAt=Date.now();qtLocal(id,Q);
-  try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('quotes').doc(id).set(JSON.parse(JSON.stringify(Q))).catch(function(e){console.warn('quote save',e);});}catch(e){}
+  try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org)cloud.db.collection('quotes').doc(id).set(Object.assign(JSON.parse(JSON.stringify(Q)),{org:SESSION.org})).catch(function(e){console.warn('quote save',e);});}catch(e){}
   if(j&&j.info&&j.info.quote){delete j.info.quote;try{jhSave(id);}catch(e){}}}   // never leave prices inside the job
 var _qtUnsub=null;
 function qtLoadAll(){if(!qtCan())return;
   // move any quote still kept inside a job into the locked store
   Object.keys(allJobs||{}).forEach(function(id){var j=allJobs[id];if(j&&j.info&&j.info.quote){QT_STORE[id]=QT_STORE[id]||j.info.quote;qtPersist(id);}});
-  try{if(window.cloud&&cloud.db&&cloud.user&&!_qtUnsub){_qtUnsub=cloud.db.collection('quotes').onSnapshot(function(sn){var ch=false;(sn.docs||[]).forEach(function(d){if(_qtJob===d.id)return;var v=d.data();if(v&&v.versions){QT_STORE[d.id]=v;qtLocal(d.id,v);ch=true;}});
+  try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org&&!_qtUnsub){var _qq=cloud.db.collection('quotes');if(_qq.where)_qq=_qq.where('org','==',SESSION.org);_qtUnsub=_qq.onSnapshot(function(sn){var ch=false;(sn.docs||[]).forEach(function(d){if(_qtJob===d.id)return;var v=d.data();if(v&&v.versions){QT_STORE[d.id]=v;qtLocal(d.id,v);ch=true;}});
       if(ch&&_currentView==='jobs'){try{renderJobsHome();}catch(e){}}},function(e){console.warn('quotes',e);});}}catch(e){}}
 function qtFix(q){if(!q)return q;if(/^(We reserve|\[Company name\])/.test(q.termsIntro||''))q.termsIntro=QT_DEF.termsIntro;
   q.terms=String(q.terms||'').replace('Once signed and deposit paid, we reserve the right to retain the deposit amount.','Once signed and deposit paid, Company Name reserves the right to retain the deposit amount.').replace(/^We do not refund any amounts paid\.$/m,'Company Name do not refund any amounts paid.').replace(/from the Manufacturing unit\.$/m,'from the Manufacturing unit, Address.');
@@ -10918,13 +10925,13 @@ function upIds(job){var out={};try{var s=JSON.stringify(job);var re=/\\?"(p[a-z0
 async function upScan(){await upLoad();var have={};_upQ.forEach(function(q){have[q.id]=1;});
   Object.keys(allJobs||{}).forEach(function(jid){upIds(allJobs[jid]).forEach(function(id){if(!_upOK[id]&&!have[id]&&!_upFail[id]){have[id]=1;_upQ.push({id:id,job:jid});}});});}
 async function upPut(id,d,job){var T=800000,col=cloud.db.collection('photos');
-  if(d.length<=T){await col.doc(id).set({d:d,job:job,at:firebase.firestore.FieldValue.serverTimestamp()});return;}
+  if(d.length<=T){await col.doc(id).set({d:d,job:job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()});return;}
   var n=Math.ceil(d.length/T);
   for(var i=_upProg[id]||0;i<n;i++){
-    await Promise.race([col.doc(id+'~'+i).set({d:d.slice(i*T,(i+1)*T),job:job}),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},45000);})]);
+    await Promise.race([col.doc(id+'~'+i).set({d:d.slice(i*T,(i+1)*T),job:job,org:SESSION.org||''}),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},45000);})]);
     _upProg[id]=i+1;_upMsg=' — big file '+(i+1)+'/'+n;upStat();}
   _upMsg='';
-  await col.doc(id).set({d:'',n:n,job:job,at:firebase.firestore.FieldValue.serverTimestamp()});}
+  await col.doc(id).set({d:'',n:n,job:job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()});}
 async function upKick(){
   await upLoad();if(Date.now()-_upScanT>30000){_upScanT=Date.now();await upScan();}
   if(_upBusy)return;
@@ -10992,6 +10999,7 @@ window.addEventListener('load',function(){setTimeout(cloudBoot,300);});
 body.role-limited button[onclick="newJob()"],body.role-limited #del-btn,body.role-limited button[onclick="saveProject()"],body.role-limited button[onclick="saveProjectAs()"],body.role-limited button[onclick="openProject()"]{display:none!important;}
 body.no-qc-edit #qc-modal-actions{display:none!important;}
 body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,body.no-settings .tab[onclick*="'users'"],body.no-settings #panel-users{display:none!important;}
+body.is-orgadm.no-settings .tab[onclick*="'users'"]{display:block!important;}body.is-orgadm.no-settings #panel-users.active{display:block!important;}
 #role-ov .rbtn{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:14px 16px;margin-bottom:10px;border:1.5px solid #d1d5db;border-radius:12px;background:#fff;font-size:15px;font-weight:700;color:#111827;cursor:pointer;text-align:left;}
 #role-ov .rbtn:hover{border-color:#2f4b8f;background:#edf2f9;}
 #role-ov .rbtn small{display:block;font-weight:600;font-size:11px;color:#4b5563;margin-top:2px;}
@@ -11078,22 +11086,22 @@ body.no-settings .tab[onclick*="'settings'"],body.no-settings #panel-settings,bo
 </div>
 <script>
 // ROLES (v207): choose who you are when the app opens. Each role only sees its own sections.
-var ROLE_VIEWS={quote:['jobs'],admin:['jobs','drafting','cabinetlist','tracker','dispatch','installation','maint','admin'],designer:['jobs','drafting','cabinetlist','maint'],qc:['tracker','dispatch'],dispatch:['dispatch','tracker'],installer:['installation','drawings','tracker','dispatch','maint']};
-var ROLE_HOME={admin:'jobs',designer:'jobs',qc:'tracker',dispatch:'dispatch',installer:'installation'};
-var ROLE_LABEL={admin:'Admin',designer:'Designer',qc:'QC Checker',dispatch:'Dispatch / Shipping',installer:'Installer'};
+var ROLE_VIEWS={quote:['jobs'],jobs:['jobs'],drafting:['drafting'],cabinets:['cabinetlist'],maint:['maint'],orgadmin:['admin'],admin:['jobs','drafting','cabinetlist','tracker','dispatch','installation','maint','admin'],designer:['jobs','drafting','cabinetlist','maint'],qc:['tracker','dispatch'],dispatch:['dispatch','tracker'],installer:['installation','drawings','tracker','dispatch','maint']};
+var ROLE_HOME={admin:'jobs',designer:'jobs',jobs:'jobs',drafting:'drafting',cabinets:'cabinetlist',maint:'maint',orgadmin:'admin',qc:'tracker',dispatch:'dispatch',installer:'installation'};
+var ROLE_LABEL={admin:'Owner',designer:'Designer',jobs:'Jobs',drafting:'Drafting',cabinets:'Cabinets & Hardware',maint:'Maintenance',orgadmin:'Company admin',qc:'QC Checker',dispatch:'Dispatch / Shipping',installer:'Installer'};
 var SESSION={role:'',name:'',roles:[]};
 // v393: a person can hold several sections; they get all of them at once (no "Enter as" question). Admin has everything.
 // v393: a person can have different sections on different jobs (SESSION.jobRoles = {jobId:[sections]}). The open job decides what they may do.
 function curRoles(){var R=(SESSION.roles&&SESSION.roles.length)?SESSION.roles:(SESSION.role?[SESSION.role]:[]);if(R.indexOf('admin')>-1)return R;
   var JR=SESSION.jobRoles;if(JR&&typeof currentJobId!=='undefined'&&currentJobId&&JR[currentJobId])return JR[currentJobId];return R;}
-function hasRole(x){var R=curRoles();return R.indexOf('admin')>-1||R.indexOf(x)>-1;}
+function hasRole(x){var R=curRoles();if(R.indexOf('admin')>-1||R.indexOf(x)>-1)return true;if(x==='designer')return ['jobs','drafting','cabinets','maint'].some(function(r){return R.indexOf(r)>-1;});return false;}   // v474: the section roles count as office (designer) work
 function jobViews(){var v=[];curRoles().forEach(function(r){(ROLE_VIEWS[r]||[]).forEach(function(x){if(v.indexOf(x)<0)v.push(x);});});return v;}
 function roleScanUI(){try{var b=document.body;b.classList.toggle('role-limited',!hasRole('designer'));b.classList.toggle('no-qc-edit',!hasRole('qc'));
   var qs=document.getElementById('qc-scan-box');var c1=qs&&qs.closest('.card');if(c1)c1.style.display=hasRole('qc')?'':'none';
   var ds=document.getElementById('disp-scan-box');var c2=ds&&ds.closest('.card');if(c2)c2.style.display=hasRole('dispatch')?'':'none';
   var dcl=document.querySelector('#view-dispatch button[onclick*="clearDispatchLog"]');if(dcl)dcl.style.display=hasRole('dispatch')?'':'none';}catch(e){}}
-var ROLE_ORDER=['admin','designer','installer','dispatch','qc'];
-function roleViews(){var R=(SESSION.roles&&SESSION.roles.length)?SESSION.roles:[SESSION.role],v=[];R.forEach(function(r){(ROLE_VIEWS[r]||[]).forEach(function(x){if(v.indexOf(x)<0)v.push(x);});});return v;}
+var ROLE_ORDER=['admin','designer','jobs','drafting','cabinets','installer','dispatch','qc','maint','orgadmin'];
+function roleViews(){if(window.SESSION&&SESSION.owner)return ['admin'];var R=(SESSION.roles&&SESSION.roles.length)?SESSION.roles:[SESSION.role],v=[];R.forEach(function(r){(ROLE_VIEWS[r]||[]).forEach(function(x){if(v.indexOf(x)<0)v.push(x);});});return v;}
 function _adminCode(){try{return localStorage.getItem('cbk-admin-code')||'1773';}catch(e){return '1773';}}
 /* removed unused _who */
 function roleInit(){
@@ -11144,7 +11152,7 @@ function applyRole(r,nm,em,roles){setTimeout(function(){try{qtLoadAll();}catch(e
   roles=(roles&&roles.length)?roles.slice():[r];
   r=ROLE_ORDER.filter(function(x){return roles.indexOf(x)>-1;})[0]||r;   // main section = where the app opens
   SESSION.role=r;SESSION.roles=roles;SESSION.name=nm;SESSION.email=em||'';if(roles.indexOf('admin')>-1||!em){SESSION.jobs='all';SESSION.jobRoles=null;}
-  var H=function(x){return roles.indexOf('admin')>-1||roles.indexOf(x)>-1;};
+  var H=function(x){return roles.indexOf('admin')>-1||roles.indexOf(x)>-1||(x==='designer'&&['jobs','drafting','cabinets','maint'].some(function(r){return roles.indexOf(r)>-1;}));};
   try{localStorage.setItem('cbk-user-name',nm);}catch(e){}
   roHideSplash();
   document.getElementById('role-code').value='';document.getElementById('role-admin-box').style.display='none';
@@ -11162,7 +11170,7 @@ function applyRole(r,nm,em,roles){setTimeout(function(){try{qtLoadAll();}catch(e
   var chip=document.getElementById('user-chip');
   if(!chip){chip=document.createElement('button');chip.id='user-chip';chip.className='tbtn';chip.onclick=function(){if(_cloudMode()){if(confirm('Sign out of CabLine on this device?'))rcSignOut();}else roleInit();};chip.style.fontWeight='700';
     var cb=document.getElementById('cloud-btn');cb.parentNode.insertBefore(chip,cb);}
-  chip.textContent='👤 '+nm+' · '+(H('admin')?ROLE_LABEL.admin:ROLE_ORDER.filter(function(x){return roles.indexOf(x)>-1;}).map(function(x){return ROLE_LABEL[x];}).join(' + '))+(_cloudMode()?' · Sign out':' ⇄');
+  chip.textContent='👤 '+nm+(SESSION.orgName?' · '+SESSION.orgName:'')+' · '+(H('admin')?ROLE_LABEL.admin:roles.indexOf('orgadmin')>-1?ROLE_LABEL.orgadmin:ROLE_ORDER.filter(function(x){return roles.indexOf(x)>-1;}).map(function(x){return ROLE_LABEL[x];}).join(' + '))+(_cloudMode()?' · Sign out':' ⇄');
   var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v393: renamed on the Jobs page only
   // v393: Admin / Designer pick and create jobs on the Designer › 🏠 Jobs page, so the top Jobs button + name box are hidden for them.
   // QC / Dispatch / Installer still use them, because they don't see the Jobs page.
@@ -11235,6 +11243,38 @@ function roForceSignOut(e){if(e){e.preventDefault();e.stopPropagation();}
 document.addEventListener('pointerdown',function(e){var ov=document.getElementById('role-ov');
   var ld=document.getElementById('ro-load');if(!ov||ov.style.display==='none'||!ov.classList.contains('ro-wait')||!ld||!ld.classList.contains('ro-slow')||window._sbOn)return;if(e.target&&e.target.id==='ro-out-link')return;roRetry();},true);
 var ADMIN_EMAIL='kiyanoosh.mahmoodi@gmail.com';
+// ===== v474: COMPANIES — the Owner (kiyanoosh.mahmoodi@gmail.com) creates companies and their admins; each company only ever sees its own data =====
+var ORG_SECTIONS=[['jobs','Jobs'],['drafting','Drafting'],['cabinets','Cabinets & Hardware'],['qcd','QC & Dispatch'],['installer','Installation'],['maint','Maintenance']];
+var _orgUnsub=null,ORG=null;
+function isOrgAdm(){try{return curRoles().indexOf('orgadmin')>-1;}catch(e){return false;}}
+// a device that changes company (or is used by the Owner) forgets what another company left in its local cache
+function orgCacheCheck(org){var last='';try{last=localStorage.getItem('cbk-org')||'';}catch(e){}
+  if(last!==org){try{allJobs={};currentJobId=null;units=[];window.storage.set('cbk-jobs-v1',JSON.stringify({allJobs:{},currentJobId:null,managerPin:managerPin,notifyEmail:NOTIFY_EMAIL}));}catch(e){}
+    try{QT_STORE={};Object.keys(localStorage).forEach(function(k){if(/^cbk-quote:|^cbk-base:/.test(k))localStorage.removeItem(k);});}catch(e){}
+    try{cloud.sig={};cloud.sigH={};window.storage.set('cbk-cloudsig','{}');}catch(e){}
+    setTimeout(function(){try{updateProjectCount();}catch(e){}try{refresh();}catch(e){}},0);}
+  try{localStorage.setItem('cbk-org',org);}catch(e){}}
+function orgRoles(u,O){var cap=ujExpand(O.sections||[]),mine=ujExpand((u.roles||[]).filter(function(r){return r!=='quote';})).filter(function(r){return cap.indexOf(r)>-1;});
+  if(u.orgAdmin)mine.push('orgadmin');if(O.quote&&(u.orgAdmin||(u.roles||[]).indexOf('quote')>-1))mine.push('quote');return mine;}
+function orgWatch(u,em,nm0){if(_orgUnsub&&ORG&&ORG._id===u.org){orgApply(u,em,nm0);return;}if(_orgUnsub){_orgUnsub();_orgUnsub=null;}
+  _orgUnsub=cloud.db.collection('orgs').doc(u.org).onSnapshot(function(d){if(!d.exists){rcErr('Your company is not set up in CabLine.');rcShow('rc-blocked');return;}ORG=d.data()||{};ORG._id=u.org;orgApply(_rcUser||u,em,nm0);},
+    function(e){rcErr('Cannot open your company: '+(e&&e.code||e));rcShow('rc-signin');});}
+function orgApply(u,em,nm0){var O=ORG;if(!O)return;
+  if(O.status==='deleting'||O.status==='deleted'){if(SESSION.role){rcSignOut();return;}rcErr('This company account is closed.');rcShow('rc-blocked');return;}
+  var roles=orgRoles(u,O),ro=O.status==='suspended';
+  if(!roles.length){rcErr('Your company admin has not given you a section yet.');document.getElementById('rc-pend-email').textContent=em;rcShow('rc-pending');return;}
+  var was=SESSION.role&&SESSION.email===em,same=was&&JSON.stringify(roles)===JSON.stringify(SESSION.roles||[])&&!!SESSION.ro===ro&&SESSION.orgName===(O.name||'');
+  if(same)return;
+  SESSION.org=u.org;SESSION.orgName=O.name||'';SESSION.ro=ro;SESSION.owner=false;orgCacheCheck(u.org);
+  rcErr('');applyRole(roles[0],u.name||nm0||em,em,roles);SESSION.jobs='all';SESSION.jobRoles=null;jobAccessApply();roleScanUI();orgRoApply();if(!was)rcBegin();}
+// a paused company can only look: no scans, uploads, imports, purchasing or other changes
+function orgRoApply(){try{document.body.classList.toggle('is-orgadm',isOrgAdm()&&!SESSION.owner);document.body.classList.toggle('is-owner',!!SESSION.owner);}catch(e){}var on=!!(window.SESSION&&SESSION.ro);document.body.classList.toggle('org-ro',on);var b=document.getElementById('org-ro-bar');
+  if(on&&!b){b=document.createElement('div');b.id='org-ro-bar';b.textContent='This company account is paused — view only. Contact the CabLine owner.';document.body.appendChild(b);}if(b)b.style.display=on?'':'none';}
+function orgRoBlock(){if(window.SESSION&&SESSION.ro){showMsg('🔒 View only — this company account is paused');return true;}return false;}
+(function(){['handleExcel','drUpload','doQcScan','doInstallScan','doDispatchScan','qcApprove','newJob','jhImport','usImportExcel','cloudPushJob','qtPersist','clPublish','saveAllJobs'].forEach(function(n){var f=window[n];if(typeof f!=='function')return;
+  window[n]=function(){if(window.SESSION&&SESSION.ro){if(n!=='cloudPushJob'&&n!=='saveAllJobs'&&n!=='clPublish')orgRoBlock();return Promise.resolve(false);}return f.apply(this,arguments);};});
+  var _sd=window.saveData;window.saveData=function(){if(window.SESSION&&SESSION.ro){try{saveCurrentJob();}catch(e){}return;}return _sd.apply(this,arguments);};})();
+
 function rcErr(t,ok){var er=document.getElementById('role-err');er.style.color=ok?'#276a4c':'#8f3224';er.textContent=t||'';}
 function rcAuthMsg(e){var c=(e&&e.code)||'';return /invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)?'Wrong email or password.':c==='auth/email-already-in-use'?'This email already has an account — sign in instead.':c==='auth/weak-password'?'The password must be at least 6 characters.':c==='auth/invalid-email'?'Please type a valid email.':c==='auth/too-many-requests'?'Too many tries. Wait a few minutes and try again.':c==='auth/network-request-failed'?'No internet connection.':c==='auth/operation-not-allowed'?'Email/Password sign-in is not turned on in Firebase yet.':((e&&e.message)||'Something went wrong.');}
 function rcStart(){
@@ -11265,13 +11305,14 @@ function rcBegin(){if(cloud.started)return;cloud.started=true;try{appSetLoad();}
 function rcWatch(em){
   if(_rcUnsub){_rcUnsub();_rcUnsub=null;}
   var nm0=(cloud.auth.currentUser&&cloud.auth.currentUser.displayName)||(function(){try{return localStorage.getItem('cbk-user-name')||'';}catch(e){return '';}})();
-  if(em===ADMIN_EMAIL){if(!SESSION.role){applyRole('admin',nm0||'Kiya',em,['admin']);}rcBegin();return;}
+  if(em===ADMIN_EMAIL){SESSION.owner=true;SESSION.org='';SESSION.orgName='';orgCacheCheck('__owner');if(!SESSION.role){applyRole('admin',nm0||'Kiya',em,['admin']);setTimeout(function(){try{switchView('admin');}catch(e){}},0);}try{orgRoApply();}catch(e){}rcBegin();return;}   // v474: the Owner runs the app, sees no company's data
   rcShow('rc-connecting');
   _rcUnsub=cloud.db.collection('users').doc(em).onSnapshot(function(d){
     if(!d.exists){cloud.db.collection('users').doc(em).set({email:em,name:nm0||em,roles:[],status:'pending',requestedAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(e){rcErr('Could not send the request: '+e.message);});return;}
     var u=d.data();_rcUser=u;
     if(u.status==='blocked'){if(SESSION.role){rcSignOut();return;}rcShow('rc-blocked');return;}
-    if(u.status!=='approved'){document.getElementById('rc-pend-email').textContent=em;rcShow('rc-pending');return;}
+    if(u.status!=='approved'||!u.org){document.getElementById('rc-pend-email').textContent=em;rcShow('rc-pending');return;}
+    orgWatch(u,em,nm0);return;   // v474: every person belongs to one company — sections, limits and pause come from the company
     var JR=ujNorm(u);
     if(SESSION.role&&SESSION.email===em){if(JSON.stringify(JR)!==JSON.stringify(SESSION.jobRoles||null)){SESSION.jobRoles=JR;jobAccessApply();roleScanUI();}return;}
     var roles=JR?ujUnion(JR):(u.roles||[]).filter(function(r){return ROLE_VIEWS[r];});
@@ -11292,8 +11333,70 @@ setInterval(_presence,30000);
 
 // ===== ADMIN: USERS PAGE =====
 var _userList=[],_usersUnsub=null;
+// ===== v474: OWNER CONSOLE (companies & their admins) and COMPANY TEAM page =====
+var _own={orgs:[],admins:[],u1:null,u2:null},_team={list:[],u:null};
+function orgEsc(s){return esc(s).replace(/"/g,'&quot;');}
+function orgSecBoxes(name,have,cap,dis){return ORG_SECTIONS.filter(function(x){return !cap||cap.indexOf(x[0])>-1;}).map(function(x){return '<label style="font-size:12.5px;display:inline-flex;gap:5px;align-items:center;margin:0 12px 6px 0;white-space:nowrap;"><input type="checkbox" data-n="'+name+'" value="'+x[0]+'"'+((have||[]).indexOf(x[0])>-1?' checked':'')+(dis?' disabled':'')+'> '+x[1]+'</label>';}).join('');}
+function orgPicked(root,name){return Array.prototype.slice.call(root.querySelectorAll('input[data-n="'+name+'"]:checked')).map(function(i){return i.value;});}
+function ownerOpen(box){if(!_own.u1){_own.u1=cloud.db.collection('orgs').onSnapshot(function(sn){_own.orgs=[];sn.forEach(function(d){var o=d.data();o._id=d.id;_own.orgs.push(o);});_own.orgs.sort(function(a,b){return String(a.name).localeCompare(b.name);});ownerRender();},function(e){box.innerHTML='<div style="color:#8f3224;padding:14px;">Cannot read companies: '+esc(e.code||e.message)+' — publish the new Firestore rules.</div>';});
+    var q=cloud.db.collection('users');if(q.where)q=q.where('orgAdmin','==',true);_own.u2=q.onSnapshot(function(sn){_own.admins=[];sn.forEach(function(d){var u=d.data();u._id=d.id;_own.admins.push(u);});ownerRender();},function(){});}
+  ownerRender();}
+function ownerRender(){var box=document.getElementById('users-list');if(!box||!SESSION.owner)return;
+  var cards=_own.orgs.filter(function(o){return o.status!=='deleting';}).map(function(o){var id=o._id,paused=o.status==='suspended',ad=_own.admins.filter(function(u){return u.org===id;});
+    return '<div class="card" data-org="'+id+'" style="border-left:4px solid '+(paused?'#d97706':'#16a34a')+';">'+
+      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><input data-k="name" value="'+orgEsc(o.name||'')+'" style="font-size:16px;font-weight:600;flex:1;min-width:200px;"><span style="font-size:12px;padding:3px 10px;border-radius:999px;background:'+(paused?'#fef3c7':'#dcfce7')+';color:'+(paused?'#92400e':'#166534')+';">'+(paused?'Paused — view only':'Active')+'</span></div>'+
+      '<div style="margin-top:12px;font-size:12px;font-weight:600;color:#52525b;letter-spacing:.04em;text-transform:uppercase;">Sections this company can use</div><div style="margin-top:6px;">'+orgSecBoxes('cap',o.sections||[])+'</div>'+
+      '<label style="font-size:12.5px;display:inline-flex;gap:6px;align-items:center;margin-top:4px;"><input type="checkbox" data-k="quote"'+(o.quote?' checked':'')+'> Quotation</label>'+
+      '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-blue btn-sm" onclick="ownerSaveOrg(\''+id+'\')">Save company</button><button class="btn btn-outline btn-sm" onclick="ownerPause(\''+id+'\','+(!paused)+')">'+(paused?'Resume':'Pause (view only)')+'</button><button class="btn btn-outline btn-sm" style="color:#991b1b;margin-left:auto;" onclick="ownerDeleteOrg(\''+id+'\')">Delete company…</button></div>'+
+      '<div style="margin-top:16px;font-size:12px;font-weight:600;color:#52525b;letter-spacing:.04em;text-transform:uppercase;">Admins</div>'+
+      (ad.length?ad.map(function(u){return '<div data-adm="'+orgEsc(u._id)+'" style="border-top:1px solid #f0f0f2;padding:8px 0;"><div style="font-size:13.5px;"><b>'+esc(u.name||'')+'</b> · '+esc(u._id)+(u.status==='blocked'?' · <span style="color:#991b1b;">blocked</span>':'')+'</div><div style="margin-top:5px;">'+orgSecBoxes('as',u.roles||[],o.sections||[])+'</div>'+
+        '<div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="ownerSaveAdmin(\''+id+'\',\''+orgEsc(u._id)+'\')">Save</button><button class="btn btn-outline btn-sm" onclick="ownerBlockAdmin(\''+orgEsc(u._id)+'\','+(u.status!=='blocked')+')">'+(u.status==='blocked'?'Unblock':'Block')+'</button><button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="ownerRemoveAdmin(\''+orgEsc(u._id)+'\')">Remove</button></div></div>';}).join(''):'<div style="font-size:13px;color:#a1a1aa;padding:6px 0;">No admin yet.</div>')+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><input data-k="ae" type="email" placeholder="Admin email" style="flex:2;min-width:180px;"><input data-k="an" placeholder="Name" style="flex:1;min-width:120px;"><button class="btn btn-blue btn-sm" onclick="ownerAddAdmin(\''+id+'\')">+ Add admin</button></div></div>';}).join('');
+  box.innerHTML='<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="flex:1;"><div style="font-size:18px;font-weight:600;">Companies</div><div style="font-size:12.5px;color:#71717a;">You run CabLine. Each company only sees its own jobs and people — you do not see any company\'s data.</div></div><button class="btn btn-blue" onclick="ownerNewOrg()">+ New company</button></div>'+(cards||'<div class="card" style="color:#a1a1aa;font-size:13px;">No companies yet.</div>');}
+function ownerCard(id){return document.querySelector('#users-list [data-org="'+id+'"]');}
+function ownerNewOrg(){var n=(prompt('Company name')||'').trim();if(!n)return;cloud.db.collection('orgs').add({name:n,status:'active',sections:ORG_SECTIONS.map(function(x){return x[0];}),quote:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){showMsg('✓ Company created');}).catch(function(e){alert('Could not create: '+e.message);});}
+function ownerSaveOrg(id){var c=ownerCard(id);if(!c)return;var cap=orgPicked(c,'cap');cloud.db.collection('orgs').doc(id).set({name:c.querySelector('[data-k=name]').value.trim()||'Company',sections:cap,quote:c.querySelector('[data-k=quote]').checked},{merge:true}).then(function(){showMsg('✓ Saved');}).catch(function(e){alert('Could not save: '+e.message);});
+  // an admin can never keep a section the company no longer has
+  _own.admins.filter(function(u){return u.org===id;}).forEach(function(u){var r=(u.roles||[]).filter(function(x){return cap.indexOf(x)>-1;});if(r.length!==(u.roles||[]).length)cloud.db.collection('users').doc(u._id).set({roles:r},{merge:true}).catch(function(){});});}
+function ownerPause(id,on){if(on&&!confirm('Pause this company? Its people can still sign in and look, but cannot scan, upload, import or change anything.'))return;cloud.db.collection('orgs').doc(id).set({status:on?'suspended':'active'},{merge:true}).catch(function(e){alert(e.message);});}
+function ownerAddAdmin(id){var c=ownerCard(id);if(!c)return;var em=_ukey(c.querySelector('[data-k=ae]').value),nm=c.querySelector('[data-k=an]').value.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){alert('Type a valid email.');return;}
+  if(em===ADMIN_EMAIL){alert('That is the Owner email.');return;}
+  var o=_own.orgs.filter(function(x){return x._id===id;})[0]||{};
+  cloud.db.collection('users').doc(em).set({email:em,name:nm||em,org:id,orgAdmin:true,roles:(o.sections||[]).slice(),status:'approved',addedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){showMsg('✓ Admin added — they sign up with this email');}).catch(function(e){alert('Could not add: '+e.message+(e.code==='permission-denied'?'\n\n(This email may already belong to someone in another company.)':''));});}
+function ownerSaveAdmin(id,em){var c=ownerCard(id);var row=c&&c.querySelector('[data-adm="'+em+'"]');if(!row)return;cloud.db.collection('users').doc(em).set({roles:orgPicked(row,'as')},{merge:true}).then(function(){showMsg('✓ Saved');}).catch(function(e){alert(e.message);});}
+function ownerBlockAdmin(em,on){cloud.db.collection('users').doc(em).set({status:on?'blocked':'approved'},{merge:true}).catch(function(e){alert(e.message);});}
+function ownerRemoveAdmin(em){if(!confirm('Remove admin '+em+'?'))return;cloud.db.collection('users').doc(em).delete().catch(function(e){alert(e.message);});}
+async function ownerDeleteOrg(id){var o=_own.orgs.filter(function(x){return x._id===id;})[0];if(!o)return;
+  var t=prompt('This permanently deletes '+o.name+' — all its jobs, quotes, client links, files and people. It cannot be undone.\n\nType the company name to confirm:');if(t==null)return;if(t.trim()!==String(o.name).trim()){alert('The name did not match — nothing was deleted.');return;}
+  showMsg('Deleting '+o.name+'…');
+  try{await cloud.db.collection('orgs').doc(id).set({status:'deleting'},{merge:true});
+    for(var c of ['jobs','quotes','client','photos','users']){var q=cloud.db.collection(c);if(q.where)q=q.where('org','==',id);var sn=await q.get();var L=[];sn.forEach(function(d){L.push(d.ref);});for(var r of L){await r.delete();}}
+    await cloud.db.collection('orgs').doc(id).delete();showMsg('✓ '+o.name+' deleted');}catch(e){alert('Delete stopped: '+e.message);}}
+// ---- company admin: the team of this company
+function teamOpen(box){if(!_team.u){var q=cloud.db.collection('users');if(q.where)q=q.where('org','==',SESSION.org);_team.u=q.onSnapshot(function(sn){_team.list=[];sn.forEach(function(d){var u=d.data();u._id=d.id;_team.list.push(u);});_team.list.sort(function(a,b){return (b.orgAdmin?1:0)-(a.orgAdmin?1:0)||String(a.name||a._id).localeCompare(String(b.name||b._id));});teamRender();},function(e){box.innerHTML='<div style="color:#8f3224;padding:14px;">Cannot read your team: '+esc(e.code||e.message)+'</div>';});}
+  teamRender();}
+function teamCap(){return ((ORG&&ORG.sections)||[]).slice();}
+function teamRender(){var box=document.getElementById('users-list');if(!box||!isOrgAdm())return;var cap=teamCap(),q=!!(ORG&&ORG.quote);
+  var row=function(u){var me=u._id===SESSION.email;
+    if(u.orgAdmin)return '<div style="border-top:1px solid #f0f0f2;padding:10px 0;font-size:13.5px;"><b>'+esc(u.name||'')+'</b> · '+esc(u._id)+' · <span style="color:#52525b;">Admin'+(me?' (you)':'')+'</span></div>';
+    return '<div data-mem="'+orgEsc(u._id)+'" style="border-top:1px solid #f0f0f2;padding:10px 0;"><div style="font-size:13.5px;"><b>'+esc(u.name||'')+'</b> · '+esc(u._id)+(u.status==='blocked'?' · <span style="color:#991b1b;">blocked</span>':'')+'</div>'+
+      '<div style="margin-top:6px;">'+orgSecBoxes('ms',u.roles||[],cap)+(q?'<label style="font-size:12.5px;display:inline-flex;gap:5px;align-items:center;margin:0 12px 6px 0;"><input type="checkbox" data-n="ms" value="quote"'+((u.roles||[]).indexOf('quote')>-1?' checked':'')+'> Quotation (prices)</label>':'')+'</div>'+
+      '<div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="teamSave(\''+orgEsc(u._id)+'\')">Save</button><button class="btn btn-outline btn-sm" onclick="teamBlock(\''+orgEsc(u._id)+'\','+(u.status!=='blocked')+')">'+(u.status==='blocked'?'Unblock':'Block')+'</button><button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="teamRemove(\''+orgEsc(u._id)+'\')">Remove</button></div></div>';};
+  box.innerHTML='<div class="card"><div style="font-size:18px;font-weight:600;">'+esc(SESSION.orgName||'Your company')+' — team</div><div style="font-size:12.5px;color:#71717a;margin-top:2px;">Add your people by their email and tick what they can use. They sign up with that email on the CabLine sign-in screen.</div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;" id="team-add"><input data-k="e" type="email" placeholder="Email" style="flex:2;min-width:180px;"><input data-k="n" placeholder="Name" style="flex:1;min-width:120px;"><button class="btn btn-blue btn-sm" onclick="teamAdd()">+ Add person</button></div>'+
+    '<div id="team-add-sec" style="margin-top:8px;">'+orgSecBoxes('ns',[],cap)+(q?'<label style="font-size:12.5px;display:inline-flex;gap:5px;align-items:center;"><input type="checkbox" data-n="ns" value="quote"> Quotation (prices)</label>':'')+'</div>'+
+    '<div style="margin-top:14px;">'+(_team.list.length?_team.list.map(row).join(''):'<div style="color:#a1a1aa;font-size:13px;">Nobody yet.</div>')+'</div></div>';}
+function teamAdd(){var a=document.getElementById('team-add'),em=_ukey(a.querySelector('[data-k=e]').value),nm=a.querySelector('[data-k=n]').value.trim(),r=orgPicked(document.getElementById('team-add-sec'),'ns');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){alert('Type a valid email.');return;}if(!r.length){alert('Tick at least one section.');return;}
+  cloud.db.collection('users').doc(em).set({email:em,name:nm||em,org:SESSION.org,orgAdmin:false,roles:r,status:'approved',addedBy:SESSION.email,addedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){showMsg('✓ Added — they can sign up with '+em);}).catch(function(e){alert('Could not add: '+e.message+(e.code==='permission-denied'?'\n\n(This email may already be used by another company.)':''));});}
+function teamSave(em){var row=document.querySelector('#users-list [data-mem="'+em+'"]');if(!row)return;cloud.db.collection('users').doc(em).set({roles:orgPicked(row,'ms')},{merge:true}).then(function(){showMsg('✓ Saved');}).catch(function(e){alert(e.message);});}
+function teamBlock(em,on){cloud.db.collection('users').doc(em).set({status:on?'blocked':'approved'},{merge:true}).catch(function(e){alert(e.message);});}
+function teamRemove(em){if(!confirm('Remove '+em+' from your company?'))return;cloud.db.collection('users').doc(em).delete().catch(function(e){alert(e.message);});}
 function usersOpen(){
   var box=document.getElementById('users-list');
+  try{var _org=window.SESSION&&(SESSION.owner||isOrgAdm());var _c=box.parentNode;_c.querySelector('.card-title').style.display=_c.querySelector('.card-sub').style.display=_org?'none':'';_c.style.cssText=_org?'background:transparent;border:0;box-shadow:none;padding:0;':'';}catch(e){}
+  if(cloud.db&&cloud.user&&window.SESSION&&SESSION.owner){ownerOpen(box);return;}   // v474
+  if(cloud.db&&cloud.user&&window.SESSION&&isOrgAdm()&&SESSION.org){teamOpen(box);return;}
   if(!cloud.db||!cloud.user){box.innerHTML='<div style="color:#9a6618;padding:14px;">Cloud is not connected yet. Finish the Firebase setup (☁ Set up), then come back here.</div>';return;}
   if(_usersUnsub){renderUsers();return;}
   _usersUnsub=cloud.db.collection('users').onSnapshot(function(snap){

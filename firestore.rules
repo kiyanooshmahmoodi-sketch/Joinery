@@ -1,6 +1,14 @@
 rules_version = '2';
-// CabLine — Firestore security rules (v469)
+// CabLine — Firestore security rules (v474: companies)
 // Paste this whole file into Firebase console › Firestore Database › Rules, then press Publish.
+//
+// Who is who:
+//   Owner  = kiyanoosh.mahmoodi@gmail.com — creates companies and their admins, pauses/deletes companies.
+//            The Owner can NOT read any company's jobs, quotes, client links or files.
+//   Company admin  = users/{email}.orgAdmin == true — manages the people of their own company only.
+//   Company member = users/{email}.org == company id, status 'approved'.
+// Every job / quote / client link / file carries `org`; people only ever reach their own company's.
+// A paused company (orgs/{id}.status == 'suspended') can read but not write.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -9,60 +17,123 @@ service cloud.firestore {
     function realUser() {
       return signedIn() && request.auth.token.email != null && request.auth.token.email_verified == true;
     }
-    function isAdmin() { return realUser() && myEmail() == 'kiyanoosh.mahmoodi@gmail.com'; }
-    function isStaff() {
-      return isAdmin() || (realUser()
-        && exists(/databases/$(database)/documents/users/$(myEmail()))
-        && get(/databases/$(database)/documents/users/$(myEmail())).data.status == 'approved');
+    function isOwner() { return realUser() && myEmail() == 'kiyanoosh.mahmoodi@gmail.com'; }
+
+    function meRef() { return /databases/$(database)/documents/users/$(myEmail()); }
+    function me() { return get(meRef()).data; }
+    function myOrg() { return me().get('org', ''); }
+    function orgOf(o) { return get(/databases/$(database)/documents/orgs/$(o)).data; }
+
+    // an approved person of a company that still exists
+    function isMember() {
+      return realUser() && exists(meRef()) && me().get('status', '') == 'approved'
+        && myOrg() != ''
+        && exists(/databases/$(database)/documents/orgs/$(myOrg()))
+        && orgOf(myOrg()).get('status', '') in ['active', 'suspended'];
+    }
+    function canWrite() { return isMember() && orgOf(myOrg()).get('status', '') == 'active'; }
+    function isOrgAdmin() { return isMember() && me().get('orgAdmin', false) == true; }
+    function inMyOrg(d) { return d.get('org', '') == myOrg(); }
+    function orgDeleting(o) {
+      return exists(/databases/$(database)/documents/orgs/$(o)) && orgOf(o).get('status', '') == 'deleting';
+    }
+    // sections a company admin may hand out: the company's sections (+ Quotation if the company has it)
+    function allowedRoles() {
+      return orgOf(myOrg()).get('sections', []).concat(orgOf(myOrg()).get('quote', false) ? ['quote'] : []);
     }
 
-    // Projects: only approved staff
+    // ---- Companies: only the Owner manages them; people read their own company
+    match /orgs/{o} {
+      allow get: if isOwner() || (isMember() && myOrg() == o);
+      allow list, create, update, delete: if isOwner();
+    }
+
+    // ---- Jobs (and the same for quotes, client links, files): own company only
     match /jobs/{id} {
-      allow read, write: if isStaff();
+      allow read: if (isMember() && (resource == null || inMyOrg(resource.data)))
+                  || (isOwner() && resource != null && orgDeleting(resource.data.get('org', '')));
+      allow create: if canWrite() && inMyOrg(request.resource.data);
+      allow update: if canWrite() && inMyOrg(resource.data) && inMyOrg(request.resource.data);
+      allow delete: if (canWrite() && inMyOrg(resource.data))
+                    || (isOwner() && orgDeleting(resource.data.get('org', '')));
     }
 
-    // Quotes (prices): only the admin and people the admin gave "Quotation"
+    // Quotes: only companies that have Quotation, and only their admins or people given Quotation
     function canQuote() {
-      return isAdmin() || (isStaff()
-        && get(/databases/$(database)/documents/users/$(myEmail())).data.get('roles', []).hasAny(['quote']));
+      return isMember() && orgOf(myOrg()).get('quote', false) == true
+        && (isOrgAdmin() || me().get('roles', []).hasAny(['quote']));
     }
     match /quotes/{id} {
-      allow read, write: if canQuote();
+      allow read: if (canQuote() && (resource == null || inMyOrg(resource.data)))
+                  || (isOwner() && resource != null && orgDeleting(resource.data.get('org', '')));
+      allow create, update: if canQuote() && canWrite() && inMyOrg(request.resource.data)
+                            && (resource == null || inMyOrg(resource.data));
+      allow delete: if (canQuote() && canWrite() && inMyOrg(resource.data))
+                    || (isOwner() && orgDeleting(resource.data.get('org', '')));
     }
 
-    // Shared settings (hardware names, colours, email setup)
+    // Shared app settings (hardware names, colours, email setup): everyone signed in reads, only the Owner changes
     match /settings/{id} {
-      allow read, write: if isStaff();
+      allow read: if isOwner() || isMember();
+      allow write: if isOwner();
     }
 
-    // People: everyone sees only their own record; only the admin sees everyone and approves
+    // ---- People
     match /users/{em} {
-      allow get: if isAdmin() || (realUser() && em == myEmail());
-      allow list: if isAdmin();
-      allow create: if isAdmin() || (realUser() && em == myEmail()
-        && request.resource.data.status == 'pending'
-        && request.resource.data.roles.size() == 0);
-      allow update: if isAdmin() || (realUser() && em == myEmail()
-        && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['lastSeen', 'lastRole', 'lastProject', 'projects', 'name']));
-      allow delete: if isAdmin();
+      allow get: if isOwner() || (realUser() && em == myEmail())
+                 || (isOrgAdmin() && inMyOrg(resource.data));
+      allow list: if (isOwner() && (resource.data.get('orgAdmin', false) == true || orgDeleting(resource.data.get('org', ''))))
+                  || (isOrgAdmin() && inMyOrg(resource.data));
+      allow create: if
+          // the Owner adds a company admin
+          (isOwner() && request.resource.data.get('orgAdmin', false) == true && request.resource.data.get('org', '') != '')
+          // a company admin adds a person to their own company, within the company's sections
+          || (isOrgAdmin() && inMyOrg(request.resource.data) && request.resource.data.get('orgAdmin', false) == false
+              && request.resource.data.get('roles', []).hasOnly(allowedRoles()))
+          // someone signs up by themselves: waits, belongs to no company until an admin adds their email
+          || (realUser() && em == myEmail() && request.resource.data.get('status', '') == 'pending'
+              && request.resource.data.get('roles', []).size() == 0
+              && request.resource.data.get('org', '') == '' && request.resource.data.get('orgAdmin', false) == false);
+      allow update: if
+          (isOwner() && resource.data.get('orgAdmin', false) == true && request.resource.data.get('orgAdmin', false) == true)
+          || (isOwner() && resource.data.get('org', '') == '' && request.resource.data.get('orgAdmin', false) == true)
+          || (isOrgAdmin() && inMyOrg(resource.data) && inMyOrg(request.resource.data)
+              && resource.data.get('orgAdmin', false) == false && request.resource.data.get('orgAdmin', false) == false
+              && request.resource.data.get('roles', []).hasOnly(allowedRoles()))
+          // a person who signed up by themselves can be added by a company admin
+          || (isOrgAdmin() && resource.data.get('org', '') == '' && inMyOrg(request.resource.data)
+              && request.resource.data.get('orgAdmin', false) == false
+              && request.resource.data.get('roles', []).hasOnly(allowedRoles()))
+          // everyone keeps their own "last seen" up to date
+          || (realUser() && em == myEmail()
+              && request.resource.data.diff(resource.data).affectedKeys()
+                   .hasOnly(['lastSeen', 'lastRole', 'lastProject', 'projects', 'name']));
+      allow delete: if (isOwner() && (resource.data.get('orgAdmin', false) == true || orgDeleting(resource.data.get('org', ''))))
+                    || (isOrgAdmin() && inMyOrg(resource.data) && resource.data.get('orgAdmin', false) == false);
     }
 
-    // Client links: the client can open only the page whose secret link they have
+    // ---- Client links: the client opens only the page whose secret link they have
     match /client/{token} {
       allow get: if signedIn();
-      allow list: if isStaff();
-      allow create, delete: if isStaff();
-      allow update: if isStaff() || (signedIn()
-        && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['ap', 'ss', 'signed', 'log', 'clientAt', 'notes', 'docs']));
+      allow list: if (isMember() && inMyOrg(resource.data))
+                  || (isOwner() && orgDeleting(resource.data.get('org', '')));
+      allow create: if canWrite() && inMyOrg(request.resource.data);
+      allow delete: if (canWrite() && inMyOrg(resource.data))
+                    || (isOwner() && orgDeleting(resource.data.get('org', '')));
+      allow update: if (canWrite() && inMyOrg(resource.data) && inMyOrg(request.resource.data))
+                    || (signedIn()
+                        && request.resource.data.diff(resource.data).affectedKeys()
+                             .hasOnly(['ap', 'ss', 'signed', 'log', 'clientAt', 'notes', 'docs']));
     }
 
-    // Files (photos, PDFs): opened by their id; only staff can list or delete
+    // ---- Files (photos, PDFs) until each company's own drive is connected
     match /photos/{id} {
       allow get: if signedIn();
-      allow list, delete: if isStaff();
-      allow create, update: if signedIn();
+      allow list: if (isMember() && inMyOrg(resource.data))
+                  || (isOwner() && orgDeleting(resource.data.get('org', '')));
+      allow create, update: if (canWrite() && inMyOrg(request.resource.data)) || (signedIn() && !isMember() && !isOwner() && request.resource.data.get('org', '') == '');
+      allow delete: if (canWrite() && inMyOrg(resource.data))
+                    || (isOwner() && orgDeleting(resource.data.get('org', '')));
     }
 
     // Anything else: closed

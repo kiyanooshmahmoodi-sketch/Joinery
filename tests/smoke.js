@@ -13,8 +13,13 @@ const FB=`(function(){const S=window.__DB=window.__DB||{users:{}};const L=[];let
   createUserWithEmailAndPassword:async(e,p)=>{if(accts[e])throw {code:'auth/email-already-in-use'};accts[e]={email:e,pw:p,v:false};save();cur=mkU(accts[e]);localStorage.setItem('__cur',e);fire();return {user:cur};},
   signOut:async()=>{cur=null;localStorage.removeItem('__cur');fire();},sendPasswordResetEmail:async()=>{},signInAnonymously:async()=>{}};
  const docs=()=>JSON.parse(localStorage.getItem('__db')||'{}');const put=(o)=>localStorage.setItem('__db',JSON.stringify(o));
- const db={enablePersistence:()=>Promise.resolve(),collection:c=>({onSnapshot:(f)=>{f({docChanges:()=>[],forEach(){},docs:[]});return ()=>{};},doc:i=>{const k=c+'/'+i;return {get:async()=>{const d=docs()[k];return {exists:!!d,data:()=>d};},set:async(v,o)=>{const D=docs();D[k]=Object.assign({},o&&o.merge?D[k]:{},JSON.parse(JSON.stringify(v)));put(D);},
-   onSnapshot:(f)=>{const t=()=>{const d=docs()[k];f({exists:!!d,data:()=>d});};t();const iv=setInterval(()=>{const j=JSON.stringify(docs()[k]||null);if(j!==this._l){this._l=j;t();}},300);return ()=>clearInterval(iv);}};}})};
+ const mkDoc=(k)=>({id:k.split('/')[1],get:async()=>{const d=docs()[k];return {exists:!!d,data:()=>d,id:k.split('/')[1]};},set:async(v,o)=>{const D=docs();D[k]=Object.assign({},o&&o.merge?D[k]:{},JSON.parse(JSON.stringify(v)));put(D);},delete:async()=>{const D=docs();delete D[k];put(D);},
+   onSnapshot:(f)=>{let l;const t=()=>{const d=docs()[k];f({exists:!!d,data:()=>d,id:k.split('/')[1]});};t();const iv=setInterval(()=>{const j=JSON.stringify(docs()[k]||null);if(j!==l){l=j;t();}},300);return ()=>clearInterval(iv);}});
+ const mkQ=(c,flt)=>{const rows=()=>Object.keys(docs()).filter(k=>k.startsWith(c+'/')&&k.split('/').length===2).map(k=>({k,d:docs()[k]})).filter(x=>flt.every(([f,v])=>(x.d||{})[f]===v));
+   const snap=()=>{const R=rows();const ds=R.map(x=>({id:x.k.split('/')[1],data:()=>x.d,ref:mkDoc(x.k),metadata:{}}));return {docs:ds,forEach:fn=>ds.forEach(fn),docChanges:()=>ds.map(d=>({type:'added',doc:d}))};};
+   return {where:(f,op,v)=>mkQ(c,flt.concat([[f,v]])),get:async()=>snap(),onSnapshot:(fn)=>{let l;const t=()=>{const j=JSON.stringify(rows());if(j!==l){l=j;fn(snap());}};t();const iv=setInterval(t,300);return ()=>clearInterval(iv);},
+     doc:i=>mkDoc(c+'/'+i),add:async v=>{const id='id'+Math.random().toString(36).slice(2,8);await mkDoc(c+'/'+id).set(v);return mkDoc(c+'/'+id);}};};
+ const db={enablePersistence:()=>Promise.resolve(),collection:c=>mkQ(c,[]),runTransaction:async fn=>{const t={get:r=>r.get(),set:(r,v)=>{t.w=[r,v];}};await fn(t);if(t.w)await t.w[0].set(t.w[1]);}};
  window.firebase={apps:[],initializeApp(){this.apps.push(1);},auth:Object.assign(()=>auth,{EmailAuthProvider:{credential:(e,pw)=>({e,pw})}}),firestore:Object.assign(()=>db,{FieldValue:{serverTimestamp:()=>1,arrayUnion:(...a)=>a}})};
  window.__setAcc=(e,patch)=>{Object.assign(accts[e],patch);save();};})();`;
 const DBMOCK=`window.__DB=window.__DB||{};window.mkdb=function(){const S=window.__DB;return {collection:c=>({doc:i=>{const k=c+'/'+i;return {get:async()=>({exists:!!S[k],data:()=>S[k]?JSON.parse(JSON.stringify(S[k])):undefined}),set:async(d,o)=>{S[k]=o&&o.merge?Object.assign({},S[k]||{},JSON.parse(JSON.stringify(d))):JSON.parse(JSON.stringify(d));},onSnapshot:f=>{setTimeout(()=>f({metadata:{},exists:!!S[k],data:()=>JSON.parse(JSON.stringify(S[k]||{}))}),30);return ()=>{};}};}}),runTransaction:async fn=>{const t={get:r=>r.get(),set:(r,v)=>{t.w=[r,v];}};await fn(t);if(t.w)await t.w[0].set(t.w[1]);}};};window.__fb={firestore:{FieldValue:{serverTimestamp:()=>1,arrayUnion:(...a)=>a}}};`;
@@ -40,7 +45,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('new account asks to confirm email',(await vis()).startsWith('rc-verify'));
   await p.evaluate(()=>__setAcc('sara@x.com',{v:true}));await p.evaluate(()=>rcVerified());await p.waitForTimeout(T*700);
   ok('confirmed account waits for approval',(await vis()).startsWith('rc-pending'));
-  await p.evaluate(()=>{const D=JSON.parse(localStorage.getItem('__db'));Object.assign(D['users/sara@x.com'],{status:'approved',roles:['designer']});localStorage.setItem('__db',JSON.stringify(D));});await p.waitForTimeout(T*900+12500);   // the opening drawing plays for ~11.5 s before the app shows
+  await p.evaluate(()=>{const D=JSON.parse(localStorage.getItem('__db'));Object.assign(D['users/sara@x.com'],{status:'approved',roles:['jobs','drafting','cabinets','maint'],org:'o1'});D['orgs/o1']={name:'N1 Group',status:'active',sections:['jobs','drafting','cabinets','qcd','installer','maint'],quote:true};localStorage.setItem('__db',JSON.stringify(D));});await p.waitForTimeout(T*900+12500);   // the opening drawing plays for ~11.5 s before the app shows
   ok('approved person gets in',(await vis()).endsWith('|none'));
   await p.evaluate(()=>rcSignOut());await p.waitForTimeout(T*1500);
   await p.evaluate(()=>{const a=JSON.parse(localStorage.getItem('__acc'));a['kiyanoosh.mahmoodi@gmail.com']={email:'kiyanoosh.mahmoodi@gmail.com',pw:'654321',v:true,name:'Kiya'};localStorage.setItem('__acc',JSON.stringify(a));});await p.reload();await p.waitForTimeout(T*1500);await p.evaluate(()=>{document.getElementById('rc-si-em').value='kiyanoosh.mahmoodi@gmail.com';document.getElementById('rc-si-pw').value='bad';rcSignIn();});await p.waitForTimeout(T*400);
@@ -66,7 +71,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
 // ---------- 4. syncing two devices
 {console.log('Sync');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*900);
   const r=await p.evaluate(async()=>{const S={};const doc=k=>({get:async()=>({exists:!!S[k],data:()=>JSON.parse(JSON.stringify(S[k]))}),set:async v=>{S[k]=JSON.parse(JSON.stringify(v));}});
-    cloud.db={collection:c=>({doc:i=>doc(c+'/'+i)}),runTransaction:async fn=>{const t={get:r=>r.get(),set:(r,v)=>{t.w=[r,v];}};await fn(t);if(t.w)await t.w[0].set(t.w[1]);}};cloud.user={uid:'x'};window.firebase={firestore:{FieldValue:{serverTimestamp:()=>1}}};
+    cloud.db={collection:c=>({doc:i=>doc(c+'/'+i)}),runTransaction:async fn=>{const t={get:r=>r.get(),set:(r,v)=>{t.w=[r,v];}};await fn(t);if(t.w)await t.w[0].set(t.w[1]);}};cloud.user={uid:'x'};SESSION.org='o1';window.firebase={firestore:{FieldValue:{serverTimestamp:()=>1}}};
     const base={id:'j1',name:'J',info:{client:'Ali',phone:'1'},units:[{id:1,w:600,qcLog:[]}],finishes:{clientBrief:[{id:'a',text:'x'}]}};const bs=JSON.stringify(base);
     S['jobs/j1']=await _pack(bs);cloud.sig.j1=bs;allJobs.j1=JSON.parse(bs);
     const R=JSON.parse(bs);R.units[0].qcLog.push({at:1});R.info.client='Ali Smith';R.finishes.clientBrief=[];S['jobs/j1']=await _pack(JSON.stringify(R));
@@ -169,4 +174,50 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('quote totals, GST, versions and hand-set price',r==='1500,150,1650,2,2,2200,1 Test St',r);
   const r2=await p.evaluate(()=>{applyRole('installer','Ali','',['installer']);const a=qtCan();applyRole('installer','Ali','',['installer','quote']);const b=qtCan();return [a,b].join(',');});
   ok('only the admin or people given Quotation can open quotes',r2==='false,true',r2);await p.close();}
+// ---------- 17. companies: Owner → company admin → member; isolation; pause
+{console.log('Companies');const ctx=await iso(await b.newContext({serviceWorkers:'block'}));
+  await ctx.route(SITE+'**',r=>{const u=new URL(r.request().url());r.fulfill({path:path.resolve(__dirname,'..'+u.pathname.replace('/Joinery','').replace(/\/$/,'/index.html'))});});
+  const p=await ctx.newPage();await p.route(/gstatic\.com\/firebasejs/,r=>r.fulfill({body:FB,contentType:'text/javascript'}));let ans='N1 Group';p.on('dialog',d=>d.accept(ans));
+  await p.addInitScript(()=>{try{sessionStorage.setItem('ro-retry','9');}catch(e){}});
+  await p.goto(SITE+'index.html');await p.waitForTimeout(T*1500);
+  const login=async(em,pw)=>{await p.evaluate(([em,pw])=>{document.getElementById('rc-si-em').value=em;document.getElementById('rc-si-pw').value=pw;rcSignIn();},[em,pw]);await p.waitForTimeout(T*1200);};
+  const signup=async(em)=>{await p.evaluate((em)=>{rcShow('rc-create');const v=(i,x)=>document.getElementById(i).value=x;v('rc-name',em.split('@')[0]);v('rc-email-in',em);v('rc-pw1','123456');v('rc-pw2','123456');rcCreate();},em);await p.waitForTimeout(T*600);
+    await p.evaluate((em)=>__setAcc(em,{v:true}),em);await p.evaluate(()=>rcVerified());await p.waitForTimeout(T*1500);};
+  const out=async()=>{await p.evaluate(()=>rcSignOut());await p.waitForTimeout(T*1500);};
+  // Owner
+  await p.evaluate(()=>{const a=JSON.parse(localStorage.getItem('__acc')||'{}');a['kiyanoosh.mahmoodi@gmail.com']={email:'kiyanoosh.mahmoodi@gmail.com',pw:'654321',v:true,name:'Kiya'};localStorage.setItem('__acc',JSON.stringify(a));});await p.reload();await p.waitForTimeout(T*1500);
+  await login('kiyanoosh.mahmoodi@gmail.com','654321');
+  const o1=await p.evaluate(()=>({owner:SESSION.owner,view:_currentView}));ok('Owner signs in and lands on Companies',o1.owner===true&&o1.view==='admin',JSON.stringify(o1));
+  await p.evaluate(()=>{showTab('users',document.querySelector('#view-admin .tab'));ownerNewOrg();});await p.waitForTimeout(T*900);
+  const oid=await p.evaluate(()=>{const D=JSON.parse(localStorage.getItem('__db'));return Object.keys(D).filter(k=>k.startsWith('orgs/'))[0].split('/')[1];});
+  await p.evaluate((oid)=>{const c=ownerCard(oid);c.querySelector('[data-k=ae]').value='kiya@n1group.com.au';c.querySelector('[data-k=an]').value='Kiya N1';ownerAddAdmin(oid);},oid);await p.waitForTimeout(T*800);
+  ok('Owner adds a company admin',await p.evaluate((oid)=>{const u=JSON.parse(localStorage.getItem('__db'))['users/kiya@n1group.com.au'];return !!u&&u.orgAdmin===true&&u.org===oid;},oid));
+  await out();
+  // company admin signs up with that email
+  await signup('kiya@n1group.com.au');
+  const a1=await p.evaluate(()=>({org:SESSION.org,adm:isOrgAdm(),owner:SESSION.owner,name:SESSION.orgName,admin:curRoles().indexOf('admin')}));
+  ok('company admin gets in to their company only',a1.adm&&!a1.owner&&a1.name==='N1 Group'&&a1.org===oid&&a1.admin===-1,JSON.stringify(a1));
+  await p.evaluate(()=>{switchView('admin');showTab('users',document.querySelector('#view-admin .tab'));});await p.waitForTimeout(T*600);
+  if(process.env.SHOT){await p.screenshot({path:process.env.SHOT+'/team.png'});}
+  await p.evaluate(()=>{const a=document.getElementById('team-add');a.querySelector('[data-k=e]').value='mark@n1group.com.au';a.querySelector('[data-k=n]').value='Mark';document.querySelector('#team-add-sec input[value=installer]').checked=true;teamAdd();});await p.waitForTimeout(T*800);
+  ok('company admin adds a person',await p.evaluate((oid)=>{const u=JSON.parse(localStorage.getItem('__db'))['users/mark@n1group.com.au'];return !!u&&u.org===oid&&u.orgAdmin===false&&u.roles.join()==='installer';},oid));
+  // a job saved by this company carries the company
+  const j=await p.evaluate(async()=>{allJobs.jx={id:'jx',name:'Test job',info:{},drawings:[],units:[]};await cloudPushJob('jx');return (JSON.parse(localStorage.getItem('__db'))['jobs/jx']||{}).org;});ok('jobs are stamped with the company',j===oid,j);
+  // a job of another company never comes down
+  await p.evaluate(async()=>{const D=JSON.parse(localStorage.getItem('__db'));const pk=await _pack(JSON.stringify({id:'zz',name:'Other company job',info:{},units:[]}));pk.org='other';D['jobs/zz']=pk;localStorage.setItem('__db',JSON.stringify(D));});
+  await out();
+  await signup('mark@n1group.com.au');
+  const m1=await p.evaluate(()=>({roles:curRoles(),views:roleViews(),org:SESSION.org,jobs:Object.keys(allJobs)}));
+  ok('person gets only the sections given',m1.roles.join()==='installer'&&m1.views.indexOf('admin')<0&&m1.views.indexOf('jobs')<0,JSON.stringify(m1));
+  ok('only this company\'s jobs are on the device',m1.jobs.indexOf('jx')>-1&&m1.jobs.indexOf('zz')<0,m1.jobs.join());
+  // the Owner pauses the company → view only
+  await p.evaluate((oid)=>{const D=JSON.parse(localStorage.getItem('__db'));D['orgs/'+oid].status='suspended';localStorage.setItem('__db',JSON.stringify(D));},oid);await p.waitForTimeout(T*1200);
+  const r1=await p.evaluate(async()=>{const before=JSON.stringify(JSON.parse(localStorage.getItem('__db'))['jobs/jx']);allJobs.jx.name='changed';await cloudPushJob('jx');const after=JSON.stringify(JSON.parse(localStorage.getItem('__db'))['jobs/jx']);return {ro:SESSION.ro,cls:document.body.classList.contains('org-ro'),same:before===after};});
+  ok('paused company is view only',r1.ro&&r1.cls&&r1.same,JSON.stringify(r1));
+  await out();
+  // the Owner's device keeps nothing from the company
+  await login('kiyanoosh.mahmoodi@gmail.com','654321');
+  if(process.env.SHOT){await p.evaluate(()=>{try{roHideSplash();}catch(e){}var _o=document.getElementById('role-ov');if(_o)_o.style.display='none';switchView('admin');showTab('users',document.querySelector('#view-admin .tab'));});await p.waitForTimeout(1500);await p.screenshot({path:process.env.SHOT+'/owner.png'});}
+  ok('Owner sees no company jobs',await p.evaluate(()=>Object.keys(allJobs).length===0&&SESSION.owner));
+  await ctx.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();
