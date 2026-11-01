@@ -1136,6 +1136,7 @@ html,body{overflow-x:hidden;}
   window.addEventListener('resize',function(){setTimeout(fit,50);});
 window.addEventListener('resize',fit);document.addEventListener('DOMContentLoaded',fit);window.addEventListener('load',fit);try{document.fonts.ready.then(fit);}catch(e){}setTimeout(fit,600);})();</script>
 <style id="org-css">
+#inv-mail a,#inv-mail img{opacity:1!important;filter:none!important;pointer-events:none}
 #org-ro-bar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:8000;background:#92400e;color:#fff;font-size:13px;padding:9px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
 body.org-ro .content input:not([type=search]):not(.ro-ok),body.org-ro .content select,body.org-ro .content textarea{pointer-events:none;opacity:.75}
 body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-card,body.is-owner #mail-card{display:none!important}
@@ -1382,7 +1383,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v477 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v478 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8516,7 +8517,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v477 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v478 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11359,15 +11360,26 @@ function ownerInviteText(co,nm,em){var first=String(nm||'').split(' ')[0]||'ther
     body:'Hi '+first+',\n\nYou have been set up as an admin of '+co+' on CabLine, our joinery project manager.\n\nTo get started:\n1. Open CabLine: '+APP_URL+'\n2. Tap "New here? Create an account" and sign up with this email: '+em+'\n3. Choose your password, then open the confirmation email and tap the link.\n4. Sign in. You will land in '+co+' as admin, ready to add your team.\n\nTip: in Chrome or Edge you can install CabLine as an app (Install icon in the address bar).\n\nKind regards,\nKiyanoosh Mahmoodi\nCabLine'};}
 function ownerInviteHTML(co,nm,em){var first=String(nm||'').split(' ')[0]||'there';return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f1e7;padding:24px 0;font-family:Segoe UI,Arial,sans-serif;"><tr><td align="center"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e7dfd0;"><tr><td style="background:#131110;"><img src="'+APP_URL+'email-header.png" width="600" alt="CabLine — From drawing to install" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr><tr><td style="padding:30px 36px 8px;color:#1c1a17;font-size:15px;line-height:1.6;"><p style="margin:0 0 14px;">Hi '+esc(first)+',</p><p style="margin:0 0 18px;">You have been set up as an <b>admin of '+esc(co)+'</b> on CabLine, our joinery project manager.</p><p style="margin:0 0 22px;text-align:center;"><a href="'+APP_URL+'" style="display:inline-block;background:#fbbf24;color:#131110;font-weight:700;text-decoration:none;padding:13px 30px;border-radius:8px;font-size:15px;">Open CabLine</a></p><p style="margin:0 0 8px;font-weight:700;">To get started</p><ol style="margin:0 0 18px;padding-left:20px;"><li style="margin-bottom:6px;">Tap <b>New here? Create an account</b> and sign up with this email: <b>'+esc(em)+'</b></li><li style="margin-bottom:6px;">Choose your password, then open the confirmation email and tap the link.</li><li>Sign in. You will land in '+esc(co)+' as admin, ready to add your team.</li></ol><p style="margin:0 0 22px;color:#6b645a;font-size:13px;">Tip: in Chrome or Edge you can install CabLine as an app (Install icon in the address bar).</p><p style="margin:0 0 12px;">Kind regards,<br><b>Kiyanoosh Mahmoodi</b></p><div style="height:14px;"></div></td></tr><tr><td style="background:#131110;color:#a59d90;font-size:11.5px;text-align:center;padding:14px;letter-spacing:.08em;">CABLINE · DESIGN BY KIYA</td></tr></table></td></tr></table>';}
 function ownerInvite(id,em){var o=(_own.orgs.filter(function(x){return x._id===id;})[0])||{},u=(_own.admins.filter(function(x){return x._id===em;})[0])||{};
-  var t=ownerInviteText(o.name||'your company',u.name||'',em),e=encodeURIComponent;
-  var url='https://mail.google.com/mail/?view=cm&fs=1&to='+e(em)+'&su='+e(t.subj)+'&body='+e(t.body)+'&authuser='+e(ADMIN_EMAIL);
-  // v477: copy the designed email (logo + button) so it can be pasted into Gmail; plain text stays as a fallback
-  var copied=false;try{var d=document.createElement('div');d.contentEditable='true';d.style.cssText='position:fixed;left:-9999px;top:0;width:640px;';d.innerHTML=ownerInviteHTML(o.name||'your company',u.name||'',em);document.body.appendChild(d);
-    var rg=document.createRange();rg.selectNodeContents(d);var sl=window.getSelection();sl.removeAllRanges();sl.addRange(rg);copied=document.execCommand('copy');sl.removeAllRanges();d.remove();}catch(x){}
-  if(copied)url='https://mail.google.com/mail/?view=cm&fs=1&to='+e(em)+'&su='+e(t.subj)+'&authuser='+e(ADMIN_EMAIL);
+  // v478: show the ready email (logo, button, company & admin filled in) — Copy it, open Gmail, paste, Send
+  var co=o.name||'your company',t=ownerInviteText(co,u.name||'',em);_inv={em:em,subj:t.subj,body:t.body};
+  var ov=document.getElementById('inv-ov');if(!ov){ov=document.createElement('div');ov.id='inv-ov';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(19,17,16,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px;';ov.onclick=function(ev){if(ev.target===ov)invClose();};document.body.appendChild(ov);}
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:700px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);">'+
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid #eee;position:sticky;top:0;background:#fff;border-radius:14px 14px 0 0;">'+
+      '<div style="flex:1;min-width:200px;"><div style="font-weight:700;font-size:15px;">Invite email to '+esc(em)+'</div><div style="font-size:12px;color:#71717a;">Subject: '+esc(t.subj)+'</div></div>'+
+      '<button class="btn btn-blue btn-sm" id="inv-copy" onclick="invCopy()">📋 Copy email</button><button class="btn btn-outline btn-sm" id="inv-gmail" onclick="invGmail()">✉ Open Gmail</button><button class="btn btn-outline btn-sm" onclick="invClose()">✕</button></div>'+
+    '<div style="padding:10px 16px 0;font-size:12.5px;color:#52525b;">1. Copy email  →  2. Open Gmail  →  3. click in the message, Ctrl+V, Send</div>'+
+    '<div id="inv-mail" style="padding:6px 0 10px;">'+ownerInviteHTML(co,u.name||'',em)+'</div></div>';
+  ov.style.display='flex';}
+var _inv=null;
+function invClose(){var ov=document.getElementById('inv-ov');if(ov)ov.style.display='none';}
+function invCopy(){var src=document.getElementById('inv-mail'),ok=false;if(!src)return;
+  try{var html=src.innerHTML;if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([_inv.body],{type:'text/plain'})})]).then(function(){invCopied();},function(){invCopyOld(src);});return;}}catch(x){}
+  invCopyOld(src);}
+function invCopyOld(src){var ok=false;try{var rg=document.createRange();rg.selectNodeContents(src);var sl=window.getSelection();sl.removeAllRanges();sl.addRange(rg);ok=document.execCommand('copy');sl.removeAllRanges();}catch(x){}if(ok)invCopied();else alert('Could not copy — select the email with the mouse and press Ctrl+C.');}
+function invCopied(){var b=document.getElementById('inv-copy');if(b)b.textContent='✓ Copied';showMsg('✓ Email copied — now Open Gmail and press Ctrl+V in the message');}
+function invGmail(){if(!_inv)return;var e=encodeURIComponent,url='https://mail.google.com/mail/?view=cm&fs=1&to='+e(_inv.em)+'&su='+e(_inv.subj)+'&authuser='+e(ADMIN_EMAIL);
   var w=null;try{w=window.open(url,'_blank');}catch(x){}if(!w)location.href=url;
-  if(copied)showMsg('✉ Invite copied — in Gmail click in the message area, press Ctrl+V, then Send');
-  cloud.db.collection('users').doc(em).set({invitedAt:Date.now()},{merge:true}).catch(function(){});}
+  cloud.db.collection('users').doc(_inv.em).set({invitedAt:Date.now()},{merge:true}).catch(function(){});}
 function ownerCard(id){return document.querySelector('#users-list [data-org="'+id+'"]');}
 function ownerNewOrg(){var n=(prompt('Company name')||'').trim();if(!n)return;cloud.db.collection('orgs').add({name:n,status:'active',sections:ORG_SECTIONS.map(function(x){return x[0];}),quote:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){showMsg('✓ Company created');}).catch(function(e){alert('Could not create: '+e.message);});}
 function ownerSaveOrg(id){var c=ownerCard(id);if(!c)return;var cap=orgPicked(c,'cap');cloud.db.collection('orgs').doc(id).set({name:c.querySelector('[data-k=name]').value.trim()||'Company',sections:cap,quote:c.querySelector('[data-k=quote]').checked},{merge:true}).then(function(){showMsg('✓ Saved');}).catch(function(e){alert('Could not save: '+e.message);});
