@@ -1137,6 +1137,10 @@ html,body{overflow-x:hidden;}
   window.addEventListener('resize',function(){setTimeout(fit,50);});
 window.addEventListener('resize',fit);document.addEventListener('DOMContentLoaded',fit);window.addEventListener('load',fit);try{document.fonts.ready.then(fit);}catch(e){}setTimeout(fit,600);})();</script>
 <style id="org-css">
+/* v487: in the installed app the title bar is a drag area — while a popup is open, clicks must reach the popup */
+#inv-ov,#inv-ov *,#drvpk-ov,#drvpk-ov *,#drvdel-ov,#drvdel-ov *,#inst-ov,#inst-ov *,#inst-bar,#inst-bar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}
+body:has(#inv-ov[style*="flex"]) .topbar,body:has(#inv-ov[style*="flex"]) .topbar *,body:has(#drvpk-ov[style*="flex"]) .topbar,body:has(#drvpk-ov[style*="flex"]) .topbar *,body:has(#drvdel-ov[style*="flex"]) .topbar,body:has(#drvdel-ov[style*="flex"]) .topbar *,body:has(#inst-ov) .topbar,body:has(#inst-ov) .topbar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}
+#inv-ov,#drvpk-ov{padding-top:calc(env(titlebar-area-height,0px) + 24px)!important}
 #inv-mail a,#inv-mail img{opacity:1!important;filter:none!important;pointer-events:none}
 #org-ro-bar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:8000;background:#92400e;color:#fff;font-size:13px;padding:9px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
 body.org-ro .content input:not([type=search]):not(.ro-ok),body.org-ro .content select,body.org-ro .content textarea{pointer-events:none;opacity:.75}
@@ -1384,7 +1388,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v486 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v487 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8519,7 +8523,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v486 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v487 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
