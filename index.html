@@ -1383,7 +1383,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v478 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v479 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8517,7 +8517,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v478 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v479 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11255,7 +11255,7 @@ function orgCacheCheck(org){var last='';try{last=localStorage.getItem('cbk-org')
     try{cloud.sig={};cloud.sigH={};window.storage.set('cbk-cloudsig','{}');}catch(e){}
     setTimeout(function(){try{updateProjectCount();}catch(e){}try{refresh();}catch(e){}},0);}
   try{localStorage.setItem('cbk-org',org);}catch(e){}}
-function orgRoles(u,O){var cap=ujExpand(O.sections||[]),mine=ujExpand((u.roles||[]).filter(function(r){return r!=='quote';})).filter(function(r){return cap.indexOf(r)>-1;});
+function orgRoles(u,O){var cap=ujExpand(O.sections||[]),mine=u.orgAdmin?cap.slice():ujExpand((u.roles||[]).filter(function(r){return r!=='quote';})).filter(function(r){return cap.indexOf(r)>-1;});   // v479: a company admin always has every section the company has
   if(u.orgAdmin)mine.push('orgadmin');if(O.quote&&(u.orgAdmin||(u.roles||[]).indexOf('quote')>-1))mine.push('quote');return mine;}
 function orgWatch(u,em,nm0){if(_orgUnsub&&ORG&&ORG._id===u.org){orgApply(u,em,nm0);return;}if(_orgUnsub){_orgUnsub();_orgUnsub=null;}
   _orgUnsub=cloud.db.collection('orgs').doc(u.org).onSnapshot(function(d){if(!d.exists){rcErr('Your company is not set up in CabLine.');rcShow('rc-blocked');return;}ORG=d.data()||{};ORG._id=u.org;orgApply(_rcUser||u,em,nm0);},
@@ -11350,8 +11350,8 @@ function ownerRender(){var box=document.getElementById('users-list');if(!box||!S
       '<label style="font-size:12.5px;display:inline-flex;gap:6px;align-items:center;margin-top:4px;"><input type="checkbox" data-k="quote"'+(o.quote?' checked':'')+'> Quotation</label>'+
       '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-blue btn-sm" onclick="ownerSaveOrg(\''+id+'\')">Save company</button><button class="btn btn-outline btn-sm" onclick="ownerPause(\''+id+'\','+(!paused)+')">'+(paused?'Resume':'Pause (view only)')+'</button><button class="btn btn-outline btn-sm" style="color:#991b1b;margin-left:auto;" onclick="ownerDeleteOrg(\''+id+'\')">Delete company…</button></div>'+
       '<div style="margin-top:16px;font-size:12px;font-weight:600;color:#52525b;letter-spacing:.04em;text-transform:uppercase;">Admins</div>'+
-      (ad.length?ad.map(function(u){return '<div data-adm="'+orgEsc(u._id)+'" style="border-top:1px solid #f0f0f2;padding:8px 0;"><div style="font-size:13.5px;"><b>'+esc(u.name||'')+'</b> · '+esc(u._id)+(u.status==='blocked'?' · <span style="color:#991b1b;">blocked</span>':'')+'</div><div style="margin-top:5px;">'+orgSecBoxes('as',u.roles||[],o.sections||[])+'</div>'+
-        '<div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="ownerSaveAdmin(\''+id+'\',\''+orgEsc(u._id)+'\')">Save</button><button class="btn btn-outline btn-sm" onclick="ownerBlockAdmin(\''+orgEsc(u._id)+'\','+(u.status!=='blocked')+')">'+(u.status==='blocked'?'Unblock':'Block')+'</button><button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="ownerRemoveAdmin(\''+orgEsc(u._id)+'\')">Remove</button><button class="btn btn-blue btn-sm" style="margin-left:auto;" onclick="ownerInvite(\''+id+'\',\''+orgEsc(u._id)+'\')">✉ Send invite</button>'+(u.invitedAt?'<span style="font-size:12px;color:#166534;align-self:center;">Invited '+esc(new Date(u.invitedAt).toLocaleDateString())+'</span>':'')+'</div></div>';}).join(''):'<div style="font-size:13px;color:#a1a1aa;padding:6px 0;">No admin yet.</div>')+
+      (ad.length?ad.map(function(u){return '<div data-adm="'+orgEsc(u._id)+'" style="border-top:1px solid #f0f0f2;padding:8px 0;"><div style="font-size:13.5px;"><b>'+esc(u.name||'')+'</b> · '+esc(u._id)+(u.status==='blocked'?' · <span style="color:#991b1b;">blocked</span>':'')+'</div><div style="font-size:12px;color:#71717a;margin:3px 0 6px;">Has everything this company can use</div>'+
+        '<div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="ownerBlockAdmin(\''+orgEsc(u._id)+'\','+(u.status!=='blocked')+')">'+(u.status==='blocked'?'Unblock':'Block')+'</button><button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="ownerRemoveAdmin(\''+orgEsc(u._id)+'\')">Remove</button><button class="btn btn-blue btn-sm" style="margin-left:auto;" onclick="ownerInvite(\''+id+'\',\''+orgEsc(u._id)+'\')">✉ Send invite</button>'+(u.invitedAt?'<span style="font-size:12px;color:#166534;align-self:center;">Invited '+esc(new Date(u.invitedAt).toLocaleDateString())+'</span>':'')+'</div></div>';}).join(''):'<div style="font-size:13px;color:#a1a1aa;padding:6px 0;">No admin yet.</div>')+
       '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><input data-k="ae" type="email" placeholder="Admin email" style="flex:2;min-width:180px;"><input data-k="an" placeholder="Name" style="flex:1;min-width:120px;"><button class="btn btn-blue btn-sm" onclick="ownerAddAdmin(\''+id+'\')">+ Add admin</button></div></div>';}).join('');
   box.innerHTML='<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="flex:1;"><div style="font-size:18px;font-weight:600;">Companies</div><div style="font-size:12.5px;color:#71717a;">You run CabLine. Each company only sees its own jobs and people — you do not see any company\'s data.</div></div><button class="btn btn-blue" onclick="ownerNewOrg()">+ New company</button></div>'+(cards||'<div class="card" style="color:#a1a1aa;font-size:13px;">No companies yet.</div>');}
 var APP_URL='https://kiyanooshmahmoodi-sketch.github.io/Joinery/';

@@ -199,6 +199,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   // company admin signs up with that email
   await signup('kiya@n1group.com.au');
   const a1=await p.evaluate(()=>({org:SESSION.org,adm:isOrgAdm(),owner:SESSION.owner,name:SESSION.orgName,admin:curRoles().indexOf('admin')}));
+  ok('company admin has every section the company has',await p.evaluate(()=>{const r=orgRoles({orgAdmin:true,roles:[]},{sections:['jobs','installer'],quote:true});return r.indexOf('jobs')>-1&&r.indexOf('installer')>-1&&r.indexOf('orgadmin')>-1&&r.indexOf('quote')>-1&&r.indexOf('qc')<0;}));
   ok('company admin gets in to their company only',a1.adm&&!a1.owner&&a1.name==='N1 Group'&&a1.org===oid&&a1.admin===-1,JSON.stringify(a1));
   await p.evaluate(()=>{switchView('admin');showTab('users',document.querySelector('#view-admin .tab'));});await p.waitForTimeout(T*600);
   if(process.env.SHOT){await p.screenshot({path:process.env.SHOT+'/team.png'});}
