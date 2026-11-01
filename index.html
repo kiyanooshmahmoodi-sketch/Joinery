@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-AU">
 <head>
+<script>(function(){try{var q=location.hash+location.search;if(window.opener&&window.opener!==window&&/(code|error)=/.test(q)&&/state=/.test(q)){window.__MSPOP=1;document.write('<p style="font:14px system-ui,sans-serif;padding:24px;color:#444">Signing in to Microsoft…</p>');window.stop();}}catch(e){}})();</script>
 <meta name="color-scheme" content="only light">
 <style>:root{color-scheme:only light;}</style>
 <script>window.__diag={errs:[],t0:Date.now()};addEventListener('error',function(e){try{__diag.errs.push((e.message||(e.target&&(e.target.src||e.target.href)&&('load failed: '+(e.target.src||e.target.href)))||'error').slice(0,160));}catch(_){}} ,true);addEventListener('unhandledrejection',function(e){try{__diag.errs.push(('promise: '+((e.reason&&(e.reason.code||e.reason.message))||e.reason)).slice(0,160));}catch(_){}});</script>
@@ -1383,7 +1384,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v482 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v483 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -2100,6 +2101,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
 </div>
 <div class="panel" id="panel-users">
   <div class="card" id="mail-card"></div>
+  <div class="card" id="drive-card" style="display:none;"></div>
   <div class="card">
     <div class="card-title">👥 Users</div>
     <div class="card-sub">People create their own account (email + password) on the sign-in screen and appear here as <b>Pending</b>. Tick their sections and press <b>Approve / Save</b>.</div>
@@ -7078,7 +7080,7 @@ async function siStorePhoto(data){
 async function siGetPhoto(id){
   if(_siCache[id])return _siCache[id];
   try{var r=await window.storage.get('cbkph:'+id);if(r&&r.value){_siCache[id]=r.value;return r.value;}}catch(e){}
-  try{if(window.cloud&&cloud.db){var d=await cloud.db.collection('photos').doc(id).get();if(d.exists){var dd=d.data(),v=dd.d;if(dd.n){var parts=await Promise.all(Array.from({length:dd.n},function(_,i){return cloud.db.collection('photos').doc(id+'~'+i).get();}));if(parts.some(function(x){return !x.exists;}))return '';v=parts.map(function(x){return x.data().d;}).join('');try{await window.storage.set('cbkph:'+id,v);}catch(e){}return v;}_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}}}catch(e){}
+  try{if(window.cloud&&cloud.db){var d=await cloud.db.collection('photos').doc(id).get();if(d.exists){var dd=d.data(),v=dd.d;if(dd.drv){try{v=await drvFetch(dd.drv);}catch(e){if(e&&e.code==='ms-login'){_msNeed=true;try{upStat();}catch(x){}}return '';}_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}if(dd.n){var parts=await Promise.all(Array.from({length:dd.n},function(_,i){return cloud.db.collection('photos').doc(id+'~'+i).get();}));if(parts.some(function(x){return !x.exists;}))return '';v=parts.map(function(x){return x.data().d;}).join('');try{await window.storage.set('cbkph:'+id,v);}catch(e){}return v;}_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}}}catch(e){}
   return '';}
 async function siPickPhotos(inp){
   var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';
@@ -8517,7 +8519,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v482 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v483 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9987,7 +9989,7 @@ function jhAddDoc(id){var sel=document.getElementById('jh-doct-'+id);var t=sel&&
   window._jhDocType=t;if(id!==currentJobId)selectJob(id);var f=document.getElementById('jh-file3');f.dataset.kind='fin';f.click();}
 function jhDelDoc(id,did){var j=allJobs[id];if(!j||!confirm('Delete this document for everyone?'))return;
   j.drawings=(j.drawings||[]).filter(function(x){return x.id!==did;});j.deleted=j.deleted||[];if(j.deleted.indexOf(did)<0)j.deleted.push(did);
-  try{window.storage.delete&&window.storage.delete('cbkph:'+did);}catch(e){}try{if(window.cloud&&cloud.db)cloud.db.collection('photos').doc(did).delete().catch(function(){});}catch(e){}
+  try{window.storage.delete&&window.storage.delete('cbkph:'+did);}catch(e){}upDelete(did);
   jhSave(id);renderJobsHome();showMsg('🗑 Document deleted');}
 function jhFinHTML(j){var id=j.id,L=(j.drawings||[]).filter(function(x){return x.kind==='fin';});
   return '<div class="jx-row"><select class="jx-in" id="jh-doct-'+id+'"><option value="">Document type…</option>'+JH_DOC_TYPES.map(function(t){return '<option value="'+t[0]+'">'+t[1].replace(/^\S+\s/,'')+'</option>';}).join('')+'</select>'+
@@ -10842,7 +10844,7 @@ async function drOpenAny(id){var j=siJob(),x=null;Object.values(allJobs||{}).som
 function drDelete(id){var j=siJob();if(!j||!confirm('Delete this drawing for everyone?'))return;
   j.drawings=(j.drawings||[]).filter(function(x){return x.id!==id;});tomb(id);siSave();
   try{window.storage.delete&&window.storage.delete('cbkph:'+id);}catch(e){}
-  try{if(window.cloud&&cloud.db)cloud.db.collection('photos').doc(id).delete().catch(function(){});}catch(e){}
+  upDelete(id);
   renderDrawings();}
 async function drOpen(id,name){
   var d=await siGetPhoto(id);
@@ -10912,13 +10914,16 @@ var _ris=renderInstallStats;renderInstallStats=function(){_ris.apply(this,argume
 var _upDone={},_upProg={},_upMsg='';
 function upNotify(){var k=Object.keys(_upDone);if(!k.length)return;var box=document.getElementById('up-toast');if(!box){box=document.createElement('div');box.id='up-toast';box.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:99999;max-width:92vw;display:flex;flex-direction:column;gap:6px;pointer-events:none;';document.body.appendChild(box);}
   k.forEach(function(n){var d=_upDone[n],parts=[];if(d.p)parts.push(d.p+' photo'+(d.p>1?'s':''));if(d.v)parts.push(d.v+' voice clip'+(d.v>1?'s':''));var t=document.createElement('div');t.style.cssText='background:#276a4c;color:#fff;font-weight:700;font-size:13px;padding:10px 14px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.3);';t.textContent='☁ Uploaded ✓  '+n+' — '+parts.join(' + ');box.appendChild(t);setTimeout(function(){t.remove();},9000);});_upDone={};}
-var _upQ=[],_upOK={},_upBusy=false,_upFail={},_upLoaded=false,_upScanT=0,_upToast=false;
+var _upWaitN=0,_upQ=[],_upOK={},_upBusy=false,_upFail={},_upLoaded=false,_upScanT=0,_upToast=false;
 async function upLoad(){if(_upLoaded)return;_upLoaded=true;
   try{var r=await window.storage.get('cbk-upq');if(r&&r.value)_upQ=JSON.parse(r.value)||[];}catch(e){}
   try{var r2=await window.storage.get('cbk-upok');if(r2&&r2.value)(JSON.parse(r2.value)||[]).forEach(function(i){_upOK[i]=1;});}catch(e){}}
 function upSave(){try{window.storage.set('cbk-upq',JSON.stringify(_upQ));window.storage.set('cbk-upok',JSON.stringify(Object.keys(_upOK)));}catch(e){}}
 function upStat(){var el=document.getElementById('up-stat');if(!el)return;var n=_upQ.length,f=Object.keys(_upFail).length;
   if(f){el.textContent='⚠ '+f+' file(s) too big to upload';el.style.color='#8f3224';el.title='These photos/voice clips could not be uploaded';return;}
+  if(n&&window.SESSION&&SESSION.role&&!window.CLIENT_MODE&&!drvCfg()){el.textContent='⏸ '+n+' file(s) kept on this device — the company admin must connect the drive';el.style.color='#9a6618';el.title='Files go to the company OneDrive. Ask your admin to connect it in Admin › Users.';el.onclick=null;el.style.cursor='';return;}
+  if(n&&_msNeed){el.textContent='🔑 Connect OneDrive to upload '+n+' file(s)';el.style.color='#1d4ed8';el.style.cursor='pointer';el.title='Sign in once with your company Microsoft account';el.onclick=function(){msConnect();};return;}
+  el.onclick=null;el.style.cursor='';
   if(n){el.textContent='📤 '+n+' photo/voice/file waiting to upload'+(navigator.onLine?'…':' (no internet)')+_upMsg;el.style.color='#9a6618';el.title='Saved on this device. They upload by themselves as soon as there is internet — keep the app open.';}
   else{el.textContent='✓ Photos & voice uploaded';el.style.color='#276a4c';el.title='Everything is uploaded — other people can see it';}}
 async function upEnqueue(id,job){await upLoad();if(!_upQ.some(function(q){return q.id===id;})){_upQ.push({id:id,job:job||''});upSave();}_upToast=true;upStat();upKick();}
@@ -10926,6 +10931,7 @@ function upIds(job){var out={};try{var s=JSON.stringify(job);var re=/\\?"(p[a-z0
 async function upScan(){await upLoad();var have={};_upQ.forEach(function(q){have[q.id]=1;});
   Object.keys(allJobs||{}).forEach(function(jid){upIds(allJobs[jid]).forEach(function(id){if(!_upOK[id]&&!have[id]&&!_upFail[id]){have[id]=1;_upQ.push({id:id,job:jid});}});});}
 async function upPut(id,d,job){var T=800000,col=cloud.db.collection('photos');
+  if(!window.CLIENT_MODE&&window.SESSION&&SESSION.role){if(drvCfg()){await drvUpload(id,d,job);return;}var en=new Error('no drive');en.code='drv-none';throw en;}   // v483: staff files go to the company drive
   if(d.length<=T){await col.doc(id).set({d:d,job:job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()});return;}
   var n=Math.ceil(d.length/T);
   for(var i=_upProg[id]||0;i<n;i++){
@@ -10945,11 +10951,14 @@ async function upKick(){
       if(!d){try{var r=await window.storage.get('cbkph:'+id);d=r&&r.value;}catch(e){}}
       if(!d){_upOK[id]=1;_upQ.shift();upSave();continue;}      // not stored on this device (already online elsewhere)
       try{
+        if(drvCfg()&&!window.CLIENT_MODE)await upPut(id,d,q.job||'');else
         if(d.length>800000)await upPut(id,d,q.job||'');else await Promise.race([upPut(id,d,q.job||''),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},25000);})]);delete _upProg[id];
         _upOK[id]=1;_upQ.shift();upSave();upStat();
         var jb=allJobs[q.job]||{},jn=jb.name||jb.projectName||jb.project||jb.title||'Project';var dd=_upDone[jn]=_upDone[jn]||{p:0,v:0};if(/^data:audio/.test(d))dd.v++;else dd.p++;
       }catch(e){
         if(e&&(e.code==='invalid-argument'||/exceeds|too large|size/i.test(e.message||''))){_upFail[id]=1;_upQ.shift();upSave();continue;}
+        if(e&&e.code==='drv-wait'){_upQ.push(_upQ.shift());upSave();if((_upWaitN=(_upWaitN||0)+1)>_upQ.length){_upWaitN=0;break;}continue;}   // v483: not inside a job yet — try again later
+        if(e&&e.code==='ms-login')_msNeed=true;
         break;}  // no internet / server busy — try again later
     }
   }finally{_upBusy=false;}
@@ -11271,7 +11280,7 @@ function orgRoles(u,O){var cap=ujExpand(O.sections||[]),mine=u.orgAdmin?cap.slic
 function orgWatch(u,em,nm0){if(_orgUnsub&&ORG&&ORG._id===u.org){orgApply(u,em,nm0);return;}if(_orgUnsub){_orgUnsub();_orgUnsub=null;}
   _orgUnsub=cloud.db.collection('orgs').doc(u.org).onSnapshot(function(d){if(!d.exists){rcErr('Your company is not set up in CabLine.');rcShow('rc-blocked');return;}ORG=d.data()||{};ORG._id=u.org;orgApply(_rcUser||u,em,nm0);},
     function(e){rcErr('Cannot open your company: '+(e&&e.code||e));rcShow('rc-signin');});}
-function orgApply(u,em,nm0){var O=ORG;if(!O)return;
+function orgApply(u,em,nm0){var O=ORG;if(!O)return;try{drvCardRender();if(drvCfg()&&SESSION.role){drvRedeem();drvSyncSoon();upKick();}else upStat();}catch(e){}
   if(O.status==='deleting'||O.status==='deleted'){if(SESSION.role){rcSignOut();return;}rcErr('This company account is closed.');rcShow('rc-blocked');return;}
   var roles=orgRoles(u,O),ro=O.status==='suspended';
   if(!roles.length){rcErr('Your company admin has not given you a section yet.');document.getElementById('rc-pend-email').textContent=em;rcShow('rc-pending');return;}
@@ -11334,7 +11343,7 @@ function rcBegin(){if(cloud.started)return;cloud.started=true;try{appSetLoad();}
 function rcWatch(em){
   if(_rcUnsub){_rcUnsub();_rcUnsub=null;}
   var nm0=(cloud.auth.currentUser&&cloud.auth.currentUser.displayName)||(function(){try{return localStorage.getItem('cbk-user-name')||'';}catch(e){return '';}})();
-  if(em===ADMIN_EMAIL){SESSION.owner=true;SESSION.org='__owner';SESSION.orgName='My workspace';SESSION.ro=false;ORG={name:'My workspace',status:'active',sections:ORG_SECTIONS.map(function(x){return x[0];}),quote:true};orgCacheCheck('__owner');if(!SESSION.role){applyRole('admin',nm0||'Kiya',em,['admin']);setTimeout(function(){try{switchView('admin');}catch(e){}},0);}try{orgRoApply();}catch(e){}rcBegin();return;}   // v474: the Owner runs the app, sees no company's data
+  if(em===ADMIN_EMAIL){SESSION.owner=true;SESSION.org='__owner';SESSION.orgName='My workspace';SESSION.ro=false;ORG={name:'My workspace',status:'active',sections:ORG_SECTIONS.map(function(x){return x[0];}),quote:true};orgCacheCheck('__owner');if(!SESSION.role){applyRole('admin',nm0||'Kiya',em,['admin']);setTimeout(function(){try{switchView('admin');}catch(e){}},0);}try{orgRoApply();}catch(e){}try{cloud.db.collection('settings').doc('ownerdrive').get().then(function(d){var x=d.exists&&d.data();ORG.drive=(x&&x.drive)||null;drvCardRender();if(drvCfg()){drvSyncSoon();upKick();}}).catch(function(){});}catch(e){}rcBegin();return;}   // v474: the Owner runs the app, sees no company's data
   rcShow('rc-connecting');
   _rcUnsub=cloud.db.collection('users').doc(em).onSnapshot(function(d){
     if(!d.exists){cloud.db.collection('users').doc(em).set({email:em,name:nm0||em,roles:[],status:'pending',requestedAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(e){rcErr('Could not send the request: '+e.message);});return;}
@@ -11434,6 +11443,172 @@ function invMail(app){if(!_inv)return;var e=encodeURIComponent,url=app==='outloo
   var w=null;try{w=window.open(url,'_blank');}catch(x){}if(!w)location.href=url;
   cloud.db.collection('users').doc(_inv.em).set({invitedAt:Date.now()},{merge:true}).catch(function(){});}
 function invGmail(){invMail('gmail');}
+// ===== v483: COMPANY DRIVE (OneDrive) — every job gets its own folder; files go to the company's drive, text stays on the server =====
+var MS_CLIENT_ID='9bcda083-035b-403e-ab96-e2a20741c80f',MS_SCOPES=['Files.ReadWrite.All','User.Read'],GRAPH='https://graph.microsoft.com/v1.0';
+var DRIVE_CATS=['Architectural Plans','3D & Design','CM Files','Shop Drawings','Production','Orders & Invoices','Quotes','Client Selections','QC Photos','Dispatch','Installation Drawings','Installation Photos','Site Issues & Notes','Maintenance'];
+function drvCatName(i){return (i<9?'0':'')+(i+1)+' - '+DRIVE_CATS[i];}
+// which folder a file belongs in — from where it sits inside the job
+function drvCatFor(path){var p=String(path||'').toLowerCase();
+  var R=[[/\bkind:arch\b/,0],[/\bkind:d3\b/,1],[/\bkind:cm\b/,2],[/\bkind:prod\b/,10],[/\bkind:fin\b/,7],[/maint/,13],[/quote/,6],[/order|invoice|purchas/,5],[/client|selection|sign/,7],[/issue|note|sketch|voice|doc/,12],[/qc/,8],[/disp|ship/,9],[/install|inst/,11],[/draft|shop/,3],[/production|excel|cut/,4]];
+  for(var i=0;i<R.length;i++)if(R[i][0].test(p))return R[i][1];return -1;}
+function drvFindPath(o,id,path,depth){if(depth>8||o==null)return null;
+  if(typeof o==='string')return (o===id||(o.length>id.length&&o.indexOf(id)>=0))?path:null;
+  if(Array.isArray(o)){for(var i=0;i<o.length;i++){var r=drvFindPath(o[i],id,path,depth+1);if(r!=null)return r;}return null;}
+  if(typeof o==='object'){var extra=(o.kind?' kind:'+o.kind:'');for(var k in o){if(k==='drv')continue;var r2=drvFindPath(o[k],id,path+' '+k+extra,depth+1);if(r2!=null)return r2;}}
+  return null;}
+function drvLocate(id,hint){var J=allJobs||{},order=[hint].concat(Object.keys(J).filter(function(k){return k!==hint;}));
+  for(var i=0;i<order.length;i++){var j=J[order[i]];if(!j)continue;var p=drvFindPath(j,id,'',0);if(p!=null)return {job:order[i],cat:drvCatFor(p)};}
+  return null;}
+function drvSafe(n){return String(n||'Job').replace(/[\\\/:*?"<>|#%\u0000-\u001f]/g,' ').replace(/\s+/g,' ').trim().replace(/[. ]+$/,'').slice(0,120)||'Job';}
+function drvJobName(j){return drvSafe(j&&(j.name||j.projectName||j.project||j.title)||'Job');}
+function drvCfg(){return (window.ORG&&ORG.drive&&ORG.drive.itemId)?ORG.drive:null;}
+function drvCanAdmin(){return !!(window.SESSION&&(SESSION.owner||isOrgAdm()));}
+// ---- Microsoft sign-in (MSAL, loaded only when needed)
+var _msal=null,_msalP=null;
+function msLoad(){if(window.msal)return Promise.resolve();if(_msalP)return _msalP;
+  _msalP=new Promise(function(res,rej){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.39.0/lib/msal-browser.min.js';s.onload=function(){res();};s.onerror=function(){_msalP=null;rej(new Error('Could not load Microsoft sign-in'));};document.head.appendChild(s);});return _msalP;}
+async function msApp(){await msLoad();if(_msal)return _msal;
+  var ru=/github\.io$/.test(location.hostname)?APP_URL:(location.origin+location.pathname);
+  _msal=new msal.PublicClientApplication({auth:{clientId:MS_CLIENT_ID,authority:'https://login.microsoftonline.com/common',redirectUri:ru,navigateToLoginRequestUrl:false},cache:{cacheLocation:'localStorage'}});
+  if(_msal.initialize)await _msal.initialize();return _msal;}
+function msAccount(app){var A=app.getAllAccounts()||[],em=(window.SESSION&&SESSION.email||'').toLowerCase();
+  var keep='';try{keep=localStorage.getItem('cbk-ms-acct')||'';}catch(e){}
+  return A.filter(function(a){return a.homeAccountId===keep;})[0]||A.filter(function(a){return String(a.username||'').toLowerCase()===em;})[0]||A[0]||null;}
+var _msTok=null;
+async function msToken(interactive){if(_msTok&&_msTok.exp>Date.now()+60000)return _msTok.t;
+  var app=await msApp(),acc=msAccount(app),r=null;
+  if(acc){try{r=await app.acquireTokenSilent({scopes:MS_SCOPES,account:acc});}catch(e){r=null;}}
+  if(!r){if(!interactive){var er=new Error('Microsoft sign-in needed');er.code='ms-login';throw er;}
+    r=await app.acquireTokenPopup({scopes:MS_SCOPES,loginHint:(window.SESSION&&SESSION.email)||undefined,prompt:'select_account'});}
+  try{if(r.account)localStorage.setItem('cbk-ms-acct',r.account.homeAccountId);}catch(e){}
+  _msTok={t:r.accessToken,exp:(r.expiresOn?new Date(r.expiresOn).getTime():Date.now()+3000000)};_msNeed=false;try{upStat();}catch(e){}return r.accessToken;}
+var _msNeed=false;
+async function msConnect(){try{await msToken(true);await drvRedeem(true);showMsg('✓ Connected to OneDrive');try{upKick();drvSyncSoon();}catch(e){}}catch(e){if(e&&/user_cancelled|popup_window_error|cancel/i.test(String(e.errorCode||e.message)))return;alert('Could not connect to Microsoft: '+(e.message||e));}}
+// ---- Graph calls
+async function gf(path,opt){opt=opt||{};var t=await msToken(!!opt.interactive),h=Object.assign({Authorization:'Bearer '+t},opt.headers||{});
+  var body=opt.body;if(body&&typeof body==='object'&&!(body instanceof Blob)&&!(body instanceof ArrayBuffer)){body=JSON.stringify(body);h['Content-Type']='application/json';}
+  var r=await fetch(/^https:/.test(path)?path:GRAPH+path,{method:opt.method||'GET',headers:h,body:body});
+  if(r.status===204)return null;if(opt.raw&&r.ok)return r;
+  var j=null;try{j=await r.json();}catch(e){}
+  if(!r.ok){var er=new Error((j&&j.error&&j.error.message)||('HTTP '+r.status));er.status=r.status;er.code=j&&j.error&&j.error.code;throw er;}
+  return j;}
+function drvItem(d,i){return '/drives/'+encodeURIComponent(d)+'/items/'+encodeURIComponent(i);}
+async function drvChild(d,parent,name){try{return await gf(drvItem(d,parent)+':/'+encodeURIComponent(name)+':');}catch(e){if(e.status===404)return null;throw e;}}
+async function drvMkdir(d,parent,name){name=drvSafe(name);
+  try{return await gf(drvItem(d,parent)+'/children',{method:'POST',body:{name:name,folder:{},'@microsoft.graph.conflictBehavior':'fail'}});}
+  catch(e){if(e.status===409||e.code==='nameAlreadyExists'){var x=await drvChild(d,parent,name);if(x)return x;}throw e;}}
+// people in the company open the shared folder once so it works for them too
+async function drvRedeem(force){var c=drvCfg();if(!c||!c.shareUrl)return;var k='cbk-ms-redeem:'+c.itemId;
+  try{if(!force&&localStorage.getItem(k))return;}catch(e){}
+  try{var enc='u!'+btoa(unescape(encodeURIComponent(c.shareUrl))).replace(/=+$/,'').replace(/\//g,'_').replace(/\+/g,'-');await gf('/shares/'+enc+'/driveItem',{headers:{Prefer:'redeemSharingLink'}});try{localStorage.setItem(k,'1');}catch(e){}}catch(e){}}
+// ---- job folders
+async function drvJobFolder(jid,create){var c=drvCfg(),j=allJobs[jid];if(!c||!j)return null;var inf=j.info=j.info||{};
+  if(inf.drv&&inf.drv.id&&inf.drv.root===c.itemId)return inf.drv;
+  if(!create||(window.SESSION&&SESSION.ro))return null;
+  var f=await drvMkdir(c.driveId,c.itemId,drvJobName(j));inf.drv={id:f.id,name:f.name,root:c.itemId};
+  try{jhSave(jid);}catch(e){}return inf.drv;}
+var _drvSyncT=0,_drvSyncing=false;
+function drvSyncSoon(){clearTimeout(_drvSyncT);_drvSyncT=setTimeout(drvSync,1500);}
+async function drvSync(){var c=drvCfg();if(!c||_drvSyncing||(window.SESSION&&SESSION.ro)||!navigator.onLine)return;_drvSyncing=true;
+  try{await msToken(false);
+    var ids=Object.keys(allJobs||{});
+    for(var i=0;i<ids.length;i++){var j=allJobs[ids[i]];if(!j||j.deletedAt)continue;var inf=j.info||{};
+      if(!(inf.drv&&inf.drv.id&&inf.drv.root===c.itemId)){await drvJobFolder(ids[i],true);continue;}
+      var want=drvJobName(j);if(inf.drv.name!==want){try{var r=await gf(drvItem(c.driveId,inf.drv.id),{method:'PATCH',body:{name:want}});inf.drv.name=r.name;jhSave(ids[i]);}catch(e){if(e.status===404){delete inf.drv;}else if(e.status===409){inf.drv.name=want;}}}}
+  }catch(e){if(e&&e.code==='ms-login'){_msNeed=true;try{upStat();}catch(x){}}}
+  finally{_drvSyncing=false;}}
+setInterval(function(){try{if(window.SESSION&&SESSION.role&&drvCfg())drvSync();}catch(e){}},90000);
+// ---- files
+function drvExt(d,name){if(name&&/\.[a-z0-9]{1,5}$/i.test(name))return '';var m=/^data:([^;,]+)/.exec(d)||[],t=m[1]||'';
+  return {'image/jpeg':'.jpg','image/png':'.png','image/webp':'.webp','application/pdf':'.pdf','audio/webm':'.webm','audio/mp4':'.m4a','audio/ogg':'.ogg','video/mp4':'.mp4'}[t]||(t.indexOf('/')>0?'.'+t.split('/')[1].split('+')[0]:'.bin');}
+function drvBlob(d){var i=d.indexOf(','),meta=d.slice(5,i),b64=/;base64/.test(meta),s=d.slice(i+1),t=meta.split(';')[0]||'application/octet-stream';
+  if(!b64)return new Blob([decodeURIComponent(s)],{type:t});var bin=atob(s),u=new Uint8Array(bin.length);for(var k=0;k<bin.length;k++)u[k]=bin.charCodeAt(k);return new Blob([u],{type:t});}
+function drvFileName(id,d,jid){var j=allJobs[jid]||{},dr=(j.drawings||[]).filter(function(x){return x.id===id;})[0];
+  var base=dr&&dr.name?drvSafe(dr.name.replace(/\.[^.]+$/,''))+(/\.[a-z0-9]{1,5}$/i.test(dr.name)?dr.name.match(/\.[a-z0-9]{1,5}$/i)[0]:''):(new Date().toISOString().slice(0,10)+' '+id);
+  return base+drvExt(d,base);}
+async function drvPutFile(dId,parent,name,blob){
+  if(blob.size<=3.5*1048576)return await gf(drvItem(dId,parent)+':/'+encodeURIComponent(name)+':/content?@microsoft.graph.conflictBehavior=rename',{method:'PUT',body:blob,headers:{'Content-Type':blob.type||'application/octet-stream'}});
+  var s=await gf(drvItem(dId,parent)+':/'+encodeURIComponent(name)+':/createUploadSession',{method:'POST',body:{item:{'@microsoft.graph.conflictBehavior':'rename'}}});
+  var C=10*327680,res=null;for(var o=0;o<blob.size;o+=C){var part=blob.slice(o,Math.min(o+C,blob.size));
+    var r=await fetch(s.uploadUrl,{method:'PUT',headers:{'Content-Range':'bytes '+o+'-'+(o+part.size-1)+'/'+blob.size},body:part});
+    if(!r.ok&&r.status!==202)throw new Error('upload '+r.status);if(r.status===200||r.status===201)res=await r.json();_upMsg=' — big file '+Math.round(100*(o+part.size)/blob.size)+'%';try{upStat();}catch(e){}}
+  _upMsg='';return res;}
+async function drvUpload(id,d,jobHint){var c=drvCfg();var loc=drvLocate(id,jobHint);
+  if(!loc){var e0=new Error('not placed yet');e0.code='drv-wait';throw e0;}
+  var jf=await drvJobFolder(loc.job,true);if(!jf){var e1=new Error('no job folder');e1.code='drv-wait';throw e1;}
+  var catName=loc.cat>=0?drvCatName(loc.cat):(DRIVE_CATS.length+1)+' - Other';
+  var cf=await drvMkdir(c.driveId,jf.id,catName);
+  var it=await drvPutFile(c.driveId,cf.id,drvFileName(id,d,loc.job),drvBlob(d));
+  await cloud.db.collection('photos').doc(id).set({drv:{d:c.driveId,i:it.id},name:it.name,size:it.size||0,job:loc.job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()});
+  return it;}
+async function drvFetch(drv){var r=await gf(drvItem(drv.d,drv.i)+'/content',{raw:true});var b=await r.blob();
+  return await new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.onerror=rej;fr.readAsDataURL(b);});}
+// delete a file everywhere (the drive copy goes to the drive's recycle bin)
+function upDelete(id){try{if(!(window.cloud&&cloud.db))return;var ref=cloud.db.collection('photos').doc(id);
+  ref.get().then(function(s){var x=s&&s.exists&&s.data();if(x&&x.drv){gf(drvItem(x.drv.d,x.drv.i),{method:'DELETE'}).catch(function(){});}ref.delete().catch(function(){});}).catch(function(){ref.delete().catch(function(){});});}catch(e){}}
+// ---- job delete: the job only, or the job and its folder
+function drvDeleteAsk(id,go){var j=allJobs[id],c=drvCfg(),f=j&&j.info&&j.info.drv;
+  if(!c||!f||!f.id){go();return;}
+  var ov=document.getElementById('drvdel-ov');if(!ov){ov=document.createElement('div');ov.id='drvdel-ov';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(19,17,16,.55);display:flex;align-items:center;justify-content:center;padding:16px;';document.body.appendChild(ov);}
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:440px;width:100%;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.3);">'+
+    '<div style="font-size:16px;font-weight:700;margin-bottom:6px;">Delete “'+esc(j.name||'Unnamed Job')+'”?</div>'+
+    '<div style="font-size:13px;color:#52525b;margin-bottom:14px;">The job, its cabinet list, scans and notes are removed for everyone. What about its folder in OneDrive (<b>'+esc(f.name||'')+'</b>)?</div>'+
+    '<button class="btn btn-blue" id="drvdel-keep" style="width:100%;margin-bottom:8px;">Delete the job only — keep the folder</button>'+
+    '<button class="btn btn-outline" id="drvdel-both" style="width:100%;margin-bottom:8px;color:#991b1b;">Delete the job and its folder</button>'+
+    '<button class="btn btn-outline" id="drvdel-no" style="width:100%;">Cancel</button>'+
+    '<div style="font-size:11.5px;color:#71717a;margin-top:10px;">A deleted folder goes to the OneDrive recycle bin and can be restored from there.</div></div>';
+  ov.style.display='flex';
+  var run=function(both){ov.style.display='none';var oc=window.confirm;window.confirm=function(){return true;};try{go();}finally{window.confirm=oc;}
+    if(both)gf(drvItem(c.driveId,f.id),{method:'DELETE'}).then(function(){showMsg('🗑 Job and folder deleted');}).catch(function(e){alert('The job was deleted, but the folder could not be: '+e.message);});};
+  document.getElementById('drvdel-keep').onclick=function(){run(false);};document.getElementById('drvdel-both').onclick=function(){run(true);};document.getElementById('drvdel-no').onclick=function(){ov.style.display='none';};}
+// ---- admin: connect the company drive and pick the main folder
+async function drvSaveCfg(cfg){if(SESSION.owner){ORG.drive=cfg;await cloud.db.collection('settings').doc('ownerdrive').set({drive:cfg||null});}
+  else{await cloud.db.collection('orgs').doc(SESSION.org).set({drive:cfg||null},{merge:true});ORG.drive=cfg;}
+  drvCardRender();drvSyncSoon();try{upKick();}catch(e){}}
+function drvCardRender(){var host=document.getElementById('drive-card');if(!host)return;if(!drvCanAdmin()){host.style.display='none';return;}host.style.display='';var c=drvCfg();
+  host.innerHTML='<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><div style="flex:1;min-width:220px;"><div style="font-size:16px;font-weight:600;">Company drive</div>'+
+    (c?'<div style="font-size:12.5px;color:#166534;margin-top:2px;">Connected · OneDrive · main folder <b>'+esc(c.path||c.name)+'</b>'+(c.shareUrl?' · shared with everyone in the company':'')+'</div><div style="font-size:12px;color:#71717a;">Every job gets its own folder here. Photos, voice, drawings and files go into it.</div>'
+       :'<div style="font-size:12.5px;color:#92400e;margin-top:2px;">Not connected — files stay on each device until you connect the drive.</div>')+'</div>'+
+    (c?'<button class="btn btn-outline btn-sm" onclick="drvPick()">Change folder</button><button class="btn btn-outline btn-sm" onclick="drvDisconnect()">Disconnect</button>'
+       :'<button class="btn btn-blue btn-sm" onclick="drvPick()">Connect OneDrive</button><button class="btn btn-outline btn-sm" disabled title="Coming next">Google Drive (soon)</button>')+'</div>';}
+function drvDisconnect(){if(!confirm('Disconnect the company drive? Files already in OneDrive stay there.'))return;drvSaveCfg(null).catch(function(e){alert(e.message);});}
+var _pk={src:'me',stack:[]};
+async function drvPick(){try{await msToken(true);}catch(e){if(!(e&&/cancel/i.test(String(e.errorCode||e.message))))alert('Could not sign in to Microsoft: '+(e.message||e));return;}
+  _pk={src:'me',stack:[]};drvPickShow();}
+async function drvPickShow(){var ov=document.getElementById('drvpk-ov');if(!ov){ov=document.createElement('div');ov.id='drvpk-ov';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(19,17,16,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px;';document.body.appendChild(ov);}
+  ov.style.display='flex';ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;padding:18px;">Loading folders…</div>';
+  var cur=_pk.stack[_pk.stack.length-1],items=[];
+  try{if(!cur){if(_pk.src==='shared'){var s=await gf('/me/drive/sharedWithMe');items=(s.value||[]).filter(function(x){return x.folder||(x.remoteItem&&x.remoteItem.folder);}).map(function(x){var r=x.remoteItem||x;return {d:(r.parentReference&&r.parentReference.driveId)||'',id:r.id,name:x.name||r.name};});}
+      else{var me=await gf('/me/drive/root');_pk.root={d:me.parentReference&&me.parentReference.driveId||'',id:me.id};var k=await gf('/me/drive/root/children?$top=200');items=(k.value||[]).filter(function(x){return x.folder;}).map(function(x){return {d:x.parentReference.driveId,id:x.id,name:x.name};});}}
+    else{var k2=await gf(drvItem(cur.d,cur.id)+'/children?$top=200');items=(k2.value||[]).filter(function(x){return x.folder;}).map(function(x){return {d:x.parentReference.driveId,id:x.id,name:x.name};});}}
+  catch(e){ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;padding:18px;"><div style="color:#8f3224;">Could not read OneDrive: '+esc(e.message)+'</div><button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="document.getElementById(\'drvpk-ov\').style.display=\'none\'">Close</button></div>';return;}
+  var crumbs=['<a href="#" onclick="_pk.stack=[];drvPickShow();return false;">'+(_pk.src==='shared'?'Shared with me':'My OneDrive')+'</a>'].concat(_pk.stack.map(function(x,i){return '<a href="#" onclick="_pk.stack=_pk.stack.slice(0,'+(i+1)+');drvPickShow();return false;">'+esc(x.name)+'</a>';})).join(' › ');
+  window._pkItems=items;
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);">'+
+    '<div style="padding:14px 16px;border-bottom:1px solid #eee;"><div style="font-weight:700;font-size:15px;">Choose the main CabLine folder</div><div style="font-size:12px;color:#71717a;">Every job gets its own folder inside it. Tap a folder to open it, then press Use.</div>'+
+      '<div style="display:flex;gap:6px;margin-top:10px;"><button class="btn btn-sm '+(_pk.src==='me'?'btn-blue':'btn-outline')+'" onclick="_pk={src:\'me\',stack:[]};drvPickShow();">My OneDrive</button><button class="btn btn-sm '+(_pk.src==='shared'?'btn-blue':'btn-outline')+'" onclick="_pk={src:\'shared\',stack:[]};drvPickShow();">Shared with me</button></div>'+
+      '<div style="font-size:12.5px;margin-top:10px;">'+crumbs+'</div></div>'+
+    '<div style="max-height:46vh;overflow:auto;padding:6px 8px;">'+(items.length?items.map(function(x,i){return '<div onclick="_pk.stack.push(_pkItems['+i+']);drvPickShow();" style="padding:9px 10px;border-radius:8px;cursor:pointer;display:flex;gap:8px;align-items:center;" onmouseover="this.style.background=\'#f4f4f5\'" onmouseout="this.style.background=\'\'">📁 '+esc(x.name)+'</div>';}).join(''):'<div style="color:#a1a1aa;font-size:13px;padding:10px;">No folders here.</div>')+'</div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid #eee;">'+
+      ((cur||_pk.src==='me')?'<button class="btn btn-outline btn-sm" onclick="drvPickNew()">+ New folder here</button>':'')+
+      '<button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="document.getElementById(\'drvpk-ov\').style.display=\'none\'">Cancel</button>'+
+      (cur?'<button class="btn btn-blue btn-sm" onclick="drvPickUse()">Use “'+esc(cur.name)+'”</button>':'')+'</div></div>';}
+async function drvPickNew(){var n=(prompt('New folder name','CabLine Jobs')||'').trim();if(!n)return;var cur=_pk.stack[_pk.stack.length-1]||_pk.root;if(!cur)return;
+  try{var f=await drvMkdir(cur.d,cur.id,n);_pk.stack.push({d:f.parentReference.driveId,id:f.id,name:f.name});drvPickShow();}catch(e){alert('Could not make the folder: '+e.message);}}
+async function drvPickUse(){var cur=_pk.stack[_pk.stack.length-1];if(!cur)return;var path=_pk.stack.map(function(x){return x.name;}).join(' / ');
+  var cfg={kind:'onedrive',driveId:cur.d,itemId:cur.id,name:cur.name,path:path,shareUrl:'',by:SESSION.email||'',at:Date.now()};
+  if(!SESSION.owner){try{var l=await gf(drvItem(cur.d,cur.id)+'/createLink',{method:'POST',body:{type:'edit',scope:'organization'}});cfg.shareUrl=(l&&l.link&&l.link.webUrl)||'';}catch(e){}}
+  try{await drvSaveCfg(cfg);document.getElementById('drvpk-ov').style.display='none';showMsg('✓ Company drive connected — making the job folders…');}catch(e){alert('Could not save: '+e.message);}}
+
+// v483 hooks: new job → its folder; renamed job → folder renamed; delete → ask about the folder
+(function(){
+  var _nj=window.newJob;if(typeof _nj==='function')window.newJob=newJob=function(){var r=_nj.apply(this,arguments);try{Promise.resolve(r).then(function(){if(drvCfg())drvSyncSoon();});}catch(e){}return r;};
+  var _sa=window.saveAllJobs;if(typeof _sa==='function')window.saveAllJobs=saveAllJobs=function(){var r=_sa.apply(this,arguments);try{if(drvCfg()&&!_drvSyncing)drvSyncSoon();}catch(e){}return r;};
+  var _dj=window.deleteJob,_jd=window.jhDelete,_asked=false;
+  if(typeof _dj==='function')window.deleteJob=deleteJob=function(){if(_asked)return _dj.apply(this,arguments);var id=currentJobId,a=arguments,t=this;if(!id)return;drvDeleteAsk(id,function(){_asked=true;try{_dj.apply(t,a);}finally{_asked=false;}});};
+  if(typeof _jd==='function')window.jhDelete=jhDelete=function(id){var a=arguments,t=this;if(!allJobs[id])return;drvDeleteAsk(id,function(){_asked=true;try{_jd.apply(t,a);}finally{_asked=false;}});};
+})();
+
 function ownerCard(id){return document.querySelector('#users-list [data-org="'+id+'"]');}
 function ownerNewOrg(){var n=(prompt('Company name')||'').trim();if(!n)return;cloud.db.collection('orgs').add({name:n,status:'active',sections:ORG_SECTIONS.map(function(x){return x[0];}),quote:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){showMsg('✓ Company created');}).catch(function(e){alert('Could not create: '+e.message);});}
 function ownerSaveOrg(id){var c=ownerCard(id);if(!c)return;var cap=orgPicked(c,'cap');cloud.db.collection('orgs').doc(id).set({name:c.querySelector('[data-k=name]').value.trim()||'Company',sections:cap,quote:c.querySelector('[data-k=quote]').checked},{merge:true}).then(function(){showMsg('✓ Saved');}).catch(function(e){alert('Could not save: '+e.message);});
@@ -11474,7 +11649,7 @@ function teamSave(em){var row=document.querySelector('#users-list [data-mem="'+e
 function teamBlock(em,on){cloud.db.collection('users').doc(em).set({status:on?'blocked':'approved'},{merge:true}).catch(function(e){alert(e.message);});}
 function teamRemove(em){if(!confirm('Remove '+em+' from your company?'))return;cloud.db.collection('users').doc(em).delete().catch(function(e){alert(e.message);});}
 function usersOpen(){
-  var box=document.getElementById('users-list');
+  var box=document.getElementById('users-list');try{drvCardRender();}catch(e){}
   try{var _org=window.SESSION&&(SESSION.owner||isOrgAdm());var _c=box.parentNode;_c.querySelector('.card-title').style.display=_c.querySelector('.card-sub').style.display=_org?'none':'';_c.style.cssText=_org?'background:transparent;border:0;box-shadow:none;padding:0;':'';}catch(e){}
   if(cloud.db&&cloud.user&&window.SESSION&&SESSION.owner){ownerOpen(box);return;}   // v474
   if(cloud.db&&cloud.user&&window.SESSION&&isOrgAdm()&&SESSION.org){teamOpen(box);return;}

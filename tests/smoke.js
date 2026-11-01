@@ -235,4 +235,53 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   const w=await p.evaluate(async()=>{const v=roleViews();allJobs.ow={id:'ow',name:'Owner test job',info:{},drawings:[],units:[]};await cloudPushJob('ow');return {v:v.length,org:(JSON.parse(localStorage.getItem('__db'))['jobs/ow']||{}).org,q:qtCan()};});
   ok('Owner has a full private workspace (all sections, own jobs)',w.v>=7&&w.org==='__owner'&&w.q,JSON.stringify(w));
   await ctx.close();}
+// ---------- 18. company drive (OneDrive): job folders, uploads into category folders, rename, delete with folder
+{console.log('Company drive');const ctx=await iso(await b.newContext({serviceWorkers:'block'}));
+  await ctx.route(SITE+'**',r=>{const u=new URL(r.request().url());r.fulfill({path:path.resolve(__dirname,'..'+u.pathname.replace('/Joinery','').replace(/\/$/,'/index.html'))});});
+  // a tiny OneDrive
+  const G={n:0,items:{root:{id:'root',name:'root',folder:{},parent:null}}};const mk=(name,parent,folder,content)=>{const id='it'+(++G.n);G.items[id]={id,name,parent,folder:folder?{}:undefined,content};return G.items[id];};
+  const kids=pid=>Object.values(G.items).filter(x=>x.parent===pid);const out=x=>({id:x.id,name:x.name,folder:x.folder,size:(x.content||'').length,parentReference:{driveId:'D1'}});
+  await ctx.route('https://graph.microsoft.com/**',async r=>{const req=r.request(),u=new URL(req.url()),pth=decodeURIComponent(u.pathname.replace('/v1.0',''));const m=req.method();const J=(o,st)=>r.fulfill({status:st||200,contentType:'application/json',body:JSON.stringify(o)});let mm;
+    if(pth==='/me/drive/root')return J(out(G.items.root));
+    if(pth==='/me/drive/root/children')return J({value:kids('root').map(out)});
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/:]+):\/(.+):\/content$/))&&m==='PUT'){const f=mk(mm[2],mm[1],false,req.postData()||'x');return J(out(f),201);}
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/:]+):\/(.+):$/))){const x=kids(mm[1]).find(k=>k.name===mm[2]);return x?J(out(x)):J({error:{code:'itemNotFound',message:'nf'}},404);}
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/children$/))){if(m==='POST'){const bd=JSON.parse(req.postData());if(kids(mm[1]).some(k=>k.name===bd.name))return J({error:{code:'nameAlreadyExists',message:'exists'}},409);return J(out(mk(bd.name,mm[1],true)),201);}return J({value:kids(mm[1]).map(out)});}
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/content$/))){const x=G.items[mm[1]];return r.fulfill({status:200,contentType:'application/pdf',body:x?x.content:''});}
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/createLink$/)))return J({link:{webUrl:'https://n1-my.sharepoint.com/x'}});
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)$/))){const x=G.items[mm[1]];if(!x)return J({error:{code:'itemNotFound',message:'nf'}},404);if(m==='PATCH'){x.name=JSON.parse(req.postData()).name;return J(out(x));}if(m==='DELETE'){const del=id=>{kids(id).forEach(k=>del(k.id));delete G.items[id];};del(x.id);return r.fulfill({status:204});}return J(out(x));}
+    return J({error:{code:'nope',message:pth}},400);});
+  const p=await ctx.newPage();await p.route(/gstatic\.com\/firebasejs/,r=>r.fulfill({body:FB,contentType:'text/javascript'}));let ans='CabLine Jobs';p.on('dialog',d=>d.accept(ans));
+  await p.addInitScript(()=>{try{sessionStorage.setItem('ro-retry','9');}catch(e){}
+    window.msal={PublicClientApplication:function(){const acc={homeAccountId:'h1',username:'kiyanoosh.mahmoodi@gmail.com'};const tok=async()=>({accessToken:'tok',expiresOn:new Date(Date.now()+3600e3),account:acc});return {initialize:async()=>{},getAllAccounts:()=>[acc],acquireTokenSilent:tok,acquireTokenPopup:tok};}};});
+  await p.goto(SITE+'index.html');await p.waitForTimeout(T*1500);
+  await p.evaluate(()=>{const a=JSON.parse(localStorage.getItem('__acc')||'{}');a['kiyanoosh.mahmoodi@gmail.com']={email:'kiyanoosh.mahmoodi@gmail.com',pw:'654321',v:true,name:'Kiya'};localStorage.setItem('__acc',JSON.stringify(a));});await p.reload();await p.waitForTimeout(T*1500);
+  await p.evaluate(()=>{document.getElementById('rc-si-em').value='kiyanoosh.mahmoodi@gmail.com';document.getElementById('rc-si-pw').value='654321';rcSignIn();});await p.waitForTimeout(T*1500);
+  await p.evaluate(()=>{allJobs.j1={id:'j1',name:'Smith Kitchen',info:{},drawings:[],units:[]};saveAllJobs();});
+  // a file before the drive is connected stays on the device
+  await p.evaluate(async()=>{const id='pdrw00000000001';await window.storage.set('cbkph:'+id,'data:application/pdf;base64,JVBERi0x');allJobs.j1.drawings.unshift({kind:'arch',id,name:'Ground floor.pdf'});saveAllJobs();await upEnqueue(id,'j1');});
+  await p.waitForTimeout(T*700);
+  ok('without a drive, files wait on the device',await p.evaluate(()=>/must connect the drive/.test(document.getElementById('up-stat').textContent)&&!JSON.parse(localStorage.getItem('__db'))['photos/pdrw00000000001']));
+  // connect: pick → new folder → use it
+  await p.evaluate(()=>{switchView('admin');showTab('users',document.querySelector('#view-admin .tab'));});await p.waitForTimeout(T*500);
+  ok('Company drive card shows for the Owner',await p.evaluate(()=>/Connect OneDrive/.test(document.getElementById('drive-card').innerText)));
+  await p.evaluate(()=>drvPick());await p.waitForTimeout(T*600);await p.evaluate(()=>drvPickNew());await p.waitForTimeout(T*600);
+  await p.evaluate(()=>drvPickUse());await p.waitForTimeout(T*3500);
+  const tree=()=>{const path=id=>{const x=G.items[id];return x.parent&&x.parent!=='root'?path(x.parent)+'/'+x.name:x.name;};return Object.keys(G.items).filter(k=>k!=='root').map(path).sort();};
+  let t=tree();
+  ok('connecting makes a folder for every job',t.includes('CabLine Jobs/Smith Kitchen'),t.join(' | '));
+  ok('the waiting file goes into its category folder',t.includes('CabLine Jobs/Smith Kitchen/01 - Architectural Plans/Ground floor.pdf'),t.join(' | '));
+  ok('the server keeps only a pointer, not the file',await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pdrw00000000001'];return !!(x&&x.drv&&x.drv.i&&!x.d);}));
+  // read it back from the drive
+  ok('files are read back from the drive',await p.evaluate(async()=>{delete _siCache['pdrw00000000001'];try{localStorage.removeItem('cbkph:pdrw00000000001');}catch(e){}if(window.storage.delete)await window.storage.delete('cbkph:pdrw00000000001');else await window.storage.set('cbkph:pdrw00000000001','');const v=await siGetPhoto('pdrw00000000001');return /^data:/.test(v);}));
+  if(process.env.SHOT){await p.evaluate(()=>{const o=document.getElementById('role-ov');if(o)o.style.display='none';drvCardRender();});await p.screenshot({path:process.env.SHOT+'/drive.png'});await p.evaluate(()=>drvPick());await p.waitForTimeout(800);await p.screenshot({path:process.env.SHOT+'/picker.png'});await p.evaluate(()=>document.getElementById('drvpk-ov').style.display='none');}
+  // new job → new folder; rename → folder renamed
+  await p.evaluate(()=>{allJobs.j2={id:'j2',name:'Jones Laundry',info:{},drawings:[],units:[]};allJobs.j1.name='Smith Kitchen Reno';saveAllJobs();});await p.waitForTimeout(T*3500);
+  t=tree();ok('a new job gets its folder and a renamed job renames its folder',t.includes('CabLine Jobs/Jones Laundry')&&t.includes('CabLine Jobs/Smith Kitchen Reno')&&!t.includes('CabLine Jobs/Smith Kitchen'),t.join(' | '));
+  // delete: job only keeps the folder; job + folder removes it
+  await p.evaluate(()=>jhDelete('j2'));await p.waitForTimeout(T*300);await p.evaluate(()=>document.getElementById('drvdel-keep').click());await p.waitForTimeout(T*800);
+  t=tree();ok('delete the job only — the folder stays',t.includes('CabLine Jobs/Jones Laundry')&&await p.evaluate(()=>!allJobs.j2),t.join(' | '));
+  await p.evaluate(()=>jhDelete('j1'));await p.waitForTimeout(T*300);await p.evaluate(()=>document.getElementById('drvdel-both').click());await p.waitForTimeout(T*800);
+  t=tree();ok('delete the job and its folder',!t.some(x=>/Smith Kitchen/.test(x))&&await p.evaluate(()=>!allJobs.j1),t.join(' | '));
+  await ctx.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();

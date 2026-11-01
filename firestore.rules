@@ -52,7 +52,11 @@ service cloud.firestore {
     // ---- Companies: only the Owner manages them; people read their own company
     match /orgs/{o} {
       allow get: if isOwner() || (isMember() && myOrg() == o);
-      allow list, create, update, delete: if isOwner();
+      allow list, create, delete: if isOwner();
+      // the Owner changes everything; a company admin may only connect / change the company drive
+      allow update: if isOwner()
+                    || (isOrgAdmin() && myOrg() == o && canWrite()
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['drive']));
     }
 
     // ---- Jobs (and the same for quotes, client links, files): own company only
