@@ -1384,7 +1384,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v484 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v485 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8519,7 +8519,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v484 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v485 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10294,7 +10294,7 @@ function clPayload(j){var F=apInit(j);finInit(j);
     ss:(F.ss||[]).map(function(r){return {id:r.id,name:r.name||'',stone:r.stone||'',link:r.link||'',mm:r.mm||'',splash:r.splash||'',wf:r.wf||'',wfside:r.wfside||''};}),
     approval:clApOk(j)?{by:F.approval.by,at:F.approval.at}:null,log:F.signLog||[],unlock:F.unlock||null,
     ms:(F.ms||[]).map(function(sp){return {name:sp.name,items:(sp.items||[]).filter(function(it){return it.brand||it.colour||it.finish||it.note;}).map(function(it){return {brand:it.brand||'',colour:it.colour||'',finish:it.finish||'',note:it.note||''};})};}).filter(function(sp){return sp.items.length;}),
-    designerAt:Date.now(),editedAt:(j.finishes&&j.finishes.lastEditAt)||0,notes:(j.finishes&&j.finishes.clientNotes)||[],docs:(j.finishes&&j.finishes.clientDocs)||[]};}
+    designerAt:Date.now(),editedAt:(j.finishes&&j.finishes.lastEditAt)||0,notes:(j.finishes&&j.finishes.clientNotes)||[],docs:(j.finishes&&j.finishes.clientDocs)||[],shared:((j.finishes&&j.finishes.clientShared)||[]).map(function(x){return {id:x.id,name:x.name||'File',url:x.url||'',srv:!!x.srv,at:x.at||0};})};}
 function clMerge(j,d){if(!d||!d.clientAt)return false;var F=apInit(j);finInit(j);if((F.clientMergedAt||0)>=d.clientAt)return false;
   F.clientNotes=clUnionNotes(F.clientNotes,d.notes);F.signLog=clUnionNotes(F.signLog,d.log);F.clientDocs=clUnionDocs(F.clientDocs,d.docs);
   if(d.signed!==undefined)F.clientSign=d.signed||null;
@@ -10406,6 +10406,7 @@ function clientRender(){var D=_clDoc||{},C=D.company||{},w=document.querySelecto
   w.innerHTML=(C.name||C.logo?'<div class="cl-co">'+(C.logo?'<img src="'+clE(C.logo)+'" alt="">':'')+'<div><b>'+clE(C.name||'')+'</b>'+(C.address?'<span>'+clE(C.address)+'</span>':'')+'</div></div>':'')+
     '<h1>'+clE(D.jobName||'Your project')+'</h1><div class="cl-sub">'+(D.canEdit===false?'Please review your appliance and stone selections and sign them off.':'Please fill in your appliance models and stone selections.')+' Everything saves automatically — you can close this page and come back to the same link any time. The material schedule is for your information only.</div>'+
     (RO?'<div class="cl-card" style="background:#fafafa;">These selections were filled in by us. Please check Appliances and Stone and sign off below.</div>':'')+
+    ((D.shared||[]).length?'<div class="cl-card"><h2>Drawings &amp; files for you</h2>'+D.shared.map(function(x){return '<div class="cl-mat" style="display:flex;gap:10px;align-items:center;"><b style="flex:1;">'+clE(x.name)+'</b>'+(x.url?'<a href="'+clE(x.url)+'" target="_blank" rel="noopener" style="font-weight:700;">Open</a>':'<a href="#" onclick="clOpenShared(\''+clE(x.id)+'\',\''+clE(x.name)+'\');return false;" style="font-weight:700;">Open</a>')+'</div>';}).join('')+'</div>':'')+
     '<div class="cl-tabs">'+tab('ap','Appliances')+tab('ss','Stone')+tab('ms','Materials (view only)')+'</div>'+body+'<div id="cl-signw">'+clSignHTML(D)+'</div>'+
     '<div class="cl-foot">'+(C.phone||C.email?clE([C.phone,C.email].filter(Boolean).join(' · ')):'Questions? Just reply to our email.')+'</div><div class="cl-save" id="cl-save">Saved</div>';}
 function clSet(sec,ri,ai,k,v){var D=_clDoc;if(!D)return;var tgt=sec==='ap'?D.ap.filter(function(r){return (r.items||[]).length;})[ri].items[ai]:D.ss[ri];tgt[k]=v;
@@ -10870,6 +10871,7 @@ async function renderDrawings(){
        '<div style="flex:1;min-width:150px;"><div style="font-weight:700;">'+drIcon(x)+' '+esc(drName(x))+'</div><div style="font-size:11px;color:#6b7280;">'+drMB(x.size||0)+' · '+esc(x.date||'')+(x.by?' · '+esc(x.by):'')+'</div>'+
        '<div style="font-size:11px;font-weight:700;color:'+(has?'#276a4c':'#9a6618')+';">'+(has?'✓ Saved on this device — works offline':'☁ Not on this device yet — downloading when online…')+'</div></div>'+
        '<button class="btn btn-sm" style="background:#3a6ea5;color:#fff;border:0;" onclick="drOpenAny(\''+x.id+'\')">Open</button>'+
+       (adm?'<button class="btn btn-sm '+(drIsShared(j,x.id)?'btn-blue':'btn-outline')+'" onclick="drShare(\''+x.id+'\')" title="Show this file on the client page">'+(drIsShared(j,x.id)?'✓ Shared with client':'Share with client')+'</button>':'')+
        (adm?'<button class="btn btn-outline btn-sm" style="color:#b4412f;" onclick="drDelete(\''+x.id+'\')">🗑</button>':'')+'</div>';}).join('');});
   if(!_drBusy&&navigator.onLine&&missing){_drBusy=true;try{var got=false;for(var k=0;k<allList.length;k++){if(!loc[allList[k].id]){var d=await siGetPhoto(allList[k].id);if(d)got=true;}}if(got){_drBusy=false;renderDrawings();return;}}catch(e){}_drBusy=false;}}
 var _ifSheet='mat';
@@ -10932,8 +10934,8 @@ async function upScan(){await upLoad();var have={};_upQ.forEach(function(q){have
   Object.keys(allJobs||{}).forEach(function(jid){upIds(allJobs[jid]).forEach(function(id){if(!_upOK[id]&&!have[id]&&!_upFail[id]){have[id]=1;_upQ.push({id:id,job:jid});}});});}
 async function upPut(id,d,job){var T=800000,col=cloud.db.collection('photos');
   if(!window.CLIENT_MODE&&window.SESSION&&SESSION.role){   // v483: staff files go to the company drive
-    var forClient=drvForClient(id,job);   // v484: files on the client page also keep a copy on the server so the client can open them
-    if(drvCfg()){try{await drvUpload(id,d,job);}catch(e){if(!forClient||e.code==='ms-login')throw e;}if(!forClient)return;}
+    var forClient=window._upForceServer||drvForClient(id,job);   // v484: files on the client page also keep a copy on the server so the client can open them
+    if(drvCfg()&&!window._upForceServer){try{await drvUpload(id,d,job);}catch(e){if(!forClient||e.code==='ms-login')throw e;}if(!forClient)return;}
     else if(!forClient){var en=new Error('no drive');en.code='drv-none';throw en;}}
   if(d.length<=T){await col.doc(id).set({d:d,job:job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});return;}
   var n=Math.ceil(d.length/T);
@@ -11605,6 +11607,29 @@ async function drvPickUse(){var cur=_pk.stack[_pk.stack.length-1];if(!cur)return
   var cfg={kind:'onedrive',driveId:cur.d,itemId:cur.id,name:cur.name,path:path,shareUrl:'',by:SESSION.email||'',at:Date.now()};
   if(!SESSION.owner){try{var l=await gf(drvItem(cur.d,cur.id)+'/createLink',{method:'POST',body:{type:'edit',scope:'organization'}});cfg.shareUrl=(l&&l.link&&l.link.webUrl)||'';}catch(e){}}
   try{await drvSaveCfg(cfg);document.getElementById('drvpk-ov').style.display='none';showMsg('✓ Company drive connected — making the job folders…');}catch(e){alert('Could not save: '+e.message);}}
+
+// ===== v485: share a drawing with the client — a view-only OneDrive link (no server space); a server copy only if the company blocks such links =====
+function drIsShared(j,id){return !!(j&&j.finishes&&(j.finishes.clientShared||[]).some(function(x){return x.id===id;}));}
+async function drUnshare(j,e){var L=j.finishes.clientShared||[];j.finishes.clientShared=L.filter(function(x){return x.id!==e.id;});
+  try{if(e.perm&&e.d)await gf(drvItem(e.d,e.i)+'/permissions/'+encodeURIComponent(e.perm),{method:'DELETE'});}catch(x){}
+  try{if(e.srv){var s=await cloud.db.collection('photos').doc(e.id).get();var v=s.exists&&s.data();if(v&&v.drv)await cloud.db.collection('photos').doc(e.id).set({d:'',n:0},{merge:true});}}catch(x){}}
+async function drShare(id){var j=siJob();if(!j)return;var x=(j.drawings||[]).filter(function(d){return d.id===id;})[0];if(!x)return;var F=j.finishes=j.finishes||{};F.clientShared=F.clientShared||[];
+  var cur=F.clientShared.filter(function(e){return e.id===id;})[0];
+  if(cur){if(!confirm('Stop showing “'+drName(x)+'” on the client page?'))return;await drUnshare(j,cur);jhSave(j.id);try{clPublishSoon(j.id);}catch(e){}renderDrawings();showMsg('Stopped sharing');return;}
+  var old=F.clientShared.filter(function(e){return e.kind===drKind(x);});
+  if(old.length&&confirm('Also stop sharing the older '+(old.length>1?old.length+' files':'“'+old[0].name+'”')+' of this kind? (Recommended for a new version.)')){for(var k=0;k<old.length;k++)await drUnshare(j,old[k]);}
+  showMsg('Sharing “'+drName(x)+'”…');
+  var e={id:id,name:drName(x),kind:drKind(x),at:Date.now(),by:(SESSION&&SESSION.name)||''},meta=null;
+  try{var sn=await cloud.db.collection('photos').doc(id).get();meta=sn.exists&&sn.data();}catch(er){}
+  if(meta&&meta.drv){try{var l=await gf(drvItem(meta.drv.d,meta.drv.i)+'/createLink',{method:'POST',body:{type:'view',scope:'anonymous'},interactive:true});if(l&&l.link&&l.link.webUrl){e.url=l.link.webUrl;e.perm=l.id||'';e.d=meta.drv.d;e.i=meta.drv.i;}}catch(er){}}
+  if(!e.url){   // the company does not allow open links (or the file is not in the drive yet) — keep a copy on the server
+    var d=await siGetPhoto(id);if(!d){alert('This file is not on this device or in the drive yet — wait until it has uploaded, then try again.');return;}
+    try{window._upForceServer=true;await upPut(id,d,j.id);}catch(er){alert('Could not share: '+(er.message||er));return;}finally{window._upForceServer=false;}e.srv=true;}
+  F.clientShared.push(e);jhSave(j.id);try{clPublishSoon(j.id);}catch(er){}renderDrawings();
+  showMsg(j.info&&j.info.clientToken?'✓ Shared — it is on the client page now':'✓ Shared — make the client link (Client tab) to send it');}
+async function clOpenShared(id,name){var w=null;try{w=window.open('','_blank');}catch(e){}
+  var d=await siGetPhoto(id);if(!d){if(w)w.close();alert('This file could not be opened. Please try again later.');return;}
+  var u=URL.createObjectURL(drvBlob(d));if(w)w.location.href=u;else{var a=document.createElement('a');a.href=u;a.download=name||'file';document.body.appendChild(a);a.click();a.remove();}}
 
 // v483 hooks: new job → its folder; renamed job → folder renamed; delete → ask about the folder
 (function(){

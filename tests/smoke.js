@@ -248,7 +248,8 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     if((mm=pth.match(/^\/drives\/D1\/items\/([^/:]+):\/(.+):$/))){const x=kids(mm[1]).find(k=>k.name===mm[2]);return x?J(out(x)):J({error:{code:'itemNotFound',message:'nf'}},404);}
     if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/children$/))){if(m==='POST'){const bd=JSON.parse(req.postData());if(kids(mm[1]).some(k=>k.name===bd.name))return J({error:{code:'nameAlreadyExists',message:'exists'}},409);return J(out(mk(bd.name,mm[1],true)),201);}return J({value:kids(mm[1]).map(out)});}
     if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/content$/))){const x=G.items[mm[1]];return r.fulfill({status:200,contentType:'application/pdf',body:x?x.content:''});}
-    if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/createLink$/)))return J({link:{webUrl:'https://n1-my.sharepoint.com/x'}});
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/createLink$/))){const bd=JSON.parse(req.postData()||'{}');if(bd.scope==='anonymous'){if(G.noAnon)return J({error:{code:'accessDenied',message:'blocked by policy'}},403);G.links=(G.links||0)+1;return J({id:'perm'+G.links,link:{webUrl:'https://1drv.ms/b/view'+G.links}});}return J({link:{webUrl:'https://n1-my.sharepoint.com/x'}});}
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/permissions\/(.+)$/))&&m==='DELETE'){G.removed=(G.removed||[]).concat(mm[2]);return r.fulfill({status:204});}
     if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)$/))){const x=G.items[mm[1]];if(!x)return J({error:{code:'itemNotFound',message:'nf'}},404);if(m==='PATCH'){x.name=JSON.parse(req.postData()).name;return J(out(x));}if(m==='DELETE'){const del=id=>{kids(id).forEach(k=>del(k.id));delete G.items[id];};del(x.id);return r.fulfill({status:204});}return J(out(x));}
     return J({error:{code:'nope',message:pth}},400);});
   const p=await ctx.newPage();await p.route(/gstatic\.com\/firebasejs/,r=>r.fulfill({body:FB,contentType:'text/javascript'}));let ans='CabLine Jobs';p.on('dialog',d=>d.accept(ans));
@@ -277,8 +278,19 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   await p.evaluate(async()=>{const id='pcli00000000001';await window.storage.set('cbkph:'+id,'data:application/pdf;base64,JVBERi0y');allJobs.j1.finishes={clientDocs:[{id,name:'Selections.pdf'}]};saveAllJobs();await upEnqueue(id,'j1');});await p.waitForTimeout(T*2500);
   t=tree();ok('a file on the client page goes to the drive AND keeps a server copy the client can open',t.includes('CabLine Jobs/Smith Kitchen/08 - Client Selections/'+'2026'.slice(0,0)+t.filter(x=>/08 - Client Selections\//.test(x)).map(x=>x.split('/').pop())[0])&&await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pcli00000000001'];return !!(x&&x.drv&&x.d);}),t.join(' | '));
   if(process.env.SHOT){await p.evaluate(()=>{const o=document.getElementById('role-ov');if(o)o.style.display='none';drvCardRender();});await p.screenshot({path:process.env.SHOT+'/drive.png'});await p.evaluate(()=>drvPick());await p.waitForTimeout(800);await p.screenshot({path:process.env.SHOT+'/picker.png'});await p.evaluate(()=>document.getElementById('drvpk-ov').style.display='none');}
+  // share a drawing with the client: a view-only OneDrive link, no server copy
+  await p.evaluate(()=>{selectJob('j1');});await p.waitForTimeout(T*500);
+  await p.evaluate(()=>drShare('pdrw00000000001'));await p.waitForTimeout(T*1200);
+  const sh=await p.evaluate(()=>{const F=allJobs.j1.finishes||{},e=(F.clientShared||[])[0]||{},x=JSON.parse(localStorage.getItem('__db'))['photos/pdrw00000000001'];return {url:e.url,srv:!!e.srv,serverData:!!(x&&x.d),pl:(clPayload(allJobs.j1).shared||[]).length};});
+  ok('Share with client makes a view-only OneDrive link — no space on the server',/1drv\.ms/.test(sh.url||'')&&!sh.srv&&!sh.serverData&&sh.pl===1,JSON.stringify(sh));
+  await p.evaluate(()=>drShare('pdrw00000000001'));await p.waitForTimeout(T*800);
+  ok('stop sharing removes the link',await p.evaluate(()=>!(allJobs.j1.finishes.clientShared||[]).length)&&(G.removed||[]).includes('perm1'));
+  G.noAnon=true;await p.evaluate(()=>drShare('pdrw00000000001'));await p.waitForTimeout(T*1500);G.noAnon=false;
+  ok('if open links are blocked, a server copy is kept instead',await p.evaluate(()=>{const e=(allJobs.j1.finishes.clientShared||[])[0]||{},x=JSON.parse(localStorage.getItem('__db'))['photos/pdrw00000000001'];return e.srv===true&&!e.url&&!!(x&&x.d&&x.drv);}));
+  await p.evaluate(()=>drShare('pdrw00000000001'));await p.waitForTimeout(T*800);
+  ok('stop sharing frees the server copy again',await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pdrw00000000001'];return !(allJobs.j1.finishes.clientShared||[]).length&&x.drv&&!x.d;}));
   // new job → new folder; rename → folder renamed
-  await p.evaluate(()=>{allJobs.j2={id:'j2',name:'Jones Laundry',info:{},drawings:[],units:[]};allJobs.j1.name='Smith Kitchen Reno';saveAllJobs();});await p.waitForTimeout(T*3500);
+  await p.evaluate(()=>{allJobs.j2={id:'j2',name:'Jones Laundry',info:{},drawings:[],units:[]};document.getElementById('proj-input').value='Smith Kitchen Reno';autoSave();});await p.waitForTimeout(T*3500);
   t=tree();ok('a new job gets its folder and a renamed job renames its folder',t.includes('CabLine Jobs/Jones Laundry')&&t.includes('CabLine Jobs/Smith Kitchen Reno')&&!t.includes('CabLine Jobs/Smith Kitchen'),t.join(' | '));
   // delete: job only keeps the folder; job + folder removes it
   await p.evaluate(()=>jhDelete('j2'));await p.waitForTimeout(T*300);await p.evaluate(()=>document.getElementById('drvdel-keep').click());await p.waitForTimeout(T*800);
