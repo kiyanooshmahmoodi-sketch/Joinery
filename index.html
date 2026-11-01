@@ -1388,7 +1388,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v487 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v488 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8523,7 +8523,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v487 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v488 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11417,7 +11417,7 @@ function invText(o){var first=String(o.nm||'').split(' ')[0]||'there',what=o.adm
     body:'Hi '+first+',\n\nYou have been set up as '+what+' on CabLine, our joinery project manager.\n\nTo get started:\n1. Open CabLine: '+APP_URL+'\n2. Tap "Have an invite code?"\n3. Type your email ('+o.em+'), this one-time code: '+invShowCode(o.code||'')+' and choose your password.\n4. You are in'+(o.admin?' — ready to add your team.':'.')+'\n\nInstall CabLine on your computer (desktop / taskbar): '+APP_URL+'?install=1\n\nThe code works once. After that you sign in with your email and password.\n\nKind regards,\n'+(o.from||'Kiyanoosh Mahmoodi')};}
 function invHTML(o){var first=String(o.nm||'').split(' ')[0]||'there',what=o.admin?'an <b>admin of '+esc(o.co)+'</b>':'a <b>member of '+esc(o.co)+'</b>';
   return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f1e7;padding:24px 0;font-family:Segoe UI,Arial,sans-serif;"><tr><td align="center"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e7dfd0;"><tr><td style="background:#131110;"><img src="'+APP_URL+'email-header.png" width="600" alt="CabLine — From drawing to install" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr><tr><td style="padding:30px 36px 8px;color:#1c1a17;font-size:15px;line-height:1.6;"><p style="margin:0 0 14px;">Hi '+esc(first)+',</p><p style="margin:0 0 18px;">You have been set up as '+what+' on CabLine, our joinery project manager.</p><p style="margin:0 0 22px;text-align:center;"><a href="'+APP_URL+'" style="display:inline-block;background:#fbbf24;color:#131110;font-weight:700;text-decoration:none;padding:13px 30px;border-radius:8px;font-size:15px;">Open CabLine</a></p>'+
-    '<p style="margin:-10px 0 22px;text-align:center;"><a href="'+APP_URL+'?install=1" style="display:inline-block;border:2px solid #131110;color:#131110;font-weight:700;text-decoration:none;padding:10px 22px;border-radius:8px;font-size:14px;">Install CabLine on your computer</a><br><span style="font-size:12px;color:#6b645a;">Opens CabLine with an Install button — it then sits on your desktop / taskbar like any app.</span></p>'+
+    '<p style="margin:-8px 0 22px;text-align:center;"><a href="'+APP_URL+'?install=1" style="display:inline-block;background:#131110;color:#fbbf24;font-weight:600;text-decoration:none;padding:7px 16px;border-radius:999px;font-size:12.5px;letter-spacing:.02em;">&#8681;&nbsp; Install CabLine on your computer</a></p>'+
     '<p style="margin:0 0 8px;font-weight:700;">To get started</p><ol style="margin:0 0 14px;padding-left:20px;"><li style="margin-bottom:6px;">Open CabLine and tap <b>Have an invite code?</b></li><li style="margin-bottom:6px;">Type your email <b>'+esc(o.em)+'</b>, the code below, and choose your password.</li><li>You are in'+(o.admin?' — ready to add your team.':'.')+'</li></ol>'+
     '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 8px;"><tr><td style="background:#f6f1e7;border:1px dashed #c9b98f;border-radius:8px;padding:12px 26px;text-align:center;"><div style="font-size:11px;letter-spacing:.14em;color:#6b645a;">YOUR ONE-TIME CODE</div><div style="font-family:Consolas,Menlo,monospace;font-size:26px;font-weight:700;letter-spacing:.12em;color:#131110;">'+esc(invShowCode(o.code||''))+'</div></td></tr></table>'+
     '<p style="margin:0 0 18px;color:#6b645a;font-size:13px;text-align:center;">The code works once. After that you sign in with your email and password.</p>'+
