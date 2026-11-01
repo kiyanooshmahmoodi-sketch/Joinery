@@ -1384,7 +1384,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v483 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v484 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -7080,7 +7080,7 @@ async function siStorePhoto(data){
 async function siGetPhoto(id){
   if(_siCache[id])return _siCache[id];
   try{var r=await window.storage.get('cbkph:'+id);if(r&&r.value){_siCache[id]=r.value;return r.value;}}catch(e){}
-  try{if(window.cloud&&cloud.db){var d=await cloud.db.collection('photos').doc(id).get();if(d.exists){var dd=d.data(),v=dd.d;if(dd.drv){try{v=await drvFetch(dd.drv);}catch(e){if(e&&e.code==='ms-login'){_msNeed=true;try{upStat();}catch(x){}}return '';}_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}if(dd.n){var parts=await Promise.all(Array.from({length:dd.n},function(_,i){return cloud.db.collection('photos').doc(id+'~'+i).get();}));if(parts.some(function(x){return !x.exists;}))return '';v=parts.map(function(x){return x.data().d;}).join('');try{await window.storage.set('cbkph:'+id,v);}catch(e){}return v;}_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}}}catch(e){}
+  try{if(window.cloud&&cloud.db){var d=await cloud.db.collection('photos').doc(id).get();if(d.exists){var dd=d.data(),v=dd.d;if(dd.drv&&!dd.d&&!dd.n){try{v=await drvFetch(dd.drv);}catch(e){if(e&&e.code==='ms-login'){_msNeed=true;try{upStat();}catch(x){}}return '';}_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}if(dd.n){var parts=await Promise.all(Array.from({length:dd.n},function(_,i){return cloud.db.collection('photos').doc(id+'~'+i).get();}));if(parts.some(function(x){return !x.exists;}))return '';v=parts.map(function(x){return x.data().d;}).join('');try{await window.storage.set('cbkph:'+id,v);}catch(e){}return v;}_siCache[id]=v;try{window.storage.set('cbkph:'+id,v);}catch(e){}return v;}}}catch(e){}
   return '';}
 async function siPickPhotos(inp){
   var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';
@@ -8519,7 +8519,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v483 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v484 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10931,14 +10931,17 @@ function upIds(job){var out={};try{var s=JSON.stringify(job);var re=/\\?"(p[a-z0
 async function upScan(){await upLoad();var have={};_upQ.forEach(function(q){have[q.id]=1;});
   Object.keys(allJobs||{}).forEach(function(jid){upIds(allJobs[jid]).forEach(function(id){if(!_upOK[id]&&!have[id]&&!_upFail[id]){have[id]=1;_upQ.push({id:id,job:jid});}});});}
 async function upPut(id,d,job){var T=800000,col=cloud.db.collection('photos');
-  if(!window.CLIENT_MODE&&window.SESSION&&SESSION.role){if(drvCfg()){await drvUpload(id,d,job);return;}var en=new Error('no drive');en.code='drv-none';throw en;}   // v483: staff files go to the company drive
-  if(d.length<=T){await col.doc(id).set({d:d,job:job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()});return;}
+  if(!window.CLIENT_MODE&&window.SESSION&&SESSION.role){   // v483: staff files go to the company drive
+    var forClient=drvForClient(id,job);   // v484: files on the client page also keep a copy on the server so the client can open them
+    if(drvCfg()){try{await drvUpload(id,d,job);}catch(e){if(!forClient||e.code==='ms-login')throw e;}if(!forClient)return;}
+    else if(!forClient){var en=new Error('no drive');en.code='drv-none';throw en;}}
+  if(d.length<=T){await col.doc(id).set({d:d,job:job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});return;}
   var n=Math.ceil(d.length/T);
   for(var i=_upProg[id]||0;i<n;i++){
     await Promise.race([col.doc(id+'~'+i).set({d:d.slice(i*T,(i+1)*T),job:job,org:SESSION.org||''}),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},45000);})]);
     _upProg[id]=i+1;_upMsg=' — big file '+(i+1)+'/'+n;upStat();}
   _upMsg='';
-  await col.doc(id).set({d:'',n:n,job:job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()});}
+  await col.doc(id).set({d:'',n:n,job:job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}
 async function upKick(){
   await upLoad();if(Date.now()-_upScanT>30000){_upScanT=Date.now();await upScan();}
   if(_upBusy)return;
@@ -11533,6 +11536,9 @@ async function drvPutFile(dId,parent,name,blob){
     var r=await fetch(s.uploadUrl,{method:'PUT',headers:{'Content-Range':'bytes '+o+'-'+(o+part.size-1)+'/'+blob.size},body:part});
     if(!r.ok&&r.status!==202)throw new Error('upload '+r.status);if(r.status===200||r.status===201)res=await r.json();_upMsg=' — big file '+Math.round(100*(o+part.size)/blob.size)+'%';try{upStat();}catch(e){}}
   _upMsg='';return res;}
+function drvForClient(id,jobHint){var J=allJobs||{},order=[jobHint].concat(Object.keys(J));
+  for(var i=0;i<order.length;i++){var j=J[order[i]];if(!j||!j.finishes)continue;var F=j.finishes;
+    if(drvFindPath({a:F.clientDocs||[],b:F.clientNotes||[]},id,'',0)!=null)return true;}return false;}
 async function drvUpload(id,d,jobHint){var c=drvCfg();var loc=drvLocate(id,jobHint);
   if(!loc){var e0=new Error('not placed yet');e0.code='drv-wait';throw e0;}
   var jf=await drvJobFolder(loc.job,true);if(!jf){var e1=new Error('no job folder');e1.code='drv-wait';throw e1;}
