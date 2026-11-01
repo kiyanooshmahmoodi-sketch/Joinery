@@ -298,4 +298,15 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   await p.evaluate(()=>jhDelete('j1'));await p.waitForTimeout(T*300);await p.evaluate(()=>document.getElementById('drvdel-both').click());await p.waitForTimeout(T*800);
   t=tree();ok('delete the job and its folder',!t.some(x=>/Smith Kitchen/.test(x))&&await p.evaluate(()=>!allJobs.j1),t.join(' | '));
   await ctx.close();}
+// ---------- 19. install link from the invite email
+{console.log('Install link');const ctx=await iso(await b.newContext({serviceWorkers:'block'}));
+  await ctx.route(SITE+'**',r=>{const u=new URL(r.request().url());r.fulfill({path:path.resolve(__dirname,'..'+u.pathname.replace('/Joinery','').replace(/\/$/,'/index.html'))});});
+  const p=await ctx.newPage();await p.route(/gstatic\.com\/firebasejs/,r=>r.fulfill({body:FB,contentType:'text/javascript'}));
+  await p.goto(SITE+'index.html?install=1');await p.waitForTimeout(T*1500);
+  ok('invite email has an Install CabLine link',await p.evaluate(()=>/\?install=1/.test(ownerInviteHTML('N1 Group','Kiya','k@n1.au','ABCDEFGH'))&&/Install CabLine on your computer/.test(ownerInviteHTML('N1 Group','Kiya','k@n1.au','ABCDEFGH'))));
+  ok('the install link opens CabLine with an Install button',await p.evaluate(()=>!!document.getElementById('inst-bar')&&getComputedStyle(document.getElementById('inst-bar')).zIndex>2e9));
+  if(process.env.SHOT)await p.screenshot({path:process.env.SHOT+'/install.png'});
+  await p.evaluate(()=>instOpen());await p.waitForTimeout(T*300);
+  ok('Install shows the steps when the browser cannot prompt',await p.evaluate(()=>/Install CabLine/.test((document.getElementById('inst-ov')||{}).innerText||'')));
+  await ctx.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();

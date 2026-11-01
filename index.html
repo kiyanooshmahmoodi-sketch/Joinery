@@ -1384,7 +1384,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v485 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v486 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8519,7 +8519,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v485 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v486 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11056,6 +11056,7 @@ body.is-orgadm.no-settings .tab[onclick*="'users'"]{display:block!important;}bod
           <button onclick="rcSignIn()" style="width:100%;padding:12px;border:0;border-radius:10px;background:#27272a;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">Sign in</button>
           <div style="display:flex;justify-content:space-between;margin-top:6px;"><button onclick="rcForgot()" style="border:0;background:none;color:#3f3f46;font-size:12.5px;font-weight:600;cursor:pointer;padding:6px;">Forgot password?</button><button onclick="rcShow('rc-create')" style="border:0;background:none;color:#3f3f46;font-size:12.5px;font-weight:600;cursor:pointer;padding:6px;">New here? Create an account</button></div>
           <button id="rc-code-btn" onclick="rcShow('rc-code');try{document.getElementById('rc-code-em').value=document.getElementById('rc-si-em').value;}catch(e){}" style="width:100%;margin-top:6px;padding:11px;border:1.5px solid #27272a;border-radius:10px;background:#fff;color:#27272a;font-weight:700;font-size:13.5px;cursor:pointer;">Have an invite code?</button>
+          <div style="text-align:center;margin-top:2px;"><button onclick="instOpen()" style="border:0;background:none;color:#3f3f46;font-size:12px;font-weight:600;cursor:pointer;padding:6px;text-decoration:underline;">Install CabLine on this device</button></div>
         </div>
         <div id="rc-code" style="display:none;">
           <div style="font-size:14px;font-weight:700;color:#111827;margin-bottom:4px;">Join with your invite code</div>
@@ -11409,13 +11410,14 @@ async function invHash(c){var b=await crypto.subtle.digest('SHA-256',new TextEnc
 // o = {co, nm, em, code, admin:true|false, from}
 function invText(o){var first=String(o.nm||'').split(' ')[0]||'there',what=o.admin?'an admin of '+o.co:'a member of '+o.co;
   return {subj:'Your CabLine access — '+o.co+(o.admin?' admin':''),
-    body:'Hi '+first+',\n\nYou have been set up as '+what+' on CabLine, our joinery project manager.\n\nTo get started:\n1. Open CabLine: '+APP_URL+'\n2. Tap "Have an invite code?"\n3. Type your email ('+o.em+'), this one-time code: '+invShowCode(o.code||'')+' and choose your password.\n4. You are in'+(o.admin?' — ready to add your team.':'.')+'\n\nThe code works once. After that you sign in with your email and password.\n\nTip: in Chrome or Edge you can install CabLine as an app (Install icon in the address bar).\n\nKind regards,\n'+(o.from||'Kiyanoosh Mahmoodi')};}
+    body:'Hi '+first+',\n\nYou have been set up as '+what+' on CabLine, our joinery project manager.\n\nTo get started:\n1. Open CabLine: '+APP_URL+'\n2. Tap "Have an invite code?"\n3. Type your email ('+o.em+'), this one-time code: '+invShowCode(o.code||'')+' and choose your password.\n4. You are in'+(o.admin?' — ready to add your team.':'.')+'\n\nInstall CabLine on your computer (desktop / taskbar): '+APP_URL+'?install=1\n\nThe code works once. After that you sign in with your email and password.\n\nKind regards,\n'+(o.from||'Kiyanoosh Mahmoodi')};}
 function invHTML(o){var first=String(o.nm||'').split(' ')[0]||'there',what=o.admin?'an <b>admin of '+esc(o.co)+'</b>':'a <b>member of '+esc(o.co)+'</b>';
   return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f1e7;padding:24px 0;font-family:Segoe UI,Arial,sans-serif;"><tr><td align="center"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e7dfd0;"><tr><td style="background:#131110;"><img src="'+APP_URL+'email-header.png" width="600" alt="CabLine — From drawing to install" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr><tr><td style="padding:30px 36px 8px;color:#1c1a17;font-size:15px;line-height:1.6;"><p style="margin:0 0 14px;">Hi '+esc(first)+',</p><p style="margin:0 0 18px;">You have been set up as '+what+' on CabLine, our joinery project manager.</p><p style="margin:0 0 22px;text-align:center;"><a href="'+APP_URL+'" style="display:inline-block;background:#fbbf24;color:#131110;font-weight:700;text-decoration:none;padding:13px 30px;border-radius:8px;font-size:15px;">Open CabLine</a></p>'+
+    '<p style="margin:-10px 0 22px;text-align:center;"><a href="'+APP_URL+'?install=1" style="display:inline-block;border:2px solid #131110;color:#131110;font-weight:700;text-decoration:none;padding:10px 22px;border-radius:8px;font-size:14px;">Install CabLine on your computer</a><br><span style="font-size:12px;color:#6b645a;">Opens CabLine with an Install button — it then sits on your desktop / taskbar like any app.</span></p>'+
     '<p style="margin:0 0 8px;font-weight:700;">To get started</p><ol style="margin:0 0 14px;padding-left:20px;"><li style="margin-bottom:6px;">Open CabLine and tap <b>Have an invite code?</b></li><li style="margin-bottom:6px;">Type your email <b>'+esc(o.em)+'</b>, the code below, and choose your password.</li><li>You are in'+(o.admin?' — ready to add your team.':'.')+'</li></ol>'+
     '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 8px;"><tr><td style="background:#f6f1e7;border:1px dashed #c9b98f;border-radius:8px;padding:12px 26px;text-align:center;"><div style="font-size:11px;letter-spacing:.14em;color:#6b645a;">YOUR ONE-TIME CODE</div><div style="font-family:Consolas,Menlo,monospace;font-size:26px;font-weight:700;letter-spacing:.12em;color:#131110;">'+esc(invShowCode(o.code||''))+'</div></td></tr></table>'+
     '<p style="margin:0 0 18px;color:#6b645a;font-size:13px;text-align:center;">The code works once. After that you sign in with your email and password.</p>'+
-    '<p style="margin:0 0 22px;color:#6b645a;font-size:13px;">Tip: in Chrome or Edge you can install CabLine as an app (Install icon in the address bar).</p>'+
+
     '<p style="margin:0 0 12px;">Kind regards,<br><b>'+esc(o.from||'Kiyanoosh Mahmoodi')+'</b></p><div style="height:14px;"></div></td></tr></table></td></tr></table>';}
 function ownerInviteText(co,nm,em,code){return invText({co:co,nm:nm,em:em,code:code||'',admin:true});}
 function ownerInviteHTML(co,nm,em,code){return invHTML({co:co,nm:nm,em:em,code:code||'',admin:true});}
@@ -11432,7 +11434,7 @@ async function invOpen(o,mail){var code=invNewCode(),h;
       '<div style="flex:1;min-width:200px;"><div style="font-weight:700;font-size:15px;">Invite email to '+esc(o.em)+'</div><div style="font-size:12px;color:#71717a;">Subject: '+esc(t.subj)+' · code '+esc(invShowCode(code))+'</div></div>'+
       '<button class="btn btn-blue btn-sm" id="inv-copy" onclick="invCopy()">📋 Copy email</button>'+btns+'<button class="btn btn-outline btn-sm" onclick="invClose()">✕</button></div>'+
     '<div style="padding:10px 16px 0;font-size:12.5px;color:#52525b;">1. Copy email  →  2. Open your email  →  3. click in the message, Ctrl+V, Send. A new code is made each time — only the newest one works.</div>'+
-    '<div id="inv-mail" style="padding:6px 0 10px;">'+invHTML(o)+'</div></div>';
+    '<div id="inv-mail" data-raw-colour data-keep-emoji style="padding:6px 0 10px;">'+invHTML(o)+'</div></div>';
   ov.style.display='flex';}
 function ownerInvite(id,em){var o=(_own.orgs.filter(function(x){return x._id===id;})[0])||{},u=(_own.admins.filter(function(x){return x._id===em;})[0])||{};
   return invOpen({co:o.name||'your company',nm:u.name||'',em:em,admin:true,from:'Kiyanoosh Mahmoodi'},'gmail');}
@@ -11630,6 +11632,27 @@ async function drShare(id){var j=siJob();if(!j)return;var x=(j.drawings||[]).fil
 async function clOpenShared(id,name){var w=null;try{w=window.open('','_blank');}catch(e){}
   var d=await siGetPhoto(id);if(!d){if(w)w.close();alert('This file could not be opened. Please try again later.');return;}
   var u=URL.createObjectURL(drvBlob(d));if(w)w.location.href=u;else{var a=document.createElement('a');a.href=u;a.download=name||'file';document.body.appendChild(a);a.click();a.remove();}}
+
+// ===== v486: install CabLine as an app (from the invite email link …/?install=1, or the sign-in screen) =====
+var _bip=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();_bip=e;});
+window.addEventListener('appinstalled',function(){_bip=null;var b=document.getElementById('inst-bar');if(b)b.remove();showMsg('✓ CabLine is installed — find it on your desktop, Start menu or home screen');});
+function instIsApp(){try{return window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: window-controls-overlay)').matches||navigator.standalone===true;}catch(e){return false;}}
+function instHow(){var u=navigator.userAgent||'',ios=/iPhone|iPad|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1),and=/Android/.test(u),edge=/Edg\//.test(u),chrome=/Chrome\//.test(u)&&!edge,safari=/Safari\//.test(u)&&!/Chrome|CriOS|Edg/.test(u),ff=/Firefox|FxiOS/.test(u);
+  if(ios)return ['On iPhone / iPad (use Safari):','Tap the Share button (square with an arrow) at the bottom.','Scroll and tap “Add to Home Screen”, then “Add”.','CabLine is now on your home screen.'];
+  if(and)return ['On Android (use Chrome):','Tap the ⋮ menu at the top right.','Tap “Install app” (or “Add to Home screen”), then “Install”.'];
+  if(ff)return ['Firefox cannot install apps.','Open this page in Google Chrome or Microsoft Edge, then press Install.'];
+  if(safari)return ['On Mac (Safari):','In the menu bar choose File › Add to Dock.','CabLine is now in your Dock.'];
+  if(edge)return ['In Microsoft Edge:','Click the ⋯ menu at the top right › Apps › “Install this site as an app”.','Then right-click CabLine in the taskbar › “Pin to taskbar”.'];
+  return ['In Google Chrome:','Click the install icon (a screen with an arrow) at the right of the address bar — or the ⋮ menu › Cast, save and share › “Install page as app”.','Then right-click CabLine in the taskbar (or Dock) › “Pin to taskbar” / “Keep in Dock”.'];}
+async function instOpen(){if(instIsApp()){showMsg('CabLine is already installed on this device');return;}
+  if(_bip){try{_bip.prompt();var c=await _bip.userChoice;_bip=null;if(c&&c.outcome==='accepted'){var b=document.getElementById('inst-bar');if(b)b.remove();}return;}catch(e){}}
+  var H=instHow(),ov=document.getElementById('inst-ov');if(!ov){ov=document.createElement('div');ov.id='inst-ov';ov.style.cssText='position:fixed;inset:0;z-index:2147483001;background:rgba(19,17,16,.6);display:flex;align-items:center;justify-content:center;padding:16px;';ov.onclick=function(e){if(e.target===ov)ov.remove();};document.body.appendChild(ov);}
+  ov.innerHTML='<div style="background:#fff;color:#1c1a17;border-radius:14px;max-width:420px;width:100%;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.35);font-family:Inter,system-ui,sans-serif;"><div style="font-size:16px;font-weight:700;margin-bottom:10px;">Install CabLine</div><div style="font-size:13.5px;font-weight:600;margin-bottom:6px;">'+esc(H[0])+'</div><ol style="margin:0 0 14px;padding-left:20px;font-size:13.5px;line-height:1.55;">'+H.slice(1).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol><button class="btn btn-blue" style="width:100%;" onclick="document.getElementById(\'inst-ov\').remove()">OK</button></div>';}
+function instBar(){if(instIsApp()||document.getElementById('inst-bar'))return;var b=document.createElement('div');b.id='inst-bar';b.setAttribute('data-raw-colour','');
+  b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:2147483000;background:#fbbf24;color:#131110;border-radius:999px;padding:8px 8px 8px 18px;display:flex;gap:10px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.35);font:600 14px Inter,system-ui,sans-serif;max-width:calc(100vw - 32px);';
+  b.innerHTML='<span>Install CabLine on this device</span><button onclick="instOpen()" style="border:0;background:#131110;color:#fbbf24;font-weight:700;border-radius:999px;padding:8px 16px;cursor:pointer;">Install</button><button onclick="document.getElementById(\'inst-bar\').remove()" aria-label="Close" style="border:0;background:none;font-size:18px;cursor:pointer;padding:0 6px;color:#131110;">✕</button>';
+  document.body.appendChild(b);}
+try{if(/[?&]install=1/.test(location.search))setTimeout(instBar,600);}catch(e){}
 
 // v483 hooks: new job → its folder; renamed job → folder renamed; delete → ask about the folder
 (function(){
