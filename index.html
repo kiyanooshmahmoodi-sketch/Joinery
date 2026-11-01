@@ -1382,7 +1382,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v475 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v476 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8516,7 +8516,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v475 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v476 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11350,9 +11350,18 @@ function ownerRender(){var box=document.getElementById('users-list');if(!box||!S
       '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-blue btn-sm" onclick="ownerSaveOrg(\''+id+'\')">Save company</button><button class="btn btn-outline btn-sm" onclick="ownerPause(\''+id+'\','+(!paused)+')">'+(paused?'Resume':'Pause (view only)')+'</button><button class="btn btn-outline btn-sm" style="color:#991b1b;margin-left:auto;" onclick="ownerDeleteOrg(\''+id+'\')">Delete company…</button></div>'+
       '<div style="margin-top:16px;font-size:12px;font-weight:600;color:#52525b;letter-spacing:.04em;text-transform:uppercase;">Admins</div>'+
       (ad.length?ad.map(function(u){return '<div data-adm="'+orgEsc(u._id)+'" style="border-top:1px solid #f0f0f2;padding:8px 0;"><div style="font-size:13.5px;"><b>'+esc(u.name||'')+'</b> · '+esc(u._id)+(u.status==='blocked'?' · <span style="color:#991b1b;">blocked</span>':'')+'</div><div style="margin-top:5px;">'+orgSecBoxes('as',u.roles||[],o.sections||[])+'</div>'+
-        '<div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="ownerSaveAdmin(\''+id+'\',\''+orgEsc(u._id)+'\')">Save</button><button class="btn btn-outline btn-sm" onclick="ownerBlockAdmin(\''+orgEsc(u._id)+'\','+(u.status!=='blocked')+')">'+(u.status==='blocked'?'Unblock':'Block')+'</button><button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="ownerRemoveAdmin(\''+orgEsc(u._id)+'\')">Remove</button></div></div>';}).join(''):'<div style="font-size:13px;color:#a1a1aa;padding:6px 0;">No admin yet.</div>')+
+        '<div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="ownerSaveAdmin(\''+id+'\',\''+orgEsc(u._id)+'\')">Save</button><button class="btn btn-outline btn-sm" onclick="ownerBlockAdmin(\''+orgEsc(u._id)+'\','+(u.status!=='blocked')+')">'+(u.status==='blocked'?'Unblock':'Block')+'</button><button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="ownerRemoveAdmin(\''+orgEsc(u._id)+'\')">Remove</button><button class="btn btn-blue btn-sm" style="margin-left:auto;" onclick="ownerInvite(\''+id+'\',\''+orgEsc(u._id)+'\')">✉ Send invite</button>'+(u.invitedAt?'<span style="font-size:12px;color:#166534;align-self:center;">Invited '+esc(new Date(u.invitedAt).toLocaleDateString())+'</span>':'')+'</div></div>';}).join(''):'<div style="font-size:13px;color:#a1a1aa;padding:6px 0;">No admin yet.</div>')+
       '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><input data-k="ae" type="email" placeholder="Admin email" style="flex:2;min-width:180px;"><input data-k="an" placeholder="Name" style="flex:1;min-width:120px;"><button class="btn btn-blue btn-sm" onclick="ownerAddAdmin(\''+id+'\')">+ Add admin</button></div></div>';}).join('');
   box.innerHTML='<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="flex:1;"><div style="font-size:18px;font-weight:600;">Companies</div><div style="font-size:12.5px;color:#71717a;">You run CabLine. Each company only sees its own jobs and people — you do not see any company\'s data.</div></div><button class="btn btn-blue" onclick="ownerNewOrg()">+ New company</button></div>'+(cards||'<div class="card" style="color:#a1a1aa;font-size:13px;">No companies yet.</div>');}
+var APP_URL='https://kiyanooshmahmoodi-sketch.github.io/Joinery/';
+function ownerInviteText(co,nm,em){var first=String(nm||'').split(' ')[0]||'there';
+  return {subj:'Your CabLine access — '+co+' admin',
+    body:'Hi '+first+',\n\nYou have been set up as an admin of '+co+' on CabLine, our joinery project manager.\n\nTo get started:\n1. Open CabLine: '+APP_URL+'\n2. Tap "New here? Create an account" and sign up with this email: '+em+'\n3. Choose your password, then open the confirmation email and tap the link.\n4. Sign in. You will land in '+co+' as admin, ready to add your team.\n\nTip: in Chrome or Edge you can install CabLine as an app (Install icon in the address bar).\n\nKind regards,\nKiyanoosh Mahmoodi\nCabLine'};}
+function ownerInvite(id,em){var o=(_own.orgs.filter(function(x){return x._id===id;})[0])||{},u=(_own.admins.filter(function(x){return x._id===em;})[0])||{};
+  var t=ownerInviteText(o.name||'your company',u.name||'',em),e=encodeURIComponent;
+  var url='https://mail.google.com/mail/?view=cm&fs=1&to='+e(em)+'&su='+e(t.subj)+'&body='+e(t.body)+'&authuser='+e(ADMIN_EMAIL);
+  var w=null;try{w=window.open(url,'_blank');}catch(x){}if(!w)location.href=url;
+  cloud.db.collection('users').doc(em).set({invitedAt:Date.now()},{merge:true}).catch(function(){});}
 function ownerCard(id){return document.querySelector('#users-list [data-org="'+id+'"]');}
 function ownerNewOrg(){var n=(prompt('Company name')||'').trim();if(!n)return;cloud.db.collection('orgs').add({name:n,status:'active',sections:ORG_SECTIONS.map(function(x){return x[0];}),quote:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){showMsg('✓ Company created');}).catch(function(e){alert('Could not create: '+e.message);});}
 function ownerSaveOrg(id){var c=ownerCard(id);if(!c)return;var cap=orgPicked(c,'cap');cloud.db.collection('orgs').doc(id).set({name:c.querySelector('[data-k=name]').value.trim()||'Company',sections:cap,quote:c.querySelector('[data-k=quote]').checked},{merge:true}).then(function(){showMsg('✓ Saved');}).catch(function(e){alert('Could not save: '+e.message);});

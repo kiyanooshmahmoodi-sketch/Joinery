@@ -192,6 +192,9 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   const oid=await p.evaluate(()=>{const D=JSON.parse(localStorage.getItem('__db'));return Object.keys(D).filter(k=>k.startsWith('orgs/'))[0].split('/')[1];});
   await p.evaluate((oid)=>{const c=ownerCard(oid);c.querySelector('[data-k=ae]').value='kiya@n1group.com.au';c.querySelector('[data-k=an]').value='Kiya N1';ownerAddAdmin(oid);},oid);await p.waitForTimeout(T*800);
   ok('Owner adds a company admin',await p.evaluate((oid)=>{const u=JSON.parse(localStorage.getItem('__db'))['users/kiya@n1group.com.au'];return !!u&&u.orgAdmin===true&&u.org===oid;},oid));
+  await p.waitForTimeout(T*500);
+  const inv=await p.evaluate((oid)=>{let u='';window.open=x=>{u=x;return {};};const b=ownerCard(oid).querySelector('button[onclick^="ownerInvite"]');if(!b)return {};b.click();return {u,inv:!!JSON.parse(localStorage.getItem('__db'))['users/kiya@n1group.com.au'].invitedAt};},oid);
+  ok('Send invite opens a ready Gmail email to the admin',/mail\.google\.com/.test(inv.u||'')&&/to=kiya%40n1group/.test(inv.u)&&/Joinery/.test(decodeURIComponent(inv.u))&&inv.inv,JSON.stringify(inv).slice(0,160));
   await out();
   // company admin signs up with that email
   await signup('kiya@n1group.com.au');
