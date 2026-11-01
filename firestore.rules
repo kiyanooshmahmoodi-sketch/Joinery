@@ -4,7 +4,8 @@ rules_version = '2';
 //
 // Who is who:
 //   Owner  = kiyanoosh.mahmoodi@gmail.com — creates companies and their admins, pauses/deletes companies.
-//            The Owner can NOT read any company's jobs, quotes, client links or files.
+//            The Owner has a private workspace (org '__owner') with every section for testing,
+//            and can NOT read any company's jobs, quotes, client links or files.
 //   Company admin  = users/{email}.orgAdmin == true — manages the people of their own company only.
 //   Company member = users/{email}.org == company id, status 'approved'.
 // Every job / quote / client link / file carries `org`; people only ever reach their own company's.
@@ -34,6 +35,8 @@ service cloud.firestore {
     function canWrite() { return isMember() && orgOf(myOrg()).get('status', '') == 'active'; }
     function isOrgAdmin() { return isMember() && me().get('orgAdmin', false) == true; }
     function inMyOrg(d) { return d.get('org', '') == myOrg(); }
+    // the Owner's own private workspace (all sections, own test jobs) — never another company's data
+    function ownerSpace(d) { return isOwner() && d.get('org', '') == '__owner'; }
     function orgDeleting(o) {
       return exists(/databases/$(database)/documents/orgs/$(o)) && orgOf(o).get('status', '') == 'deleting';
     }
@@ -51,10 +54,12 @@ service cloud.firestore {
     // ---- Jobs (and the same for quotes, client links, files): own company only
     match /jobs/{id} {
       allow read: if (isMember() && (resource == null || inMyOrg(resource.data)))
+                  || (isOwner() && (resource == null || ownerSpace(resource.data)))
                   || (isOwner() && resource != null && orgDeleting(resource.data.get('org', '')));
-      allow create: if canWrite() && inMyOrg(request.resource.data);
-      allow update: if canWrite() && inMyOrg(resource.data) && inMyOrg(request.resource.data);
-      allow delete: if (canWrite() && inMyOrg(resource.data))
+      allow create: if (canWrite() && inMyOrg(request.resource.data)) || ownerSpace(request.resource.data);
+      allow update: if (canWrite() && inMyOrg(resource.data) && inMyOrg(request.resource.data))
+                    || (ownerSpace(resource.data) && ownerSpace(request.resource.data));
+      allow delete: if (canWrite() && inMyOrg(resource.data)) || ownerSpace(resource.data)
                     || (isOwner() && orgDeleting(resource.data.get('org', '')));
     }
 
@@ -65,10 +70,12 @@ service cloud.firestore {
     }
     match /quotes/{id} {
       allow read: if (canQuote() && (resource == null || inMyOrg(resource.data)))
+                  || (isOwner() && (resource == null || ownerSpace(resource.data)))
                   || (isOwner() && resource != null && orgDeleting(resource.data.get('org', '')));
-      allow create, update: if canQuote() && canWrite() && inMyOrg(request.resource.data)
-                            && (resource == null || inMyOrg(resource.data));
-      allow delete: if (canQuote() && canWrite() && inMyOrg(resource.data))
+      allow create, update: if (canQuote() && canWrite() && inMyOrg(request.resource.data)
+                            && (resource == null || inMyOrg(resource.data)))
+                            || (ownerSpace(request.resource.data) && (resource == null || ownerSpace(resource.data)));
+      allow delete: if (canQuote() && canWrite() && inMyOrg(resource.data)) || ownerSpace(resource.data)
                     || (isOwner() && orgDeleting(resource.data.get('org', '')));
     }
 
@@ -115,12 +122,13 @@ service cloud.firestore {
     // ---- Client links: the client opens only the page whose secret link they have
     match /client/{token} {
       allow get: if signedIn();
-      allow list: if (isMember() && inMyOrg(resource.data))
+      allow list: if (isMember() && inMyOrg(resource.data)) || ownerSpace(resource.data)
                   || (isOwner() && orgDeleting(resource.data.get('org', '')));
-      allow create: if canWrite() && inMyOrg(request.resource.data);
-      allow delete: if (canWrite() && inMyOrg(resource.data))
+      allow create: if (canWrite() && inMyOrg(request.resource.data)) || ownerSpace(request.resource.data);
+      allow delete: if (canWrite() && inMyOrg(resource.data)) || ownerSpace(resource.data)
                     || (isOwner() && orgDeleting(resource.data.get('org', '')));
       allow update: if (canWrite() && inMyOrg(resource.data) && inMyOrg(request.resource.data))
+                    || (ownerSpace(resource.data) && ownerSpace(request.resource.data))
                     || (signedIn()
                         && request.resource.data.diff(resource.data).affectedKeys()
                              .hasOnly(['ap', 'ss', 'signed', 'log', 'clientAt', 'notes', 'docs']));
@@ -129,10 +137,10 @@ service cloud.firestore {
     // ---- Files (photos, PDFs) until each company's own drive is connected
     match /photos/{id} {
       allow get: if signedIn();
-      allow list: if (isMember() && inMyOrg(resource.data))
+      allow list: if (isMember() && inMyOrg(resource.data)) || ownerSpace(resource.data)
                   || (isOwner() && orgDeleting(resource.data.get('org', '')));
-      allow create, update: if (canWrite() && inMyOrg(request.resource.data)) || (signedIn() && !isMember() && !isOwner() && request.resource.data.get('org', '') == '');
-      allow delete: if (canWrite() && inMyOrg(resource.data))
+      allow create, update: if (canWrite() && inMyOrg(request.resource.data)) || ownerSpace(request.resource.data) || (signedIn() && !isMember() && !isOwner() && request.resource.data.get('org', '') == '');
+      allow delete: if (canWrite() && inMyOrg(resource.data)) || ownerSpace(resource.data)
                     || (isOwner() && orgDeleting(resource.data.get('org', '')));
     }
 

@@ -1382,7 +1382,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v474 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v475 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8516,7 +8516,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v474 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v475 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11101,7 +11101,7 @@ function roleScanUI(){try{var b=document.body;b.classList.toggle('role-limited',
   var ds=document.getElementById('disp-scan-box');var c2=ds&&ds.closest('.card');if(c2)c2.style.display=hasRole('dispatch')?'':'none';
   var dcl=document.querySelector('#view-dispatch button[onclick*="clearDispatchLog"]');if(dcl)dcl.style.display=hasRole('dispatch')?'':'none';}catch(e){}}
 var ROLE_ORDER=['admin','designer','jobs','drafting','cabinets','installer','dispatch','qc','maint','orgadmin'];
-function roleViews(){if(window.SESSION&&SESSION.owner)return ['admin'];var R=(SESSION.roles&&SESSION.roles.length)?SESSION.roles:[SESSION.role],v=[];R.forEach(function(r){(ROLE_VIEWS[r]||[]).forEach(function(x){if(v.indexOf(x)<0)v.push(x);});});return v;}
+function roleViews(){var R=(SESSION.roles&&SESSION.roles.length)?SESSION.roles:[SESSION.role],v=[];R.forEach(function(r){(ROLE_VIEWS[r]||[]).forEach(function(x){if(v.indexOf(x)<0)v.push(x);});});return v;}
 function _adminCode(){try{return localStorage.getItem('cbk-admin-code')||'1773';}catch(e){return '1773';}}
 /* removed unused _who */
 function roleInit(){
@@ -11305,7 +11305,7 @@ function rcBegin(){if(cloud.started)return;cloud.started=true;try{appSetLoad();}
 function rcWatch(em){
   if(_rcUnsub){_rcUnsub();_rcUnsub=null;}
   var nm0=(cloud.auth.currentUser&&cloud.auth.currentUser.displayName)||(function(){try{return localStorage.getItem('cbk-user-name')||'';}catch(e){return '';}})();
-  if(em===ADMIN_EMAIL){SESSION.owner=true;SESSION.org='';SESSION.orgName='';orgCacheCheck('__owner');if(!SESSION.role){applyRole('admin',nm0||'Kiya',em,['admin']);setTimeout(function(){try{switchView('admin');}catch(e){}},0);}try{orgRoApply();}catch(e){}rcBegin();return;}   // v474: the Owner runs the app, sees no company's data
+  if(em===ADMIN_EMAIL){SESSION.owner=true;SESSION.org='__owner';SESSION.orgName='My workspace';SESSION.ro=false;ORG={name:'My workspace',status:'active',sections:ORG_SECTIONS.map(function(x){return x[0];}),quote:true};orgCacheCheck('__owner');if(!SESSION.role){applyRole('admin',nm0||'Kiya',em,['admin']);setTimeout(function(){try{switchView('admin');}catch(e){}},0);}try{orgRoApply();}catch(e){}rcBegin();return;}   // v474: the Owner runs the app, sees no company's data
   rcShow('rc-connecting');
   _rcUnsub=cloud.db.collection('users').doc(em).onSnapshot(function(d){
     if(!d.exists){cloud.db.collection('users').doc(em).set({email:em,name:nm0||em,roles:[],status:'pending',requestedAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(e){rcErr('Could not send the request: '+e.message);});return;}
