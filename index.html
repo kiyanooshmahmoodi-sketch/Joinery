@@ -1138,7 +1138,7 @@ html,body{overflow-x:hidden;}
 window.addEventListener('resize',fit);document.addEventListener('DOMContentLoaded',fit);window.addEventListener('load',fit);try{document.fonts.ready.then(fit);}catch(e){}setTimeout(fit,600);})();</script>
 <style id="org-css">
 /* v487: in the installed app the title bar is a drag area — while a popup is open, clicks must reach the popup */
-#drvask-ov,#drvask-ov *,#ml-ov,#ml-ov *,#inv-ov,#inv-ov *,#drvpk-ov,#drvpk-ov *,#drvdel-ov,#drvdel-ov *,#inst-ov,#inst-ov *,#inst-bar,#inst-bar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}
+#drvname-ov,#drvname-ov *,#drvask-ov,#drvask-ov *,#ml-ov,#ml-ov *,#inv-ov,#inv-ov *,#drvpk-ov,#drvpk-ov *,#drvdel-ov,#drvdel-ov *,#inst-ov,#inst-ov *,#inst-bar,#inst-bar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}
 body:has(#inv-ov[style*="flex"]) .topbar,body:has(#inv-ov[style*="flex"]) .topbar *,body:has(#drvpk-ov[style*="flex"]) .topbar,body:has(#drvpk-ov[style*="flex"]) .topbar *,body:has(#drvdel-ov[style*="flex"]) .topbar,body:has(#drvdel-ov[style*="flex"]) .topbar *,body:has(#ml-ov[style*="flex"]) .topbar,body:has(#ml-ov[style*="flex"]) .topbar *,body:has(#inst-ov) .topbar,body:has(#inst-ov) .topbar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}
 #inv-ov,#drvpk-ov{padding-top:calc(env(titlebar-area-height,0px) + 24px)!important}
 #inv-mail a,#inv-mail img{opacity:1!important;filter:none!important;pointer-events:none}
@@ -1388,7 +1388,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v496 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v497 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8524,7 +8524,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v496 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v497 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10942,7 +10942,7 @@ async function upPut(id,d,job){var T=800000,col=cloud.db.collection('photos'),re
   if(!window.CLIENT_MODE&&window.SESSION&&SESSION.role){   // v483: staff files go to the company drive
     var forClient=window._upForceServer||drvForClient(id,job);   // v484: files on the client page also keep a copy on the server so the client can open them
     if((drvAutoCfg()||drvLinkedFor(id,job))&&!window._upForceServer){var sent=false;try{await drvUpload(id,d,job);sent=true;}catch(e){
-        if(e.code==='drv-wait')throw e;if(e.code==='drv-nolink'||e.code==='drv-ask'){relay=false;}else
+        if(e.code==='drv-wait')throw e;if(e.code==='drv-nolink'||e.code==='drv-ask'||e.code==='drv-name'){relay=false;}else
         // v489: no company Microsoft account here (e.g. an installer with a personal email) — park the file on the server; the office moves it into the drive
         if(e.code==='ms-login'||e.status===401||e.status===403){relay=true;if(e.code==='ms-login'&&drvWantsMs())_msNeed=true;}
         else if(!forClient)throw e;}
@@ -11564,7 +11564,9 @@ function drvFileName(id,d,jid){var j=allJobs[jid]||{},dr=(j.drawings||[]).filter
   var base=dr&&dr.name?drvSafe(dr.name.replace(/\.[^.]+$/,''))+(/\.[a-z0-9]{1,5}$/i.test(dr.name)?dr.name.match(/\.[a-z0-9]{1,5}$/i)[0]:''):(new Date().toISOString().slice(0,10)+' '+id);
   return base+drvExt(d,base);}
 async function drvPutFile(dId,parent,name,blob){
-  try{var ex=await drvChild(dId,parent,name);if(ex&&!ex.folder&&Number(ex.size)===blob.size)return ex;}catch(e){}   // v496: never a duplicate — same name + same size = already there
+  var ex=null;try{ex=await drvChild(dId,parent,name);}catch(e){}
+  if(ex&&!ex.folder&&Number(ex.size)===blob.size)return ex;   // v496: never a duplicate — same name + same size = already there
+  if(ex&&!DRV_AUTO){var en=new Error('a different file with this name is already there');en.code='drv-name';en.name0=name;en.parent=parent;en.d=dId;throw en;}   // v497: ask before saving under another name
   if(blob.size<=3.5*1048576)return await gf(drvItem(dId,parent)+':/'+encodeURIComponent(name)+':/content?@microsoft.graph.conflictBehavior=rename',{method:'PUT',body:blob,headers:{'Content-Type':blob.type||'application/octet-stream'}});
   var s=await gf(drvItem(dId,parent)+':/'+encodeURIComponent(name)+':/createUploadSession',{method:'POST',body:{item:{'@microsoft.graph.conflictBehavior':'rename'}}});
   var C=10*327680,res=null;for(var o=0;o<blob.size;o+=C){var part=blob.slice(o,Math.min(o+C,blob.size));
@@ -11581,7 +11583,8 @@ async function drvUpload(id,d,jobHint){var c=drvCfg();var loc=drvLocate(id,jobHi
   if(DRV_AUTO){var catName=loc.cat>=0?drvCatName(loc.cat):(DRIVE_CATS.length+1)+' - Other';cf=await drvMkdir(dId,jf.id,catName);}
   else{try{cf=await drvMkPath(dId,jf.id,loc.cat>=0&&DRV_N1[loc.cat]?DRV_N1[loc.cat]:DRV_N1_OTHER,loc.job);}
     catch(e){if(e.code==='drv-ask'){drvAskNote(loc.job,e.path,id);throw e;}if(e.status===404){var J=allJobs[loc.job];if(J&&J.info&&J.info.drv){J.info.drv.missing=true;try{jhSave(loc.job);}catch(x){}}var e2=new Error('project folder not found');e2.code='drv-nolink';throw e2;}throw e;}}
-  var it=await drvPutFile(dId,cf.id,drvFileName(id,d,loc.job),drvBlob(d));
+  var JJ=allJobs[loc.job],nm=(JJ&&JJ.info&&JJ.info.drvNames&&JJ.info.drvNames[id])||drvFileName(id,d,loc.job),it;
+  try{it=await drvPutFile(dId,cf.id,nm,drvBlob(d));}catch(e){if(e.code==='drv-name'){drvNameNote(loc.job,id,{name:nm,parent:cf.id,d:dId,folder:cf.name||''});}throw e;}
   await cloud.db.collection('photos').doc(id).set({drv:{d:dId,i:it.id},name:it.name,size:it.size||0,job:loc.job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()});
   return it;}
 async function drvFetch(drv){var r=await gf(drvItem(drv.d,drv.i)+'/content',{raw:true});var b=await r.blob();
@@ -11703,7 +11706,7 @@ async function drvRelay(){var c=DRV_AUTO?drvAutoCfg():drvCfg();if(!c||_relayBusy
     for(var i=0;i<docs.length;i++){var id=docs[i].id,x=docs[i].data()||{};if(!x.relay)continue;
       var d=x.d||'';if(!d&&x.n){var parts=[];for(var k=0;k<x.n;k++){var pp=await cloud.db.collection('photos').doc(id+'~'+k).get();if(!pp.exists){parts=null;break;}parts.push(pp.data().d);}if(!parts)continue;d=parts.join('');}
       if(!d)continue;var keep=drvForClient(id,x.job);
-      try{var it=await drvUpload(id,d,x.job);}catch(e){if(e.code==='drv-wait'||e.code==='drv-nolink'||e.code==='drv-ask')continue;throw e;}
+      try{var it=await drvUpload(id,d,x.job);}catch(e){if(e.code==='drv-wait'||e.code==='drv-nolink'||e.code==='drv-ask'||e.code==='drv-name')continue;throw e;}
       if(keep)await cloud.db.collection('photos').doc(id).set({d:d,n:0,relay:false},{merge:true});
       else for(var k2=0;k2<(x.n||0);k2++){cloud.db.collection('photos').doc(id+'~'+k2).delete().catch(function(){});}
       moved++;}
@@ -11805,6 +11808,7 @@ function drvCanLink(){try{return !!(SESSION.owner||isOrgAdm()||hasRole('jobs'));
 function drvLinkHTML(j){if(DRV_AUTO||!drvCfg())return '';var f=j.info&&j.info.drv&&j.info.drv.link?j.info.drv:null;
   return '<div class="jx-file" style="gap:8px;"><span class="jx-fname" title="'+qe(f?(f.path||f.name):'')+'">SharePoint folder: '+(f?(f.missing?'<b style="color:#991b1b;">not found — link it again</b>':'<b>'+esc(f.name)+'</b>'):'<span style="color:#a1a1aa;">not linked — files stay in CabLine</span>')+'</span>'+
     (drvCanLink()?'<button class="jx-link" onclick="drvLinkJob(\''+j.id+'\')">'+(f?'Change':'Link project folder')+'</button>':'')+'</div>'+
+    (f&&drvNameList(j).length?'<div class="jx-file" style="gap:8px;background:#fef3c7;border-radius:6px;padding:4px 8px;"><span class="jx-fname">'+drvNameList(j).length+' file name'+(drvNameList(j).length>1?'s':'')+' to choose — a file with the same name is already there</span>'+(drvCanLink()?'<button class="jx-link" onclick="drvNameShow(\''+j.id+'\',true)">Choose</button>':'')+'</div>':'')+
     (f&&drvAskList(j).length?'<div class="jx-file" style="gap:8px;background:#fef3c7;border-radius:6px;padding:4px 8px;"><span class="jx-fname">'+drvAskList(j).length+' folder'+(drvAskList(j).length>1?'s':'')+' waiting for your OK — files kept in CabLine</span>'+(drvCanLink()?'<button class="jx-link" onclick="drvAskShow(\''+j.id+'\',true)">Review</button>':'')+'</div>':'');}
 async function drvLinkJob(jid){try{await msToken(true);}catch(e){if(!(e&&/cancel/i.test(String(e.errorCode||e.message))))alert('Could not sign in to Microsoft: '+(e.message||e));return;}
   _pk={src:'me',stack:[],forJob:jid};drvPickShow();}
@@ -11816,14 +11820,14 @@ async function drvMoveJob(jid){var j=allJobs[jid];if(!j||!(j.info&&j.info.drv&&j
       if(!d){try{var r=await window.storage.get('cbkph:'+id);d=r&&r.value;}catch(e){}}
       if(!d)continue;var keep=drvForClient(id,jid);
       await drvUpload(id,d,jid);if(keep)await cloud.db.collection('photos').doc(id).set({d:d,n:0},{merge:true});else for(var k2=0;k2<((x&&x.n)||0);k2++)cloud.db.collection('photos').doc(id+'~'+k2).delete().catch(function(){});
-      n++;}catch(e){if(e&&e.code==='drv-ask')continue;if(e&&(e.code==='ms-login'||e.code==='drv-nolink'))break;}}
+      n++;}catch(e){if(e&&(e.code==='drv-ask'||e.code==='drv-name'))continue;if(e&&(e.code==='ms-login'||e.code==='drv-nolink'))break;}}
   return n;}
 
 // ===== v495: before CabLine makes ANY folder it asks — shows what exists, what is missing and similar folders; "Not now" keeps the files on the CabLine server =====
 function drvAskNote(jid,path,id){var J=allJobs[jid];if(!J)return;var inf=J.info=J.info||{},A=inf.drvAsk=inf.drvAsk||{},a=A[path]=A[path]||{files:[],since:Date.now()};
   if(id&&a.files.indexOf(id)<0){a.files.push(id);try{jhSave(jid);}catch(e){}}
   if((inf.drvOk||{})[path]!=='no'&&drvCanLink())drvAskSoon(jid);}
-var _askT=0,_askJob=null;function drvAskSoon(jid){_askJob=jid;clearTimeout(_askT);_askT=setTimeout(function(){drvAskShow(_askJob);},1200);}
+var _askT=0,_askJob=null;function drvAskSoon(jid){_askJob=jid;clearTimeout(_askT);_askT=setTimeout(function(){var J=allJobs[_askJob];if(J&&drvAskList(J).filter(function(p){return ((J.info||{}).drvOk||{})[p]!=='no';}).length)drvAskShow(_askJob);else drvNameShow(_askJob);},1200);}
 function drvAskList(J){var inf=(J&&J.info)||{},A=inf.drvAsk||{},ok=inf.drvOk||{};return Object.keys(A).filter(function(p){return ok[p]!=='yes'&&(A[p].files||[]).length;});}
 async function drvAskShow(jid,all){var J=allJobs[jid];if(!J||!drvCanLink())return;var inf=J.info||{},f=inf.drv;if(!f||!f.id)return;
   var L=drvAskList(J).filter(function(p){return all||(inf.drvOk||{})[p]!=='no';});if(!L.length)return;
@@ -11856,6 +11860,29 @@ async function drvAskAnswer(i,ans){var rw=(window._askRows||[])[i],jid=window._a
     ok[rw.path]='yes';jhSave(jid);showMsg('✓ Saving the files into the folder…');
     var files=((inf.drvAsk||{})[rw.path]||{}).files||[];drvMoveJob(jid).then(function(){if(inf.drvAsk)delete inf.drvAsk[rw.path];jhSave(jid);try{renderJobsHome();}catch(e){}showMsg('✓ '+files.length+' file(s) saved');}).catch(function(){});}
   window._askRows.splice(i,1);if(!window._askRows.length)document.getElementById('drvask-ov').style.display='none';else drvAskShow(jid);try{renderJobsHome();}catch(e){}}
+
+// ===== v497: a different file with the same name is already in the folder → ask for the name before saving =====
+function drvNameNote(jid,id,o){var J=allJobs[jid];if(!J)return;var inf=J.info=J.info||{},N=inf.drvNameAsk=inf.drvNameAsk||{};
+  if(!N[id]||N[id].name!==o.name){N[id]={name:o.name,parent:o.parent,d:o.d,folder:o.folder,since:Date.now()};try{jhSave(jid);}catch(e){}}
+  if(!N[id].no&&drvCanLink())drvAskSoon(jid);}
+function drvNameList(J){var N=((J&&J.info)||{}).drvNameAsk||{};return Object.keys(N);}
+async function drvNextName(d,parent,name){var m=/^(.*?)(\.[a-z0-9]{1,5})?$/i.exec(name),base=m[1],ext=m[2]||'';
+  for(var k=2;k<50;k++){var c=base+' ('+k+')'+ext,ex=null;try{ex=await drvChild(d,parent,c);}catch(e){}if(!ex)return c;}return base+' '+Date.now()+ext;}
+async function drvNameShow(jid,all){var J=allJobs[jid];if(!J||!drvCanLink())return;var N=(J.info||{}).drvNameAsk||{},ids=drvNameList(J).filter(function(id){return all||!N[id].no;});if(!ids.length)return;
+  var ov=document.getElementById('drvname-ov');if(!ov){ov=document.createElement('div');ov.id='drvname-ov';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(19,17,16,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(env(titlebar-area-height,0px) + 24px) 12px 24px;';document.body.appendChild(ov);}
+  var sug={};for(var i=0;i<ids.length;i++){var a=N[ids[i]];sug[ids[i]]=await drvNextName(a.d,a.parent,a.name);}
+  window._nmIds=ids;window._nmJob=jid;ov.style.display='flex';
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:600px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);"><div style="padding:14px 16px;border-bottom:1px solid #eee;"><div style="font-weight:700;font-size:15px;">A file with this name is already there</div><div style="font-size:12px;color:#71717a;">It is a different file, so CabLine will not replace it. Choose the name to save this one under — or keep it in CabLine for now.</div></div>'+
+    ids.map(function(id,i){var a=N[id];return '<div style="padding:12px 16px;border-bottom:1px solid #f0f0f2;"><div style="font-size:13px;">In <b>'+esc(a.folder||'the folder')+'</b> there is already <b>'+esc(a.name)+'</b>.</div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center;"><span style="font-size:12.5px;color:#52525b;">Save this one as</span><input id="nm-in-'+i+'" value="'+qe(sug[id])+'" style="flex:1;min-width:200px;"></div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><button class="btn btn-blue btn-sm" onclick="drvNameAnswer('+i+',true)">Save with this name</button><button class="btn btn-outline btn-sm" onclick="drvNameAnswer('+i+',false)">Not now — keep in CabLine</button></div><div id="nm-err-'+i+'" style="font-size:12px;color:#991b1b;margin-top:6px;"></div></div>';}).join('')+
+    '<div style="padding:12px 16px;display:flex;"><button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="document.getElementById(\'drvname-ov\').style.display=\'none\'">Close</button></div></div>';}
+async function drvNameAnswer(i,yes){var id=(window._nmIds||[])[i],jid=window._nmJob,J=allJobs[jid];if(!id||!J)return;var inf=J.info,N=inf.drvNameAsk||{},a=N[id];if(!a)return;
+  if(!yes){a.no=true;jhSave(jid);showMsg('Kept in CabLine — choose a name later from the job card');}
+  else{var el=document.getElementById('nm-in-'+i),v=drvSafe((el&&el.value)||'');if(!/\.[a-z0-9]{1,5}$/i.test(v)){var ext=(/\.[a-z0-9]{1,5}$/i.exec(a.name)||[''])[0];v+=ext;}
+    var ex=null;try{ex=await drvChild(a.d,a.parent,v);}catch(e){}if(ex){var er=document.getElementById('nm-err-'+i);if(er)er.textContent='“'+v+'” is also there — choose another name.';return;}
+    inf.drvNames=inf.drvNames||{};inf.drvNames[id]=v;delete N[id];jhSave(jid);showMsg('✓ Saving as “'+v+'”…');drvMoveJob(jid).then(function(){try{renderJobsHome();}catch(e){}}).catch(function(){});}
+  window._nmIds.splice(i,1);if(!window._nmIds.length)document.getElementById('drvname-ov').style.display='none';else drvNameShow(jid);try{renderJobsHome();}catch(e){}}
 
 // v483 hooks: new job → its folder; renamed job → folder renamed; delete → ask about the folder
 (function(){

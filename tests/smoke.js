@@ -409,6 +409,14 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('the job card shows folders still waiting for an OK',await p.evaluate(()=>/waiting for your OK/.test(drvLinkHTML(allJobs.m1))));
   await p.evaluate(()=>drvAskShow('m1',true));await p.waitForTimeout(T*1200);await p.evaluate(()=>drvAskAnswer(_askRows.findIndex(r=>/2201/.test(r.path)),'yes'));await p.waitForTimeout(T*2000);t2=tree2();
   ok('saying yes later moves the kept file in',t2.includes('0012 J Smith Residence/200 Design/220 Architecture/2201 Received/Upload.pdf'),t2.join(' | '));
+  // same name, different file → asks for the name first
+  const recv=Object.values(G.items).find(x=>x&&x.name==='2201 Received');mk('Plan.pdf',recv.id,false,'OLD');
+  await p.evaluate(async()=>{const id='pman0000000004';await window.storage.set('cbkph:'+id,'data:application/pdf;base64,JVBERi0xLjQKJcfsj6IKMSAwIG9iago8PC9UeXBlL0NhdGFsb2c+PgplbmRvYmoK');allJobs.m1.drawings.unshift({kind:'arch',id,name:'Plan.pdf'});saveAllJobs();await upEnqueue(id,'m1');});await p.waitForTimeout(T*2800);
+  const nmTxt=await p.evaluate(()=>{const o=document.getElementById('drvname-ov');return o&&o.style.display==='flex'?o.innerText+' || '+document.getElementById('nm-in-0').value:'';});
+  ok('a different file with the same name → CabLine asks and suggests a new name',/already there/.test(nmTxt)&&/Plan \(2\)\.pdf/.test(nmTxt),nmTxt.slice(0,240));
+  await p.evaluate(()=>{document.getElementById('nm-in-0').value='Plan rev B.pdf';drvNameAnswer(0,true);});await p.waitForTimeout(T*2500);
+  const recvKids=Object.values(G.items).filter(x=>x&&x.parent===recv.id).map(x=>x.name).sort();
+  ok('it is saved only after you confirm, under the name you chose — the original untouched',recvKids.includes('Plan.pdf')&&recvKids.includes('Plan rev B.pdf')&&Object.values(G.items).find(x=>x&&x.name==='Plan.pdf').content==='OLD',recvKids.join(','));
   await p.evaluate(()=>{document.getElementById('proj-input').value='Smith — renamed';autoSave();});await p.waitForTimeout(T*800);
   ok('renaming the job keeps the link and never renames the folder',!!G.items[X.id]&&G.items[X.id].name==='0012 J Smith Residence'&&await p.evaluate(()=>allJobs.m1.info.drv&&allJobs.m1.info.drv.name==='0012 J Smith Residence'));
   ok('the job card shows the linked folder',await p.evaluate(()=>/0012 J Smith Residence/.test(drvLinkHTML(allJobs.m1))));
