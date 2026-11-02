@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v501 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v502 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v501 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v502 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10796,13 +10796,13 @@ function qtOpen(id){var j=allJobs[id];if(!j||!qtCan())return;_qtJob=id;qtData(j,
   ov.style.display='block';document.body.classList.add('qt-open');qtPaint();}
 
 // ===== v499: Price calculator in the Quotation — market rates per linear metre (NSW, AUD, ex GST), every number editable per company =====
-var QC_DEF={v:2,finishes:[['flat_s','Flat pack — supply only',350,700,1],['flat_i','Flat pack — supplied & installed',700,1300],['lam','Laminate',800,1700],['hgl','Hi-gloss laminate',1212,1212],['vin','Vinyl wrap',1250,2000],['pu','Polyurethane / spray-painted MDF',1155,2200],['2p','Two pack',1800,3200],['shk','Shaker / Hampton',1848,3500],['ff','Country / face frame',2079,2829],['fp','French provincial',3175,3175],['ven','Timber veneer',2400,3800],['tim','Solid timber',2200,4500]],
+var QC_DEF={v:3,finishes:[['lam','Laminate',800,1400],['pu','Polyurethane',1400,2200],['2p','Two pack',1800,3000],['tim','Timber',2200,4000]],   // v502: Steepwood market bands (NSW 2026), per metre of base run
   carcass:[['m16','Melamine 16mm',0],['mr16','Moisture resistant 16mm',8.5],['mr18','Moisture resistant 18mm',14],['ply','Plywood',37.5]],
-  ov2400:60,ov2700:80,tall2400:200,tall2700:240,islandX:100,drawer:150,supplyOnlyLess:15,roundTo:10,src:'lowest / highest of thequoteyard.com.au, steding.com.au, steepwood.com.au (NSW 2026)'};
+  ov2400:60,ov2700:80,tall2400:200,tall2700:240,islandX:100,drawer:150,supplyOnlyLess:15,roundTo:10,src:'steepwood.com.au — cabinetry cost per linear metre NSW (2026)'};
 var QC=null,_qcRow=-1;
 function qcRatesId(){return 'rates__'+(SESSION.org||'x');}
-function qcLoad(){if(QC)return Promise.resolve(QC);var loc=null;try{loc=JSON.parse(localStorage.getItem('cbk-qc-rates:'+(SESSION.org||''))||'null');}catch(e){}QC=(loc&&loc.v>=2)?loc:JSON.parse(JSON.stringify(QC_DEF));
-  return (window.cloud&&cloud.db&&cloud.user?cloud.db.collection('quotes').doc(qcRatesId()).get().then(function(d){var x=d&&d.exists&&d.data();if(x&&x.rates&&x.rates.v>=2){QC=x.rates;try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}}return QC;}).catch(function(){return QC;}):Promise.resolve(QC));}
+function qcLoad(){if(QC)return Promise.resolve(QC);var loc=null;try{loc=JSON.parse(localStorage.getItem('cbk-qc-rates:'+(SESSION.org||''))||'null');}catch(e){}QC=(loc&&loc.v>=3)?loc:JSON.parse(JSON.stringify(QC_DEF));
+  return (window.cloud&&cloud.db&&cloud.user?cloud.db.collection('quotes').doc(qcRatesId()).get().then(function(d){var x=d&&d.exists&&d.data();if(x&&x.rates&&x.rates.v>=3){QC=x.rates;try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}}return QC;}).catch(function(){return QC;}):Promise.resolve(QC));}
 function qcSaveRates(){try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}
   try{cloud.db.collection('quotes').doc(qcRatesId()).set({rates:QC,org:SESSION.org||'',at:Date.now()}).then(function(){showMsg('✓ Rates saved for your company');}).catch(function(e){alert('Could not save rates: '+e.message);});}catch(e){}}
 function qcIn(){var j=allJobs[_qtJob],q=j&&qtCur(j),r=q&&q.rows[_qcRow];var c=(r&&r.calc)||{};var o=Object.assign({fin:'lam',carc:'m16',rate:'',height:'2400',base:'',over:'',tall:'',island:'',drawers:'',extra:'',supplyOnly:false},c);if(o.rate===''){var f=qcFind(QC.finishes,o.fin);o.rate=String(Math.round((f[2]+f[3])/2));}return o;}
@@ -10851,7 +10851,8 @@ function qcRatesHTML(){var R=QC,row=function(L,i,cols){return cols.map(function(
     one=function(k,lab,unit){return '<label style="display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13px;padding:3px 0;">'+lab+'<span style="display:flex;gap:4px;align-items:center;"><input value="'+qtEsc(R[k])+'" inputmode="decimal" oninput="QC.'+k+'=qtNum(this.value)" style="width:80px;"><span style="font-size:12px;color:#71717a;min-width:28px;">'+unit+'</span></span></label>';};
   return '<div style="background:#fff;border-radius:14px;max-width:760px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);">'+
     '<div style="display:flex;gap:8px;align-items:center;padding:14px 16px;border-bottom:1px solid #eee;flex-wrap:wrap;"><div style="flex:1;min-width:200px;"><div style="font-weight:700;font-size:15px;">Rates</div><div style="font-size:12px;color:#71717a;">AUD per linear metre, ex GST. Start values: '+esc(R.src||'')+'. Saved for your company only.</div></div><button class="btn btn-outline btn-sm" onclick="qcPaint()">Back</button><button class="btn btn-blue btn-sm" onclick="qcSaveRates();qcPaint()">Save rates</button></div>'+
-    '<div style="padding:12px 16px;"><div style="font-weight:600;font-size:13px;margin-bottom:6px;">Door finish — market lowest / highest per metre (base run)</div>'+R.finishes.map(function(x,i){return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">'+row(R.finishes,i,[[1,0,'finishes','100%'],[2,1,'finishes','90px'],[3,1,'finishes','90px']])+'</div>';}).join('')+
+    '<div style="padding:12px 16px;"><div style="font-weight:600;font-size:13px;margin-bottom:6px;">Door finish — market lowest / highest per metre (base run)</div>'+R.finishes.map(function(x,i){return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">'+row(R.finishes,i,[[1,0,'finishes','100%'],[2,1,'finishes','90px'],[3,1,'finishes','90px']])+(R.finishes.length>1?'<button class="btn btn-outline btn-sm" title="Remove" onclick="QC.finishes.splice('+i+',1);qcPaint(\'rates\')">×</button>':'')+'</div>';}).join('')+
+    '<button class="btn btn-outline btn-sm" onclick="QC.finishes.push([\'f\'+Date.now().toString(36),\'New finish\',1000,2000]);qcPaint(\'rates\')">+ Add finish</button>'+
     '<div style="font-weight:600;font-size:13px;margin:12px 0 6px;">Carcass board — adds %</div>'+R.carcass.map(function(x,i){return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">'+row(R.carcass,i,[[1,0,'carcass','100%'],[2,1,'carcass','90px']])+'</div>';}).join('')+
     '<div style="font-weight:600;font-size:13px;margin:12px 0 6px;">Cabinet types — % of the base-run price per metre</div>'+one('ov2400','Overhead, total height 2400 mm','%')+one('ov2700','Overhead, total height 2700 mm','%')+one('tall2400','Tall / pantry, total height 2400 mm','%')+one('tall2700','Tall / pantry, total height 2700 mm','%')+one('islandX','Island','%')+one('drawer','Each drawer adds','$')+one('supplyOnlyLess','Supply only — less','%')+one('roundTo','Round the price to','$')+
     '<div style="margin-top:10px;"><button class="btn btn-outline btn-sm" onclick="if(confirm(\'Put all rates back to the start values?\')){QC=JSON.parse(JSON.stringify(QC_DEF));qcPaint(\'rates\');}">Back to start values</button></div></div></div>';}

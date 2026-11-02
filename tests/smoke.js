@@ -176,7 +176,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     _qcC.height='2700';const b=qcCalc(_qcC).ex;_qcC.height='2400';_qcC.tall='1.2';const c=qcCalc(_qcC).ex;_qcC.height='2700';const c2=qcCalc(_qcC).ex;_qcC.height='2400';_qcC.tall='';_qcC.carc='ply';const d=qcCalc(_qcC).ex;_qcC.carc='m16';
     qcApply();const price=qtCur(allJobs.qj).rows[0].price;qcPaint();const slider=document.getElementById('qc-rate-r');qtClose();window.__c2=c2;return [lam[2],lam[3],a,b,c,d,price,slider&&slider.min,slider&&slider.max].join(',');});
   ok('tall 240% at 2700 (with overhead 80%)',await p.evaluate(()=>window.__c2)===17030,String(await p.evaluate(()=>window.__c2)));
-  ok('price calculator: laminate market range 800–1700; you pick the price; overhead 60% at 2400 / 80% at 2700; tall 200% at 2400; fills the area',pc==='800,1700,12320,13860,14960,16940,12320,800,1700',pc);
+  ok('price calculator: laminate Steepwood range 800–1400; you pick the price; overhead 60% at 2400 / 80% at 2700; tall 200% at 2400; fills the area',pc==='800,1400,12320,13860,14960,16940,12320,800,1400',pc);
   const r2=await p.evaluate(()=>{applyRole('installer','Ali','',['installer']);const a=qtCan();applyRole('installer','Ali','',['installer','quote']);const b=qtCan();return [a,b].join(',');});
   ok('only the admin or people given Quotation can open quotes',r2==='false,true',r2);await p.close();}
 // ---------- 17. companies: Owner → company admin → member; isolation; pause
