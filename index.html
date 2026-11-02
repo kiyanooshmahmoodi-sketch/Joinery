@@ -1388,7 +1388,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v495 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v496 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8524,7 +8524,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v495 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v496 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11564,6 +11564,7 @@ function drvFileName(id,d,jid){var j=allJobs[jid]||{},dr=(j.drawings||[]).filter
   var base=dr&&dr.name?drvSafe(dr.name.replace(/\.[^.]+$/,''))+(/\.[a-z0-9]{1,5}$/i.test(dr.name)?dr.name.match(/\.[a-z0-9]{1,5}$/i)[0]:''):(new Date().toISOString().slice(0,10)+' '+id);
   return base+drvExt(d,base);}
 async function drvPutFile(dId,parent,name,blob){
+  try{var ex=await drvChild(dId,parent,name);if(ex&&!ex.folder&&Number(ex.size)===blob.size)return ex;}catch(e){}   // v496: never a duplicate — same name + same size = already there
   if(blob.size<=3.5*1048576)return await gf(drvItem(dId,parent)+':/'+encodeURIComponent(name)+':/content?@microsoft.graph.conflictBehavior=rename',{method:'PUT',body:blob,headers:{'Content-Type':blob.type||'application/octet-stream'}});
   var s=await gf(drvItem(dId,parent)+':/'+encodeURIComponent(name)+':/createUploadSession',{method:'POST',body:{item:{'@microsoft.graph.conflictBehavior':'rename'}}});
   var C=10*327680,res=null;for(var o=0;o<blob.size;o+=C){var part=blob.slice(o,Math.min(o+C,blob.size));
@@ -11841,10 +11842,10 @@ async function drvAskShow(jid,all){var J=allJobs[jid];if(!J||!drvCanLink())retur
   ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:640px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);"><div style="padding:14px 16px;border-bottom:1px solid #eee;"><div style="font-weight:700;font-size:15px;">New folder needed in “'+esc(f.name)+'”</div><div style="font-size:12px;color:#71717a;">CabLine never makes a folder without your OK. “Not now” keeps the files safe on the CabLine server — you can say yes later from the job card.</div></div>'+
     rows.map(function(rw,i){var sim=rw.st.filter(function(x){return x.sim;})[0];
       return '<div style="padding:12px 16px;border-bottom:1px solid #f0f0f2;"><div style="font-size:12.5px;color:#52525b;margin-bottom:6px;">'+rw.n+' file'+(rw.n>1?'s':'')+' waiting</div>'+
-        '<div style="font-size:13px;line-height:1.7;">'+rw.st.map(function(x,d){return '<div style="padding-left:'+(d*16)+'px;">'+(x.s==='ok'?'<span style="color:#166534;">✓ '+esc(x.n)+'</span> <span style="color:#a1a1aa;font-size:11.5px;">exists</span>':'<b style="color:#92400e;">+ '+esc(x.n)+'</b> <span style="color:#92400e;font-size:11.5px;">will be created</span>')+'</div>';}).join('')+'</div>'+
-        (sim?'<div style="margin-top:8px;font-size:12.5px;background:#fef3c7;border-radius:8px;padding:8px 10px;">A similar folder already exists: <b>'+esc(sim.sim.name)+'</b> — use it instead of making “'+esc(sim.n)+'”?</div>':'')+
+        '<div style="font-size:13px;line-height:1.7;">'+rw.st.map(function(x,d){return '<div style="padding-left:'+(d*16)+'px;">'+(x.s==='ok'?'<span style="color:#166534;">✓ '+esc(x.n)+'</span> <span style="color:#a1a1aa;font-size:11.5px;">exists</span>':(x.sim?'<b style="color:#92400e;">'+esc(x.n)+'</b> <span style="color:#92400e;font-size:11.5px;">missing — a similar folder exists</span>':'<b style="color:#92400e;">+ '+esc(x.n)+'</b> <span style="color:#92400e;font-size:11.5px;">will be created</span>'))+'</div>';}).join('')+'</div>'+
+        (sim?'<div style="margin-top:8px;font-size:12.5px;background:#fef3c7;border-radius:8px;padding:8px 10px;">A similar folder already exists: <b>'+esc(sim.sim.name)+'</b> — CabLine will not make a second one. Use it, or keep the files in CabLine for now.</div>':'')+
         '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">'+(sim?'<button class="btn btn-blue btn-sm" onclick="drvAskAnswer('+i+',\'sim\')">Use “'+esc(sim.sim.name)+'”</button>':'')+
-          '<button class="btn '+(sim?'btn-outline':'btn-blue')+' btn-sm" onclick="drvAskAnswer('+i+',\'yes\')">Create the folder</button><button class="btn btn-outline btn-sm" onclick="drvAskAnswer('+i+',\'no\')">Not now — keep in CabLine</button></div></div>';}).join('')+
+          (sim?'':'<button class="btn btn-blue btn-sm" onclick="drvAskAnswer('+i+',\'yes\')">Create the folder</button>')+'<button class="btn btn-outline btn-sm" onclick="drvAskAnswer('+i+',\'no\')">Not now — keep in CabLine</button></div></div>';}).join('')+
     '<div style="padding:12px 16px;display:flex;"><button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="document.getElementById(\'drvask-ov\').style.display=\'none\'">Close</button></div></div>';}
 async function drvAskAnswer(i,ans){var rw=(window._askRows||[])[i],jid=window._askJob,J=allJobs[jid];if(!rw||!J)return;var inf=J.info=J.info||{},ok=inf.drvOk=inf.drvOk||{};
   if(ans==='no'){ok[rw.path]='no';jhSave(jid);showMsg('Kept in CabLine — say yes later from the job card');}

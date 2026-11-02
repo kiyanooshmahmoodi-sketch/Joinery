@@ -401,8 +401,11 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   const ask3=await p.evaluate(()=>document.getElementById('drvask-ov').innerText);
   if(process.env.SHOT){await p.evaluate(()=>{const o=document.getElementById('role-ov');if(o)o.style.display='none';});await p.screenshot({path:process.env.SHOT+'/ask.png'});}
   ok('a similar existing folder is offered instead of making a duplicate',/similar folder already exists: 5601 Inspection/.test(ask3),ask3.slice(0,300));
+  ok('with a similar folder there is no “Create” — never a duplicate folder',!/Create the folder/.test(ask3)&&/Use “5601 Inspection”/.test(ask3),ask3.slice(0,300));
   await p.evaluate(()=>drvAskAnswer(_askRows.findIndex(r=>/5601/.test(r.path)),'sim'));await p.waitForTimeout(T*2000);t2=tree2();
   ok('“Use it” saves into the existing similar folder — no duplicate',!t2.some(x=>/5601 Inspections/.test(x))&&t2.some(x=>/560 QC & Defects\/5601 Inspection\/.+\.jpg$/.test(x)),t2.join(' | '));
+  const dupN=await p.evaluate(async(pid)=>{await drvPutFile('D1',pid,'same.txt',new Blob(['hello']));await drvPutFile('D1',pid,'same.txt',new Blob(['hello']));return 0;},X.id);
+  ok('the same file is never uploaded twice',Object.values(G.items).filter(x=>x&&x.parent===X.id&&/^same/.test(x.name)).length===1,Object.values(G.items).filter(x=>x&&x.parent===X.id).map(x=>x.name).join(','));
   ok('the job card shows folders still waiting for an OK',await p.evaluate(()=>/waiting for your OK/.test(drvLinkHTML(allJobs.m1))));
   await p.evaluate(()=>drvAskShow('m1',true));await p.waitForTimeout(T*1200);await p.evaluate(()=>drvAskAnswer(_askRows.findIndex(r=>/2201/.test(r.path)),'yes'));await p.waitForTimeout(T*2000);t2=tree2();
   ok('saying yes later moves the kept file in',t2.includes('0012 J Smith Residence/200 Design/220 Architecture/2201 Received/Upload.pdf'),t2.join(' | '));
