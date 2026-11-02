@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v503 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v504 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v503 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v504 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10752,6 +10752,9 @@ function qtAddRow(){var j=allJobs[_qtJob];if(!j)return;qtCur(j).rows.push({area:
 function qtAddStd(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),have={};(q.rows||[]).forEach(function(r){have[String(r.area||'').trim().toLowerCase()]=1;});var n=0;QT_ROWS.forEach(function(r){if(!have[r.area.toLowerCase()]){q.rows.push(JSON.parse(JSON.stringify(r)));n++;}});qtPersist(_qtJob);qtPaint();showMsg(n?'✓ Added '+n+' area(s)':'All standard areas are already in this quote');}
 function qtDelRow(i){var j=allJobs[_qtJob];if(!j||!confirm('Remove this area from the schedule?'))return;qtCur(j).rows.splice(i,1);qtPersist(_qtJob);qtPaint();}
 function qtPick(i){var j=allJobs[_qtJob];if(!j)return;qtData(j,true).cur=+i;qtPersist(_qtJob);qtPaint();}
+// v504: delete a version made by mistake (the last one left can't be deleted)
+function qtDelVer(){var j=allJobs[_qtJob];if(!j)return;var Q=qtData(j,true);if(Q.versions.length<2){alert('This is the only version — it cannot be deleted.');return;}var i=Q.cur!=null?Q.cur:Q.versions.length-1,v=Q.versions[i];
+  if(!confirm('Delete quote version V'+(v.v||i+1)+' ('+qtDate(v.date)+')? This cannot be undone.'))return;Q.versions.splice(i,1);Q.cur=Math.min(i,Q.versions.length-1);qtPersist(_qtJob);qtPaint();showMsg('🗑 V'+(v.v||i+1)+' deleted');}
 function qtNewVer(){var j=allJobs[_qtJob];if(!j)return;var Q=qtData(j,true),c=JSON.parse(JSON.stringify(qtCur(j)));c.v=Math.max.apply(null,Q.versions.map(function(x){return x.v||1;}))+1;c.date=qtToday();c.at=Date.now();Q.versions.push(c);Q.cur=Q.versions.length-1;qtPersist(_qtJob);qtPaint();showMsg('✓ New version V'+c.v);}
 function qtSumsPaint(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),S=qtSums(q),Q=qtSumsQ(q);document.querySelectorAll('#qt-ov [data-sum]').forEach(function(e){e.textContent=qtMoney(S[e.getAttribute('data-sum')]);});document.querySelectorAll('#qt-ov [data-sumn]').forEach(function(e){e.textContent=Math.round(S[e.getAttribute('data-sumn')]).toLocaleString('en-AU');});document.querySelectorAll('#qt-ov [data-qsum]').forEach(function(e){e.textContent=qtMoney(Q[e.getAttribute('data-qsum')]);});var o=document.getElementById('qt-subov');if(o)o.placeholder=qtMoney(S.sub).replace('$ ','');}
 function qtGrow(t){t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px';}
@@ -10866,7 +10869,7 @@ function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.displa
 function qtPaint(){var j=allJobs[_qtJob],ov=document.getElementById('qt-ov');if(!j||!ov)return;var Q=qtData(j,true),q=qtCur(j);
   ov.innerHTML='<div id="qt-bar"><div style="font-weight:600;font-size:15px;margin-right:auto;">Quote · '+esc(j.name||'Job')+'</div>'+
     '<select onchange="qtPick(this.value)" style="width:auto;padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;background:#fff;font:inherit;">'+Q.versions.map(function(x,i){return '<option value="'+i+'"'+(i===Q.cur?' selected':'')+'>V'+(x.v||i+1)+' · '+qtDate(x.date)+'</option>';}).join('')+'</select>'+
-    '<button class="btn btn-blue btn-sm" onclick="qcOpen()">Price calculator</button><button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button><button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
+    '<button class="btn btn-blue btn-sm" onclick="qcOpen()">Price calculator</button><button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button>'+(Q.versions.length>1?'<button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="qtDelVer()" title="Delete the version shown">Delete V'+(q.v||1)+'</button>':'')+'<button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
   ov.querySelectorAll('textarea.qt-in').forEach(qtGrow);}
 function qtPrint(){var j=allJobs[_qtJob];if(!j)return;qtSaveNow();var q=qtCur(j);
   var name=String((q.v<10?'0':'')+q.v+'_Quote - '+(q.ref||j.name||'Job')+' - V'+q.v).replace(/[\\/:*?"<>|]/g,'');
