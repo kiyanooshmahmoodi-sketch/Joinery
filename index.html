@@ -1388,7 +1388,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v492 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v493 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8524,7 +8524,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v492 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v493 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10929,7 +10929,7 @@ async function upLoad(){if(_upLoaded)return;_upLoaded=true;
 function upSave(){try{window.storage.set('cbk-upq',JSON.stringify(_upQ));window.storage.set('cbk-upok',JSON.stringify(Object.keys(_upOK)));}catch(e){}}
 function upStat(){var el=document.getElementById('up-stat');if(!el)return;var n=_upQ.length,f=Object.keys(_upFail).length;
   if(f){el.textContent='⚠ '+f+' file(s) too big to upload';el.style.color='#8f3224';el.title='These photos/voice clips could not be uploaded';return;}
-  if(n&&window.SESSION&&SESSION.role&&!window.CLIENT_MODE&&!drvCfg()){el.textContent='⏸ '+n+' file(s) kept on this device — the company admin must connect the drive';el.style.color='#9a6618';el.title='Files go to the company OneDrive. Ask your admin to connect it in Admin › Users.';el.onclick=null;el.style.cursor='';return;}
+  if(n&&DRV_AUTO&&window.SESSION&&SESSION.role&&!window.CLIENT_MODE&&!drvCfg()){el.textContent='⏸ '+n+' file(s) kept on this device — the company admin must connect the drive';el.style.color='#9a6618';el.title='Files go to the company OneDrive. Ask your admin to connect it in Admin › Users.';el.onclick=null;el.style.cursor='';return;}
   if(n&&_msNeed){el.textContent='🔑 Connect OneDrive to upload '+n+' file(s)';el.style.color='#1d4ed8';el.style.cursor='pointer';el.title='Sign in once with your company Microsoft account';el.onclick=function(){msConnect();};return;}
   el.onclick=null;el.style.cursor='';
   if(n){el.textContent='📤 '+n+' photo/voice/file waiting to upload'+(navigator.onLine?'…':' (no internet)')+_upMsg;el.style.color='#9a6618';el.title='Saved on this device. They upload by themselves as soon as there is internet — keep the app open.';}
@@ -10941,13 +10941,13 @@ async function upScan(){await upLoad();var have={};_upQ.forEach(function(q){have
 async function upPut(id,d,job){var T=800000,col=cloud.db.collection('photos'),relay=false;
   if(!window.CLIENT_MODE&&window.SESSION&&SESSION.role){   // v483: staff files go to the company drive
     var forClient=window._upForceServer||drvForClient(id,job);   // v484: files on the client page also keep a copy on the server so the client can open them
-    if(drvCfg()&&!window._upForceServer){var sent=false;try{await drvUpload(id,d,job);sent=true;}catch(e){
+    if(drvAutoCfg()&&!window._upForceServer){var sent=false;try{await drvUpload(id,d,job);sent=true;}catch(e){
         if(e.code==='drv-wait')throw e;
         // v489: no company Microsoft account here (e.g. an installer with a personal email) — park the file on the server; the office moves it into the drive
         if(e.code==='ms-login'||e.status===401||e.status===403){relay=true;if(e.code==='ms-login'&&drvWantsMs())_msNeed=true;}
         else if(!forClient)throw e;}
       if(sent&&!forClient)return;}
-    else if(!forClient){var en=new Error('no drive');en.code='drv-none';throw en;}}
+    else if(DRV_AUTO&&!forClient){var en=new Error('no drive');en.code='drv-none';throw en;}}
   if(d.length<=T){await col.doc(id).set({d:d,n:0,job:job,org:SESSION.org||'',relay:relay,at:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});return;}
   var n=Math.ceil(d.length/T);
   for(var i=_upProg[id]||0;i<n;i++){
@@ -10967,7 +10967,7 @@ async function upKick(){
       if(!d){try{var r=await window.storage.get('cbkph:'+id);d=r&&r.value;}catch(e){}}
       if(!d){_upOK[id]=1;_upQ.shift();upSave();continue;}      // not stored on this device (already online elsewhere)
       try{
-        if(drvCfg()&&!window.CLIENT_MODE)await upPut(id,d,q.job||'');else
+        if(drvAutoCfg()&&!window.CLIENT_MODE)await upPut(id,d,q.job||'');else
         if(d.length>800000)await upPut(id,d,q.job||'');else await Promise.race([upPut(id,d,q.job||''),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},25000);})]);delete _upProg[id];
         _upOK[id]=1;_upQ.shift();upSave();upStat();
         var jb=allJobs[q.job]||{},jn=jb.name||jb.projectName||jb.project||jb.title||'Project';var dd=_upDone[jn]=_upDone[jn]||{p:0,v:0};if(/^data:audio/.test(d))dd.v++;else dd.p++;
@@ -11479,7 +11479,10 @@ function drvLocate(id,hint){var J=allJobs||{},order=[hint].concat(Object.keys(J)
   return null;}
 function drvSafe(n){return String(n||'Job').replace(/[\\\/:*?"<>|#%\u0000-\u001f]/g,' ').replace(/\s+/g,' ').trim().replace(/[. ]+$/,'').slice(0,120)||'Job';}
 function drvJobName(j){return drvSafe(j&&(j.name||j.projectName||j.project||j.title)||'Job');}
+// v493: Kiya keeps the company drive by hand — CabLine never creates, renames or deletes folders there. Uploads stay on the CabLine server; the drive is only used to LINK existing files (From OneDrive).
+var DRV_AUTO=window.DRV_AUTO===true;
 function drvCfg(){return (window.ORG&&ORG.drive&&ORG.drive.itemId)?ORG.drive:null;}
+function drvAutoCfg(){return DRV_AUTO?drvCfg():null;}
 function drvCanAdmin(){return !!(window.SESSION&&(SESSION.owner||isOrgAdm()));}
 // ---- Microsoft sign-in (MSAL, loaded only when needed)
 var _msal=null,_msalP=null;
@@ -11520,14 +11523,14 @@ async function drvRedeem(force){var c=drvCfg();if(!c||!c.shareUrl)return;var k='
   try{if(!force&&localStorage.getItem(k))return;}catch(e){}
   try{var enc='u!'+btoa(unescape(encodeURIComponent(c.shareUrl))).replace(/=+$/,'').replace(/\//g,'_').replace(/\+/g,'-');await gf('/shares/'+enc+'/driveItem',{headers:{Prefer:'redeemSharingLink'}});try{localStorage.setItem(k,'1');}catch(e){}}catch(e){}}
 // ---- job folders
-async function drvJobFolder(jid,create){var c=drvCfg(),j=allJobs[jid];if(!c||!j)return null;var inf=j.info=j.info||{};
+async function drvJobFolder(jid,create){var c=drvAutoCfg(),j=allJobs[jid];if(!c||!j)return null;var inf=j.info=j.info||{};
   if(inf.drv&&inf.drv.id&&inf.drv.root===c.itemId)return inf.drv;
   if(!create||(window.SESSION&&SESSION.ro))return null;
   var f=await drvMkdir(c.driveId,c.itemId,drvJobName(j));inf.drv={id:f.id,name:f.name,root:c.itemId};
   try{jhSave(jid);}catch(e){}return inf.drv;}
 var _drvSyncT=0,_drvSyncing=false;
-function drvSyncSoon(){clearTimeout(_drvSyncT);_drvSyncT=setTimeout(drvSync,1500);}
-async function drvSync(){var c=drvCfg();if(!c||_drvSyncing||(window.SESSION&&SESSION.ro)||!navigator.onLine)return;_drvSyncing=true;
+function drvSyncSoon(){if(!DRV_AUTO)return;clearTimeout(_drvSyncT);_drvSyncT=setTimeout(drvSync,1500);}
+async function drvSync(){var c=drvAutoCfg();if(!c||_drvSyncing||(window.SESSION&&SESSION.ro)||!navigator.onLine)return;_drvSyncing=true;
   try{await msToken(false);
     var ids=Object.keys(allJobs||{});
     for(var i=0;i<ids.length;i++){var j=allJobs[ids[i]];if(!j||j.deletedAt)continue;var inf=j.info||{};
@@ -11569,7 +11572,7 @@ async function drvFetch(drv){var r=await gf(drvItem(drv.d,drv.i)+'/content',{raw
 function upDelete(id){try{if(!(window.cloud&&cloud.db))return;var ref=cloud.db.collection('photos').doc(id);
   ref.get().then(function(s){var x=s&&s.exists&&s.data();if(x&&x.drv&&!x.linked){gf(drvItem(x.drv.d,x.drv.i),{method:'DELETE'}).catch(function(){});}ref.delete().catch(function(){});}).catch(function(){ref.delete().catch(function(){});});}catch(e){}}
 // ---- job delete: the job only, or the job and its folder
-function drvDeleteAsk(id,go){var j=allJobs[id],c=drvCfg(),f=j&&j.info&&j.info.drv;
+function drvDeleteAsk(id,go){var j=allJobs[id],c=drvAutoCfg(),f=j&&j.info&&j.info.drv;
   if(!c||!f||!f.id){go();return;}
   var ov=document.getElementById('drvdel-ov');if(!ov){ov=document.createElement('div');ov.id='drvdel-ov';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(19,17,16,.55);display:flex;align-items:center;justify-content:center;padding:16px;';document.body.appendChild(ov);}
   ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:440px;width:100%;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.3);">'+
@@ -11589,13 +11592,16 @@ async function drvSaveCfg(cfg){if(SESSION.owner){ORG.drive=cfg;await cloud.db.co
   drvCardRender();drvSyncSoon();try{upKick();}catch(e){}}
 function drvCardRender(){var host=document.getElementById('drive-card');if(!host)return;if(!drvCanAdmin()){host.style.display='none';return;}host.style.display='';var c=drvCfg();
   host.innerHTML='<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><div style="flex:1;min-width:220px;"><div style="font-size:16px;font-weight:600;">Company drive</div>'+
-    (c?'<div style="font-size:12.5px;color:#166534;margin-top:2px;">Connected · OneDrive · main folder <b>'+esc(c.path||c.name)+'</b>'+(c.shareUrl?' · shared with everyone in the company':'')+'</div><div style="font-size:12px;color:#71717a;">Every job gets its own folder here. Photos, voice, drawings and files go into it.</div>'
-       :'<div style="font-size:12.5px;color:#92400e;margin-top:2px;">Not connected — files stay on each device until you connect the drive.</div>')+'</div>'+
-    (c?'<button class="btn btn-outline btn-sm" onclick="drvPick()">Change folder</button><button class="btn btn-outline btn-sm" onclick="drvDisconnect()">Disconnect</button>'
+    (DRV_AUTO?(c?'<div style="font-size:12.5px;color:#166534;margin-top:2px;">Connected · OneDrive · main folder <b>'+esc(c.path||c.name)+'</b>'+(c.shareUrl?' · shared with everyone in the company':'')+'</div><div style="font-size:12px;color:#71717a;">Every job gets its own folder here. Photos, voice, drawings and files go into it.</div>'
+       :'<div style="font-size:12.5px;color:#92400e;margin-top:2px;">Not connected — files stay on each device until you connect the drive.</div>')
+     :(c?'<div style="font-size:12.5px;color:#166534;margin-top:2px;">Connected · OneDrive / SharePoint</div><div style="font-size:12px;color:#71717a;">Used for <b>From OneDrive</b> — link plans and 3D files that are already in the company drive. CabLine never creates, renames or deletes anything there.</div>'
+       :'<div style="font-size:12.5px;color:#71717a;margin-top:2px;">Connect to link plans and 3D files that are already in the company OneDrive / SharePoint (From OneDrive).</div>'))+'</div>'+
+    (c?(DRV_AUTO?'<button class="btn btn-outline btn-sm" onclick="drvPick()">Change folder</button>':'')+'<button class="btn btn-outline btn-sm" onclick="drvDisconnect()">Disconnect</button>'
        :'<button class="btn btn-blue btn-sm" onclick="drvPick()">Connect OneDrive</button><button class="btn btn-outline btn-sm" disabled title="Coming next">Google Drive (soon)</button>')+'</div>';}
 function drvDisconnect(){if(!confirm('Disconnect the company drive? Files already in OneDrive stay there.'))return;drvSaveCfg(null).catch(function(e){alert(e.message);});}
 var _pk={src:'me',stack:[]};
 async function drvPick(){try{await msToken(true);}catch(e){if(!(e&&/cancel/i.test(String(e.errorCode||e.message))))alert('Could not sign in to Microsoft: '+(e.message||e));return;}
+  if(!DRV_AUTO){try{var me=await gf('/me/drive/root');await drvSaveCfg({kind:'onedrive',driveId:(me.parentReference&&me.parentReference.driveId)||'',itemId:'link',name:'',path:'',shareUrl:'',by:SESSION.email||'',at:Date.now()});showMsg('✓ Connected — use From OneDrive on plans and 3D files');}catch(e){alert('Could not connect: '+(e.message||e));}return;}
   _pk={src:'me',stack:[]};drvPickShow();}
 async function drvPickShow(){var ov=document.getElementById('drvpk-ov');if(!ov){ov=document.createElement('div');ov.id='drvpk-ov';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(19,17,16,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px;';document.body.appendChild(ov);}
   ov.style.display='flex';ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;padding:18px;">Loading folders…</div>';
@@ -11669,7 +11675,7 @@ try{if(/[?&]install=1/.test(location.search))setTimeout(instBar,600);}catch(e){}
 // ===== v489: files parked on the server by people without the company Microsoft account → moved into the drive by the office =====
 function drvWantsMs(){try{return !!(SESSION.owner||isOrgAdm()||hasRole('designer'));}catch(e){return false;}}
 var _relayBusy=false;
-async function drvRelay(){var c=drvCfg();if(!c||_relayBusy||!navigator.onLine||!(window.SESSION&&SESSION.role)||SESSION.ro)return 0;_relayBusy=true;var moved=0;
+async function drvRelay(){var c=drvAutoCfg();if(!c||_relayBusy||!navigator.onLine||!(window.SESSION&&SESSION.role)||SESSION.ro)return 0;_relayBusy=true;var moved=0;
   try{await msToken(false);
     var q=cloud.db.collection('photos');if(q.where)q=q.where('org','==',SESSION.org||'').where('relay','==',true);
     var sn=await q.get(),docs=[];sn.forEach(function(x){docs.push(x);});

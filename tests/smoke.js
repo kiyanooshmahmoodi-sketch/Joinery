@@ -256,7 +256,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)$/))){const x=G.items[mm[1]];if(!x)return J({error:{code:'itemNotFound',message:'nf'}},404);if(m==='PATCH'){x.name=JSON.parse(req.postData()).name;return J(out(x));}if(m==='DELETE'){const del=id=>{kids(id).forEach(k=>del(k.id));delete G.items[id];};del(x.id);return r.fulfill({status:204});}return J(out(x));}
     return J({error:{code:'nope',message:pth}},400);});
   const p=await ctx.newPage();await p.route(/gstatic\.com\/firebasejs/,r=>r.fulfill({body:FB,contentType:'text/javascript'}));let ans='CabLine Jobs';p.on('dialog',d=>d.accept(ans));
-  await p.addInitScript(()=>{try{sessionStorage.setItem('ro-retry','9');}catch(e){}
+  await p.addInitScript(()=>{try{sessionStorage.setItem('ro-retry','9');}catch(e){}window.DRV_AUTO=true;
     window.msal={PublicClientApplication:function(){const acc={homeAccountId:'h1',username:'kiyanoosh.mahmoodi@gmail.com'};const tok=async()=>{if(window.__msFail)throw {errorCode:'interaction_required',message:'login needed'};return {accessToken:'tok',expiresOn:new Date(Date.now()+3600e3),account:acc};};return {initialize:async()=>{},getAllAccounts:()=>[acc],acquireTokenSilent:tok,acquireTokenPopup:tok};}};});
   await p.goto(SITE+'index.html');await p.waitForTimeout(T*1500);
   await p.evaluate(()=>{const a=JSON.parse(localStorage.getItem('__acc')||'{}');a['kiyanoosh.mahmoodi@gmail.com']={email:'kiyanoosh.mahmoodi@gmail.com',pw:'654321',v:true,name:'Kiya'};localStorage.setItem('__acc',JSON.stringify(a));});await p.reload();await p.waitForTimeout(T*1500);
@@ -343,5 +343,44 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   if(process.env.SHOT)await p.screenshot({path:process.env.SHOT+'/install.png'});
   await p.evaluate(()=>instOpen());await p.waitForTimeout(T*300);
   ok('Install shows the steps when the browser cannot prompt',await p.evaluate(()=>/Install CabLine/.test((document.getElementById('inst-ov')||{}).innerText||'')));
+  await ctx.close();}
+// ---------- 20. drive in manual mode (default): CabLine never makes or deletes folders
+{console.log('Drive — manual');const ctx=await iso(await b.newContext({serviceWorkers:'block'}));
+  await ctx.route(SITE+'**',r=>{const u=new URL(r.request().url());r.fulfill({path:path.resolve(__dirname,'..'+u.pathname.replace('/Joinery','').replace(/\/$/,'/index.html'))});});
+  // a tiny OneDrive
+  const G={n:0,items:{root:{id:'root',name:'root',folder:{},parent:null}}};const mk=(name,parent,folder,content)=>{const id='it'+(++G.n);G.items[id]={id,name,parent,folder:folder?{}:undefined,content};return G.items[id];};
+  const kids=pid=>Object.values(G.items).filter(x=>x.parent===pid);const out=x=>({id:x.id,name:x.name,folder:x.folder,file:x.folder?undefined:{mimeType:'application/pdf'},size:(x.content||'').length,parentReference:{driveId:'D1'}});
+  await ctx.route('https://graph.microsoft.com/**',async r=>{const req=r.request(),u=new URL(req.url()),pth=decodeURIComponent(u.pathname.replace('/v1.0',''));const m=req.method();const J=(o,st)=>r.fulfill({status:st||200,contentType:'application/json',body:JSON.stringify(o)});let mm;
+    if(pth==='/me/messages')return J({value:[{id:'m1',subject:'Kitchen colours',from:{emailAddress:{address:'client@x.com',name:'Jane Client'}},receivedDateTime:'2026-10-30T10:00:00Z',bodyPreview:'Hi Kiya',hasAttachments:true},{id:'m2',subject:'About the price',from:{emailAddress:{address:'client@x.com',name:'Jane Client'}},receivedDateTime:'2026-10-31T10:00:00Z',bodyPreview:'Can we discuss',hasAttachments:false}]});
+    if(pth==='/me/messages/m1')return J({subject:'Kitchen colours',body:{content:'Hi Kiya,\nWe chose Polar White for the uppers.'},from:{emailAddress:{address:'client@x.com',name:'Jane Client'}},receivedDateTime:'2026-10-30T10:00:00Z',toRecipients:[]});
+    if(pth==='/me/messages/m1/attachments')return J({value:[{name:'colours.pdf',contentType:'application/pdf',contentBytes:'JVBERi0z',isInline:false,size:8},{name:'logo.png',contentType:'image/png',contentBytes:'iVBO',isInline:true}]});
+    if(pth==='/me/drive/root')return J(out(G.items.root));
+    if(pth==='/me/drive/root/children')return J({value:kids('root').map(out).concat(G.shortcuts||[])});
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/:]+):\/(.+):\/content$/))&&m==='PUT'){const f=mk(mm[2],mm[1],false,req.postData()||'x');return J(out(f),201);}
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/:]+):\/(.+):$/))){const x=kids(mm[1]).find(k=>k.name===mm[2]);return x?J(out(x)):J({error:{code:'itemNotFound',message:'nf'}},404);}
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/children$/))){if(m==='POST'){const bd=JSON.parse(req.postData());if(kids(mm[1]).some(k=>k.name===bd.name))return J({error:{code:'nameAlreadyExists',message:'exists'}},409);return J(out(mk(bd.name,mm[1],true)),201);}return J({value:kids(mm[1]).map(out)});}
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/content$/))){const x=G.items[mm[1]];return r.fulfill({status:200,contentType:'application/pdf',body:x?x.content:''});}
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/createLink$/))){const bd=JSON.parse(req.postData()||'{}');if(bd.scope==='anonymous'){if(G.noAnon)return J({error:{code:'accessDenied',message:'blocked by policy'}},403);G.links=(G.links||0)+1;return J({id:'perm'+G.links,link:{webUrl:'https://1drv.ms/b/view'+G.links}});}return J({link:{webUrl:'https://n1-my.sharepoint.com/x'}});}
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/permissions\/(.+)$/))&&m==='DELETE'){G.removed=(G.removed||[]).concat(mm[2]);return r.fulfill({status:204});}
+    if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)$/))){const x=G.items[mm[1]];if(!x)return J({error:{code:'itemNotFound',message:'nf'}},404);if(m==='PATCH'){x.name=JSON.parse(req.postData()).name;return J(out(x));}if(m==='DELETE'){const del=id=>{kids(id).forEach(k=>del(k.id));delete G.items[id];};del(x.id);return r.fulfill({status:204});}return J(out(x));}
+    return J({error:{code:'nope',message:pth}},400);});
+  const p=await ctx.newPage();await p.route(/gstatic\.com\/firebasejs/,r=>r.fulfill({body:FB,contentType:'text/javascript'}));p.on('dialog',d=>d.accept());
+  await p.addInitScript(()=>{try{sessionStorage.setItem('ro-retry','9');}catch(e){}
+    window.msal={PublicClientApplication:function(){const acc={homeAccountId:'h1',username:'kiyanoosh.mahmoodi@gmail.com'};const tok=async()=>({accessToken:'tok',expiresOn:new Date(Date.now()+3600e3),account:acc});return {initialize:async()=>{},getAllAccounts:()=>[acc],acquireTokenSilent:tok,acquireTokenPopup:tok};}};});
+  await p.goto(SITE+'index.html');await p.waitForTimeout(T*1500);
+  await p.evaluate(()=>{const a=JSON.parse(localStorage.getItem('__acc')||'{}');a['kiyanoosh.mahmoodi@gmail.com']={email:'kiyanoosh.mahmoodi@gmail.com',pw:'654321',v:true,name:'Kiya'};localStorage.setItem('__acc',JSON.stringify(a));});await p.reload();await p.waitForTimeout(T*1500);
+  await p.evaluate(()=>{document.getElementById('rc-si-em').value='kiyanoosh.mahmoodi@gmail.com';document.getElementById('rc-si-pw').value='654321';rcSignIn();});await p.waitForTimeout(T*1500);
+  const pf=mk('Architect','root',true);mk('A101.pdf',pf.id,false,'PDFDATA');const before=Object.keys(G.items).length;
+  await p.evaluate(()=>drvPick());await p.waitForTimeout(T*1200);
+  ok('Connect OneDrive just signs in — no folder to choose, nothing shared',await p.evaluate(()=>!!drvCfg()&&!document.getElementById('drvpk-ov')&&/never creates/.test(document.getElementById('drive-card').innerText)));
+  await p.evaluate(async()=>{allJobs.m1={id:'m1',name:'Manual Job',info:{},drawings:[],units:[]};saveAllJobs();const id='pman00000000001';await window.storage.set('cbkph:'+id,'data:application/pdf;base64,JVBERi0x');allJobs.m1.drawings.unshift({kind:'arch',id,name:'Upload.pdf'});saveAllJobs();await upEnqueue(id,'m1');});
+  await p.waitForTimeout(T*2500);
+  ok('new job + upload: no folders made in the drive, the file is on the CabLine server',Object.keys(G.items).length===before&&await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pman00000000001'];return !!(x&&x.d&&!x.drv)&&!(allJobs.m1.info||{}).drv;}));
+  await p.evaluate(()=>selectJob('m1'));await p.waitForTimeout(T*400);
+  const lk=await p.evaluate(async()=>{await drFromDrive('arch');await new Promise(r=>setTimeout(r,300));_fp.stack.push(_fp.items.find(x=>x.name==='Architect'));await fpShow();fpToggle(_fp.items.findIndex(x=>x.name==='A101.pdf'));await new Promise(r=>setTimeout(r,200));await fpAdd();return (allJobs.m1.drawings||[]).some(x=>x.linked&&x.name==='A101.pdf');});
+  ok('From OneDrive still links existing files',lk&&Object.keys(G.items).length===before);
+  let asked='';p.removeAllListeners('dialog');p.on('dialog',d=>{asked=d.message();d.accept();});
+  await p.evaluate(()=>jhDelete('m1'));await p.waitForTimeout(T*600);
+  ok('deleting a job never touches the drive',/Delete/.test(asked)&&!(await p.evaluate(()=>!!document.getElementById('drvdel-ov')))&&Object.keys(G.items).length===before&&await p.evaluate(()=>!allJobs.m1));
   await ctx.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();
