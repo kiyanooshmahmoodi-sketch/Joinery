@@ -318,6 +318,10 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('a linked plan opens from OneDrive',await p.evaluate(async(id)=>{delete _siCache[id];const v=await siGetPhoto(id);return /^data:/.test(v);},fp.id));
   await p.evaluate((id)=>{const oc=window.confirm;window.confirm=()=>true;try{drDelete(id);}finally{window.confirm=oc;}},fp.id);await p.waitForTimeout(T*800);
   ok('removing a linked plan from the job never deletes the original in OneDrive',!!G.items[a101.id]&&await p.evaluate((id)=>!(allJobs.j1.drawings||[]).some(x=>x.id===id),fp.id));
+  // delete a drawing from the job card — a linked original is never touched
+  const delOk=await p.evaluate(async()=>{const j=allJobs.j1;const id='pdel000000001';j.drawings.unshift({kind:'arch',id,name:'Wrong.pdf'});saveAllJobs();renderJobsHome();
+    const hasBtn=/drDeleteIn\('j1','pdel000000001'\)/.test((function(){var o=jhIsCol;jhIsCol=function(){return false;};try{return jhCard(j);}finally{jhIsCol=o;}})());const oc=window.confirm;window.confirm=()=>true;try{await drDeleteIn('j1',id);}finally{window.confirm=oc;}return {hasBtn,gone:!(allJobs.j1.drawings||[]).some(x=>x.id===id)};});
+  ok('job card: a wrong drawing / PDF can be deleted',delOk.gone&&delOk.hasBtn,JSON.stringify(delOk));
   // a SharePoint folder added with "Add shortcut to OneDrive" can be picked
   G.items.sp1={id:'sp1',name:'001 ARCADO',folder:{},parent:null};mk('0001 Open Projects','sp1',true);G.shortcuts=[{id:'sc1',name:'001 ARCADO',remoteItem:{id:'sp1',folder:{},parentReference:{driveId:'D1'}},parentReference:{driveId:'D1'}}];
   await p.evaluate(()=>drvPick());await p.waitForTimeout(T*600);

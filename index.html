@@ -1388,7 +1388,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v497 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v498 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8524,7 +8524,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v497 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v498 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10055,7 +10055,7 @@ function jhCard(j){
     // the three drawing groups are one shared list with Designer › Drawings and the installer's Drawings
     jhSec(id,'files','Drawings &amp; files',jhFileSumm(j),drvLinkHTML(j)+FG.map(function(g){var L=(j.drawings||[]).filter(function(x){return drKind(x)===g[0];});
       return '<div class="jx-fg"><div class="jx-fg-h"><span>'+g[1]+(L.length?' <em>'+L.length+'</em>':'')+'</span><span><button class="jx-link" onclick="jhAddPlan(\''+id+'\',\''+g[0]+'\')">+ '+g[2]+'</button>'+((g[0]==='arch'||g[0]==='d3')&&drvCfg()?' <button class="jx-link" onclick="if(\''+id+'\'!==currentJobId)selectJob(\''+id+'\');drFromDrive(\''+g[0]+'\')">+ From OneDrive</button>':'')+'</span></div>'+
-        (L.length?L.map(function(x){return '<div class="jx-file"><span class="jx-fname" title="'+qe(drName(x))+'">'+esc(drName(x))+'</span><button class="jx-link" onclick="drOpenAny(\''+x.id+'\')">Open</button></div>';}).join(''):'<div class="jx-empty">None yet</div>')+'</div>';}).join(''))+
+        (L.length?L.map(function(x){return '<div class="jx-file"><span class="jx-fname" title="'+qe(drName(x))+'">'+esc(drName(x))+'</span><button class="jx-link" onclick="drOpenAny(\''+x.id+'\')">Open</button>'+(hasRole('designer')&&!(window.SESSION&&SESSION.ro)?'<button class="jx-link" style="color:#991b1b;" title="Delete this file" onclick="drDeleteIn(\''+id+'\',\''+x.id+'\')">Delete</button>':'')+'</div>';}).join(''):'<div class="jx-empty">None yet</div>')+'</div>';}).join(''))+
     (qtCan()?jhSec(id,'quote','Quotation',qtSumm(j),qtSecHTML(j)):'')+
     (mlCanSee()?jhSec(id,'mails','Client emails',((j.info&&j.info.mails)||[]).length?((j.info.mails.length)+' email(s)'):'',mlSecHTML(j)):'')+
     ((hasRole('admin')||hasRole('orgadmin'))?jhSec(id,'fin','Orders &amp; invoices',(j.drawings||[]).filter(function(x){return x.kind==='fin';}).length+' file(s)',(_jhFinOpen?jhFinHTML(j):jhFinLockHTML())):'')+
@@ -10848,11 +10848,17 @@ async function drOpenAny(id){var j=siJob(),x=null;Object.values(allJobs||{}).som
       '<div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;">'+(vid?'<video src="'+url+'" controls style="max-width:100%;max-height:100%;"></video>':'<img src="'+url+'" style="max-width:100%;max-height:100%;object-fit:contain;"/>')+'</div>';
     document.body.appendChild(o);document.getElementById('dr-x2').onclick=function(){o.remove();setTimeout(function(){URL.revokeObjectURL(url);},2000);};return;}
   var a=document.createElement('a');a.href=url;a.download=x.name||'file';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},5000);showMsg('⬇ '+x.name+' saved to Downloads — open it with your 3D / design program');}
-function drDelete(id){var j=siJob();if(!j||!confirm('Delete this drawing for everyone?'))return;
-  j.drawings=(j.drawings||[]).filter(function(x){return x.id!==id;});tomb(id);siSave();
+function drDelete(id){var j=siJob();if(j)drDeleteIn(j.id,id);}
+// v498: delete a drawing / PDF — from the Drawings page or the job card
+async function drDeleteIn(jid,id){var j=allJobs[jid];if(!j)return;var x=(j.drawings||[]).filter(function(d){return d.id===id;})[0];if(!x)return;
+  if(!confirm('Delete “'+drName(x)+'” from this job for everyone?'+(x.linked?'\n\nIt is linked from OneDrive — the original file stays in OneDrive.':'')))return;
+  var keep=true;
+  if(!x.linked){try{var sn=await cloud.db.collection('photos').doc(id).get();var m=sn.exists&&sn.data();
+    if(m&&m.drv)keep=!confirm('This file is also saved in the SharePoint folder.\n\nOK = delete it there too (it goes to the recycle bin)\nCancel = keep it in SharePoint, remove it from CabLine only');}catch(e){}}
+  j.drawings=(j.drawings||[]).filter(function(d){return d.id!==id;});j.deleted=j.deleted||[];if(j.deleted.indexOf(id)<0)j.deleted.push(id);
+  try{(j.finishes&&j.finishes.clientShared||[]).filter(function(e){return e.id===id;}).forEach(function(e){drUnshare(j,e);});}catch(e){}
   try{window.storage.delete&&window.storage.delete('cbkph:'+id);}catch(e){}
-  upDelete(id);
-  renderDrawings();}
+  upDelete(id,keep);jhSave(jid);try{renderDrawings();}catch(e){}try{renderJobsHome();}catch(e){}showMsg('🗑 '+drName(x)+' deleted');}
 async function drOpen(id,name){
   var d=await siGetPhoto(id);
   if(!d){alert('This drawing is not on this device yet and there is no internet to download it.');return;}
@@ -11590,8 +11596,8 @@ async function drvUpload(id,d,jobHint){var c=drvCfg();var loc=drvLocate(id,jobHi
 async function drvFetch(drv){var r=await gf(drvItem(drv.d,drv.i)+'/content',{raw:true});var b=await r.blob();
   return await new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.onerror=rej;fr.readAsDataURL(b);});}
 // delete a file everywhere (the drive copy goes to the drive's recycle bin)
-function upDelete(id){try{if(!(window.cloud&&cloud.db))return;var ref=cloud.db.collection('photos').doc(id);
-  ref.get().then(function(s){var x=s&&s.exists&&s.data();if(x&&x.drv&&!x.linked){gf(drvItem(x.drv.d,x.drv.i),{method:'DELETE'}).catch(function(){});}ref.delete().catch(function(){});}).catch(function(){ref.delete().catch(function(){});});}catch(e){}}
+function upDelete(id,keepDrive){try{if(!(window.cloud&&cloud.db))return;var ref=cloud.db.collection('photos').doc(id);
+  ref.get().then(function(s){var x=s&&s.exists&&s.data();if(x&&x.drv&&!x.linked&&!keepDrive){gf(drvItem(x.drv.d,x.drv.i),{method:'DELETE'}).catch(function(){});}ref.delete().catch(function(){});}).catch(function(){ref.delete().catch(function(){});});}catch(e){}}
 // ---- job delete: the job only, or the job and its folder
 function drvDeleteAsk(id,go){var j=allJobs[id],c=drvAutoCfg(),f=j&&j.info&&j.info.drv;
   if(!c||!f||!f.id){go();return;}
