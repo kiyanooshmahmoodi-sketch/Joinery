@@ -1388,7 +1388,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v498 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v499 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8524,7 +8524,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v498 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v499 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10787,11 +10787,69 @@ function qtOpen(id){var j=allJobs[id];if(!j||!qtCan())return;_qtJob=id;qtData(j,
     '#qt-ov .qt-x{position:absolute;top:2px;left:2px;border:0;background:#fee2e2;color:#991b1b;border-radius:3px;width:18px;height:18px;line-height:16px;cursor:pointer;font-size:13px;opacity:.0}#qt-ov tr:hover .qt-x{opacity:1}';
     document.head.appendChild(st);}
   ov.style.display='block';document.body.classList.add('qt-open');qtPaint();}
+
+// ===== v499: Price calculator in the Quotation — market rates per linear metre (NSW, AUD, ex GST), every number editable per company =====
+var QC_DEF={v:1,finishes:[['flat_s','Flat pack — supply only',350,700,1],['flat_i','Flat pack — supplied & installed',700,1300],['mel','Melamine',1100,1700],['lam','Laminate (made to measure)',1100,1700],['hgl','High gloss laminate',1350,2000],['vin','Vinyl wrap',1250,2000],['mdfp','MDF polyurethane',1600,2500],['2p','Two pack — flat panel',1800,3200],['2ps','Two pack — shaker',2000,3500],['ven','Timber veneer',2400,3800],['tim','Solid timber',2800,4500]],
+  carcass:[['m16','Melamine 16mm',0],['mr16','Moisture resistant 16mm',8.5],['mr18','Moisture resistant 18mm',14],['ply','Plywood',37.5]],
+  tiers:[['trade','Builder / Trade',0],['retail','Standard retail',50],['prem','Premium custom',100]],
+  baseShare:55,overShare:45,tallX:150,islandX:75,drawer:150,supplyOnlyLess:15,roundTo:10,src:'thequoteyard.com.au — Kitchen cabinet cost NSW 2026'};
+var QC=null,_qcRow=-1;
+function qcRatesId(){return 'rates__'+(SESSION.org||'x');}
+function qcLoad(){if(QC)return Promise.resolve(QC);var loc=null;try{loc=JSON.parse(localStorage.getItem('cbk-qc-rates:'+(SESSION.org||''))||'null');}catch(e){}QC=loc||JSON.parse(JSON.stringify(QC_DEF));
+  return (window.cloud&&cloud.db&&cloud.user?cloud.db.collection('quotes').doc(qcRatesId()).get().then(function(d){var x=d&&d.exists&&d.data();if(x&&x.rates){QC=x.rates;try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}}return QC;}).catch(function(){return QC;}):Promise.resolve(QC));}
+function qcSaveRates(){try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}
+  try{cloud.db.collection('quotes').doc(qcRatesId()).set({rates:QC,org:SESSION.org||'',at:Date.now()}).then(function(){showMsg('✓ Rates saved for your company');}).catch(function(e){alert('Could not save rates: '+e.message);});}catch(e){}}
+function qcIn(){var j=allJobs[_qtJob],q=j&&qtCur(j),r=q&&q.rows[_qcRow];var c=(r&&r.calc)||{};return Object.assign({fin:'lam',carc:'m16',tier:'retail',base:'',over:'',tall:'',island:'',drawers:'',extra:'',supplyOnly:false},c);}
+function qcFind(L,k){return L.filter(function(x){return x[0]===k;})[0]||L[0];}
+function qcCalc(c){var R=QC,f=qcFind(R.finishes,c.fin),t=qcFind(R.tiers,c.tier),cb=qcFind(R.carcass,c.carc),n=function(v){return Math.max(0,qtNum(v));};
+  var rate=f[2]+(f[3]-f[2])*(t[2]/100),rateC=rate*(1+cb[2]/100);
+  var parts=[['Base cabinets',n(c.base)*rateC*R.baseShare/100,n(c.base)+' m × '+qtMoney(rateC)+' × '+R.baseShare+'%'],['Overhead cabinets',n(c.over)*rateC*R.overShare/100,n(c.over)+' m × '+qtMoney(rateC)+' × '+R.overShare+'%'],
+    ['Tall / pantry',n(c.tall)*rateC*R.tallX/100,n(c.tall)+' m × '+qtMoney(rateC)+' × '+R.tallX+'%'],['Island',n(c.island)*rateC*R.islandX/100,n(c.island)+' m × '+qtMoney(rateC)+' × '+R.islandX+'%'],
+    ['Drawers',n(c.drawers)*R.drawer,n(c.drawers)+' × '+qtMoney(R.drawer)],['Extra items',n(c.extra),'']];
+  var sub=parts.reduce(function(a,x){return a+x[1];},0);
+  if(c.supplyOnly&&!f[4]){var less=sub*R.supplyOnlyLess/100;parts.push(['Supply only (no installation)',-less,'− '+R.supplyOnlyLess+'%']);sub-=less;}
+  var rt=Math.max(1,R.roundTo||1),ex=Math.round(sub/rt)*rt;return {rate:rate,rateC:rateC,parts:parts,ex:ex,gst:Math.round(ex*0.1),inc:ex+Math.round(ex*0.1),f:f,t:t,cb:cb};}
+async function qcOpen(row){var j=allJobs[_qtJob];if(!j)return;await qcLoad();var q=qtCur(j);_qcRow=row!=null?row:(_qcRow>=0&&q.rows[_qcRow]?_qcRow:(q.rows.length?0:-1));window._qcC=qcIn();qcPaint();}
+function qcPaint(tab){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),c=window._qcC,R=QC;
+  var ov=document.getElementById('qc-ov');if(!ov){ov=document.createElement('div');ov.id='qc-ov';ov.setAttribute('data-raw-colour','');ov.style.cssText='position:fixed;inset:0;z-index:9500;background:rgba(19,17,16,.5);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(env(titlebar-area-height,0px) + 20px) 12px 24px;-webkit-app-region:no-drag;app-region:no-drag;';ov.onclick=function(e){if(e.target===ov)ov.style.display='none';};document.body.appendChild(ov);}
+  ov.style.display='flex';
+  if(tab==='rates'){ov.innerHTML=qcRatesHTML();return;}
+  var C=qcCalc(c),sel=function(k,L){return '<select id="qc-'+k+'" onchange="_qcC.'+k+'=this.value;qcPaint()">'+L.map(function(x){return '<option value="'+x[0]+'"'+(c[k]===x[0]?' selected':'')+'>'+esc(x[1])+'</option>';}).join('')+'</select>';},
+      num=function(k,lab,unit){return '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">'+lab+'<div style="display:flex;align-items:center;gap:4px;"><input id="qc-'+k+'" inputmode="decimal" value="'+qtEsc(c[k])+'" oninput="_qcC.'+k+'=this.value;qcRes()" style="width:100%;"><span style="font-size:12px;color:#71717a;">'+unit+'</span></div></label>';};
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:760px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);">'+
+    '<div style="display:flex;gap:8px;align-items:center;padding:14px 16px;border-bottom:1px solid #eee;flex-wrap:wrap;"><div style="flex:1;min-width:200px;"><div style="font-weight:700;font-size:15px;">Price calculator</div><div style="font-size:12px;color:#71717a;">Market rates per linear metre, AUD, ex GST. Change them in Rates.</div></div><button class="btn btn-outline btn-sm" onclick="qcPaint(\'rates\')">Rates</button><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'qc-ov\').style.display=\'none\'">Close</button></div>'+
+    '<div style="padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">'+
+      '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Area in this quote<select onchange="_qcRow=+this.value;_qcC=qcIn();qcPaint()">'+q.rows.map(function(r,i){return '<option value="'+i+'"'+(i===_qcRow?' selected':'')+'>'+esc(r.area||('Area '+(i+1)))+'</option>';}).join('')+(q.rows.length?'':'<option>— add an area first —</option>')+'</select></label>'+
+      '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Door finish'+sel('fin',R.finishes)+'</label>'+
+      '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Carcass board'+sel('carc',R.carcass)+'</label>'+
+      '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Customer / price level'+sel('tier',R.tiers)+'</label>'+
+      num('base','Base cabinets','m')+num('over','Overhead cabinets','m')+num('tall','Tall / pantry','m')+num('island','Island','m')+num('drawers','Drawers','pcs')+num('extra','Extra items (end panels, kickboards …)','$')+
+      '<label style="display:flex;gap:8px;align-items:center;font-size:13px;align-self:end;padding-bottom:10px;white-space:nowrap;"><input type="checkbox" style="width:auto;flex:none;margin:0;" '+(c.supplyOnly?'checked':'')+' onchange="_qcC.supplyOnly=this.checked;qcRes()">Supply only (no installation)</label>'+
+    '</div><div id="qc-res" style="padding:0 16px 16px;">'+qcResHTML(C)+'</div></div>';}
+function qcRes(){var el=document.getElementById('qc-res');if(el)el.innerHTML=qcResHTML(qcCalc(window._qcC));}
+function qcResHTML(C){return '<div style="background:#faf8f4;border-radius:10px;padding:12px 14px;">'+
+    '<div style="font-size:12px;color:#71717a;margin-bottom:6px;">'+esc(C.f[1])+' · '+esc(C.t[1])+' → '+qtMoney(C.rate)+' / m'+(C.cb[2]?' · '+esc(C.cb[1])+' +'+C.cb[2]+'% → '+qtMoney(C.rateC)+' / m':'')+'</div>'+
+    C.parts.filter(function(x){return Math.round(x[1]);}).map(function(x){return '<div style="display:flex;gap:10px;font-size:13px;padding:2px 0;"><span style="flex:1;">'+esc(x[0])+' <span style="color:#a1a1aa;font-size:11.5px;">'+esc(x[2])+'</span></span><span style="font-variant-numeric:tabular-nums;">'+qtMoney(x[1])+'</span></div>';}).join('')+
+    '<div style="border-top:1px solid #e7dfd0;margin-top:6px;padding-top:6px;display:flex;font-size:14px;"><b style="flex:1;">Price ex GST</b><b style="font-variant-numeric:tabular-nums;">'+qtMoney(C.ex)+'</b></div>'+
+    '<div style="display:flex;font-size:12.5px;color:#52525b;"><span style="flex:1;">GST 10%</span><span>'+qtMoney(C.gst)+'</span></div><div style="display:flex;font-size:12.5px;color:#52525b;"><span style="flex:1;">Total inc GST</span><span>'+qtMoney(C.inc)+'</span></div>'+
+    '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="btn btn-blue btn-sm" onclick="qcApply()"'+(_qcRow<0?' disabled':'')+'>Put '+qtMoney(C.ex)+' into this area</button><span style="font-size:11.5px;color:#71717a;align-self:center;">The quote adds GST itself.</span></div></div>';}
+function qcApply(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),r=q.rows[_qcRow];if(!r)return;var C=qcCalc(window._qcC);r.price=String(C.ex);r.calc=JSON.parse(JSON.stringify(window._qcC));qtPersist(_qtJob);qtPaint();
+  document.getElementById('qc-ov').style.display='none';showMsg('✓ '+qtMoney(C.ex)+' put into '+(r.area||'the area'));}
+function qcRatesHTML(){var R=QC,row=function(L,i,cols){return cols.map(function(k){var ix=k[0];return '<input value="'+qtEsc(L[i][ix])+'" '+(k[1]?'inputmode="decimal" ':'')+'oninput="QC.'+k[2]+'['+i+']['+ix+']='+(k[1]?'qtNum(this.value)':'this.value')+'" style="width:'+k[3]+';">';}).join('');},
+    one=function(k,lab,unit){return '<label style="display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13px;padding:3px 0;">'+lab+'<span style="display:flex;gap:4px;align-items:center;"><input value="'+qtEsc(R[k])+'" inputmode="decimal" oninput="QC.'+k+'=qtNum(this.value)" style="width:80px;"><span style="font-size:12px;color:#71717a;min-width:28px;">'+unit+'</span></span></label>';};
+  return '<div style="background:#fff;border-radius:14px;max-width:760px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);">'+
+    '<div style="display:flex;gap:8px;align-items:center;padding:14px 16px;border-bottom:1px solid #eee;flex-wrap:wrap;"><div style="flex:1;min-width:200px;"><div style="font-weight:700;font-size:15px;">Rates</div><div style="font-size:12px;color:#71717a;">AUD per linear metre, ex GST. Start values: '+esc(R.src||'')+'. Saved for your company only.</div></div><button class="btn btn-outline btn-sm" onclick="qcPaint()">Back</button><button class="btn btn-blue btn-sm" onclick="qcSaveRates();qcPaint()">Save rates</button></div>'+
+    '<div style="padding:12px 16px;"><div style="font-weight:600;font-size:13px;margin-bottom:6px;">Door finish — from / to per metre</div>'+R.finishes.map(function(x,i){return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">'+row(R.finishes,i,[[1,0,'finishes','100%'],[2,1,'finishes','90px'],[3,1,'finishes','90px']])+'</div>';}).join('')+
+    '<div style="font-weight:600;font-size:13px;margin:12px 0 6px;">Carcass board — adds %</div>'+R.carcass.map(function(x,i){return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">'+row(R.carcass,i,[[1,0,'carcass','100%'],[2,1,'carcass','90px']])+'</div>';}).join('')+
+    '<div style="font-weight:600;font-size:13px;margin:12px 0 6px;">Price level — where in the from/to range (0 = from, 100 = to)</div>'+R.tiers.map(function(x,i){return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">'+row(R.tiers,i,[[1,0,'tiers','100%'],[2,1,'tiers','90px']])+'</div>';}).join('')+
+    '<div style="font-weight:600;font-size:13px;margin:12px 0 6px;">How a metre is split</div>'+one('baseShare','Base cabinets — share of the metre rate','%')+one('overShare','Overhead cabinets — share of the metre rate','%')+one('tallX','Tall / pantry — % of the metre rate','%')+one('islandX','Island — % of the metre rate','%')+one('drawer','Each drawer adds','$')+one('supplyOnlyLess','Supply only — less','%')+one('roundTo','Round the price to','$')+
+    '<div style="margin-top:10px;"><button class="btn btn-outline btn-sm" onclick="if(confirm(\'Put all rates back to the start values?\')){QC=JSON.parse(JSON.stringify(QC_DEF));qcPaint(\'rates\');}">Back to start values</button></div></div></div>';}
+
 function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.display='none';document.body.classList.remove('qt-open');if(_qtJob)qtPersist(_qtJob);_qtJob=null;try{renderJobsHome();}catch(e){}}
 function qtPaint(){var j=allJobs[_qtJob],ov=document.getElementById('qt-ov');if(!j||!ov)return;var Q=qtData(j,true),q=qtCur(j);
   ov.innerHTML='<div id="qt-bar"><div style="font-weight:600;font-size:15px;margin-right:auto;">Quote · '+esc(j.name||'Job')+'</div>'+
     '<select onchange="qtPick(this.value)" style="width:auto;padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;background:#fff;font:inherit;">'+Q.versions.map(function(x,i){return '<option value="'+i+'"'+(i===Q.cur?' selected':'')+'>V'+(x.v||i+1)+' · '+qtDate(x.date)+'</option>';}).join('')+'</select>'+
-    '<button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button><button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
+    '<button class="btn btn-blue btn-sm" onclick="qcOpen()">Price calculator</button><button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button><button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
   ov.querySelectorAll('textarea.qt-in').forEach(qtGrow);}
 function qtPrint(){var j=allJobs[_qtJob];if(!j)return;qtSaveNow();var q=qtCur(j);
   var name=String((q.v<10?'0':'')+q.v+'_Quote - '+(q.ref||j.name||'Job')+' - V'+q.v).replace(/[\\/:*?"<>|]/g,'');

@@ -172,6 +172,10 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     qtNewVer();qtCur(allJobs.qj).subOv='2000';const s2=qtSumsQ(qtCur(allJobs.qj));qtClose();const Q=QT_STORE.qj;if(allJobs.qj.info.quote)return 'quote left inside the job';
     return [s1.sub,s1.gst,s1.tot,Q.versions.length,Q.versions[1].v,s2.tot,qtCur(allJobs.qj).ref].join(',');});
   ok('quote totals, GST, versions and hand-set price',r==='1500,150,1650,2,2,2200,1 Test St',r);
+  const pc=await p.evaluate(async()=>{qtOpen('qj');await qcOpen(0);_qcC.fin='lam';_qcC.tier='retail';_qcC.carc='m16';_qcC.base='7';_qcC.over='7';const a=qcCalc(_qcC).ex;
+    _qcC.carc='ply';const b=qcCalc(_qcC).ex;_qcC.carc='m16';_qcC.drawers='4';const c=qcCalc(_qcC).ex;_qcC.drawers='';_qcC.supplyOnly=true;const d=qcCalc(_qcC).ex;_qcC.supplyOnly=false;
+    qcApply();const price=qtCur(allJobs.qj).rows[0].price,keep=qtCur(allJobs.qj).rows[0].calc.base;QC.finishes[3][2]=1200;const e=qcCalc(_qcC).ex;qtClose();return [a,b,c,d,price,keep,e].join(',');});
+  ok('price calculator: 7 m laminate kitchen (retail) = $9,800 ex GST — inside the 7 m reference range; carcass, drawers, supply-only and rates change it; it fills the area price',pc==='9800,13480,10400,8330,9800,7,10150',pc);
   const r2=await p.evaluate(()=>{applyRole('installer','Ali','',['installer']);const a=qtCan();applyRole('installer','Ali','',['installer','quote']);const b=qtCan();return [a,b].join(',');});
   ok('only the admin or people given Quotation can open quotes',r2==='false,true',r2);await p.close();}
 // ---------- 17. companies: Owner → company admin → member; isolation; pause
