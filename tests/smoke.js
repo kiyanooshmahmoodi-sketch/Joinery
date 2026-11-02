@@ -172,10 +172,11 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     qtNewVer();qtCur(allJobs.qj).subOv='2000';const s2=qtSumsQ(qtCur(allJobs.qj));qtClose();const Q=QT_STORE.qj;if(allJobs.qj.info.quote)return 'quote left inside the job';
     return [s1.sub,s1.gst,s1.tot,Q.versions.length,Q.versions[1].v,s2.tot,qtCur(allJobs.qj).ref].join(',');});
   ok('quote totals, GST, versions and hand-set price',r==='1500,150,1650,2,2,2200,1 Test St',r);
-  const pc=await p.evaluate(async()=>{qtOpen('qj');await qcOpen(0);_qcC.fin='lam';_qcC.tier='retail';_qcC.carc='m16';_qcC.base='7';_qcC.over='7';const a=qcCalc(_qcC).ex;
-    _qcC.carc='ply';const b=qcCalc(_qcC).ex;_qcC.carc='m16';_qcC.drawers='4';const c=qcCalc(_qcC).ex;_qcC.drawers='';_qcC.supplyOnly=true;const d=qcCalc(_qcC).ex;_qcC.supplyOnly=false;
-    qcApply();const price=qtCur(allJobs.qj).rows[0].price,keep=qtCur(allJobs.qj).rows[0].calc.base;QC.finishes[3][2]=1200;const e=qcCalc(_qcC).ex;qtClose();return [a,b,c,d,price,keep,e].join(',');});
-  ok('price calculator: 7 m laminate kitchen (retail) = $9,800 ex GST — inside the 7 m reference range; carcass, drawers, supply-only and rates change it; it fills the area price',pc==='9800,13480,10400,8330,9800,7,10150',pc);
+  const pc=await p.evaluate(async()=>{qtOpen('qj');await qcOpen(0);const lam=qcFind(QC.finishes,'lam');_qcC.fin='lam';_qcC.rate='1100';_qcC.carc='m16';_qcC.base='7';_qcC.over='7';_qcC.height='2400';const a=qcCalc(_qcC).ex;
+    _qcC.height='2700';const b=qcCalc(_qcC).ex;_qcC.height='2400';_qcC.tall='1.2';const c=qcCalc(_qcC).ex;_qcC.height='2700';const c2=qcCalc(_qcC).ex;_qcC.height='2400';_qcC.tall='';_qcC.carc='ply';const d=qcCalc(_qcC).ex;_qcC.carc='m16';
+    qcApply();const price=qtCur(allJobs.qj).rows[0].price;qcPaint();const slider=document.getElementById('qc-rate-r');qtClose();window.__c2=c2;return [lam[2],lam[3],a,b,c,d,price,slider&&slider.min,slider&&slider.max].join(',');});
+  ok('tall 240% at 2700 (with overhead 80%)',await p.evaluate(()=>window.__c2)===17030,String(await p.evaluate(()=>window.__c2)));
+  ok('price calculator: laminate market range 800–1700; you pick the price; overhead 60% at 2400 / 80% at 2700; tall 200% at 2400; fills the area',pc==='800,1700,12320,13860,14960,16940,12320,800,1700',pc);
   const r2=await p.evaluate(()=>{applyRole('installer','Ali','',['installer']);const a=qtCan();applyRole('installer','Ali','',['installer','quote']);const b=qtCan();return [a,b].join(',');});
   ok('only the admin or people given Quotation can open quotes',r2==='false,true',r2);await p.close();}
 // ---------- 17. companies: Owner → company admin → member; isolation; pause
