@@ -246,7 +246,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
     if(pth==='/me/messages/m1')return J({subject:'Kitchen colours',body:{content:'Hi Kiya,\nWe chose Polar White for the uppers.'},from:{emailAddress:{address:'client@x.com',name:'Jane Client'}},receivedDateTime:'2026-10-30T10:00:00Z',toRecipients:[]});
     if(pth==='/me/messages/m1/attachments')return J({value:[{name:'colours.pdf',contentType:'application/pdf',contentBytes:'JVBERi0z',isInline:false,size:8},{name:'logo.png',contentType:'image/png',contentBytes:'iVBO',isInline:true}]});
     if(pth==='/me/drive/root')return J(out(G.items.root));
-    if(pth==='/me/drive/root/children')return J({value:kids('root').map(out)});
+    if(pth==='/me/drive/root/children')return J({value:kids('root').map(out).concat(G.shortcuts||[])});
     if((mm=pth.match(/^\/drives\/D1\/items\/([^/:]+):\/(.+):\/content$/))&&m==='PUT'){const f=mk(mm[2],mm[1],false,req.postData()||'x');return J(out(f),201);}
     if((mm=pth.match(/^\/drives\/D1\/items\/([^/:]+):\/(.+):$/))){const x=kids(mm[1]).find(k=>k.name===mm[2]);return x?J(out(x)):J({error:{code:'itemNotFound',message:'nf'}},404);}
     if((mm=pth.match(/^\/drives\/D1\/items\/([^/]+)\/children$/))){if(m==='POST'){const bd=JSON.parse(req.postData());if(kids(mm[1]).some(k=>k.name===bd.name))return J({error:{code:'nameAlreadyExists',message:'exists'}},409);return J(out(mk(bd.name,mm[1],true)),201);}return J({value:kids(mm[1]).map(out)});}
@@ -309,6 +309,12 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('without the company Microsoft account, a photo is parked on the server (not stuck on the phone)',await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pins00000000001'];return !!(x&&x.d&&x.relay===true&&!x.drv)&&!_upQ.some(q=>q.id==='pins00000000001');}));
   const mv=await p.evaluate(async()=>{window.__msFail=false;_msTok=null;return await drvRelay();});
   t=tree();ok('the office moves parked files into the right job folder and frees the server',mv===1&&t.some(x=>/Smith Kitchen\/13 - Site Issues & Notes\//.test(x))&&await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pins00000000001'];return !!(x.drv&&!x.d&&!x.relay);}),t.join(' | '));
+  // a SharePoint folder added with "Add shortcut to OneDrive" can be picked
+  G.items.sp1={id:'sp1',name:'001 ARCADO',folder:{},parent:null};mk('0001 Open Projects','sp1',true);G.shortcuts=[{id:'sc1',name:'001 ARCADO',remoteItem:{id:'sp1',folder:{},parentReference:{driveId:'D1'}},parentReference:{driveId:'D1'}}];
+  await p.evaluate(()=>drvPick());await p.waitForTimeout(T*600);
+  const sp=await p.evaluate(async()=>{const t1=document.getElementById('drvpk-ov').innerText;const i=_pkItems.findIndex(x=>x.name==='001 ARCADO');_pk.stack.push(_pkItems[i]);await drvPickShow();const t2=document.getElementById('drvpk-ov').innerText;document.getElementById('drvpk-ov').style.display='none';return {t1,t2,id:_pk.stack[0].id};});
+  ok('SharePoint shortcuts show in the folder picker and open',/001 ARCADO/.test(sp.t1)&&/SharePoint/.test(sp.t1)&&/0001 Open Projects/.test(sp.t2)&&sp.id==='sp1',JSON.stringify(sp).slice(0,200));
+  G.shortcuts=[];Object.keys(G.items).forEach(k=>{if(G.items[k]&&(k==='sp1'||G.items[k].parent==='sp1'))delete G.items[k];});
   // new job → new folder; rename → folder renamed
   await p.evaluate(()=>{allJobs.j2={id:'j2',name:'Jones Laundry',info:{},drawings:[],units:[]};document.getElementById('proj-input').value='Smith Kitchen Reno';autoSave();});await p.waitForTimeout(T*3500);
   t=tree();ok('a new job gets its folder and a renamed job renames its folder',t.includes('CabLine Jobs/Jones Laundry')&&t.includes('CabLine Jobs/Smith Kitchen Reno')&&!t.includes('CabLine Jobs/Smith Kitchen'),t.join(' | '));
