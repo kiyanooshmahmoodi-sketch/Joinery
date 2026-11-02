@@ -1138,7 +1138,7 @@ html,body{overflow-x:hidden;}
 window.addEventListener('resize',fit);document.addEventListener('DOMContentLoaded',fit);window.addEventListener('load',fit);try{document.fonts.ready.then(fit);}catch(e){}setTimeout(fit,600);})();</script>
 <style id="org-css">
 /* v487: in the installed app the title bar is a drag area — while a popup is open, clicks must reach the popup */
-#ml-ov,#ml-ov *,#inv-ov,#inv-ov *,#drvpk-ov,#drvpk-ov *,#drvdel-ov,#drvdel-ov *,#inst-ov,#inst-ov *,#inst-bar,#inst-bar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}
+#drvask-ov,#drvask-ov *,#ml-ov,#ml-ov *,#inv-ov,#inv-ov *,#drvpk-ov,#drvpk-ov *,#drvdel-ov,#drvdel-ov *,#inst-ov,#inst-ov *,#inst-bar,#inst-bar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}
 body:has(#inv-ov[style*="flex"]) .topbar,body:has(#inv-ov[style*="flex"]) .topbar *,body:has(#drvpk-ov[style*="flex"]) .topbar,body:has(#drvpk-ov[style*="flex"]) .topbar *,body:has(#drvdel-ov[style*="flex"]) .topbar,body:has(#drvdel-ov[style*="flex"]) .topbar *,body:has(#ml-ov[style*="flex"]) .topbar,body:has(#ml-ov[style*="flex"]) .topbar *,body:has(#inst-ov) .topbar,body:has(#inst-ov) .topbar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}
 #inv-ov,#drvpk-ov{padding-top:calc(env(titlebar-area-height,0px) + 24px)!important}
 #inv-mail a,#inv-mail img{opacity:1!important;filter:none!important;pointer-events:none}
@@ -1388,7 +1388,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v494 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v495 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8524,7 +8524,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v494 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v495 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10942,7 +10942,7 @@ async function upPut(id,d,job){var T=800000,col=cloud.db.collection('photos'),re
   if(!window.CLIENT_MODE&&window.SESSION&&SESSION.role){   // v483: staff files go to the company drive
     var forClient=window._upForceServer||drvForClient(id,job);   // v484: files on the client page also keep a copy on the server so the client can open them
     if((drvAutoCfg()||drvLinkedFor(id,job))&&!window._upForceServer){var sent=false;try{await drvUpload(id,d,job);sent=true;}catch(e){
-        if(e.code==='drv-wait')throw e;if(e.code==='drv-nolink'){relay=false;}else
+        if(e.code==='drv-wait')throw e;if(e.code==='drv-nolink'||e.code==='drv-ask'){relay=false;}else
         // v489: no company Microsoft account here (e.g. an installer with a personal email) — park the file on the server; the office moves it into the drive
         if(e.code==='ms-login'||e.status===401||e.status===403){relay=true;if(e.code==='ms-login'&&drvWantsMs())_msNeed=true;}
         else if(!forClient)throw e;}
@@ -11470,8 +11470,13 @@ var DRV_N1=['200 Design/220 Architecture/2201 Received','200 Design/230 Interior
   '500 Build/560 QC & Defects/5602 Defects','500 Build/570 Handover Package/5703 Defect Completion','100 Project Information & Management/120 Project Management/1203 Client Communication'];
 var DRV_N1_OTHER='100 Project Information & Management/110 Project Information/1107 Other Documents';
 function drvYYMMDD(){var d=new Date();return String(d.getFullYear()).slice(2)+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);}
-async function drvMkPath(dId,parent,path){var parts=String(path).replace(/YYMMDD/g,drvYYMMDD()).split('/').filter(Boolean),cur={id:parent};
-  for(var i=0;i<parts.length;i++){var ex=await drvChild(dId,cur.id,parts[i]);cur=ex&&ex.folder?ex:await drvMkdir(dId,cur.id,parts[i]);}return cur;}
+async function drvMkPath(dId,parent,path,jid){var full=String(path).replace(/YYMMDD/g,drvYYMMDD()),parts=full.split('/').filter(Boolean),cur={id:parent};
+  var J=jid&&allJobs[jid],inf=J?(J.info=J.info||{}):{},ok=(inf.drvOk=inf.drvOk||{}),use=(inf.drvUse=inf.drvUse||{});
+  if(use[full]){try{var u=await gf(drvItem(dId,use[full]));if(u&&u.folder)return u;}catch(e){if(e.status!==404)throw e;}delete use[full];}
+  for(var i=0;i<parts.length;i++){var ex=await drvChild(dId,cur.id,parts[i]);if(ex&&ex.folder){cur=ex;continue;}
+    if(!DRV_AUTO&&jid&&ok[full]!=='yes'){var ea=new Error('folder needs your OK');ea.code='drv-ask';ea.path=full;throw ea;}   // v495: never create a folder without asking
+    cur=await drvMkdir(dId,cur.id,parts[i]);}
+  if(jid){use[full]=cur.id;}return cur;}
 function drvCatName(i){return (i<9?'0':'')+(i+1)+' - '+DRIVE_CATS[i];}
 // which folder a file belongs in — from where it sits inside the job
 function drvCatFor(path){var p=String(path||'').toLowerCase();
@@ -11573,8 +11578,8 @@ async function drvUpload(id,d,jobHint){var c=drvCfg();var loc=drvLocate(id,jobHi
   var jf=await drvJobFolder(loc.job,true);if(!jf){var e1=new Error('no job folder');e1.code=DRV_AUTO?'drv-wait':'drv-nolink';throw e1;}
   var dId=jf.d||c.driveId,cf;
   if(DRV_AUTO){var catName=loc.cat>=0?drvCatName(loc.cat):(DRIVE_CATS.length+1)+' - Other';cf=await drvMkdir(dId,jf.id,catName);}
-  else{try{cf=await drvMkPath(dId,jf.id,loc.cat>=0&&DRV_N1[loc.cat]?DRV_N1[loc.cat]:DRV_N1_OTHER);}
-    catch(e){if(e.status===404){var J=allJobs[loc.job];if(J&&J.info&&J.info.drv){J.info.drv.missing=true;try{jhSave(loc.job);}catch(x){}}var e2=new Error('project folder not found');e2.code='drv-nolink';throw e2;}throw e;}}
+  else{try{cf=await drvMkPath(dId,jf.id,loc.cat>=0&&DRV_N1[loc.cat]?DRV_N1[loc.cat]:DRV_N1_OTHER,loc.job);}
+    catch(e){if(e.code==='drv-ask'){drvAskNote(loc.job,e.path,id);throw e;}if(e.status===404){var J=allJobs[loc.job];if(J&&J.info&&J.info.drv){J.info.drv.missing=true;try{jhSave(loc.job);}catch(x){}}var e2=new Error('project folder not found');e2.code='drv-nolink';throw e2;}throw e;}}
   var it=await drvPutFile(dId,cf.id,drvFileName(id,d,loc.job),drvBlob(d));
   await cloud.db.collection('photos').doc(id).set({drv:{d:dId,i:it.id},name:it.name,size:it.size||0,job:loc.job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()});
   return it;}
@@ -11697,7 +11702,7 @@ async function drvRelay(){var c=DRV_AUTO?drvAutoCfg():drvCfg();if(!c||_relayBusy
     for(var i=0;i<docs.length;i++){var id=docs[i].id,x=docs[i].data()||{};if(!x.relay)continue;
       var d=x.d||'';if(!d&&x.n){var parts=[];for(var k=0;k<x.n;k++){var pp=await cloud.db.collection('photos').doc(id+'~'+k).get();if(!pp.exists){parts=null;break;}parts.push(pp.data().d);}if(!parts)continue;d=parts.join('');}
       if(!d)continue;var keep=drvForClient(id,x.job);
-      try{var it=await drvUpload(id,d,x.job);}catch(e){if(e.code==='drv-wait'||e.code==='drv-nolink')continue;throw e;}
+      try{var it=await drvUpload(id,d,x.job);}catch(e){if(e.code==='drv-wait'||e.code==='drv-nolink'||e.code==='drv-ask')continue;throw e;}
       if(keep)await cloud.db.collection('photos').doc(id).set({d:d,n:0,relay:false},{merge:true});
       else for(var k2=0;k2<(x.n||0);k2++){cloud.db.collection('photos').doc(id+'~'+k2).delete().catch(function(){});}
       moved++;}
@@ -11798,7 +11803,8 @@ function drvLinkedFor(id,jobHint){if(DRV_AUTO||!drvCfg())return false;var loc=dr
 function drvCanLink(){try{return !!(SESSION.owner||isOrgAdm()||hasRole('jobs'));}catch(e){return false;}}
 function drvLinkHTML(j){if(DRV_AUTO||!drvCfg())return '';var f=j.info&&j.info.drv&&j.info.drv.link?j.info.drv:null;
   return '<div class="jx-file" style="gap:8px;"><span class="jx-fname" title="'+qe(f?(f.path||f.name):'')+'">SharePoint folder: '+(f?(f.missing?'<b style="color:#991b1b;">not found — link it again</b>':'<b>'+esc(f.name)+'</b>'):'<span style="color:#a1a1aa;">not linked — files stay in CabLine</span>')+'</span>'+
-    (drvCanLink()?'<button class="jx-link" onclick="drvLinkJob(\''+j.id+'\')">'+(f?'Change':'Link project folder')+'</button>':'')+'</div>';}
+    (drvCanLink()?'<button class="jx-link" onclick="drvLinkJob(\''+j.id+'\')">'+(f?'Change':'Link project folder')+'</button>':'')+'</div>'+
+    (f&&drvAskList(j).length?'<div class="jx-file" style="gap:8px;background:#fef3c7;border-radius:6px;padding:4px 8px;"><span class="jx-fname">'+drvAskList(j).length+' folder'+(drvAskList(j).length>1?'s':'')+' waiting for your OK — files kept in CabLine</span>'+(drvCanLink()?'<button class="jx-link" onclick="drvAskShow(\''+j.id+'\',true)">Review</button>':'')+'</div>':'');}
 async function drvLinkJob(jid){try{await msToken(true);}catch(e){if(!(e&&/cancel/i.test(String(e.errorCode||e.message))))alert('Could not sign in to Microsoft: '+(e.message||e));return;}
   _pk={src:'me',stack:[],forJob:jid};drvPickShow();}
 // files of this job that are still on the CabLine server → into its folder
@@ -11809,8 +11815,46 @@ async function drvMoveJob(jid){var j=allJobs[jid];if(!j||!(j.info&&j.info.drv&&j
       if(!d){try{var r=await window.storage.get('cbkph:'+id);d=r&&r.value;}catch(e){}}
       if(!d)continue;var keep=drvForClient(id,jid);
       await drvUpload(id,d,jid);if(keep)await cloud.db.collection('photos').doc(id).set({d:d,n:0},{merge:true});else for(var k2=0;k2<((x&&x.n)||0);k2++)cloud.db.collection('photos').doc(id+'~'+k2).delete().catch(function(){});
-      n++;}catch(e){if(e&&(e.code==='ms-login'||e.code==='drv-nolink'))break;}}
+      n++;}catch(e){if(e&&e.code==='drv-ask')continue;if(e&&(e.code==='ms-login'||e.code==='drv-nolink'))break;}}
   return n;}
+
+// ===== v495: before CabLine makes ANY folder it asks — shows what exists, what is missing and similar folders; "Not now" keeps the files on the CabLine server =====
+function drvAskNote(jid,path,id){var J=allJobs[jid];if(!J)return;var inf=J.info=J.info||{},A=inf.drvAsk=inf.drvAsk||{},a=A[path]=A[path]||{files:[],since:Date.now()};
+  if(id&&a.files.indexOf(id)<0){a.files.push(id);try{jhSave(jid);}catch(e){}}
+  if((inf.drvOk||{})[path]!=='no'&&drvCanLink())drvAskSoon(jid);}
+var _askT=0,_askJob=null;function drvAskSoon(jid){_askJob=jid;clearTimeout(_askT);_askT=setTimeout(function(){drvAskShow(_askJob);},1200);}
+function drvAskList(J){var inf=(J&&J.info)||{},A=inf.drvAsk||{},ok=inf.drvOk||{};return Object.keys(A).filter(function(p){return ok[p]!=='yes'&&(A[p].files||[]).length;});}
+async function drvAskShow(jid,all){var J=allJobs[jid];if(!J||!drvCanLink())return;var inf=J.info||{},f=inf.drv;if(!f||!f.id)return;
+  var L=drvAskList(J).filter(function(p){return all||(inf.drvOk||{})[p]!=='no';});if(!L.length)return;
+  var ov=document.getElementById('drvask-ov');if(!ov){ov=document.createElement('div');ov.id='drvask-ov';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(19,17,16,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(env(titlebar-area-height,0px) + 24px) 12px 24px;';document.body.appendChild(ov);}
+  ov.style.display='flex';ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:640px;width:100%;padding:18px;">Checking the folders in “'+esc(f.name)+'”…</div>';
+  var rows=[];
+  for(var i=0;i<L.length;i++){var path=L[i],parts=path.split('/'),cur={id:f.id},st=[],missingAt=-1;
+    for(var k=0;k<parts.length;k++){if(missingAt>=0){st.push({n:parts[k],s:'new'});continue;}
+      var ex=null;try{ex=await drvChild(f.d,cur.id,parts[k]);}catch(e){}
+      if(ex&&ex.folder){st.push({n:parts[k],s:'ok'});cur=ex;continue;}
+      var sim=null;try{var kids=await gf(drvItem(f.d,cur.id)+'/children?$top=200'),num=(parts[k].match(/^\d+/)||[''])[0],low=parts[k].toLowerCase().replace(/[^a-z0-9]/g,'');
+        (kids.value||[]).forEach(function(x){if(!x.folder||sim)return;var xl=x.name.toLowerCase().replace(/[^a-z0-9]/g,'');if((num&&x.name.indexOf(num)===0)||xl===low||(low.length>5&&(xl.indexOf(low)>=0||low.indexOf(xl)>=0)))sim=x;});}catch(e){}
+      st.push({n:parts[k],s:'new',sim:sim?{id:sim.id,name:sim.name}:null,at:cur.id});missingAt=k;}
+    rows.push({path:path,st:st,n:((inf.drvAsk[path]||{}).files||[]).length});}
+  window._askRows=rows;window._askJob=jid;
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:640px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);"><div style="padding:14px 16px;border-bottom:1px solid #eee;"><div style="font-weight:700;font-size:15px;">New folder needed in “'+esc(f.name)+'”</div><div style="font-size:12px;color:#71717a;">CabLine never makes a folder without your OK. “Not now” keeps the files safe on the CabLine server — you can say yes later from the job card.</div></div>'+
+    rows.map(function(rw,i){var sim=rw.st.filter(function(x){return x.sim;})[0];
+      return '<div style="padding:12px 16px;border-bottom:1px solid #f0f0f2;"><div style="font-size:12.5px;color:#52525b;margin-bottom:6px;">'+rw.n+' file'+(rw.n>1?'s':'')+' waiting</div>'+
+        '<div style="font-size:13px;line-height:1.7;">'+rw.st.map(function(x,d){return '<div style="padding-left:'+(d*16)+'px;">'+(x.s==='ok'?'<span style="color:#166534;">✓ '+esc(x.n)+'</span> <span style="color:#a1a1aa;font-size:11.5px;">exists</span>':'<b style="color:#92400e;">+ '+esc(x.n)+'</b> <span style="color:#92400e;font-size:11.5px;">will be created</span>')+'</div>';}).join('')+'</div>'+
+        (sim?'<div style="margin-top:8px;font-size:12.5px;background:#fef3c7;border-radius:8px;padding:8px 10px;">A similar folder already exists: <b>'+esc(sim.sim.name)+'</b> — use it instead of making “'+esc(sim.n)+'”?</div>':'')+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">'+(sim?'<button class="btn btn-blue btn-sm" onclick="drvAskAnswer('+i+',\'sim\')">Use “'+esc(sim.sim.name)+'”</button>':'')+
+          '<button class="btn '+(sim?'btn-outline':'btn-blue')+' btn-sm" onclick="drvAskAnswer('+i+',\'yes\')">Create the folder</button><button class="btn btn-outline btn-sm" onclick="drvAskAnswer('+i+',\'no\')">Not now — keep in CabLine</button></div></div>';}).join('')+
+    '<div style="padding:12px 16px;display:flex;"><button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="document.getElementById(\'drvask-ov\').style.display=\'none\'">Close</button></div></div>';}
+async function drvAskAnswer(i,ans){var rw=(window._askRows||[])[i],jid=window._askJob,J=allJobs[jid];if(!rw||!J)return;var inf=J.info=J.info||{},ok=inf.drvOk=inf.drvOk||{};
+  if(ans==='no'){ok[rw.path]='no';jhSave(jid);showMsg('Kept in CabLine — say yes later from the job card');}
+  else{if(ans==='sim'){var x=rw.st.filter(function(q){return q.sim;})[0],idx=rw.st.indexOf(x);   // use the similar folder for this level, keep the rest of the path below it
+      var rest=rw.st.slice(idx+1).map(function(q){return q.n;});var cur=x.sim;
+      try{for(var k=0;k<rest.length;k++){var ex=await drvChild(inf.drv.d,cur.id,rest[k]);cur=ex&&ex.folder?ex:await drvMkdir(inf.drv.d,cur.id,rest[k]);}}catch(e){alert('Could not use that folder: '+e.message);return;}
+      inf.drvUse=inf.drvUse||{};inf.drvUse[rw.path]=cur.id;}
+    ok[rw.path]='yes';jhSave(jid);showMsg('✓ Saving the files into the folder…');
+    var files=((inf.drvAsk||{})[rw.path]||{}).files||[];drvMoveJob(jid).then(function(){if(inf.drvAsk)delete inf.drvAsk[rw.path];jhSave(jid);try{renderJobsHome();}catch(e){}showMsg('✓ '+files.length+' file(s) saved');}).catch(function(){});}
+  window._askRows.splice(i,1);if(!window._askRows.length)document.getElementById('drvask-ov').style.display='none';else drvAskShow(jid);try{renderJobsHome();}catch(e){}}
 
 // v483 hooks: new job → its folder; renamed job → folder renamed; delete → ask about the folder
 (function(){

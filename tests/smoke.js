@@ -385,10 +385,27 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   await p.evaluate(async()=>{_pk.stack.push(_pkItems.find(x=>x.name==='0012 J Smith Residence'));await drvPickShow();await drvPickUse();});await p.waitForTimeout(T*2500);
   const tree2=()=>{const path=id=>{const x=G.items[id];return x.parent&&x.parent!=='root'?path(x.parent)+'/'+x.name:x.name;};return Object.keys(G.items).filter(k=>k!=='root'&&G.items[k]).map(path).sort();};
   let t2=tree2();
-  ok('Link project folder: no new project folder, the earlier upload moves into 200 Design/220 Architecture/2201 Received',t2.filter(x=>/^0012 J Smith Residence$/.test(x)).length===1&&t2.includes('0012 J Smith Residence/200 Design/220 Architecture/2201 Received/Upload.pdf')&&await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pman0000000001'];return !!(x.drv&&!x.d);}),t2.join(' | '));
+  const ask1=await p.evaluate(()=>{const o=document.getElementById('drvask-ov');return o&&o.style.display==='flex'?o.innerText:'';});
+  ok('Link project folder: nothing is created by itself — CabLine asks first, showing what is missing',t2.filter(x=>/^0012 J Smith Residence$/.test(x)).length===1&&!t2.some(x=>/200 Design/.test(x))&&/2201 Received/.test(ask1)&&/will be created/.test(ask1),ask1.slice(0,200)+' || '+t2.join(' | '));
+  await p.evaluate(()=>drvAskAnswer(_askRows.findIndex(r=>/2201/.test(r.path)),'no'));await p.waitForTimeout(T*800);t2=tree2();
+  ok('“Not now” keeps the file on the CabLine server and makes no folder',!t2.some(x=>/200 Design/.test(x))&&await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pman0000000001'];return !!(x.d&&!x.drv)&&allJobs.m1.info.drvOk['200 Design/220 Architecture/2201 Received']==='no';}));
+  // a site-issue photo: 500 Build and 560 exist, only 5602 is new → ask, yes → saved
+  mk('5601 Inspection',qc.id,true);
   await p.evaluate(async()=>{const id='pman0000000002';await window.storage.set('cbkph:'+id,'data:image/jpeg;base64,/9j/4AAQ');allJobs.m1.siteIssues=[{id:'s1',text:'Scratch',photos:[id]}];saveAllJobs();await upEnqueue(id,'m1');});await p.waitForTimeout(T*2500);
-  t2=tree2();
-  ok('a site-issue photo goes into the existing 500 Build/560 QC & Defects (reused, not duplicated) › 5602 Defects',t2.filter(x=>/\/560 QC & Defects$/.test(x)).length===1&&t2.some(x=>/^0012 J Smith Residence\/500 Build\/560 QC & Defects\/5602 Defects\/.+\.jpg$/.test(x)),t2.join(' | '));
+  const ask2=await p.evaluate(()=>document.getElementById('drvask-ov').innerText);
+  ok('the question shows existing folders ✓ and only the missing one as new',/500 Build[\s\S]*exists/.test(ask2)&&/5602 Defects[\s\S]*will be created/.test(ask2),ask2.slice(0,300));
+  await p.evaluate(()=>drvAskAnswer(_askRows.findIndex(r=>/5602/.test(r.path)),'yes'));await p.waitForTimeout(T*2000);t2=tree2();
+  ok('“Create the folder” makes only 5602 Defects inside the existing 560 and saves the photo there',t2.filter(x=>/\/560 QC & Defects$/.test(x)).length===1&&t2.some(x=>/^0012 J Smith Residence\/500 Build\/560 QC & Defects\/5602 Defects\/.+\.jpg$/.test(x)),t2.join(' | '));
+  // a QC photo: "5601 Inspection" already exists (similar to 5601 Inspections) → offered instead of a duplicate
+  await p.evaluate(async()=>{const id='pman0000000003';await window.storage.set('cbkph:'+id,'data:image/jpeg;base64,/9j/4AAQ');units.length=0;units.push({id:'u1',qcPhotos:[id]});saveAllJobs();await upEnqueue(id,'m1');});await p.waitForTimeout(T*2500);
+  const ask3=await p.evaluate(()=>document.getElementById('drvask-ov').innerText);
+  if(process.env.SHOT){await p.evaluate(()=>{const o=document.getElementById('role-ov');if(o)o.style.display='none';});await p.screenshot({path:process.env.SHOT+'/ask.png'});}
+  ok('a similar existing folder is offered instead of making a duplicate',/similar folder already exists: 5601 Inspection/.test(ask3),ask3.slice(0,300));
+  await p.evaluate(()=>drvAskAnswer(_askRows.findIndex(r=>/5601/.test(r.path)),'sim'));await p.waitForTimeout(T*2000);t2=tree2();
+  ok('“Use it” saves into the existing similar folder — no duplicate',!t2.some(x=>/5601 Inspections/.test(x))&&t2.some(x=>/560 QC & Defects\/5601 Inspection\/.+\.jpg$/.test(x)),t2.join(' | '));
+  ok('the job card shows folders still waiting for an OK',await p.evaluate(()=>/waiting for your OK/.test(drvLinkHTML(allJobs.m1))));
+  await p.evaluate(()=>drvAskShow('m1',true));await p.waitForTimeout(T*1200);await p.evaluate(()=>drvAskAnswer(_askRows.findIndex(r=>/2201/.test(r.path)),'yes'));await p.waitForTimeout(T*2000);t2=tree2();
+  ok('saying yes later moves the kept file in',t2.includes('0012 J Smith Residence/200 Design/220 Architecture/2201 Received/Upload.pdf'),t2.join(' | '));
   await p.evaluate(()=>{document.getElementById('proj-input').value='Smith — renamed';autoSave();});await p.waitForTimeout(T*800);
   ok('renaming the job keeps the link and never renames the folder',!!G.items[X.id]&&G.items[X.id].name==='0012 J Smith Residence'&&await p.evaluate(()=>allJobs.m1.info.drv&&allJobs.m1.info.drv.name==='0012 J Smith Residence'));
   ok('the job card shows the linked folder',await p.evaluate(()=>/0012 J Smith Residence/.test(drvLinkHTML(allJobs.m1))));
