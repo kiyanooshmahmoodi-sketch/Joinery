@@ -1388,7 +1388,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v493 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v494 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8524,7 +8524,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v493 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v494 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10053,7 +10053,7 @@ function jhCard(j){
     jhSec(id,'due','Delivery date',(inf.dueDate?jhFmt(inf.dueDate+'T00:00:00')+' · '+jhDueText(inf.dueDate):''),
       '<div class="jx-row"><input class="jx-in" type="date" value="'+qe(inf.dueDate||'')+'" oninput="jhDueLive(this,\''+id+'\')" onblur="renderJobsHome()" onchange="jhDueLive(this,\''+id+'\')"/>'+(inf.dueDate?'<span class="jh-due-t jx-meta"'+(dc?' style="color:'+dc.fg+'"':'')+'>'+jhDueText(inf.dueDate)+'</span>':'')+'</div>')+
     // the three drawing groups are one shared list with Designer › Drawings and the installer's Drawings
-    jhSec(id,'files','Drawings &amp; files',jhFileSumm(j),FG.map(function(g){var L=(j.drawings||[]).filter(function(x){return drKind(x)===g[0];});
+    jhSec(id,'files','Drawings &amp; files',jhFileSumm(j),drvLinkHTML(j)+FG.map(function(g){var L=(j.drawings||[]).filter(function(x){return drKind(x)===g[0];});
       return '<div class="jx-fg"><div class="jx-fg-h"><span>'+g[1]+(L.length?' <em>'+L.length+'</em>':'')+'</span><span><button class="jx-link" onclick="jhAddPlan(\''+id+'\',\''+g[0]+'\')">+ '+g[2]+'</button>'+((g[0]==='arch'||g[0]==='d3')&&drvCfg()?' <button class="jx-link" onclick="if(\''+id+'\'!==currentJobId)selectJob(\''+id+'\');drFromDrive(\''+g[0]+'\')">+ From OneDrive</button>':'')+'</span></div>'+
         (L.length?L.map(function(x){return '<div class="jx-file"><span class="jx-fname" title="'+qe(drName(x))+'">'+esc(drName(x))+'</span><button class="jx-link" onclick="drOpenAny(\''+x.id+'\')">Open</button></div>';}).join(''):'<div class="jx-empty">None yet</div>')+'</div>';}).join(''))+
     (qtCan()?jhSec(id,'quote','Quotation',qtSumm(j),qtSecHTML(j)):'')+
@@ -10941,8 +10941,8 @@ async function upScan(){await upLoad();var have={};_upQ.forEach(function(q){have
 async function upPut(id,d,job){var T=800000,col=cloud.db.collection('photos'),relay=false;
   if(!window.CLIENT_MODE&&window.SESSION&&SESSION.role){   // v483: staff files go to the company drive
     var forClient=window._upForceServer||drvForClient(id,job);   // v484: files on the client page also keep a copy on the server so the client can open them
-    if(drvAutoCfg()&&!window._upForceServer){var sent=false;try{await drvUpload(id,d,job);sent=true;}catch(e){
-        if(e.code==='drv-wait')throw e;
+    if((drvAutoCfg()||drvLinkedFor(id,job))&&!window._upForceServer){var sent=false;try{await drvUpload(id,d,job);sent=true;}catch(e){
+        if(e.code==='drv-wait')throw e;if(e.code==='drv-nolink'){relay=false;}else
         // v489: no company Microsoft account here (e.g. an installer with a personal email) — park the file on the server; the office moves it into the drive
         if(e.code==='ms-login'||e.status===401||e.status===403){relay=true;if(e.code==='ms-login'&&drvWantsMs())_msNeed=true;}
         else if(!forClient)throw e;}
@@ -10967,7 +10967,7 @@ async function upKick(){
       if(!d){try{var r=await window.storage.get('cbkph:'+id);d=r&&r.value;}catch(e){}}
       if(!d){_upOK[id]=1;_upQ.shift();upSave();continue;}      // not stored on this device (already online elsewhere)
       try{
-        if(drvAutoCfg()&&!window.CLIENT_MODE)await upPut(id,d,q.job||'');else
+        if((drvAutoCfg()||drvLinkedFor(id,q.job))&&!window.CLIENT_MODE)await upPut(id,d,q.job||'');else
         if(d.length>800000)await upPut(id,d,q.job||'');else await Promise.race([upPut(id,d,q.job||''),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},25000);})]);delete _upProg[id];
         _upOK[id]=1;_upQ.shift();upSave();upStat();
         var jb=allJobs[q.job]||{},jn=jb.name||jb.projectName||jb.project||jb.title||'Project';var dd=_upDone[jn]=_upDone[jn]||{p:0,v:0};if(/^data:audio/.test(d))dd.v++;else dd.p++;
@@ -11464,6 +11464,14 @@ function invGmail(){invMail('gmail');}
 // ===== v483: COMPANY DRIVE (OneDrive) — every job gets its own folder; files go to the company's drive, text stays on the server =====
 var MS_CLIENT_ID='9bcda083-035b-403e-ab96-e2a20741c80f',MS_SCOPES=['Files.ReadWrite.All','User.Read'],GRAPH='https://graph.microsoft.com/v1.0';
 var DRIVE_CATS=['Architectural Plans','3D & Design','CM Files','Shop Drawings','Production','Orders & Invoices','Quotes','Client Selections','QC Photos','Dispatch','Installation Drawings','Installation Photos','Site Issues & Notes','Maintenance','Client Emails'];
+var DRV_N1=['200 Design/220 Architecture/2201 Received','200 Design/230 Interior/2302 Work in Progress','400 Procurement/4010 Cabinetry','200 Design/230 Interior/2303 Issued','400 Procurement/4010 Cabinetry',
+  '100 Project Information & Management/110 Project Information/1106 Invoice','100 Project Information & Management/110 Project Information/1103 Quote & Estimate','400 Procurement/4001 Selections Schedule',
+  '500 Build/560 QC & Defects/5601 Inspections','600 Project Photos & Media/620 During Construction/YYMMDD','500 Build/510 Construction Drawings','600 Project Photos & Media/620 During Construction/YYMMDD',
+  '500 Build/560 QC & Defects/5602 Defects','500 Build/570 Handover Package/5703 Defect Completion','100 Project Information & Management/120 Project Management/1203 Client Communication'];
+var DRV_N1_OTHER='100 Project Information & Management/110 Project Information/1107 Other Documents';
+function drvYYMMDD(){var d=new Date();return String(d.getFullYear()).slice(2)+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);}
+async function drvMkPath(dId,parent,path){var parts=String(path).replace(/YYMMDD/g,drvYYMMDD()).split('/').filter(Boolean),cur={id:parent};
+  for(var i=0;i<parts.length;i++){var ex=await drvChild(dId,cur.id,parts[i]);cur=ex&&ex.folder?ex:await drvMkdir(dId,cur.id,parts[i]);}return cur;}
 function drvCatName(i){return (i<9?'0':'')+(i+1)+' - '+DRIVE_CATS[i];}
 // which folder a file belongs in — from where it sits inside the job
 function drvCatFor(path){var p=String(path||'').toLowerCase();
@@ -11523,7 +11531,9 @@ async function drvRedeem(force){var c=drvCfg();if(!c||!c.shareUrl)return;var k='
   try{if(!force&&localStorage.getItem(k))return;}catch(e){}
   try{var enc='u!'+btoa(unescape(encodeURIComponent(c.shareUrl))).replace(/=+$/,'').replace(/\//g,'_').replace(/\+/g,'-');await gf('/shares/'+enc+'/driveItem',{headers:{Prefer:'redeemSharingLink'}});try{localStorage.setItem(k,'1');}catch(e){}}catch(e){}}
 // ---- job folders
-async function drvJobFolder(jid,create){var c=drvAutoCfg(),j=allJobs[jid];if(!c||!j)return null;var inf=j.info=j.info||{};
+async function drvJobFolder(jid,create){var j=allJobs[jid];if(!j)return null;var inf=j.info=j.info||{};
+  if(!DRV_AUTO){return (drvCfg()&&inf.drv&&inf.drv.id&&inf.drv.link&&!inf.drv.missing)?inf.drv:null;}   // v494: the project folder is linked by hand — never created
+  var c=drvAutoCfg();if(!c)return null;
   if(inf.drv&&inf.drv.id&&inf.drv.root===c.itemId)return inf.drv;
   if(!create||(window.SESSION&&SESSION.ro))return null;
   var f=await drvMkdir(c.driveId,c.itemId,drvJobName(j));inf.drv={id:f.id,name:f.name,root:c.itemId};
@@ -11560,11 +11570,13 @@ function drvForClient(id,jobHint){var J=allJobs||{},order=[jobHint].concat(Objec
     if(drvFindPath({a:F.clientDocs||[],b:F.clientNotes||[]},id,'',0)!=null)return true;}return false;}
 async function drvUpload(id,d,jobHint){var c=drvCfg();var loc=drvLocate(id,jobHint);
   if(!loc){var e0=new Error('not placed yet');e0.code='drv-wait';throw e0;}
-  var jf=await drvJobFolder(loc.job,true);if(!jf){var e1=new Error('no job folder');e1.code='drv-wait';throw e1;}
-  var catName=loc.cat>=0?drvCatName(loc.cat):(DRIVE_CATS.length+1)+' - Other';
-  var cf=await drvMkdir(c.driveId,jf.id,catName);
-  var it=await drvPutFile(c.driveId,cf.id,drvFileName(id,d,loc.job),drvBlob(d));
-  await cloud.db.collection('photos').doc(id).set({drv:{d:c.driveId,i:it.id},name:it.name,size:it.size||0,job:loc.job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()});
+  var jf=await drvJobFolder(loc.job,true);if(!jf){var e1=new Error('no job folder');e1.code=DRV_AUTO?'drv-wait':'drv-nolink';throw e1;}
+  var dId=jf.d||c.driveId,cf;
+  if(DRV_AUTO){var catName=loc.cat>=0?drvCatName(loc.cat):(DRIVE_CATS.length+1)+' - Other';cf=await drvMkdir(dId,jf.id,catName);}
+  else{try{cf=await drvMkPath(dId,jf.id,loc.cat>=0&&DRV_N1[loc.cat]?DRV_N1[loc.cat]:DRV_N1_OTHER);}
+    catch(e){if(e.status===404){var J=allJobs[loc.job];if(J&&J.info&&J.info.drv){J.info.drv.missing=true;try{jhSave(loc.job);}catch(x){}}var e2=new Error('project folder not found');e2.code='drv-nolink';throw e2;}throw e;}}
+  var it=await drvPutFile(dId,cf.id,drvFileName(id,d,loc.job),drvBlob(d));
+  await cloud.db.collection('photos').doc(id).set({drv:{d:dId,i:it.id},name:it.name,size:it.size||0,job:loc.job,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()});
   return it;}
 async function drvFetch(drv){var r=await gf(drvItem(drv.d,drv.i)+'/content',{raw:true});var b=await r.blob();
   return await new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.onerror=rej;fr.readAsDataURL(b);});}
@@ -11603,7 +11615,7 @@ var _pk={src:'me',stack:[]};
 async function drvPick(){try{await msToken(true);}catch(e){if(!(e&&/cancel/i.test(String(e.errorCode||e.message))))alert('Could not sign in to Microsoft: '+(e.message||e));return;}
   if(!DRV_AUTO){try{var me=await gf('/me/drive/root');await drvSaveCfg({kind:'onedrive',driveId:(me.parentReference&&me.parentReference.driveId)||'',itemId:'link',name:'',path:'',shareUrl:'',by:SESSION.email||'',at:Date.now()});showMsg('✓ Connected — use From OneDrive on plans and 3D files');}catch(e){alert('Could not connect: '+(e.message||e));}return;}
   _pk={src:'me',stack:[]};drvPickShow();}
-async function drvPickShow(){var ov=document.getElementById('drvpk-ov');if(!ov){ov=document.createElement('div');ov.id='drvpk-ov';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(19,17,16,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px;';document.body.appendChild(ov);}
+async function drvPickShow(){if(_pk.forJob===undefined)_pk.forJob=null;var ov=document.getElementById('drvpk-ov');if(!ov){ov=document.createElement('div');ov.id='drvpk-ov';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(19,17,16,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px;';document.body.appendChild(ov);}
   ov.style.display='flex';ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;padding:18px;">Loading folders…</div>';
   var cur=_pk.stack[_pk.stack.length-1],items=[];
   try{if(!cur){if(_pk.src==='shared'){var s=await gf('/me/drive/sharedWithMe');items=(s.value||[]).filter(function(x){return x.folder||(x.remoteItem&&x.remoteItem.folder);}).map(function(x){var r=x.remoteItem||x;return {d:(r.parentReference&&r.parentReference.driveId)||'',id:r.id,name:x.name||r.name};});}
@@ -11613,17 +11625,20 @@ async function drvPickShow(){var ov=document.getElementById('drvpk-ov');if(!ov){
   var crumbs=['<a href="#" onclick="_pk.stack=[];drvPickShow();return false;">'+(_pk.src==='shared'?'Shared with me':'My OneDrive')+'</a>'].concat(_pk.stack.map(function(x,i){return '<a href="#" onclick="_pk.stack=_pk.stack.slice(0,'+(i+1)+');drvPickShow();return false;">'+esc(x.name)+'</a>';})).join(' › ');
   window._pkItems=items;
   ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);">'+
-    '<div style="padding:14px 16px;border-bottom:1px solid #eee;"><div style="font-weight:700;font-size:15px;">Choose the main CabLine folder</div><div style="font-size:12px;color:#71717a;">Every job gets its own folder inside it. Tap a folder to open it, then press Use.</div>'+
+    '<div style="padding:14px 16px;border-bottom:1px solid #eee;"><div style="font-weight:700;font-size:15px;">'+(_pk.forJob?'Link the project folder for “'+esc((allJobs[_pk.forJob]||{}).name||'')+'”':'Choose the main CabLine folder')+'</div><div style="font-size:12px;color:#71717a;">'+(_pk.forJob?'Open the project\'s folder in SharePoint, then press Link. Photos, issues and QC go into the N1 folders inside it.':'Every job gets its own folder inside it. Tap a folder to open it, then press Use.')+'</div>'+
       '<div style="display:flex;gap:6px;margin-top:10px;"><button class="btn btn-sm '+(_pk.src==='me'?'btn-blue':'btn-outline')+'" onclick="_pk={src:\'me\',stack:[]};drvPickShow();">My OneDrive</button><button class="btn btn-sm '+(_pk.src==='shared'?'btn-blue':'btn-outline')+'" onclick="_pk={src:\'shared\',stack:[]};drvPickShow();">Shared with me</button></div>'+
       '<div style="font-size:12.5px;margin-top:10px;">'+crumbs+'</div></div>'+
     '<div style="max-height:46vh;overflow:auto;padding:6px 8px;">'+(items.length?items.map(function(x,i){return '<div onclick="_pk.stack.push(_pkItems['+i+']);drvPickShow();" style="padding:9px 10px;border-radius:8px;cursor:pointer;display:flex;gap:8px;align-items:center;" onmouseover="this.style.background=\'#f4f4f5\'" onmouseout="this.style.background=\'\'">📁 '+esc(x.name)+(x.sp?' <span style="font-size:11px;color:#71717a;">(shared / SharePoint)</span>':'')+'</div>';}).join(''):'<div style="color:#a1a1aa;font-size:13px;padding:10px;">No folders here.</div>')+'</div>'+
     '<div style="display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid #eee;">'+
       ((cur||_pk.src==='me')?'<button class="btn btn-outline btn-sm" onclick="drvPickNew()">+ New folder here</button>':'')+
       '<button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="document.getElementById(\'drvpk-ov\').style.display=\'none\'">Cancel</button>'+
-      (cur?'<button class="btn btn-blue btn-sm" onclick="drvPickUse()">Use “'+esc(cur.name)+'”</button>':'')+'</div></div>';}
+      (cur?'<button class="btn btn-blue btn-sm" onclick="drvPickUse()">'+(_pk.forJob?'Link':'Use')+' “'+esc(cur.name)+'”</button>':'')+'</div></div>';}
 async function drvPickNew(){var n=(prompt('New folder name','CabLine Jobs')||'').trim();if(!n)return;var cur=_pk.stack[_pk.stack.length-1]||_pk.root;if(!cur)return;
   try{var f=await drvMkdir(cur.d,cur.id,n);_pk.stack.push({d:f.parentReference.driveId,id:f.id,name:f.name});drvPickShow();}catch(e){alert('Could not make the folder: '+e.message);}}
 async function drvPickUse(){var cur=_pk.stack[_pk.stack.length-1];if(!cur)return;var path=_pk.stack.map(function(x){return x.name;}).join(' / ');
+  if(_pk.forJob){var J=allJobs[_pk.forJob];if(!J)return;J.info=J.info||{};J.info.drv={link:true,id:cur.id,d:cur.d,name:cur.name,path:path,by:SESSION.name||'',at:Date.now()};var jid=_pk.forJob;jhSave(jid);
+    document.getElementById('drvpk-ov').style.display='none';try{renderJobsHome();}catch(e){}showMsg('✓ Linked to “'+cur.name+'” — moving this job\'s files…');
+    drvMoveJob(jid).then(function(n){if(n)showMsg('✓ '+n+' file(s) moved into “'+cur.name+'”');}).catch(function(){});try{upKick();}catch(e){}return;}
   var cfg={kind:'onedrive',driveId:cur.d,itemId:cur.id,name:cur.name,path:path,shareUrl:'',by:SESSION.email||'',at:Date.now()};
   if(!SESSION.owner){try{var l=await gf(drvItem(cur.d,cur.id)+'/createLink',{method:'POST',body:{type:'edit',scope:'organization'}});cfg.shareUrl=(l&&l.link&&l.link.webUrl)||'';}catch(e){}}
   try{await drvSaveCfg(cfg);document.getElementById('drvpk-ov').style.display='none';showMsg('✓ Company drive connected — making the job folders…');}catch(e){alert('Could not save: '+e.message);}}
@@ -11675,14 +11690,14 @@ try{if(/[?&]install=1/.test(location.search))setTimeout(instBar,600);}catch(e){}
 // ===== v489: files parked on the server by people without the company Microsoft account → moved into the drive by the office =====
 function drvWantsMs(){try{return !!(SESSION.owner||isOrgAdm()||hasRole('designer'));}catch(e){return false;}}
 var _relayBusy=false;
-async function drvRelay(){var c=drvAutoCfg();if(!c||_relayBusy||!navigator.onLine||!(window.SESSION&&SESSION.role)||SESSION.ro)return 0;_relayBusy=true;var moved=0;
+async function drvRelay(){var c=DRV_AUTO?drvAutoCfg():drvCfg();if(!c||_relayBusy||!navigator.onLine||!(window.SESSION&&SESSION.role)||SESSION.ro)return 0;_relayBusy=true;var moved=0;
   try{await msToken(false);
     var q=cloud.db.collection('photos');if(q.where)q=q.where('org','==',SESSION.org||'').where('relay','==',true);
     var sn=await q.get(),docs=[];sn.forEach(function(x){docs.push(x);});
     for(var i=0;i<docs.length;i++){var id=docs[i].id,x=docs[i].data()||{};if(!x.relay)continue;
       var d=x.d||'';if(!d&&x.n){var parts=[];for(var k=0;k<x.n;k++){var pp=await cloud.db.collection('photos').doc(id+'~'+k).get();if(!pp.exists){parts=null;break;}parts.push(pp.data().d);}if(!parts)continue;d=parts.join('');}
       if(!d)continue;var keep=drvForClient(id,x.job);
-      try{var it=await drvUpload(id,d,x.job);}catch(e){if(e.code==='drv-wait')continue;throw e;}
+      try{var it=await drvUpload(id,d,x.job);}catch(e){if(e.code==='drv-wait'||e.code==='drv-nolink')continue;throw e;}
       if(keep)await cloud.db.collection('photos').doc(id).set({d:d,n:0,relay:false},{merge:true});
       else for(var k2=0;k2<(x.n||0);k2++){cloud.db.collection('photos').doc(id+'~'+k2).delete().catch(function(){});}
       moved++;}
@@ -11777,6 +11792,25 @@ async function fpAdd(){var j=siJob();if(!j)return;var L=Object.keys(_fp.sel).map
     j.drawings.unshift({kind:_fp.kind,id:id,name:x.name,mime:x.mime||'',size:x.size||0,linked:true,drv:{d:x.d,i:x.id},date:new Date().toLocaleString('en-AU'),by:(SESSION&&SESSION.name)||''});
     try{await cloud.db.collection('photos').doc(id).set({drv:{d:x.d,i:x.id},linked:true,name:x.name,size:x.size||0,job:j.id,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){alert('Could not link '+x.name+': '+e.message);}}
   siSave();document.getElementById('drvpk-ov').style.display='none';try{renderDrawings();}catch(e){}try{renderJobsHome();}catch(e){}showMsg('✓ '+L.length+' file'+(L.length>1?'s':'')+' linked from OneDrive');}
+
+// ===== v494: link each job to its project folder in SharePoint by hand; files then go into the N1 folder structure inside it =====
+function drvLinkedFor(id,jobHint){if(DRV_AUTO||!drvCfg())return false;var loc=drvLocate(id,jobHint);if(!loc)return false;var j=allJobs[loc.job],f=j&&j.info&&j.info.drv;return !!(f&&f.link&&f.id&&!f.missing);}
+function drvCanLink(){try{return !!(SESSION.owner||isOrgAdm()||hasRole('jobs'));}catch(e){return false;}}
+function drvLinkHTML(j){if(DRV_AUTO||!drvCfg())return '';var f=j.info&&j.info.drv&&j.info.drv.link?j.info.drv:null;
+  return '<div class="jx-file" style="gap:8px;"><span class="jx-fname" title="'+qe(f?(f.path||f.name):'')+'">SharePoint folder: '+(f?(f.missing?'<b style="color:#991b1b;">not found — link it again</b>':'<b>'+esc(f.name)+'</b>'):'<span style="color:#a1a1aa;">not linked — files stay in CabLine</span>')+'</span>'+
+    (drvCanLink()?'<button class="jx-link" onclick="drvLinkJob(\''+j.id+'\')">'+(f?'Change':'Link project folder')+'</button>':'')+'</div>';}
+async function drvLinkJob(jid){try{await msToken(true);}catch(e){if(!(e&&/cancel/i.test(String(e.errorCode||e.message))))alert('Could not sign in to Microsoft: '+(e.message||e));return;}
+  _pk={src:'me',stack:[],forJob:jid};drvPickShow();}
+// files of this job that are still on the CabLine server → into its folder
+async function drvMoveJob(jid){var j=allJobs[jid];if(!j||!(j.info&&j.info.drv&&j.info.drv.link&&!j.info.drv.missing)||!drvCfg())return 0;var ids=upIds(j),n=0;
+  for(var i=0;i<ids.length;i++){var id=ids[i];try{var sn=await cloud.db.collection('photos').doc(id).get();var x=sn.exists&&sn.data();
+      var d=null;if(x&&x.drv)continue;
+      if(x&&x.d)d=x.d;else if(x&&x.n){var parts=[];for(var k=0;k<x.n;k++){var pp=await cloud.db.collection('photos').doc(id+'~'+k).get();if(!pp.exists){parts=null;break;}parts.push(pp.data().d);}d=parts?parts.join(''):null;}
+      if(!d){try{var r=await window.storage.get('cbkph:'+id);d=r&&r.value;}catch(e){}}
+      if(!d)continue;var keep=drvForClient(id,jid);
+      await drvUpload(id,d,jid);if(keep)await cloud.db.collection('photos').doc(id).set({d:d,n:0},{merge:true});else for(var k2=0;k2<((x&&x.n)||0);k2++)cloud.db.collection('photos').doc(id+'~'+k2).delete().catch(function(){});
+      n++;}catch(e){if(e&&(e.code==='ms-login'||e.code==='drv-nolink'))break;}}
+  return n;}
 
 // v483 hooks: new job → its folder; renamed job → folder renamed; delete → ask about the folder
 (function(){
