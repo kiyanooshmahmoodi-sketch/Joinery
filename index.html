@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v504 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v505 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v504 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v505 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10808,7 +10808,7 @@ function qcLoad(){if(QC)return Promise.resolve(QC);var loc=null;try{loc=JSON.par
   return (window.cloud&&cloud.db&&cloud.user?cloud.db.collection('quotes').doc(qcRatesId()).get().then(function(d){var x=d&&d.exists&&d.data();if(x&&x.rates&&x.rates.v>=3){QC=x.rates;try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}}return QC;}).catch(function(){return QC;}):Promise.resolve(QC));}
 function qcSaveRates(){try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}
   try{cloud.db.collection('quotes').doc(qcRatesId()).set({rates:QC,org:SESSION.org||'',at:Date.now()}).then(function(){showMsg('✓ Rates saved for your company');}).catch(function(e){alert('Could not save rates: '+e.message);});}catch(e){}}
-function qcIn(){var j=allJobs[_qtJob],q=j&&qtCur(j),r=q&&q.rows[_qcRow];var c=(r&&r.calc)||{};var o=Object.assign({fin:'lam',carc:'m16',rate:'',height:'2400',base:'',over:'',tall:'',island:'',drawers:'',extra:'',specials:[],supplyOnly:false},c);if(!Array.isArray(o.specials))o.specials=[];if(qtNum(o.extra)){o.specials.push({name:'Extra items',qty:'1',price:String(qtNum(o.extra))});o.extra='';}if(o.rate===''){var f=qcFind(QC.finishes,o.fin);o.rate=String(Math.round((f[2]+f[3])/2));}return o;}
+function qcIn(){var j=allJobs[_qtJob],q=j&&qtCur(j),r=q&&q.rows[_qcRow];var c=JSON.parse(JSON.stringify((r&&r.calc)||{}));c.area=r?(r.area||''):'';c.desc=r?(r.desc||''):QT_DEF.schedHead.replace('{area} ','').replace('{area}','');var o=Object.assign({fin:'lam',carc:'m16',rate:'',height:'2400',base:'',over:'',tall:'',island:'',drawers:'',extra:'',specials:[],supplyOnly:false},c);if(!Array.isArray(o.specials))o.specials=[];if(qtNum(o.extra)){o.specials.push({name:'Extra items',qty:'1',price:String(qtNum(o.extra))});o.extra='';}if(o.rate===''){var f=qcFind(QC.finishes,o.fin);o.rate=String(Math.round((f[2]+f[3])/2));}return o;}
 function qcFind(L,k){return L.filter(function(x){return x[0]===k;})[0]||L[0];}
 function qcByH(h,a,b){var x=qtNum(h)||2400;if(x<=2400)return a;if(x>=2700)return b;return Math.round((a+(b-a)*(x-2400)/300)*10)/10;}
 function qcOvPct(h){return qcByH(h,QC.ov2400,QC.ov2700);}
@@ -10821,7 +10821,7 @@ function qcCalc(c){var R=QC,f=qcFind(R.finishes,c.fin),cb=qcFind(R.carcass,c.car
   var sub=parts.reduce(function(a,x){return a+x[1];},0);
   if(c.supplyOnly&&!f[4]){var less=sub*R.supplyOnlyLess/100;parts.push(['Supply only (no installation)',-less,'− '+R.supplyOnlyLess+'%']);sub-=less;}
   var rt=Math.max(1,R.roundTo||1),ex=Math.round(sub/rt)*rt;return {rate:rate,rateC:rateC,ov:ov,parts:parts,ex:ex,gst:Math.round(ex*0.1),inc:ex+Math.round(ex*0.1),f:f,cb:cb};}
-async function qcOpen(row){var j=allJobs[_qtJob];if(!j)return;await qcLoad();var q=qtCur(j);_qcRow=row!=null?row:(_qcRow>=0&&q.rows[_qcRow]?_qcRow:(q.rows.length?0:-1));window._qcC=qcIn();qcPaint();}
+async function qcOpen(row){var j=allJobs[_qtJob];if(!j)return;await qcLoad();var q=qtCur(j);_qcRow=row!=null?row:(_qcRow>=0&&q.rows[_qcRow]?_qcRow:(q.rows.length?0:-1));if(_qcRow>=q.rows.length)_qcRow=-1;window._qcC=qcIn();qcPaint();}
 function qcPaint(tab){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),c=window._qcC,R=QC;
   var ov=document.getElementById('qc-ov');if(!ov){ov=document.createElement('div');ov.id='qc-ov';ov.setAttribute('data-raw-colour','');ov.style.cssText='position:fixed;inset:0;z-index:9500;background:rgba(19,17,16,.5);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(env(titlebar-area-height,0px) + 20px) 12px 24px;-webkit-app-region:no-drag;app-region:no-drag;';ov.onclick=function(e){if(e.target===ov)ov.style.display='none';};document.body.appendChild(ov);}
   ov.style.display='flex';
@@ -10831,7 +10831,7 @@ function qcPaint(tab){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),c=window
   ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:760px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);">'+
     '<div style="display:flex;gap:8px;align-items:center;padding:14px 16px;border-bottom:1px solid #eee;flex-wrap:wrap;"><div style="flex:1;min-width:200px;"><div style="font-weight:700;font-size:15px;">Price calculator</div><div style="font-size:12px;color:#71717a;">Market rates per linear metre, AUD, ex GST. Change them in Rates.</div></div><button class="btn btn-outline btn-sm" onclick="qcPaint(\'rates\')">Rates</button><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'qc-ov\').style.display=\'none\'">Close</button></div>'+
     '<div style="padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">'+
-      '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Area in this quote<select onchange="_qcRow=+this.value;_qcC=qcIn();qcPaint()">'+q.rows.map(function(r,i){return '<option value="'+i+'"'+(i===_qcRow?' selected':'')+'>'+esc(r.area||('Area '+(i+1)))+'</option>';}).join('')+(q.rows.length?'':'<option>— add an area first —</option>')+'</select></label>'+
+      '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Area in this quote<select onchange="_qcRow=+this.value;_qcC=qcIn();qcPaint()">'+q.rows.map(function(r,i){return '<option value="'+i+'"'+(i===_qcRow?' selected':'')+'>'+esc(r.area||('Area '+(i+1)))+'</option>';}).join('')+'<option value="-1"'+(_qcRow<0?' selected':'')+'>+ New area…</option></select></label>'+
       '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Door finish<select id="qc-fin" onchange="_qcC.fin=this.value;var f=qcFind(QC.finishes,this.value);_qcC.rate=String(Math.round((f[2]+f[3])/2));qcPaint()">'+R.finishes.map(function(x){return '<option value="'+x[0]+'"'+(c.fin===x[0]?' selected':'')+'>'+esc(x[1])+'</option>';}).join('')+'</select></label>'+
       '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Carcass board'+sel('carc',R.carcass)+'</label>'+
       '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Total cabinet height<select id="qc-height" onchange="_qcC.height=this.value;qcRes()"><option value="2400"'+(String(c.height)==='2400'?' selected':'')+'>2400 mm</option><option value="2700"'+(String(c.height)==='2700'?' selected':'')+'>2700 mm</option></select></label>'+
@@ -10841,6 +10841,8 @@ function qcPaint(tab){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),c=window
       num('base','Base cabinets','m')+num('over','Overhead cabinets','m')+num('tall','Tall / pantry','m')+num('island','Island','m')+num('drawers','Drawers','pcs')+
       '<label style="display:flex;gap:8px;align-items:center;font-size:13px;align-self:end;padding-bottom:10px;white-space:nowrap;"><input type="checkbox" style="width:auto;flex:none;margin:0;" '+(c.supplyOnly?'checked':'')+' onchange="_qcC.supplyOnly=this.checked;qcRes()">Supply only (no installation)</label>'+
     '</div>'+
+    '<div style="padding:0 16px 12px;display:grid;grid-template-columns:1fr;gap:6px;"><label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Area name (as on the quote)<input id="qc-area" value="'+qtEsc(c.area)+'" placeholder="e.g. Kitchen" oninput="_qcC.area=this.value;qcRes()"></label>'+
+      '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Description (as on the quote)<textarea id="qc-desc" rows="6" style="font:inherit;font-size:13px;line-height:1.5;resize:vertical;" oninput="_qcC.desc=this.value">'+esc(c.desc)+'</textarea></label></div>'+
     '<div style="padding:0 16px 12px;"><div style="font-weight:600;font-size:13px;margin-bottom:6px;">Special items <span style="font-weight:400;color:#71717a;font-size:12px;">— curved units, special hardware, anything else, at your own price</span></div>'+
       (c.specials.length?'<div style="display:grid;grid-template-columns:1fr 70px 110px 28px;gap:6px;font-size:11.5px;color:#71717a;margin-bottom:3px;"><span>Item</span><span>Qty</span><span>Price each ($)</span><span></span></div>':'')+
       c.specials.map(function(x,i){return '<div style="display:grid;grid-template-columns:1fr 70px 110px 28px;gap:6px;margin-bottom:5px;align-items:center;"><input value="'+qtEsc(x.name||'')+'" placeholder="e.g. Curved end unit" oninput="_qcC.specials['+i+'].name=this.value;qcRes()"><input value="'+qtEsc(x.qty||'1')+'" inputmode="decimal" oninput="_qcC.specials['+i+'].qty=this.value;qcRes()"><input value="'+qtEsc(x.price||'')+'" inputmode="decimal" placeholder="0" oninput="_qcC.specials['+i+'].price=this.value;qcRes()"><button class="btn btn-outline btn-sm" title="Remove" style="padding:4px 0;" onclick="_qcC.specials.splice('+i+',1);qcPaint()">×</button></div>';}).join('')+
@@ -10852,8 +10854,10 @@ function qcResHTML(C){return '<div style="background:#faf8f4;border-radius:10px;
     C.parts.filter(function(x){return Math.round(x[1]);}).map(function(x){return '<div style="display:flex;gap:10px;font-size:13px;padding:2px 0;"><span style="flex:1;">'+esc(x[0])+' <span style="color:#a1a1aa;font-size:11.5px;">'+esc(x[2])+'</span></span><span style="font-variant-numeric:tabular-nums;">'+qtMoney(x[1])+'</span></div>';}).join('')+
     '<div style="border-top:1px solid #e7dfd0;margin-top:6px;padding-top:6px;display:flex;font-size:14px;"><b style="flex:1;">Price ex GST</b><b style="font-variant-numeric:tabular-nums;">'+qtMoney(C.ex)+'</b></div>'+
     '<div style="display:flex;font-size:12.5px;color:#52525b;"><span style="flex:1;">GST 10%</span><span>'+qtMoney(C.gst)+'</span></div><div style="display:flex;font-size:12.5px;color:#52525b;"><span style="flex:1;">Total inc GST</span><span>'+qtMoney(C.inc)+'</span></div>'+
-    '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="btn btn-blue btn-sm" onclick="qcApply()"'+(_qcRow<0?' disabled':'')+'>Put '+qtMoney(C.ex)+' into this area</button><span style="font-size:11.5px;color:#71717a;align-self:center;">The quote adds GST itself.</span></div></div>';}
-function qcApply(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),r=q.rows[_qcRow];if(!r)return;var C=qcCalc(window._qcC);r.price=String(C.ex);r.calc=JSON.parse(JSON.stringify(window._qcC));qtPersist(_qtJob);qtPaint();
+    '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="btn btn-blue btn-sm" onclick="qcApply()">'+(_qcRow<0?'Add this area to the quote — '+qtMoney(C.ex):'Put area, description and '+qtMoney(C.ex)+' into the quote')+'</button><span style="font-size:11.5px;color:#71717a;align-self:center;">The quote adds GST itself.</span></div></div>';}
+function qcApply(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),c=window._qcC,nm=String(c.area||'').trim();
+  if(_qcRow<0){if(!nm){alert('Type the area name first (e.g. Kitchen).');var a=document.getElementById('qc-area');if(a)a.focus();return;}q.rows.push({area:'',desc:'',price:''});_qcRow=q.rows.length-1;}
+  var r=q.rows[_qcRow];if(!r)return;var C=qcCalc(c);if(nm)r.area=nm;if(c.desc!=null)r.desc=String(c.desc);r.price=String(C.ex);var keep=JSON.parse(JSON.stringify(c));delete keep.area;delete keep.desc;r.calc=keep;qtPersist(_qtJob);qtPaint();
   document.getElementById('qc-ov').style.display='none';showMsg('✓ '+qtMoney(C.ex)+' put into '+(r.area||'the area'));}
 function qcRatesHTML(){var R=QC,row=function(L,i,cols){return cols.map(function(k){var ix=k[0];return '<input value="'+qtEsc(L[i][ix])+'" '+(k[1]?'inputmode="decimal" ':'')+'oninput="QC.'+k[2]+'['+i+']['+ix+']='+(k[1]?'qtNum(this.value)':'this.value')+'" style="width:'+k[3]+';">';}).join('');},
     one=function(k,lab,unit){return '<label style="display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13px;padding:3px 0;">'+lab+'<span style="display:flex;gap:4px;align-items:center;"><input value="'+qtEsc(R[k])+'" inputmode="decimal" oninput="QC.'+k+'=qtNum(this.value)" style="width:80px;"><span style="font-size:12px;color:#71717a;min-width:28px;">'+unit+'</span></span></label>';};
