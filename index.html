@@ -1388,7 +1388,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v491 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v492 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -1859,7 +1859,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
   <div id="inst-drawings-arch" class="card" style="margin-top:6px;border-top:3px solid #ddd6fe;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
       <div><div style="font-size:18px;font-weight:700;">🏛 Architectural Drawings</div><div style="font-size:12px;color:#4b5563;">PDF architectural plans for this project — also available offline once downloaded.</div></div>
-      <label id="dr-up-arch" class="btn btn-sm" style="cursor:pointer;background:#3a6ea5;color:#fff;border:0;display:none;">⬆ Upload PDF<input type="file" accept="application/pdf,.pdf" multiple style="display:none" onchange="drUpload(this,'arch')"></label>
+      <label id="dr-up-arch" class="btn btn-sm" style="cursor:pointer;background:#3a6ea5;color:#fff;border:0;display:none;">⬆ Upload PDF<input type="file" accept="application/pdf,.pdf" multiple style="display:none" onchange="drUpload(this,'arch')"></label><button id="dr-od-arch" class="btn btn-outline btn-sm" style="display:none;" onclick="drFromDrive('arch')">From OneDrive</button>
     </div>
     <div id="dr-pending-arch" style="font-size:11px;color:#6b7280;"></div>
     <div id="dr-list-arch"></div>
@@ -1867,7 +1867,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
   <div id="inst-drawings-d3" class="card" style="margin-top:6px;border-top:3px solid #bbf7d0;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
       <div><div style="font-size:18px;font-weight:700;">🧊 3D / Design Files</div><div style="font-size:12px;color:#4b5563;">3D views, renders, design files — any file type (PDF, image, video, SketchUp…), max 50 MB each.</div></div>
-      <label id="dr-up-d3" class="btn btn-sm" style="cursor:pointer;background:#3a6ea5;color:#fff;border:0;display:none;">⬆ Upload file<input type="file" multiple style="display:none" onchange="drUpload(this,'d3')"></label>
+      <label id="dr-up-d3" class="btn btn-sm" style="cursor:pointer;background:#3a6ea5;color:#fff;border:0;display:none;">⬆ Upload file<input type="file" multiple style="display:none" onchange="drUpload(this,'d3')"></label><button id="dr-od-d3" class="btn btn-outline btn-sm" style="display:none;" onclick="drFromDrive('d3')">From OneDrive</button>
     </div>
     <div id="dr-pending-d3" style="font-size:11px;color:#6b7280;"></div>
     <div id="dr-list-d3"></div>
@@ -8524,7 +8524,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v491 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v492 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10054,7 +10054,7 @@ function jhCard(j){
       '<div class="jx-row"><input class="jx-in" type="date" value="'+qe(inf.dueDate||'')+'" oninput="jhDueLive(this,\''+id+'\')" onblur="renderJobsHome()" onchange="jhDueLive(this,\''+id+'\')"/>'+(inf.dueDate?'<span class="jh-due-t jx-meta"'+(dc?' style="color:'+dc.fg+'"':'')+'>'+jhDueText(inf.dueDate)+'</span>':'')+'</div>')+
     // the three drawing groups are one shared list with Designer › Drawings and the installer's Drawings
     jhSec(id,'files','Drawings &amp; files',jhFileSumm(j),FG.map(function(g){var L=(j.drawings||[]).filter(function(x){return drKind(x)===g[0];});
-      return '<div class="jx-fg"><div class="jx-fg-h"><span>'+g[1]+(L.length?' <em>'+L.length+'</em>':'')+'</span><button class="jx-link" onclick="jhAddPlan(\''+id+'\',\''+g[0]+'\')">+ '+g[2]+'</button></div>'+
+      return '<div class="jx-fg"><div class="jx-fg-h"><span>'+g[1]+(L.length?' <em>'+L.length+'</em>':'')+'</span><span><button class="jx-link" onclick="jhAddPlan(\''+id+'\',\''+g[0]+'\')">+ '+g[2]+'</button>'+((g[0]==='arch'||g[0]==='d3')&&drvCfg()?' <button class="jx-link" onclick="if(\''+id+'\'!==currentJobId)selectJob(\''+id+'\');drFromDrive(\''+g[0]+'\')">+ From OneDrive</button>':'')+'</span></div>'+
         (L.length?L.map(function(x){return '<div class="jx-file"><span class="jx-fname" title="'+qe(drName(x))+'">'+esc(drName(x))+'</span><button class="jx-link" onclick="drOpenAny(\''+x.id+'\')">Open</button></div>';}).join(''):'<div class="jx-empty">None yet</div>')+'</div>';}).join(''))+
     (qtCan()?jhSec(id,'quote','Quotation',qtSumm(j),qtSecHTML(j)):'')+
     (mlCanSee()?jhSec(id,'mails','Client emails',((j.info&&j.info.mails)||[]).length?((j.info.mails.length)+' email(s)'):'',mlSecHTML(j)):'')+
@@ -10869,7 +10869,7 @@ async function renderDrawings(){
   var loc={};for(var i=0;i<allList.length;i++){try{var r=await window.storage.get('cbkph:'+allList[i].id);loc[allList[i].id]=!!(r&&r.value);}catch(e){}}
   ['prod','arch','d3','cm'].forEach(function(k){
     var box=document.getElementById('dr-list-'+k);if(!box)return;
-    var up=document.getElementById('dr-up-'+k);if(up)up.style.display=adm?'':'none';
+    var up=document.getElementById('dr-up-'+k);if(up)up.style.display=adm?'':'none';var od=document.getElementById('dr-od-'+k);if(od)od.style.display=(adm&&drvCfg())?'':'none';
     var list=allList.filter(function(x){return drKind(x)===k;});
     if(!list.length){box.innerHTML='<div style="color:#6b7280;font-size:13px;padding:8px 0;">'+(j?(k==='d3'?'No 3D / design files uploaded yet.':k==='cm'?'No CM files uploaded yet.':'No '+(k==='arch'?'architectural':'installation')+' drawings uploaded yet.'):'Open a project first.')+'</div>';return;}
     box.innerHTML=list.map(function(x){var has=loc[x.id];if(!has)missing=true;
@@ -11567,7 +11567,7 @@ async function drvFetch(drv){var r=await gf(drvItem(drv.d,drv.i)+'/content',{raw
   return await new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.onerror=rej;fr.readAsDataURL(b);});}
 // delete a file everywhere (the drive copy goes to the drive's recycle bin)
 function upDelete(id){try{if(!(window.cloud&&cloud.db))return;var ref=cloud.db.collection('photos').doc(id);
-  ref.get().then(function(s){var x=s&&s.exists&&s.data();if(x&&x.drv){gf(drvItem(x.drv.d,x.drv.i),{method:'DELETE'}).catch(function(){});}ref.delete().catch(function(){});}).catch(function(){ref.delete().catch(function(){});});}catch(e){}}
+  ref.get().then(function(s){var x=s&&s.exists&&s.data();if(x&&x.drv&&!x.linked){gf(drvItem(x.drv.d,x.drv.i),{method:'DELETE'}).catch(function(){});}ref.delete().catch(function(){});}).catch(function(){ref.delete().catch(function(){});});}catch(e){}}
 // ---- job delete: the job only, or the job and its folder
 function drvDeleteAsk(id,go){var j=allJobs[id],c=drvCfg(),f=j&&j.info&&j.info.drv;
   if(!c||!f||!f.id){go();return;}
@@ -11738,6 +11738,39 @@ async function mlAdd(i,btn){var j=siJob(),m=_mlRes[i];if(!j||!m)return;if(btn){b
   catch(er){if(btn){btn.disabled=false;btn.textContent='Add to job';}alert('Could not add the email: '+(er.message||er));}}
 function mlRemove(mid){var j=siJob();if(!j||!confirm('Remove this email from the job? (It stays in your Outlook.)'))return;var inf=j.info||{};inf.mails=(inf.mails||[]).filter(function(x){return x.mid!==mid;});jhSave(j.id);mlRender();}
 (function(){var _rc=window.renderClientInfo;if(typeof _rc==='function')window.renderClientInfo=renderClientInfo=function(){var r=_rc.apply(this,arguments);try{mlRender();}catch(e){}return r;};})();
+
+// ===== v492: Architectural / 3D files can come straight from the company OneDrive — linked, not copied =====
+var _fp={kind:'arch',src:'me',stack:[],sel:{},items:[]};
+async function drFromDrive(kind){var j=siJob();if(!j){alert('Open a project first.');return;}if(!drvCfg()){alert('Connect the company drive first (Admin › Users).');return;}
+  try{await msToken(true);}catch(e){if(!(e&&/cancel/i.test(String(e.errorCode||e.message))))alert('Could not sign in to Microsoft: '+(e.message||e));return;}
+  var c=drvCfg();_fp={kind:kind,src:'me',stack:[],sel:{},items:[]};fpShow();}
+async function fpShow(){var ov=document.getElementById('drvpk-ov');if(!ov){ov=document.createElement('div');ov.id='drvpk-ov';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(19,17,16,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px;';document.body.appendChild(ov);}
+  ov.style.display='flex';ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:600px;width:100%;padding:18px;">Loading…</div>';
+  var cur=_fp.stack[_fp.stack.length-1],raw=[];
+  try{if(!cur){if(_fp.src==='shared'){var s1=await gf('/me/drive/sharedWithMe');raw=s1.value||[];}else{var k=await gf('/me/drive/root/children?$top=200');raw=k.value||[];}}
+    else{var k2=await gf(drvItem(cur.d,cur.id)+'/children?$top=200');raw=k2.value||[];}}
+  catch(e){ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:600px;width:100%;padding:18px;"><div style="color:#8f3224;">Could not read OneDrive: '+esc(e.message)+'</div><button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="document.getElementById(\'drvpk-ov\').style.display=\'none\'">Close</button></div>';return;}
+  _fp.items=raw.map(function(x){var ri=x.remoteItem,o=ri||x,isF=!!(x.folder||(ri&&ri.folder));return {d:(o.parentReference&&o.parentReference.driveId)||(x.parentReference&&x.parentReference.driveId)||'',id:o.id,name:x.name||o.name,folder:isF,size:o.size||x.size||0,mime:(o.file&&o.file.mimeType)||(x.file&&x.file.mimeType)||''};})
+    .filter(function(x){return x.folder||_fp.kind!=='arch'||/\.pdf$/i.test(x.name);})
+    .sort(function(a,b){return (b.folder?1:0)-(a.folder?1:0)||String(a.name).localeCompare(b.name);});
+  var n=Object.keys(_fp.sel).length;
+  var crumbs=['<a href="#" onclick="_fp.stack=[];fpShow();return false;">'+(_fp.src==='shared'?'Shared with me':'My OneDrive')+'</a>'].concat(_fp.stack.map(function(x,i){return '<a href="#" onclick="_fp.stack=_fp.stack.slice(0,'+(i+1)+');fpShow();return false;">'+esc(x.name)+'</a>';})).join(' › ');
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:600px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);">'+
+    '<div style="padding:14px 16px;border-bottom:1px solid #eee;"><div style="font-weight:700;font-size:15px;">Add '+(_fp.kind==='arch'?'architectural plans':'3D / design files')+' from OneDrive</div><div style="font-size:12px;color:#71717a;">The files are linked, not copied — CabLine always opens the file that is in OneDrive.</div>'+
+      '<div style="display:flex;gap:6px;margin-top:10px;"><button class="btn btn-sm '+(_fp.src==='me'?'btn-blue':'btn-outline')+'" onclick="_fp.src=\'me\';_fp.stack=[];fpShow();">My OneDrive</button><button class="btn btn-sm '+(_fp.src==='shared'?'btn-blue':'btn-outline')+'" onclick="_fp.src=\'shared\';_fp.stack=[];fpShow();">Shared with me</button></div>'+
+      '<div style="font-size:12.5px;margin-top:10px;">'+crumbs+'</div></div>'+
+    '<div style="max-height:46vh;overflow:auto;padding:6px 8px;">'+(_fp.items.length?_fp.items.map(function(x,i){var on=!!_fp.sel[x.id];
+      return x.folder?'<div onclick="_fp.stack.push(_fp.items['+i+']);fpShow();" style="padding:9px 10px;border-radius:8px;cursor:pointer;">📁 '+esc(x.name)+'</div>'
+        :'<label style="padding:9px 10px;border-radius:8px;cursor:pointer;display:flex;gap:10px;align-items:center;'+(on?'background:#fef3c7;':'')+'"><input type="checkbox" '+(on?'checked':'')+' onchange="fpToggle('+i+')"> <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(x.name)+'</span><span style="font-size:11.5px;color:#71717a;">'+drMB(x.size||0)+'</span></label>';}).join(''):'<div style="color:#a1a1aa;font-size:13px;padding:10px;">Nothing here.</div>')+'</div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid #eee;"><button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="document.getElementById(\'drvpk-ov\').style.display=\'none\'">Cancel</button>'+
+      (n?'<button class="btn btn-blue btn-sm" onclick="fpAdd()">Add '+n+' file'+(n>1?'s':'')+'</button>':'')+'</div></div>';}
+function fpToggle(i){var x=_fp.items[i];if(!x)return;if(_fp.sel[x.id])delete _fp.sel[x.id];else _fp.sel[x.id]=x;fpShow();}
+async function fpAdd(){var j=siJob();if(!j)return;var L=Object.keys(_fp.sel).map(function(k){return _fp.sel[k];});j.drawings=j.drawings||[];
+  for(var i=0;i<L.length;i++){var x=L[i];if(j.drawings.some(function(d){return d.drv&&d.drv.i===x.id;}))continue;
+    var id='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+    j.drawings.unshift({kind:_fp.kind,id:id,name:x.name,mime:x.mime||'',size:x.size||0,linked:true,drv:{d:x.d,i:x.id},date:new Date().toLocaleString('en-AU'),by:(SESSION&&SESSION.name)||''});
+    try{await cloud.db.collection('photos').doc(id).set({drv:{d:x.d,i:x.id},linked:true,name:x.name,size:x.size||0,job:j.id,org:SESSION.org||'',at:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){alert('Could not link '+x.name+': '+e.message);}}
+  siSave();document.getElementById('drvpk-ov').style.display='none';try{renderDrawings();}catch(e){}try{renderJobsHome();}catch(e){}showMsg('✓ '+L.length+' file'+(L.length>1?'s':'')+' linked from OneDrive');}
 
 // v483 hooks: new job → its folder; renamed job → folder renamed; delete → ask about the folder
 (function(){

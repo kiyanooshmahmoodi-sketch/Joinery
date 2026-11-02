@@ -240,7 +240,7 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   await ctx.route(SITE+'**',r=>{const u=new URL(r.request().url());r.fulfill({path:path.resolve(__dirname,'..'+u.pathname.replace('/Joinery','').replace(/\/$/,'/index.html'))});});
   // a tiny OneDrive
   const G={n:0,items:{root:{id:'root',name:'root',folder:{},parent:null}}};const mk=(name,parent,folder,content)=>{const id='it'+(++G.n);G.items[id]={id,name,parent,folder:folder?{}:undefined,content};return G.items[id];};
-  const kids=pid=>Object.values(G.items).filter(x=>x.parent===pid);const out=x=>({id:x.id,name:x.name,folder:x.folder,size:(x.content||'').length,parentReference:{driveId:'D1'}});
+  const kids=pid=>Object.values(G.items).filter(x=>x.parent===pid);const out=x=>({id:x.id,name:x.name,folder:x.folder,file:x.folder?undefined:{mimeType:'application/pdf'},size:(x.content||'').length,parentReference:{driveId:'D1'}});
   await ctx.route('https://graph.microsoft.com/**',async r=>{const req=r.request(),u=new URL(req.url()),pth=decodeURIComponent(u.pathname.replace('/v1.0',''));const m=req.method();const J=(o,st)=>r.fulfill({status:st||200,contentType:'application/json',body:JSON.stringify(o)});let mm;
     if(pth==='/me/messages')return J({value:[{id:'m1',subject:'Kitchen colours',from:{emailAddress:{address:'client@x.com',name:'Jane Client'}},receivedDateTime:'2026-10-30T10:00:00Z',bodyPreview:'Hi Kiya',hasAttachments:true},{id:'m2',subject:'About the price',from:{emailAddress:{address:'client@x.com',name:'Jane Client'}},receivedDateTime:'2026-10-31T10:00:00Z',bodyPreview:'Can we discuss',hasAttachments:false}]});
     if(pth==='/me/messages/m1')return J({subject:'Kitchen colours',body:{content:'Hi Kiya,\nWe chose Polar White for the uppers.'},from:{emailAddress:{address:'client@x.com',name:'Jane Client'}},receivedDateTime:'2026-10-30T10:00:00Z',toRecipients:[]});
@@ -309,6 +309,15 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   ok('without the company Microsoft account, a photo is parked on the server (not stuck on the phone)',await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pins00000000001'];return !!(x&&x.d&&x.relay===true&&!x.drv)&&!_upQ.some(q=>q.id==='pins00000000001');}));
   const mv=await p.evaluate(async()=>{window.__msFail=false;_msTok=null;return await drvRelay();});
   t=tree();ok('the office moves parked files into the right job folder and frees the server',mv===1&&t.some(x=>/Smith Kitchen\/13 - Site Issues & Notes\//.test(x))&&await p.evaluate(()=>{const x=JSON.parse(localStorage.getItem('__db'))['photos/pins00000000001'];return !!(x.drv&&!x.d&&!x.relay);}),t.join(' | '));
+  // architectural plans linked straight from OneDrive (not copied)
+  const pf=mk('Architect','root',true);const a101=mk('A101 Ground Floor.pdf',pf.id,false,'PDFDATA');mk('notes.txt',pf.id,false,'x');
+  await p.evaluate(()=>drFromDrive('arch'));await p.waitForTimeout(T*600);
+  const fp=await p.evaluate(async()=>{const i=_fp.items.findIndex(x=>x.name==='Architect');_fp.stack.push(_fp.items[i]);await fpShow();const names=_fp.items.map(x=>x.name);fpToggle(_fp.items.findIndex(x=>x.name==='A101 Ground Floor.pdf'));await new Promise(r=>setTimeout(r,300));await fpAdd();const d=(allJobs.j1.drawings||[]).find(x=>x.name==='A101 Ground Floor.pdf');return {names,linked:!!(d&&d.linked&&d.drv&&d.drv.i),id:d&&d.id};});
+  await p.waitForTimeout(T*1500);t=tree();
+  ok('From OneDrive: pick an existing plan (only PDFs shown) and it is linked, not copied',fp.linked&&fp.names.indexOf('notes.txt')<0&&!t.some(x=>/Smith Kitchen.*A101/.test(x)),JSON.stringify(fp)+' '+t.join(' | '));
+  ok('a linked plan opens from OneDrive',await p.evaluate(async(id)=>{delete _siCache[id];const v=await siGetPhoto(id);return /^data:/.test(v);},fp.id));
+  await p.evaluate((id)=>{const oc=window.confirm;window.confirm=()=>true;try{drDelete(id);}finally{window.confirm=oc;}},fp.id);await p.waitForTimeout(T*800);
+  ok('removing a linked plan from the job never deletes the original in OneDrive',!!G.items[a101.id]&&await p.evaluate((id)=>!(allJobs.j1.drawings||[]).some(x=>x.id===id),fp.id));
   // a SharePoint folder added with "Add shortcut to OneDrive" can be picked
   G.items.sp1={id:'sp1',name:'001 ARCADO',folder:{},parent:null};mk('0001 Open Projects','sp1',true);G.shortcuts=[{id:'sc1',name:'001 ARCADO',remoteItem:{id:'sp1',folder:{},parentReference:{driveId:'D1'}},parentReference:{driveId:'D1'}}];
   await p.evaluate(()=>drvPick());await p.waitForTimeout(T*600);
