@@ -1366,6 +1366,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
       <div style="font-size:12px;color:var(--gray);" id="jcount">0 jobs</div>
       <div class="flex gap-8">
         <button class="btn btn-red btn-sm" id="del-btn" onclick="deleteJob()" style="display:none;">🗑 Delete</button>
+        <button class="btn btn-blue btn-sm" id="jnew-btn" onclick="cbNewJob()" style="display:none;">+ New job</button>
         <button class="btn btn-outline btn-sm" onclick="closeJobs()">Close</button>
       </div>
     </div>
@@ -1388,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v500 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v501 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -7816,6 +7817,12 @@ function updateProjectCount(){
   var el=document.getElementById('proj-count');
   if(el)el.textContent='📂 '+n+' project'+(n===1?'':'s');
 }
+// v502: add a job without the Jobs page (companies that use only Cabinets / Drafting / …)
+async function cbNewJob(){if(typeof orgRoBlock==='function'&&orgRoBlock())return;var nm=(prompt('Job name','')||'').trim();if(!nm)return;var ad=(prompt('Site address (optional)','')||'').trim();
+  await newJob();var j=allJobs[currentJobId];if(!j)return;j.name=nm;var pin=document.getElementById('proj-input');if(pin)pin.value=nm;var pd=document.getElementById('proj-display');if(pd)pd.textContent=nm;
+  var inf=jhInfo(j);if(ad)inf.address=ad;if(orgHas('drafting')&&hasRole('drafting')&&!hasRole('jobs')){inf.stageManual='drafting';inf.dfHold=true;}
+  saveData();try{refresh();}catch(e){}closeJobs();try{if(_currentView==='drafting')renderDrafting();}catch(e){}showMsg('✓ Job “'+nm+'” added');}
+
 function openJobs(){document.getElementById('jsearch').value='';renderJobs('');document.getElementById('joverlay').classList.add('show');setTimeout(function(){document.getElementById('jsearch').focus();},200);}
 function closeJobs(){document.getElementById('joverlay').classList.remove('show');}
 
@@ -7827,7 +7834,7 @@ function renderJobs(q){
   document.getElementById('jcount').textContent=Object.keys(allJobs).length+' jobs';
   document.getElementById('del-btn').style.display=currentJobId?'block':'none';
   var el=document.getElementById('jlist');
-  if(!jobs.length){el.innerHTML='<div class="empty-jobs">No jobs yet<br><small>New jobs are added on the Designer › 🏠 Jobs page</small></div>';return;}
+  if(!jobs.length){el.innerHTML='<div class="empty-jobs">No jobs yet<br><small>'+(hasRole('jobs')?'New jobs are added on the Designer › 🏠 Jobs page':'Press “+ New job” below to add one')+'</small></div>';return;}
   el.innerHTML=jobs.map(function(j){
     var total=(j.units||[]).length,shipped=(j.units||[]).filter(function(u){return u.status==='shipped';}).length;
     var pct=total>0?Math.round(shipped/total*100):0;var cur=j.id===currentJobId;
@@ -8524,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v500 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v501 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -9905,7 +9912,7 @@ var JH_STAGES=[{k:'design',t:'Waiting to Start',i:'📥',c:'#8a8f98'},{k:'drafti
 function jhCounts(j){var u=(j&&j.units)||[],c={n:u.length,qc:0,dis:0,ins:0};u.forEach(function(x){if(!x)return;if(x.qcStatus&&x.qcStatus!=='pending')c.qc++;if(x.dispatched||x.status==='shipped')c.dis++;if(x.installed)c.ins++;});return c;}
 function jhAutoStage(j){var c=jhCounts(j);if(!c.n)return 'design';if(c.ins>=c.n)return 'maintenance';/* v393: everything installed → Maintenance; Completed is chosen by hand */if(c.ins)return 'installation';if(c.dis||c.qc)return 'qcd';return 'production';}
 var _jhFilter='all';
-function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';
+function jhManual(j){var inf=j&&j.info;if(!inf||!inf.stageManual)return '';if(inf.stageManual==='drafting'&&!orgHas('drafting'))return '';
   if(inf.stageManual==='drafting'&&inf.dfHold)return 'drafting';   // v465: a job in Drafting stays there (even after its Excel is imported) until the drafter presses Send to Production
   if(inf.stageAutoAt!==undefined&&inf.stageAutoAt!==jhAutoStage(j))return '';
   if(inf.stageManual==='drafting')inf.dfHold=true;return JH_STAGES.some(function(x){return x.k===inf.stageManual;})?inf.stageManual:'';}
@@ -9985,7 +9992,7 @@ function jhDelete(id){var j=allJobs[id];if(!j)return;
     saveAllJobs();try{updateProjectCount();}catch(e){}showMsg('🗑 Job deleted');}
   renderJobsHome();}
 // v393: import more Excel files from Designer › Cabinet & Part List (adds to the open job)
-function usImportExcel(){if(!currentJobId||!allJobs[currentJobId]){alert('Open a job first (Jobs page › Open job).');return;}goToImport();}
+function usImportExcel(){if(!currentJobId||!allJobs[currentJobId]){if(!hasRole('jobs')){alert('Pick or add a job first — press 📋 Jobs at the top.');openJobs();}else alert('Open a job first (Jobs page › Open job).');return;}goToImport();}
 function jhImport(id,clear){if(id!==currentJobId)selectJob(id);renderJobsHome();if(clear){importMenuClear();}else goToImport();}
 // v393: Orders & invoices per job — material order PDFs, payments, tax invoices we paid or were paid. Only on the Jobs page (Admin / Designer).
 var JH_DOC_TYPES=[['order','🧾 Material order','#1d4ed8'],['paid','💸 Tax invoice — we paid','#b91c1c'],['recv','💰 Tax invoice — paid to us','#15803d'],['pay','🏦 Payment / receipt','#7c3aed'],['other','📄 Other','#4b5563']];
@@ -10036,8 +10043,8 @@ function jhCard(j){
     (dc||inf.dueDate?'<div class="jx-due"'+(dc?' style="color:'+dc.fg+'"':'')+'>Delivery '+jhFmt(inf.dueDate+'T00:00:00')+' · '+jhDueText(inf.dueDate)+'</div>':'')+
     (cn.n?'<div class="jx-prog">'+[['tracker','QC',cn.qc],['dispatch','Dispatch',cn.dis],['installation','Install',cn.ins]].map(function(x){var pc=Math.round(x[2]/cn.n*100);return '<button class="jx-pg" title="Open this job in '+x[1]+'" onclick="jhGo(\''+id+'\',\''+x[0]+'\')"><span class="jx-pg-t"><b>'+x[1]+'</b><span>'+x[2]+'/'+cn.n+'</span></span><span class="jx-bar"><span style="width:'+pc+'%"></span></span></button>';}).join('')+'</div>':'')+
     '<div class="jx-acts">'+
-      (st==='design'?'<button class="jx-btn" onclick="jhSet(\''+id+'\',\'stage\',\'drafting\')">Move to Drafting →</button>':'')+
-      (!cn.n?(st!=='drafting'?'':'<button class="jx-btn jx-dark" onclick="jhImport(\''+id+'\')">Add Excel files → Production</button>'):
+      (st==='design'&&orgHas('drafting')?'<button class="jx-btn" onclick="jhSet(\''+id+'\',\'stage\',\'drafting\')">Move to Drafting →</button>':'')+
+      (!cn.n?(st!=='drafting'&&orgHas('drafting')?'':'<button class="jx-btn jx-dark" onclick="jhImport(\''+id+'\')">Add Excel files → Production</button>'):
         '<button class="jx-btn jx-ghost" onclick="jhImport(\''+id+'\')" title="You will be asked: add to the list, or replace it">Import Excel</button>')+
     '</div>'+
     (st==='maintenance'&&mtSince(j)?'<div class="jx-meta" style="margin-top:6px;">'+mtDaysTxt(mtDays(j))+' in maintenance</div>':'')+
@@ -10613,7 +10620,7 @@ function renderDrafting(){dfTabs();var R=document.getElementById('df-root');if(!
         '<div style="font-size:12px;color:#71717a;margin-top:2px;">'+esc(inf.client||'—')+(inf.dueDate?' · '+jhDueText(inf.dueDate):'')+'</div>'+
         '<div style="height:3px;background:#f0f0f2;border-radius:2px;margin-top:8px;"><div style="height:3px;width:'+Math.round(p.n/p.t*100)+'%;background:#fbbf24;border-radius:2px;"></div></div>'+
         '<div style="font-size:11px;color:#a1a1aa;margin-top:4px;">'+p.n+' of '+p.t+' done</div></button>';}).join('')
-    :'<div style="font-size:13px;color:#a1a1aa;padding:10px 0;">No jobs in Drafting. On the Jobs page, press “Move to Drafting” on a job.</div>';
+    :'<div style="font-size:13px;color:#a1a1aa;padding:10px 0;">'+(hasRole('jobs')?'No jobs in Drafting. On the Jobs page, press “Move to Drafting” on a job.':'No jobs in Drafting yet. Press 📋 Jobs at the top › + New job.')+'</div>';
   var body='';
   if(j){var inf=j.info||{},F=j.finishes||{},d=dfData(j),fileRow=function(x){return '<div style="display:flex;gap:8px;align-items:center;padding:5px 0;border-top:1px solid #f4f4f5;font-size:13px;"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(drName(x))+'</span><span style="font-size:11px;color:#a1a1aa;">'+esc(x.date||'')+'</span><button class="btn btn-outline btn-sm" onclick="drOpenAny(\''+x.id+'\')">Open</button></div>';};
     var grp=function(k,t){var f=dfFiles(j,k);return '<div style="margin-top:10px;"><div style="font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#52525b;">'+t+' <span style="font-weight:400;color:#a1a1aa;">('+f.length+')</span></div>'+(f.length?f.map(fileRow).join(''):'<div style="font-size:12.5px;color:#a1a1aa;padding:4px 0;">None yet</div>')+'</div>';};
@@ -11280,7 +11287,9 @@ function applyRole(r,nm,em,roles){setTimeout(function(){try{qtLoadAll();}catch(e
   var pin=document.getElementById('proj-input');if(pin)pin.readOnly=true;   // v393: renamed on the Jobs page only
   // v393: Admin / Designer pick and create jobs on the Designer › 🏠 Jobs page, so the top Jobs button + name box are hidden for them.
   // QC / Dispatch / Installer still use them, because they don't see the Jobs page.
-  var topJobs=H('designer');var jb=document.querySelector('.topbar-right .jobs-btn');if(jb)jb.style.display=topJobs?'none':'';if(pin)pin.style.display=topJobs?'none':'';
+  var topJobs=H('jobs');var jb=document.querySelector('.topbar-right .jobs-btn');if(jb)jb.style.display=topJobs?'none':'';if(pin)pin.style.display=topJobs?'none':'';
+  if(pin)pin.readOnly=H('jobs')||!H('designer');   // v502: without the Jobs page, Cabinets / Drafting / Maintenance people name their jobs here
+  var nb=document.getElementById('jnew-btn');if(nb)nb.style.display=(!H('jobs')&&H('designer'))?'':'none';
   var re=document.getElementById('admin-rec-email');if(re&&!re.value)re.value=_adminEmail();var acs=document.getElementById('admin-code-card');if(acs)acs.style.display=(H('admin')&&!_cloudMode())?'':'none';
   switchView(ROLE_HOME[r]);
   if(typeof _presence==='function')setTimeout(_presence,500);
@@ -11352,6 +11361,8 @@ var ADMIN_EMAIL='kiyanoosh.mahmoodi@gmail.com';
 // ===== v474: COMPANIES — the Owner (kiyanoosh.mahmoodi@gmail.com) creates companies and their admins; each company only ever sees its own data =====
 var ORG_SECTIONS=[['jobs','Jobs'],['drafting','Drafting'],['cabinets','Cabinets & Hardware'],['qcd','QC & Dispatch'],['installer','Installation'],['maint','Maintenance']];
 var _orgUnsub=null,ORG=null;
+// v502: a company without Jobs / Drafting works without them
+function orgHas(sec){try{if(!window.SESSION||SESSION.owner||!window.ORG||!Array.isArray(ORG.sections))return true;return ujExpand(ORG.sections).indexOf(sec)>-1;}catch(e){return true;}}
 function isOrgAdm(){try{return curRoles().indexOf('orgadmin')>-1;}catch(e){return false;}}
 // a device that changes company (or is used by the Owner) forgets what another company left in its local cache
 function orgCacheCheck(org){var last='';try{last=localStorage.getItem('cbk-org')||'';}catch(e){}

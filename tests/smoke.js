@@ -433,4 +433,16 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   await p.evaluate(()=>jhDelete('m1'));await p.waitForTimeout(T*600);
   ok('deleting a job never touches the drive',/Delete/.test(asked)&&!(await p.evaluate(()=>!!document.getElementById('drvdel-ov')))&&!!G.items[X.id]&&await p.evaluate(()=>!allJobs.m1));
   await ctx.close();}
+// ---------- 21. a company without Jobs and Drafting
+{console.log('Company without Jobs / Drafting');const p=await iso(await b.newPage());await p.goto(FILE);await p.waitForTimeout(T*700);p.on('dialog',d=>d.accept(/address/i.test(d.message())?'1 Test St':'Kitchen A'));
+  const r=await p.evaluate(async()=>{SESSION.owner=false;SESSION.org='c1';ORG={name:'Cospray',status:'active',sections:['cabinets','qcd','installer']};applyRole('cabinets','Sam','sam@c.au',orgRoles({orgAdmin:false,roles:['cabinets']},ORG));
+    const jb=document.querySelector('.topbar-right .jobs-btn'),nb=document.getElementById('jnew-btn'),pin=document.getElementById('proj-input');
+    const out={jobsBtn:jb&&jb.style.display!=='none',newBtn:nb&&nb.style.display!=='none',nameEditable:pin&&!pin.readOnly};
+    await cbNewJob();const j=allJobs[currentJobId];out.job=j&&j.name;out.addr=j&&j.info&&j.info.address;
+    j.info.stageManual='drafting';j.info.dfHold=true;out.stage=jhStage(j);
+    ORG.sections=['cabinets','drafting'];out.stageWithDrafting=jhStage(j);return out;});
+  ok('without Jobs: the job picker, + New job and the name box are there for Cabinets people',r.jobsBtn&&r.newBtn&&r.nameEditable,JSON.stringify(r));
+  ok('+ New job adds a job with its name and address — no Jobs page needed',r.job==='Kitchen A'&&r.addr==='1 Test St',JSON.stringify(r));
+  ok('without Drafting a job is never held in Drafting (goes on to Production); with Drafting it waits',r.stage!=='drafting'&&r.stageWithDrafting==='drafting',JSON.stringify(r));
+  await p.close();}
 console.log('\n'+pass+' passed, '+fail+' failed');await b.close();process.exit(fail?1:0);})();
