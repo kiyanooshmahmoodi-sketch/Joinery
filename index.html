@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v502 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v503 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v502 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v503 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10805,7 +10805,7 @@ function qcLoad(){if(QC)return Promise.resolve(QC);var loc=null;try{loc=JSON.par
   return (window.cloud&&cloud.db&&cloud.user?cloud.db.collection('quotes').doc(qcRatesId()).get().then(function(d){var x=d&&d.exists&&d.data();if(x&&x.rates&&x.rates.v>=3){QC=x.rates;try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}}return QC;}).catch(function(){return QC;}):Promise.resolve(QC));}
 function qcSaveRates(){try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}
   try{cloud.db.collection('quotes').doc(qcRatesId()).set({rates:QC,org:SESSION.org||'',at:Date.now()}).then(function(){showMsg('✓ Rates saved for your company');}).catch(function(e){alert('Could not save rates: '+e.message);});}catch(e){}}
-function qcIn(){var j=allJobs[_qtJob],q=j&&qtCur(j),r=q&&q.rows[_qcRow];var c=(r&&r.calc)||{};var o=Object.assign({fin:'lam',carc:'m16',rate:'',height:'2400',base:'',over:'',tall:'',island:'',drawers:'',extra:'',supplyOnly:false},c);if(o.rate===''){var f=qcFind(QC.finishes,o.fin);o.rate=String(Math.round((f[2]+f[3])/2));}return o;}
+function qcIn(){var j=allJobs[_qtJob],q=j&&qtCur(j),r=q&&q.rows[_qcRow];var c=(r&&r.calc)||{};var o=Object.assign({fin:'lam',carc:'m16',rate:'',height:'2400',base:'',over:'',tall:'',island:'',drawers:'',extra:'',specials:[],supplyOnly:false},c);if(!Array.isArray(o.specials))o.specials=[];if(qtNum(o.extra)){o.specials.push({name:'Extra items',qty:'1',price:String(qtNum(o.extra))});o.extra='';}if(o.rate===''){var f=qcFind(QC.finishes,o.fin);o.rate=String(Math.round((f[2]+f[3])/2));}return o;}
 function qcFind(L,k){return L.filter(function(x){return x[0]===k;})[0]||L[0];}
 function qcByH(h,a,b){var x=qtNum(h)||2400;if(x<=2400)return a;if(x>=2700)return b;return Math.round((a+(b-a)*(x-2400)/300)*10)/10;}
 function qcOvPct(h){return qcByH(h,QC.ov2400,QC.ov2700);}
@@ -10814,7 +10814,7 @@ function qcCalc(c){var R=QC,f=qcFind(R.finishes,c.fin),cb=qcFind(R.carcass,c.car
   var rate=qtNum(c.rate)||Math.round((f[2]+f[3])/2),rateC=rate*(1+cb[2]/100),ov=qcOvPct(c.height),tl=qcTallPct(c.height);
   var parts=[['Base cabinets',n(c.base)*rateC,n(c.base)+' m × '+qtMoney(rateC)],['Overhead cabinets',n(c.over)*rateC*ov/100,n(c.over)+' m × '+qtMoney(rateC)+' × '+ov+'% (height '+(qtNum(c.height)||2400)+' mm)'],
     ['Tall / pantry',n(c.tall)*rateC*tl/100,n(c.tall)+' m × '+qtMoney(rateC)+' × '+tl+'% (height '+(qtNum(c.height)||2400)+' mm)'],['Island',n(c.island)*rateC*R.islandX/100,n(c.island)+' m × '+qtMoney(rateC)+(R.islandX!==100?' × '+R.islandX+'%':'')],
-    ['Drawers',n(c.drawers)*R.drawer,n(c.drawers)+' × '+qtMoney(R.drawer)],['Extra items',n(c.extra),'']];
+    ['Drawers',n(c.drawers)*R.drawer,n(c.drawers)+' × '+qtMoney(R.drawer)],['Extra items',n(c.extra),'']].concat((c.specials||[]).filter(function(x){return x&&(x.name||qtNum(x.price));}).map(function(x){var q=qtNum(x.qty)||1;return [x.name||'Special item',q*n(x.price),q+' × '+qtMoney(n(x.price))];}));
   var sub=parts.reduce(function(a,x){return a+x[1];},0);
   if(c.supplyOnly&&!f[4]){var less=sub*R.supplyOnlyLess/100;parts.push(['Supply only (no installation)',-less,'− '+R.supplyOnlyLess+'%']);sub-=less;}
   var rt=Math.max(1,R.roundTo||1),ex=Math.round(sub/rt)*rt;return {rate:rate,rateC:rateC,ov:ov,parts:parts,ex:ex,gst:Math.round(ex*0.1),inc:ex+Math.round(ex*0.1),f:f,cb:cb};}
@@ -10835,9 +10835,14 @@ function qcPaint(tab){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),c=window
       (function(){var f=qcFind(R.finishes,c.fin),lo=f[2],hi=f[3],v=qtNum(c.rate)||Math.round((lo+hi)/2);return '<div style="grid-column:1/-1;background:#faf8f4;border-radius:10px;padding:10px 12px;"><div style="display:flex;justify-content:space-between;font-size:12px;color:#52525b;"><span>Price per metre — market lowest <b>'+qtMoney(lo)+'</b></span><span>highest <b>'+qtMoney(hi)+'</b></span></div>'+
         (hi>lo?'<input id="qc-rate-r" type="range" min="'+lo+'" max="'+hi+'" step="10" value="'+Math.min(hi,Math.max(lo,v))+'" oninput="_qcC.rate=this.value;document.getElementById(\'qc-rate\').value=this.value;qcRes()" style="width:100%;margin:8px 0 4px;accent-color:#131110;">':'<div style="font-size:11.5px;color:#a1a1aa;margin:6px 0;">Only one market price for this finish.</div>')+
         '<div style="display:flex;align-items:center;gap:6px;font-size:13px;">Your price <input id="qc-rate" inputmode="decimal" value="'+qtEsc(String(v))+'" oninput="_qcC.rate=this.value;var r=document.getElementById(\'qc-rate-r\');if(r)r.value=this.value;qcRes()" style="width:110px;"> per metre (base run)'+(v<lo||v>hi?' <span style="color:#92400e;font-size:12px;">outside the market range</span>':'')+'</div></div>';})()+
-      num('base','Base cabinets','m')+num('over','Overhead cabinets','m')+num('tall','Tall / pantry','m')+num('island','Island','m')+num('drawers','Drawers','pcs')+num('extra','Extra items (end panels, kickboards …)','$')+
+      num('base','Base cabinets','m')+num('over','Overhead cabinets','m')+num('tall','Tall / pantry','m')+num('island','Island','m')+num('drawers','Drawers','pcs')+
       '<label style="display:flex;gap:8px;align-items:center;font-size:13px;align-self:end;padding-bottom:10px;white-space:nowrap;"><input type="checkbox" style="width:auto;flex:none;margin:0;" '+(c.supplyOnly?'checked':'')+' onchange="_qcC.supplyOnly=this.checked;qcRes()">Supply only (no installation)</label>'+
-    '</div><div id="qc-res" style="padding:0 16px 16px;">'+qcResHTML(C)+'</div></div>';}
+    '</div>'+
+    '<div style="padding:0 16px 12px;"><div style="font-weight:600;font-size:13px;margin-bottom:6px;">Special items <span style="font-weight:400;color:#71717a;font-size:12px;">— curved units, special hardware, anything else, at your own price</span></div>'+
+      (c.specials.length?'<div style="display:grid;grid-template-columns:1fr 70px 110px 28px;gap:6px;font-size:11.5px;color:#71717a;margin-bottom:3px;"><span>Item</span><span>Qty</span><span>Price each ($)</span><span></span></div>':'')+
+      c.specials.map(function(x,i){return '<div style="display:grid;grid-template-columns:1fr 70px 110px 28px;gap:6px;margin-bottom:5px;align-items:center;"><input value="'+qtEsc(x.name||'')+'" placeholder="e.g. Curved end unit" oninput="_qcC.specials['+i+'].name=this.value;qcRes()"><input value="'+qtEsc(x.qty||'1')+'" inputmode="decimal" oninput="_qcC.specials['+i+'].qty=this.value;qcRes()"><input value="'+qtEsc(x.price||'')+'" inputmode="decimal" placeholder="0" oninput="_qcC.specials['+i+'].price=this.value;qcRes()"><button class="btn btn-outline btn-sm" title="Remove" style="padding:4px 0;" onclick="_qcC.specials.splice('+i+',1);qcPaint()">×</button></div>';}).join('')+
+      '<button class="btn btn-outline btn-sm" onclick="_qcC.specials.push({name:\'\',qty:\'1\',price:\'\'});qcPaint();setTimeout(function(){var L=document.querySelectorAll(\'#qc-ov input[placeholder^=&quot;e.g. Curved&quot;]\');if(L.length)L[L.length-1].focus();},30);">+ Add special item</button></div>'+
+    '<div id="qc-res" style="padding:0 16px 16px;">'+qcResHTML(C)+'</div></div>';}
 function qcRes(){var el=document.getElementById('qc-res');if(el)el.innerHTML=qcResHTML(qcCalc(window._qcC));}
 function qcResHTML(C){return '<div style="background:#faf8f4;border-radius:10px;padding:12px 14px;">'+
     '<div style="font-size:12px;color:#71717a;margin-bottom:6px;">'+esc(C.f[1])+' → '+qtMoney(C.rate)+' / m'+(C.cb[2]?' · '+esc(C.cb[1])+' +'+C.cb[2]+'% → '+qtMoney(C.rateC)+' / m':'')+'</div>'+
