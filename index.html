@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v505 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v506 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v505 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v506 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10869,11 +10869,79 @@ function qcRatesHTML(){var R=QC,row=function(L,i,cols){return cols.map(function(
     '<div style="font-weight:600;font-size:13px;margin:12px 0 6px;">Cabinet types — % of the base-run price per metre</div>'+one('ov2400','Overhead, total height 2400 mm','%')+one('ov2700','Overhead, total height 2700 mm','%')+one('tall2400','Tall / pantry, total height 2400 mm','%')+one('tall2700','Tall / pantry, total height 2700 mm','%')+one('islandX','Island','%')+one('drawer','Each drawer adds','$')+one('supplyOnlyLess','Supply only — less','%')+one('roundTo','Round the price to','$')+
     '<div style="margin-top:10px;"><button class="btn btn-outline btn-sm" onclick="if(confirm(\'Put all rates back to the start values?\')){QC=JSON.parse(JSON.stringify(QC_DEF));qcPaint(\'rates\');}">Back to start values</button></div></div></div>';}
 
+// ===== v506: Flat pack — enter the quantities once, see every factory's flat-pack price side by side, and your profit against the quote. Never printed. =====
+var FP_SECS=['CNC machining','Others','Assembly'];
+var FP_DEF={v:1,cos:[{id:'imp',name:'Imperial Joinery'}],items:[
+  ['c1',0,'16mm white HMR (2400 × 1200)','sheet',110],['c2',0,'18mm MDF (2400 × 1200)','sheet',140],['c3',0,'Oversized MDF 18mm (3100 × 1200)','sheet',170],['c4',0,'Oversized MDF 18mm (3600 × 1200)','sheet',190],
+  ['c5',0,'21mm MDF (2400 × 1200)','sheet',190],['c6',0,'25mm MDF (2400 × 1200)','sheet',220],['c7',0,'32mm MDF (2400 × 1200)','sheet',220],['c8',0,'V-groove / Shaker 18mm (2400 × 1200)','sheet',220],
+  ['c9',0,'V-groove / Shaker 21mm (2400 × 1200)','sheet',300],['c10',0,'V-groove / Shaker 25mm (2400 × 1200)','sheet',350],['c11',0,'V-groove / Shaker 32mm (2400 × 1200)','sheet',350],['c12',0,'J Pull','door',20],
+  ['c13',0,'Colour cutting with edging (2400 × 1200)','sheet',100],['c14',0,'Colour cutting with edging (3100 × 1200)','sheet',140],
+  ['o1',1,'Drawers incl. fitting — Hafele','each',50],['o2',1,'Drawers — Blum','each',100],['o3',1,'Hinges: corner, bifold, blind, 125°','each',10],['o4',1,'Standard plates & hinges & slim line plate','each',10],
+  ['o5',1,'Bin (Hafele)','each',500],['o6',1,'Push to open','each',10],['o7',1,'Drawing 3D plan','hour',100],['o8',1,'Draw face edging (Sharknose)','door',20],['o9',1,'Raw MDF bulkhead','each',60],
+  ['o10',1,'Floating shelf + labour','each',160],['o11',1,'Poly paint','m²',65],['o12',1,'Poly shaker painting','m²',110],['o13',1,'Hanging rail white / silver, oval 3600mm','each',25],['o14',1,'Hanging rail flange','each',2],['o15',1,'Factory bench hire','day',600],
+  ['a1',2,'Floor / wall cabinet','cabinet',40],['a2',2,'Tall cabinet','cabinet',65],['a3',2,'Kickbase','each',20],['a4',2,'Corner floor / wall cabinet (bifold)','cabinet',50],['a5',2,'Corner pantry','each',70],
+  ['a6',2,'Pull out pantry','each',115],['a7',2,'Bifold system','each',800],['a8',2,'Floor curve','each',700],['a9',2,'Tall curve','each',1500]
+].map(function(x){return {id:x[0],sec:x[1],name:x[2],unit:x[3],p:{imp:x[4]}};})};
+var FP=null,_fpT=null;
+function fpId(){return 'flatpack__'+(SESSION.org||'x');}
+function fpLoad(){if(FP)return Promise.resolve(FP);var loc=null;try{loc=JSON.parse(localStorage.getItem('cbk-fp:'+(SESSION.org||''))||'null');}catch(e){}FP=(loc&&loc.v>=1)?loc:JSON.parse(JSON.stringify(FP_DEF));
+  return (window.cloud&&cloud.db&&cloud.user?cloud.db.collection('quotes').doc(fpId()).get().then(function(d){var x=d&&d.exists&&d.data();if(x&&x.fp&&x.fp.v>=1){FP=x.fp;try{localStorage.setItem('cbk-fp:'+(SESSION.org||''),JSON.stringify(FP));}catch(e){}}return FP;}).catch(function(){return FP;}):Promise.resolve(FP));}
+function fpSave(){try{localStorage.setItem('cbk-fp:'+(SESSION.org||''),JSON.stringify(FP));}catch(e){}
+  try{cloud.db.collection('quotes').doc(fpId()).set({fp:FP,org:SESSION.org||'',at:Date.now()}).then(function(){showMsg('✓ Price lists saved for your company');}).catch(function(e){alert('Could not save price lists: '+e.message);});}catch(e){showMsg('✓ Price lists saved on this device');}}
+function fpQ(){var j=allJobs[_qtJob],q=j&&qtCur(j);if(!q)return {};if(!q.fp||typeof q.fp!=='object')q.fp={qty:{}};if(!q.fp.qty)q.fp.qty={};return q.fp.qty;}
+function fpPrice(it,cid){var v=it.p&&it.p[cid];return (v===''||v==null||isNaN(+v))?null:+v;}
+function fpCalc(qty){var Q=qty||{};return FP.cos.map(function(co){var cost=0,miss=[];FP.items.forEach(function(it){var n=Math.max(0,qtNum(Q[it.id]));if(!n)return;var pr=fpPrice(it,co.id);if(pr==null)miss.push(it.name);else cost+=n*pr;});
+  return {id:co.id,name:co.name,cost:Math.round(cost),gst:Math.round(cost*0.1),miss:miss};});}
+async function fpOpen(){var j=allJobs[_qtJob];if(!j)return;await fpLoad();fpPaint();}
+function fpOv(){var ov=document.getElementById('fp-ov');if(!ov){ov=document.createElement('div');ov.id='fp-ov';ov.setAttribute('data-raw-colour','');ov.style.cssText='position:fixed;inset:0;z-index:9500;background:rgba(19,17,16,.5);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(env(titlebar-area-height,0px) + 20px) 12px 24px;-webkit-app-region:no-drag;app-region:no-drag;';ov.onclick=function(e){if(e.target===ov)fpClose();};document.body.appendChild(ov);}ov.style.display='flex';return ov;}
+function fpClose(){var ov=document.getElementById('fp-ov');if(ov)ov.style.display='none';if(_fpT){clearTimeout(_fpT);_fpT=null;}if(_qtJob)qtPersist(_qtJob);}
+function fpHead(t,sub,btns){return '<div style="display:flex;gap:8px;align-items:center;padding:14px 16px;border-bottom:1px solid #eee;flex-wrap:wrap;"><div style="flex:1;min-width:200px;"><div style="font-weight:700;font-size:15px;">'+t+'</div><div style="font-size:12px;color:#71717a;">'+sub+'</div></div>'+btns+'</div>';}
+function fpPaint(tab){var ov=fpOv();if(tab==='lists'){ov.innerHTML=fpListsHTML();return;}var qty=fpQ(),n=FP.cos.length;var nar=window.innerWidth<640;
+  var cols='minmax(170px,1fr) 74px'+FP.cos.map(function(){return ' 96px';}).join(''),
+      hdr='<div style="display:grid;grid-template-columns:'+cols+';gap:6px;font-size:11.5px;color:#71717a;padding:0 0 4px;position:sticky;top:0;background:#fff;"><span>Item</span><span>Qty</span>'+FP.cos.map(function(c){return '<span style="text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+qtEsc(c.name)+'">'+esc(c.name)+'</span>';}).join('')+'</div>';
+  var body=FP_SECS.map(function(s,si){var L=FP.items.filter(function(it){return (it.sec|0)===si;});if(!L.length)return '';
+    return '<div style="font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:12px 0 4px;">'+esc(s)+'</div>'+L.map(function(it){var v=qty[it.id]||'';
+      if(nar)return '<div style="padding:6px 0;border-bottom:1px solid #f4f1ec;"><div style="font-size:13px;margin-bottom:4px;">'+esc(it.name)+' <span style="color:#a1a1aa;font-size:11.5px;">per '+esc(it.unit||'each')+'</span></div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><input inputmode="decimal" data-fp="'+it.id+'" value="'+qtEsc(v)+'" placeholder="Qty" oninput="fpSet(\''+it.id+'\',this.value)" style="width:76px;padding:5px 6px;flex:none;">'+
+        FP.cos.map(function(c){var pr=fpPrice(it,c.id),k=Math.max(0,qtNum(v));return '<span style="font-size:12px;color:#71717a;">'+esc(c.name.split(' ')[0])+' <span data-fpl="'+it.id+'|'+c.id+'" style="font-variant-numeric:tabular-nums;color:'+(pr==null?'#a1a1aa':'#27272a')+';">'+fpLine(pr,k)+'</span></span>';}).join('')+'</div></div>';
+      return '<div style="display:grid;grid-template-columns:'+cols+';gap:6px;align-items:center;padding:3px 0;border-bottom:1px solid #f4f1ec;"><span style="font-size:13px;">'+esc(it.name)+' <span style="color:#a1a1aa;font-size:11.5px;">per '+esc(it.unit||'each')+'</span></span>'+
+        '<input inputmode="decimal" data-fp="'+it.id+'" value="'+qtEsc(v)+'" placeholder="0" oninput="fpSet(\''+it.id+'\',this.value)" style="width:100%;padding:5px 6px;">'+
+        FP.cos.map(function(c){var pr=fpPrice(it,c.id),k=Math.max(0,qtNum(v));return '<span data-fpl="'+it.id+'|'+c.id+'" style="text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums;color:'+(pr==null?'#a1a1aa':'#27272a')+';">'+fpLine(pr,k)+'</span>';}).join('')+'</div>';}).join('');}).join('');
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:'+(n>2?900:780)+'px;width:100%;min-width:0;box-shadow:0 20px 50px rgba(0,0,0,.3);">'+
+    fpHead('Flat pack — factory prices','Enter the quantities once. Every factory\'s price, AUD ex GST. Only you see this — it is never on the quote.','<button class="btn btn-outline btn-sm" onclick="fpPaint(\'lists\')">Price lists</button><button class="btn btn-outline btn-sm" onclick="fpClose()">Close</button>')+
+    '<div id="fp-res" style="padding:14px 16px 4px;">'+fpResHTML()+'</div>'+
+    '<div style="padding:4px 16px 16px;overflow-x:auto;"><div style="min-width:'+(nar?0:250+n*102)+'px;">'+(nar?'':hdr)+body+'</div>'+
+    '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="btn btn-outline btn-sm" onclick="if(confirm(\'Clear all quantities?\')){var j=allJobs[_qtJob];qtCur(j).fp={qty:{}};qtPersist(_qtJob);fpPaint();}">Clear quantities</button></div></div></div>';}
+function fpLine(pr,k){return pr==null?(k?'no price':'—'):(k?qtMoney(pr*k):'<span style="color:#a1a1aa;">'+qtMoney(pr)+'</span>');}
+function fpSet(id,v){var qty=fpQ();if(String(v).trim()==='')delete qty[id];else qty[id]=v;var k=Math.max(0,qtNum(v));
+  FP.items.forEach(function(it){if(it.id!==id)return;FP.cos.forEach(function(c){var e=document.querySelector('[data-fpl="'+id+'|'+c.id+'"]'),pr=fpPrice(it,c.id);if(e)e.innerHTML=fpLine(pr,k);});});
+  var r=document.getElementById('fp-res');if(r)r.innerHTML=fpResHTML();if(_fpT)clearTimeout(_fpT);_fpT=setTimeout(function(){_fpT=null;if(_qtJob)qtPersist(_qtJob);},900);}
+function fpResHTML(){var j=allJobs[_qtJob],q=j&&qtCur(j);if(!q)return '';var sell=qtSumsQ(q).sub,R=fpCalc(fpQ()),any=R.some(function(x){return x.cost>0;});
+  var best=any?R.filter(function(x){return x.cost>0&&!x.miss.length;}).sort(function(a,b){return a.cost-b.cost;})[0]:null;
+  return '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;margin-bottom:8px;"><span>This quote (per metre) <b>'+qtMoney(sell)+'</b> <span style="color:#71717a;font-size:12px;">ex GST</span></span>'+(sell?'':'<span style="color:#92400e;font-size:12px;">Put prices in the quote to see your profit</span>')+'</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;">'+R.map(function(x){var pr=sell-x.cost,pct=sell?Math.round(pr/sell*100):0,isB=best&&best.id===x.id;
+      return '<div style="border:1px solid '+(isB?'#131110':'#e7dfd0')+';background:#faf8f4;border-radius:10px;padding:10px 12px;"><div style="display:flex;gap:6px;align-items:center;font-size:12.5px;font-weight:600;"><span style="flex:1;">'+esc(x.name)+'</span>'+(isB&&R.length>1?'<span style="font-size:10.5px;background:#131110;color:#fff;border-radius:99px;padding:1px 7px;">Cheapest</span>':'')+'</div>'+
+        '<div style="font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px;">'+qtMoney(x.cost)+'</div><div style="font-size:11.5px;color:#71717a;">factory price ex GST · inc GST '+qtMoney(x.cost+x.gst)+'</div>'+
+        (sell&&x.cost?'<div style="font-size:13px;margin-top:6px;">Your profit <b style="color:'+(pr<0?'#991b1b':'#166534')+';">'+qtMoney(pr)+'</b> <span style="color:#71717a;">('+pct+'%)</span></div>':'')+
+        (x.miss.length?'<div style="font-size:11.5px;color:#92400e;margin-top:4px;" title="'+qtEsc(x.miss.join(', '))+'">'+x.miss.length+' item'+(x.miss.length>1?'s have':' has')+' no price here: '+esc(x.miss.slice(0,3).join(', '))+(x.miss.length>3?' …':'')+'</div>':'')+'</div>';}).join('')+'</div>';}
+function fpListsHTML(){var n=FP.cos.length,cols='minmax(170px,1fr) 70px'+FP.cos.map(function(){return ' 86px';}).join('')+' 28px';
+  var hdr='<div style="display:grid;grid-template-columns:'+cols+';gap:6px;font-size:11.5px;color:#71717a;padding-bottom:4px;"><span>Item</span><span>Per</span>'+FP.cos.map(function(c){return '<span style="text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(c.name)+' $</span>';}).join('')+'<span></span></div>';
+  var body=FP_SECS.map(function(s,si){return '<div style="font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:12px 0 4px;">'+esc(s)+'</div>'+FP.items.map(function(it,i){if((it.sec|0)!==si)return '';
+      return '<div style="display:grid;grid-template-columns:'+cols+';gap:6px;align-items:center;margin-bottom:4px;"><input value="'+qtEsc(it.name)+'" oninput="FP.items['+i+'].name=this.value"><input value="'+qtEsc(it.unit||'')+'" placeholder="each" oninput="FP.items['+i+'].unit=this.value">'+
+        FP.cos.map(function(c){var pr=fpPrice(it,c.id);return '<input inputmode="decimal" value="'+(pr==null?'':pr)+'" placeholder="—" style="text-align:right;" oninput="fpSetP('+i+',\''+c.id+'\',this.value)">';}).join('')+
+        '<button class="btn btn-outline btn-sm" title="Remove this item" style="padding:4px 0;" onclick="if(confirm(\'Remove this item from every price list?\')){FP.items.splice('+i+',1);fpPaint(\'lists\');}">×</button></div>';}).join('')+
+      '<button class="btn btn-outline btn-sm" onclick="FP.items.push({id:\'i\'+Date.now().toString(36),sec:'+si+',name:\'New item\',unit:\'each\',p:{}});fpPaint(\'lists\')">+ Add item to '+esc(s)+'</button>';}).join('');
+  return '<div style="background:#fff;border-radius:14px;max-width:'+(n>2?900:780)+'px;width:100%;min-width:0;box-shadow:0 20px 50px rgba(0,0,0,.3);">'+
+    fpHead('Price lists','Each factory\'s flat-pack prices, AUD ex GST. Empty = this factory doesn\'t do it. Saved for your company only.','<button class="btn btn-outline btn-sm" onclick="fpPaint()">Back</button><button class="btn btn-blue btn-sm" onclick="fpSave();fpPaint()">Save price lists</button>')+
+    '<div style="padding:12px 16px;"><div style="font-weight:600;font-size:13px;margin-bottom:6px;">Factories</div>'+FP.cos.map(function(c,i){return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;"><input value="'+qtEsc(c.name)+'" oninput="FP.cos['+i+'].name=this.value" style="flex:1;">'+(n>1?'<button class="btn btn-outline btn-sm" title="Remove this factory" onclick="if(confirm(\'Remove '+qtEsc(c.name).replace(/\'/g,'')+' and its prices?\')){FP.cos.splice('+i+',1);fpPaint(\'lists\');}">×</button>':'')+'</div>';}).join('')+
+      '<button class="btn btn-outline btn-sm" onclick="var nm=prompt(\'Factory name\');if(nm&&nm.trim()){FP.cos.push({id:\'f\'+Date.now().toString(36),name:nm.trim()});fpPaint(\'lists\');}">+ Add factory</button></div>'+
+    '<div style="padding:0 16px 16px;overflow-x:auto;"><div style="min-width:'+(280+n*92)+'px;">'+hdr+body+'</div></div></div>';}
+function fpSetP(i,cid,v){var it=FP.items[i];if(!it)return;if(!it.p)it.p={};if(String(v).trim()==='')delete it.p[cid];else it.p[cid]=qtNum(v);}
+
 function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.display='none';document.body.classList.remove('qt-open');if(_qtJob)qtPersist(_qtJob);_qtJob=null;try{renderJobsHome();}catch(e){}}
 function qtPaint(){var j=allJobs[_qtJob],ov=document.getElementById('qt-ov');if(!j||!ov)return;var Q=qtData(j,true),q=qtCur(j);
   ov.innerHTML='<div id="qt-bar"><div style="font-weight:600;font-size:15px;margin-right:auto;">Quote · '+esc(j.name||'Job')+'</div>'+
     '<select onchange="qtPick(this.value)" style="width:auto;padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;background:#fff;font:inherit;">'+Q.versions.map(function(x,i){return '<option value="'+i+'"'+(i===Q.cur?' selected':'')+'>V'+(x.v||i+1)+' · '+qtDate(x.date)+'</option>';}).join('')+'</select>'+
-    '<button class="btn btn-blue btn-sm" onclick="qcOpen()">Price calculator</button><button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button>'+(Q.versions.length>1?'<button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="qtDelVer()" title="Delete the version shown">Delete V'+(q.v||1)+'</button>':'')+'<button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
+    '<button class="btn btn-blue btn-sm" onclick="qcOpen()">Price calculator</button><button class="btn btn-outline btn-sm" onclick="fpOpen()">Flat pack</button><button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button>'+(Q.versions.length>1?'<button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="qtDelVer()" title="Delete the version shown">Delete V'+(q.v||1)+'</button>':'')+'<button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
   ov.querySelectorAll('textarea.qt-in').forEach(qtGrow);}
 function qtPrint(){var j=allJobs[_qtJob];if(!j)return;qtSaveNow();var q=qtCur(j);
   var name=String((q.v<10?'0':'')+q.v+'_Quote - '+(q.ref||j.name||'Job')+' - V'+q.v).replace(/[\\/:*?"<>|]/g,'');

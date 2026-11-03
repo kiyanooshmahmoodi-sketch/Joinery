@@ -185,6 +185,10 @@ const iso=async x=>{await x.route(OFF,r=>r.abort());return x;};
   const sp=await p.evaluate(async()=>{qtOpen('qj');await qcOpen(0);Object.assign(_qcC,{fin:'lam',rate:'1100',carc:'m16',base:'7',over:'7',tall:'',height:'2400',drawers:''});_qcC.specials=[{name:'Curved end unit',qty:'1',price:'1200'},{name:'Blum Legrabox drawers',qty:'4',price:'85'}];
     const C=qcCalc(_qcC);qcPaint();const shown=/Curved end unit/.test(document.getElementById('qc-res').innerText);qcApply();await qcOpen(0);const kept=_qcC.specials.length;qtClose();return [C.ex,shown,kept,qtCur(allJobs.qj).rows[0].price].join(',');});
   ok('special items (own name, qty, price) are added to the area price and kept',sp==='13860,true,2,13860',sp);
+  const fp=await p.evaluate(async()=>{qtOpen('qj');const q=qtCur(allJobs.qj);q.rows.forEach(r=>r.price='');q.subOv='';q.rows[0].price='10000';await fpOpen();FP.cos.push({id:'zz',name:'Second'});FP.items.forEach(it=>{if(it.id!=='o7')it.p.zz=it.p.imp-10;});
+    fpSet('c1','10');fpSet('a1','5');fpSet('o7','2');const R=fpCalc(fpQ());const txt=document.getElementById('fp-res').innerText;fpClose();const kept=qtCur(allJobs.qj).fp.qty.c1;const doc=qtDoc(qtCur(allJobs.qj),false);qtClose();
+    return [R[0].cost,R[1].cost,R[1].miss.length,/Your profit/.test(txt),/Cheapest/.test(txt),kept,/Imperial/.test(doc)].join(',');});
+  ok('flat pack: quantities once → every factory priced, missing prices flagged, profit vs the quote, kept with the quote, never on the quote',fp==='1500,1150,1,true,true,10,false',fp);
   const r2=await p.evaluate(()=>{applyRole('installer','Ali','',['installer']);const a=qtCan();applyRole('installer','Ali','',['installer','quote']);const b=qtCan();return [a,b].join(',');});
   ok('only the admin or people given Quotation can open quotes',r2==='false,true',r2);await p.close();}
 // ---------- 17. companies: Owner → company admin → member; isolation; pause
