@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v509 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v510 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v509 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v510 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10064,7 +10064,7 @@ function jhCard(j){
       return '<div class="jx-fg"><div class="jx-fg-h"><span>'+g[1]+(L.length?' <em>'+L.length+'</em>':'')+'</span><span><button class="jx-link" onclick="jhAddPlan(\''+id+'\',\''+g[0]+'\')">+ '+g[2]+'</button>'+((g[0]==='arch'||g[0]==='d3')&&drvCfg()?' <button class="jx-link" onclick="if(\''+id+'\'!==currentJobId)selectJob(\''+id+'\');drFromDrive(\''+g[0]+'\')">+ From OneDrive</button>':'')+'</span></div>'+
         (L.length?L.map(function(x){return '<div class="jx-file"><span class="jx-fname" title="'+qe(drName(x))+'">'+esc(drName(x))+'</span><button class="jx-link" onclick="drOpenAny(\''+x.id+'\')">Open</button>'+(hasRole('designer')&&!(window.SESSION&&SESSION.ro)?'<button class="jx-link" style="color:#991b1b;" title="Delete this file" onclick="drDeleteIn(\''+id+'\',\''+x.id+'\')">Delete</button>':'')+'</div>';}).join(''):'<div class="jx-empty">None yet</div>')+'</div>';}).join(''))+
     (qtCan()?jhSec(id,'quote','Quotation',qtSumm(j),qtSecHTML(j)):'')+
-    (mlCanSee()?jhSec(id,'mails','Client emails',((j.info&&j.info.mails)||[]).length?((j.info.mails.length)+' email(s)'):'',mlSecHTML(j)):'')+
+    (mlCanSee()?(function(){if(mlCanPick()&&!_mlPriv[id])mlPrivLoad(id);var n=mlAll(j).length;return jhSec(id,'mails','Client emails',n?(n+' email(s)'):((j.info&&j.info.mlFolder)?'Outlook folder linked':''),mlSecHTML(j));})():'')+
     ((hasRole('admin')||hasRole('orgadmin'))?jhSec(id,'fin','Orders &amp; invoices',(j.drawings||[]).filter(function(x){return x.kind==='fin';}).length+' file(s)',(_jhFinOpen?jhFinHTML(j):jhFinLockHTML())):'')+
     '<div class="jx-foot"><button class="jx-btn jx-dark" onclick="jhOpen(\''+id+'\')">Open job</button><span class="jx-meta">'+(cn.n?(cn.n+' items'):'No cabinet list yet')+'</span></div>'+
   '</div>';}
@@ -11894,11 +11894,12 @@ function mlCatOf(txt){txt=String(txt||'');var subj=txt.split('\n')[0];   // a me
 function mlCat(m){return m.cat||mlCatOf((m.subj||'')+'\n'+(m.body||''));}
 function mlCatName(k){var c=ML_CATS.filter(function(x){return x[0]===k;})[0];return c?c[1]:'General';}
 function mlCatPriv(k){var c=ML_CATS.filter(function(x){return x[0]===k;})[0];return !!(c&&c[3]);}
-var _mlFilt='all';
+var _mlFilt='all',_mlQ='';
+function mlHit(m,q){if(!q)return true;q=q.toLowerCase();return [m.subj,m.fromName,m.from,m.body,(m.files||[]).map(function(f){return f.name;}).join(' ')].join('\n').toLowerCase().indexOf(q)>=0;}
 function mlSkip(j){var inf=j.info=j.info||{};return inf.mailsSkip=inf.mailsSkip||[];}
 function mlPrivId(jid){return 'mails__'+jid;}
 function mlPrivLoad(jid){if(_mlPriv[jid])return Promise.resolve(_mlPriv[jid]);var loc=null;try{loc=JSON.parse(localStorage.getItem('cbk-mlp:'+jid)||'null');}catch(e){}_mlPriv[jid]=(loc&&loc.mails)?loc:{mails:[]};
-  return (window.cloud&&cloud.db&&cloud.user?cloud.db.collection('quotes').doc(mlPrivId(jid)).get().then(function(d){var x=d&&d.exists&&d.data();if(x&&Array.isArray(x.mails)){_mlPriv[jid]={mails:x.mails};try{localStorage.setItem('cbk-mlp:'+jid,JSON.stringify(_mlPriv[jid]));}catch(e){}}return _mlPriv[jid];}).catch(function(){return _mlPriv[jid];}):Promise.resolve(_mlPriv[jid]));}
+  return (window.cloud&&cloud.db&&cloud.user?cloud.db.collection('quotes').doc(mlPrivId(jid)).get().then(function(d){var x=d&&d.exists&&d.data();if(x&&Array.isArray(x.mails)){_mlPriv[jid]={mails:x.mails};setTimeout(mlHome,0);try{localStorage.setItem('cbk-mlp:'+jid,JSON.stringify(_mlPriv[jid]));}catch(e){}}return _mlPriv[jid];}).catch(function(){return _mlPriv[jid];}):Promise.resolve(_mlPriv[jid]));}
 function mlPrivSave(jid){var P=_mlPriv[jid];if(!P)return;try{localStorage.setItem('cbk-mlp:'+jid,JSON.stringify(P));}catch(e){}
   try{if(window.cloud&&cloud.db&&cloud.user)cloud.db.collection('quotes').doc(mlPrivId(jid)).set({mails:P.mails,org:SESSION.org||'',job:jid,at:Date.now()}).catch(function(e){alert('Could not save the private emails: '+e.message);});}catch(e){}}
 function mlPrivList(jid){return (_mlPriv[jid]&&_mlPriv[jid].mails)||[];}
@@ -11908,18 +11909,19 @@ function mlRender(){var c=document.getElementById('ml-card');if(!c)return;var j=
   var pick=mlCanPick(),inf=j.info||{};if(pick&&!_mlPriv[j.id]){mlPrivLoad(j.id).then(function(){mlRender();});}
   if(pick&&(inf.clientEmail||inf.mlFolder)&&!_mlBusy[j.id]&&Date.now()-(_mlSyncAt[j.id]||0)>600000)setTimeout(function(){mlSync(false);},50);
   var L0=mlAll(j),nP=L0.filter(function(m){return m.priv;}).length,cnt={};L0.forEach(function(m){var k=mlCat(m);cnt[k]=(cnt[k]||0)+1;});if(_mlFilt!=='all'&&!cnt[_mlFilt])_mlFilt='all';
-  var L=L0.filter(function(m){return _mlFilt==='all'||mlCat(m)===_mlFilt;}),chip=function(k,lab,n){var on=_mlFilt===k;return '<button onclick="_mlFilt=\''+k+'\';mlRender()" style="border:1px solid '+(on?'#131110':'#d6cfc4')+';background:'+(on?'#131110':'#fff')+';color:'+(on?'#fff':'#3f3f46')+';border-radius:99px;padding:4px 11px;font-size:12px;cursor:pointer;">'+esc(lab)+' <span style="opacity:.65;">'+n+'</span></button>';},
+  var L=L0.filter(function(m){return (_mlFilt==='all'||mlCat(m)===_mlFilt)&&mlHit(m,_mlQ.trim());}),chip=function(k,lab,n){var on=_mlFilt===k;return '<button onclick="_mlFilt=\''+k+'\';mlRender()" style="border:1px solid '+(on?'#131110':'#d6cfc4')+';background:'+(on?'#131110':'#fff')+';color:'+(on?'#fff':'#3f3f46')+';border-radius:99px;padding:4px 11px;font-size:12px;cursor:pointer;">'+esc(lab)+' <span style="opacity:.65;">'+n+'</span></button>';},
     fol=inf.mlFolder;
   c.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;"><div><div class="card-title" style="margin-bottom:4px;">Client emails</div><div style="font-size:12px;color:#71717a;max-width:560px;">'+(pick?'Every email with '+esc(inf.clientEmail||'the client')+' comes in by itself. <b>Team</b> = Jobs and Drafting see it. <b>Private</b> = only you and the admins'+(nP?' ('+nP+' private)':'')+'. Meetings, quotes, prices and payments come in Private.':'Emails with the client, for the team.')+'</div>'+
       (pick?'<div style="font-size:12px;color:#52525b;margin-top:6px;">Outlook folder: '+(fol?'<b>'+esc(fol.path||fol.name)+'</b> <button style="border:0;background:none;padding:0 4px;color:#1d4ed8;text-decoration:underline;cursor:pointer;font:inherit;" onclick="mlFolPick()">Change</button> <button style="border:0;background:none;padding:0 4px;color:#1d4ed8;text-decoration:underline;cursor:pointer;font:inherit;" onclick="mlFolUnlink()">Unlink</button>':'<button style="border:0;background:none;padding:0 4px;color:#1d4ed8;text-decoration:underline;cursor:pointer;font:inherit;" onclick="mlFolPick()">Link Outlook folder</button> <span style="color:#a1a1aa;">— every email you save in it comes in, whoever sent it</span>')+'</div>':'')+'</div>'+
     (pick?'<button class="btn btn-blue btn-sm" onclick="mlSync(true)"'+(_mlBusy[j.id]?' disabled':'')+'>'+(_mlBusy[j.id]?'Checking Outlook…':((inf.clientEmail||fol)?(_mlNeed?'Connect Outlook':'Check for new emails'):'Link Outlook folder'))+'</button>':'')+'</div>'+
+    (L0.length?'<input id="ml-q" type="search" placeholder="Search emails — subject, sender, text, file names" value="'+qtEsc(_mlQ)+'" oninput="_mlQ=this.value;mlRender();var e=document.getElementById(\'ml-q\');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}" style="width:100%;margin-top:10px;">':'')+
     (L0.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">'+chip('all','All',L0.length)+ML_CATS.filter(function(c){return cnt[c[0]];}).map(function(c){return chip(c[0],c[1],cnt[c[0]]);}).join('')+'</div>':'')+
     '<div style="margin-top:10px;">'+(L.length?L.map(function(m){var on=_mlOpen[m.mid],mid=qe(m.mid);
       return '<div style="border-top:1px solid #f0f0f2;padding:9px 0;"><div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;"><span onclick="_mlOpen[\''+mid+'\']='+(!on)+';mlRender();" style="cursor:pointer;font-size:12px;color:#71717a;min-width:92px;">'+esc(mlDate(m.date))+'</span><b onclick="_mlOpen[\''+mid+'\']='+(!on)+';mlRender();" style="cursor:pointer;font-size:13.5px;flex:1;min-width:160px;">'+esc(m.subj||'(no subject)')+'</b><span style="font-size:12px;color:#52525b;">'+esc(m.fromName||m.from||'')+(m.files&&m.files.length?' · '+m.files.length+' file'+(m.files.length>1?'s':''):(m.hasFiles?' · has files (in Outlook)':''))+'</span>'+
         '<span style="font-size:11px;color:#71717a;background:#f4f1ec;border-radius:6px;padding:1px 7px;">'+esc(mlCatName(mlCat(m)))+'</span>'+(pick?'<span style="display:inline-flex;border:1px solid #d6cfc4;border-radius:99px;overflow:hidden;font-size:11.5px;flex:none;"><button onclick="mlSetPriv(\''+mid+'\',false)" style="border:0;padding:3px 10px;cursor:pointer;background:'+(m.priv?'#fff':'#131110')+';color:'+(m.priv?'#52525b':'#fff')+';">Team</button><button onclick="mlSetPriv(\''+mid+'\',true)" style="border:0;padding:3px 10px;cursor:pointer;background:'+(m.priv?'#131110':'#fff')+';color:'+(m.priv?'#fff':'#52525b')+';">Private</button></span>':'')+'</div>'+
         (on?'<div style="white-space:pre-wrap;font-size:13px;line-height:1.55;background:#faf8f4;border-radius:8px;padding:10px 12px;margin-top:8px;max-height:420px;overflow:auto;">'+esc(m.body||'')+'</div>'+
           (m.files&&m.files.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">'+m.files.map(function(f){return '<button class="btn btn-outline btn-sm" onclick="clOpenShared(\''+f.id+'\',\''+qe(f.name)+'\')">'+esc(f.name)+'</button>';}).join('')+'</div>':'')+
-          (pick?'<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;"><select onchange="mlSetCat(\''+mid+'\',this.value)" style="width:auto;padding:5px 8px;font-size:12.5px;">'+ML_CATS.map(function(c){return '<option value="'+c[0]+'"'+(mlCat(m)===c[0]?' selected':'')+'>'+esc(c[1])+'</option>';}).join('')+'</select>'+(m.link?'<a class="btn btn-outline btn-sm" href="'+qe(m.link)+'" target="_blank" rel="noopener">Open in Outlook</a>':'')+'<button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="mlRemove(\''+mid+'\')">Remove from job</button></div>':''):'')+'</div>';}).join(''):'<div style="font-size:13px;color:#a1a1aa;">'+(pick&&(inf.clientEmail||fol)?'No emails yet.':'No emails added yet.')+'</div>')+'</div>';}
+          (pick?'<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;"><select onchange="mlSetCat(\''+mid+'\',this.value)" style="width:auto;padding:5px 8px;font-size:12.5px;">'+ML_CATS.map(function(c){return '<option value="'+c[0]+'"'+(mlCat(m)===c[0]?' selected':'')+'>'+esc(c[1])+'</option>';}).join('')+'</select>'+(m.link?'<a class="btn btn-outline btn-sm" href="'+qe(m.link)+'" target="_blank" rel="noopener">Open in Outlook</a>':'')+'<button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="mlRemove(\''+mid+'\')">Remove from job</button></div>':''):'')+'</div>';}).join(''):'<div style="font-size:13px;color:#a1a1aa;">'+(L0.length?'No emails match'+(_mlQ.trim()?' “'+esc(_mlQ.trim())+'”':'')+'.':'')+(L0.length?'':pick&&(inf.clientEmail||fol)?'No emails yet.':'No emails added yet.')+'</div>')+'</div>';}
 function mlSecHTML(j){var L=mlAll(j);
   return (L.length?L.map(function(m){return '<div class="jx-file"><span class="jx-fname" title="'+qe(m.subj||'')+'">'+esc(mlDate(m.date))+' · '+esc(m.subj||'(no subject)')+(m.priv?' <span style="font-size:11px;color:#92400e;">· Private</span>':'')+'</span><button class="jx-link" onclick="mlView(\''+j.id+'\',\''+qe(m.mid)+'\')">Read</button></div>';}).join(''):'<div class="jx-empty">No emails yet.</div>')+
     (mlCanPick()?'<div style="margin-top:6px;display:flex;gap:12px;flex-wrap:wrap;"><button class="jx-link" onclick="if(\''+j.id+'\'!==currentJobId)selectJob(\''+j.id+'\');mlSync(true)">Check for new emails</button><button class="jx-link" onclick="if(\''+j.id+'\'!==currentJobId)selectJob(\''+j.id+'\');mlFolPick()">'+((j.info&&j.info.mlFolder)?'Outlook folder: '+esc(j.info.mlFolder.name):'Link Outlook folder')+'</button></div>':'');}
@@ -11945,16 +11947,18 @@ async function mlSync(interactive){var j=siJob();if(!j||!mlCanPick())return;var 
     for(var i=0;i<ems.length;i++){var r=await gf('/me/messages?$search='+encodeURIComponent('"participants:'+ems[i]+'"')+'&$top=50&$select=id,subject,from,receivedDateTime,sentDateTime,bodyPreview,hasAttachments',{scopes:ML_SCOPES,interactive:!!interactive});
       (r.value||[]).forEach(function(m){all[m.id]=m;});}
     if(inf.mlFolder&&inf.mlFolder.id){var u='/me/mailFolders/'+encodeURIComponent(inf.mlFolder.id)+'/messages?$top=100&$orderby=receivedDateTime desc&$select=id,subject,from,receivedDateTime,sentDateTime,bodyPreview,hasAttachments',pg=0;
-      while(u&&pg<5){var rf=await gf(u,{scopes:ML_SCOPES,interactive:!!interactive});(rf.value||[]).forEach(function(m){if(!all[m.id]){m.__f=1;all[m.id]=m;}});u=rf['@odata.nextLink']||null;pg++;}}
+      var nF=0;while(u&&pg<5){var rf=await gf(u,{scopes:ML_SCOPES,interactive:!!interactive});(rf.value||[]).forEach(function(m){nF++;if(!all[m.id]){m.__f=1;all[m.id]=m;}});u=rf['@odata.nextLink']||null;pg++;}inf.mlFolder.n=nF;}
     _mlNeed=false;var have={};mlList(j).concat(mlPrivList(j.id)).forEach(function(m){have[m.mid]=1;});mlSkip(j).forEach(function(id){have[id]=1;});
     var ids=Object.keys(all).filter(function(k){return !have[k];});
     for(var k=0;k<ids.length;k++){var s=all[ids[k]],e=await mlFetch(s.id);e.hasFiles=!!s.hasAttachments;e.cat=mlCatOf(e.subj+'\n'+e.body);if(s.__f)e.folder=1;
       if(mlCatPriv(e.cat)){mlPrivList(j.id).push(e);nP++;}
       else{if(s.hasAttachments){try{await mlFiles(e,j.id);}catch(x){}}mlList(j).push(e);nT++;}}
     if(nP)mlPrivSave(j.id);if(nT)jhSave(j.id);
-    if(nT||nP)showMsg('✓ '+(nT+nP)+' new email'+(nT+nP>1?'s':'')+' added'+(nP?' — '+nP+' private (quote / price / payment)':''));else if(interactive)showMsg('No new emails');}
+    var where=(inf.mlFolder?inf.mlFolder.n+' in the Outlook folder':'')+(inf.mlFolder&&em?' + ':'')+(em?'emails with '+em:'');
+    if(nT||nP)showMsg('✓ '+(nT+nP)+' new email'+(nT+nP>1?'s':'')+' added'+(nP?' ('+nP+' private)':'')+' — '+where);else if(interactive)showMsg('No new emails — '+where);}
   catch(er){if(er&&er.code==='ms-login'){_mlNeed=true;}else if(interactive)alert('Could not read your Outlook: '+(er.message||er));}
-  finally{_mlBusy[j.id]=false;mlRender();}}
+  finally{_mlBusy[j.id]=false;mlRender();mlHome();}}
+function mlHome(){try{var h=document.getElementById('view-jobs');if(h&&h.offsetParent!==null)renderJobsHome();}catch(e){}}
 async function mlFind(){return mlSync(true);}
 // Team ↔ Private. Private emails are kept out of the job (and their files out of the job folder).
 async function mlSetPriv(mid,priv){var j=siJob();if(!j||!mlCanPick())return;await mlPrivLoad(j.id);var T=mlList(j),P=mlPrivList(j.id);
