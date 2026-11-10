@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v512 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v513 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v512 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v513 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10717,7 +10717,7 @@ var QT_ROWS=[{"area": "Formal Living", "desc": "Supply & Installation of Formal 
 function qtToday(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function qtNew(j){var inf=j.info||{},site=(j.finishes&&j.finishes.site)||inf.address||'';
   return {v:1,date:qtToday(),ref:site||j.name||'',coName:QT_DEF.coName,coFoot:QT_DEF.coFoot,intro:QT_DEF.intro,intro2:QT_DEF.intro2,incl:QT_DEF.incl.join('\n'),qline:QT_DEF.qline,excl:QT_DEF.excl,termsIntro:QT_DEF.termsIntro,terms:QT_DEF.terms.join('\n'),bank:QT_DEF.bank,
-    rows:JSON.parse(JSON.stringify(QT_ROWS)),at:Date.now()};}
+    rows:[],at:Date.now()};}   // v513: a new quote starts empty — import a supplier PDF or add the areas yourself
 // v469: quotes are kept apart from the job (Firestore 'quotes/{jobId}'), so only the admin and people given "Quotation" can read them — the server enforces it
 var QT_STORE={};
 function qtCan(){try{return hasRole('quote');}catch(e){return false;}}
@@ -10757,7 +10757,7 @@ function qtMkApply(i,v){var j=allJobs[_qtJob];if(!j)return;var r=qtCur(j).rows[i
   var pi=document.getElementById('qt-pr-'+i);if(pi)pi.value=r.price;var n=document.getElementById('qt-mkn-'+i);if(n)n.textContent=(r.base!=null&&pct)?'was '+qtMoney(qtNum(r.base)):'';}
 function qtMk(i,v){qtMkApply(i,v);qtSaveSoon();qtSumsPaint();}
 function qtMkAll(v){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j);(q.rows||[]).forEach(function(r,i){qtMkApply(i,v);});qtSaveSoon();qtSumsPaint();var el=document.getElementById('qt-mkall');if(el&&!qtNum(v))el.value='';}
-function qtAddRow(){var j=allJobs[_qtJob];if(!j)return;qtCur(j).rows.push({area:'',desc:QT_DEF.schedHead.replace('{area}',''),price:''});qtPersist(_qtJob);qtPaint();}
+function qtAddRow(){var j=allJobs[_qtJob];if(!j)return;qtCur(j).rows.push({area:'',desc:'',price:''});qtPersist(_qtJob);qtPaint();}
 function qtAddStd(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),have={};(q.rows||[]).forEach(function(r){have[String(r.area||'').trim().toLowerCase()]=1;});var n=0;QT_ROWS.forEach(function(r){if(!have[r.area.toLowerCase()]){q.rows.push(JSON.parse(JSON.stringify(r)));n++;}});qtPersist(_qtJob);qtPaint();showMsg(n?'✓ Added '+n+' area(s)':'All standard areas are already in this quote');}
 function qtDelRow(i){var j=allJobs[_qtJob];if(!j||!confirm('Remove this area from the schedule?'))return;qtCur(j).rows.splice(i,1);qtPersist(_qtJob);qtPaint();}
 function qtPick(i){var j=allJobs[_qtJob];if(!j)return;qtData(j,true).cur=+i;qtPersist(_qtJob);qtPaint();}
@@ -10788,7 +10788,7 @@ function qtDoc(q,ed){
       '<td class="qt-desc">'+(ed?'<textarea class="qt-in" oninput="qtGrow(this);qtRow('+i+',\'desc\',this.value)">'+esc(r.desc||'')+'</textarea>':String(r.desc||'').split('\n').map(function(l){return /:\s*$/.test(l)&&!/^\s*-/.test(l)?'<b>'+esc(l)+'</b>':esc(l);}).join('<br>'))+'</td>'+
       '<td class="qt-pr">'+(ed?'<span>$</span><input id="qt-pr-'+i+'" class="qt-in qt-num" value="'+qtEsc(r.price||'')+'" oninput="qtRow('+i+',\'price\',this.value)" placeholder="0"><div class="qt-noprint" style="clear:both;text-align:right;font-size:9pt;color:#7a5a2a;white-space:nowrap;padding-top:2px;">+ <input id="qt-mk-'+i+'" class="qt-in" inputmode="decimal" value="'+qtEsc(r.mk||'')+'" placeholder="0" title="Add this % to the price of this area" style="width:46px;display:inline-block;text-align:right;border:1px solid #d6cfc4;background:#fffaf0;" oninput="qtMk('+i+',this.value)"> %<div id="qt-mkn-'+i+'" style="font-size:8pt;color:#a8a29e;min-height:10px;">'+((r.base!=null&&qtNum(r.mk))?'was '+qtMoney(qtNum(r.base)):'')+'</div></div>':'<span>$</span><span>'+(qtNum(r.price)?Math.round(qtNum(r.price)).toLocaleString('en-AU'):'')+'</span>')+'</td></tr>';}).join('');
   var p3='<section class="qt-page"><table class="qt-sch"><thead><tr><th colspan="3" class="qt-sch-t">Joinery Schedule - '+(ed?'<input class="qt-in" style="width:60%;display:inline-block;color:#fff;font-weight:700;" value="'+qtEsc(q.schedRef!=null?q.schedRef:(q.ref||''))+'" oninput="qtSet(\'schedRef\',this.value)">':esc(q.schedRef!=null?q.schedRef:(q.ref||'')))+'</th></tr><tr><th style="width:16%">Area</th><th>Description</th><th style="width:15%">Custom</th></tr></thead><tbody>'+rows+
-    (ed?'<tr class="qt-noprint"><td colspan="3"><button class="btn btn-outline btn-sm" onclick="qtAddRow()">+ Add area</button> <span style="margin-left:14px;font-size:12px;color:#7a5a2a;">Add the same % to every area: + <input id="qt-mkall" inputmode="decimal" placeholder="0" style="width:56px;text-align:right;" onchange="qtMkAll(this.value);qtPaint()"> %</span> <span style="font-size:11px;color:#a8a29e;">(you can still change each area\'s % below — nothing here is printed)</span></td></tr>':'')+
+    (ed?'<tr class="qt-noprint"><td colspan="3"><button class="btn btn-outline btn-sm" onclick="qtAddRow()">+ Add area</button> <button class="btn btn-outline btn-sm" onclick="qtPdfPick()">📄 Import quote PDF</button> <button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="qtClearRows()">Remove all areas</button> <span style="margin-left:14px;font-size:12px;color:#7a5a2a;">Add the same % to every area: + <input id="qt-mkall" inputmode="decimal" placeholder="0" style="width:56px;text-align:right;" onchange="qtMkAll(this.value);qtPaint()"> %</span> <span style="font-size:11px;color:#a8a29e;">(you can still change each area\'s % below — nothing here is printed)</span></td></tr>':'')+
     '<tr class="qt-gap"><td></td><td></td><td></td></tr>'+'<tr class="qt-sub qt-s1"><td></td><td>Sub Total</td><td class="qt-pr"><span>$</span><span data-sumn="sub">'+Math.round(S.sub).toLocaleString('en-AU')+'</span></td></tr>'+'<tr class="qt-sub qt-s2"><td></td><td>GST</td><td class="qt-pr"><span>$</span><span data-sumn="gst">'+Math.round(S.gst).toLocaleString('en-AU')+'</span></td></tr>'+'<tr class="qt-sub qt-s3"><td></td><td>Total</td><td class="qt-pr"><span>$</span><span data-sumn="tot">'+Math.round(S.tot).toLocaleString('en-AU')+'</span></td></tr></tbody></table></section>';
   return p1+p2+p3;}
 var QT_CSS='.qt-page{background:#fff;width:210mm;min-height:297mm;box-sizing:border-box;padding:18mm 17mm;margin:0 auto 18px;color:#111;font:11pt Calibri,Carlito,Arial,sans-serif;line-height:1.4;box-shadow:0 2px 14px rgba(0,0,0,.12)}'+
@@ -10798,6 +10798,82 @@ var QT_CSS='.qt-page{background:#fff;width:210mm;min-height:297mm;box-sizing:bor
  '.qt-sch{width:100%;border-collapse:collapse;font-size:9pt;line-height:1.22}.qt-sch th,.qt-sch td{border:1px solid #000;padding:1.2mm 1.5mm;vertical-align:middle}.qt-sch thead{display:table-header-group}.qt-sch thead th{background:#4472c4;color:#fff;font-weight:400;padding:3.2mm 2mm}.qt-sch-t{font-size:12pt;font-weight:700!important;padding:4mm!important}.qt-sch tbody tr{page-break-inside:avoid;break-inside:avoid}.qt-sch td.qt-desc{padding:.8mm 1.2mm 2.6mm}'+
  '.qt-area{text-align:center;font-weight:700;position:relative}.qt-desc{white-space:normal}.qt-pr{white-space:nowrap}.qt-pr span:first-child{float:left}.qt-pr{text-align:right}.qt-gap td{height:4mm;padding:0!important}.qt-sub td{padding:2.2mm 2mm}.qt-sub td:nth-child(2){text-align:left}.qt-s1 td{background:#b4c6e7}.qt-s2 td{background:#a6a6a6}.qt-s3 td{background:#4472c4;color:#fff;font-size:11pt}.qt-page,.qt-page *{-webkit-print-color-adjust:exact;print-color-adjust:exact}.qt-desc b{font-weight:700}'+
  '@media print{.qt-page{box-shadow:none;margin:0;width:auto;min-height:0;padding:0;page-break-after:always}.qt-p1,.qt-p2{padding:2mm 13mm 0;height:270mm;box-sizing:border-box;overflow:hidden}.qt-page:last-child{page-break-after:auto}.qt-noprint{display:none}@page{size:A4;margin:12mm 12mm}}';
+// ===== v513: import a quote PDF (Area · Description · price) into the Quotation =====
+// pages: [{items:[{s,x,y,w}]}] — y grows downward. Returns [{area,desc,price}]
+function qtPdfParse(pages){
+  var rows=[],done=false;
+  pages.forEach(function(pg){
+    if(done)return;
+    var its=(pg.items||[]).filter(function(t){return String(t.s).trim();});
+    // lines (same y) of the whole page
+    var hdr=null;
+    its.forEach(function(t){if(!hdr&&/^description$/i.test(t.s.trim()))hdr=t;});
+    var top=hdr?hdr.y+3:-1e9,body=its.filter(function(t){return t.y>top;});
+    // stop at the totals
+    var stopY=1e9;body.forEach(function(t){if(/^(sub\s*total|subtotal|total|gst)\b/i.test(t.s.trim())&&t.y<stopY)stopY=t.y;});
+    if(stopY<1e9)done=true;
+    body=body.filter(function(t){return t.y<stopY-1;});
+    if(!body.length)return;
+    // columns = clusters of x-coverage separated by a gap
+    var iv=body.map(function(t){return [t.x,t.x+(t.w||t.s.length*4.5)];}).sort(function(a,b){return a[0]-b[0];}),cl=[];
+    iv.forEach(function(v){var c=cl[cl.length-1];if(c&&v[0]-c[1]<=3.5)c[1]=Math.max(c[1],v[1]);else cl.push([v[0],v[1]]);});
+    // price column = the cluster at the far right; description = the widest of the rest; area = left of it
+    var pc=cl[cl.length-1],pCut=pc[0]-1;
+    // price column: starts at the "$" signs (or at the far-right cluster when there are none)
+    var dol=body.filter(function(t){return /^\$/.test(t.s.trim());});
+    if(dol.length)pCut=Math.min.apply(null,dol.map(function(t){return t.x;}))-1;
+    // description left edge = where most lines start (the area names are centred, so their starts are all different)
+    var dCut=-1e9,lim=hdr?hdr.x+20:pCut,cand=body.filter(function(t){return t.x<lim&&t.x<pCut;}),bk={};
+    cand.forEach(function(t){var k=Math.round(t.x/8);bk[k]=(bk[k]||0)+1;});
+    var bestK=null;Object.keys(bk).forEach(function(k){if(bestK==null||bk[k]>bk[bestK])bestK=k;});
+    if(bestK!=null&&bk[bestK]>=3){var cx=bestK*8,near=cand.filter(function(t){return Math.abs(t.x-cx)<=9;}).map(function(t){return t.x;});dCut=Math.min.apply(null,near)-2;}
+    var area=body.filter(function(t){return t.x<dCut;}),desc=body.filter(function(t){return t.x>=dCut&&t.x<pCut;}),pr=body.filter(function(t){return t.x>=pCut&&/\d/.test(t.s);});
+    // description lines → blocks separated by a bigger vertical gap
+    var lineOf=function(L){var m={};L.forEach(function(t){var k=Math.round(t.y/2);var key=Object.keys(m).filter(function(q){return Math.abs(q-k)<=1;})[0];key=key!=null?key:k;(m[key]=m[key]||[]).push(t);});
+      return Object.keys(m).map(function(k){var a=m[k].sort(function(p,q){return p.x-q.x;});return {y:a.reduce(function(s,t){return s+t.y;},0)/a.length,text:a.map(function(t){return t.s.trim();}).join(' ').replace(/\s+/g,' '),x:a[0].x};}).sort(function(p,q){return p.y-q.y;});};
+    var dl=lineOf(desc);if(!dl.length)return;
+    var gaps=[];for(var i=1;i<dl.length;i++)gaps.push(dl[i].y-dl[i-1].y);
+    var med=gaps.length?gaps.slice().sort(function(a,b){return a-b;})[Math.floor(gaps.length/2)]:12,thr=med*1.6;
+    var prl=lineOf(pr),blocks=[];
+    if(prl.length>=1&&prl.length<=dl.length){
+      // every price sits in the middle of its own row → cut the description lines into one block per price
+      var n=prl.length,m=dl.length,INF=1e18,dp=[],bk2=[];
+      for(var k=0;k<=n;k++){dp.push([]);bk2.push([]);for(var j=0;j<=m;j++){dp[k].push(INF);bk2[k].push(-1);}}
+      dp[0][0]=0;
+      for(k=1;k<=n;k++)for(j=k;j<=m;j++)for(var i2=k-1;i2<j;i2++){if(dp[k-1][i2]>=INF)continue;
+        var c=(dl[i2].y+dl[j-1].y)/2,e=(c-prl[k-1].y),cost=dp[k-1][i2]+e*e+(i2>0&&dl[i2].y-dl[i2-1].y<=thr?100:0)+(/^(supply|supplying|install)/i.test(dl[i2].text)?0:60);
+        if(cost<dp[k][j]){dp[k][j]=cost;bk2[k][j]=i2;}}
+      if(dp[n][m]<INF){var cuts=[],jj=m;for(k=n;k>=1;k--){var st=bk2[k][jj];cuts.unshift([st,jj]);jj=st;}
+        cuts.forEach(function(c){blocks.push({lines:dl.slice(c[0],c[1])});});}
+    }
+    if(!blocks.length){blocks=[{lines:[dl[0]]}];for(i=1;i<dl.length;i++){if(dl[i].y-dl[i-1].y>thr)blocks.push({lines:[]});blocks[blocks.length-1].lines.push(dl[i]);}}
+    blocks.forEach(function(b,k){b.top=b.lines[0].y;b.bot=b.lines[b.lines.length-1].y;b.lo=k?(blocks[k-1].bot+b.top)/2:-1e9;});
+    blocks.forEach(function(b,k){b.hi=k<blocks.length-1?(b.bot+blocks[k+1].top)/2:1e9;});
+    var pick=function(L,b){return L.filter(function(t){return t.y>=b.lo&&t.y<b.hi;});};
+    blocks.forEach(function(b){
+      var a=lineOf(pick(area,b)).map(function(l){return l.text;}).join('\n'),
+          p=pick(pr,b).map(function(t){return t.s;}).join('').replace(/[^0-9.]/g,'');
+      rows.push({area:a,desc:b.lines.map(function(l){return l.text;}).join('\n'),price:p});
+    });
+  });
+  return rows;}
+var _pdfjsP=null;
+function qtPdfLib(){if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);if(_pdfjsP)return _pdfjsP;
+  _pdfjsP=new Promise(function(res,rej){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';s.onload=function(){try{window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';res(window.pdfjsLib);}catch(e){rej(e);}};s.onerror=function(){_pdfjsP=null;rej(new Error('Could not load the PDF reader — check the internet connection'));};document.head.appendChild(s);});return _pdfjsP;}
+async function qtPdfRead(file){var lib=await qtPdfLib(),buf=await file.arrayBuffer(),doc=await lib.getDocument({data:buf}).promise,pages=[];
+  for(var n=1;n<=doc.numPages;n++){var pg=await doc.getPage(n),vp=pg.getViewport({scale:1}),tc=await pg.getTextContent();
+    pages.push({items:tc.items.filter(function(t){return t.str!=null;}).map(function(t){return {s:t.str,x:t.transform[4],y:vp.height-t.transform[5],w:t.width};})});}
+  return qtPdfParse(pages);}
+function qtPdfPick(){var i=document.getElementById('qt-pdf-in');if(!i){i=document.createElement('input');i.type='file';i.accept='application/pdf,.pdf';i.id='qt-pdf-in';i.style.display='none';i.onchange=function(){var f=i.files&&i.files[0];i.value='';if(f)qtPdfImport(f);};document.body.appendChild(i);}i.click();}
+async function qtPdfImport(file){var j=allJobs[_qtJob];if(!j)return;showMsg('Reading the PDF…');var rows;
+  try{rows=await qtPdfRead(file);}catch(e){alert('Could not read this PDF: '+(e&&e.message||e));return;}
+  rows=rows.filter(function(r){return r.area||r.desc||r.price;});
+  if(!rows.length){alert('No areas or prices were found in this PDF. Is it a text PDF (not a photo/scan) with Area · Description · price columns?');return;}
+  var q=qtCur(j),old=(q.rows||[]).length;
+  if(old&&!confirm('Replace the '+old+' area'+(old>1?'s':'')+' in this quote with the '+rows.length+' area'+(rows.length>1?'s':'')+' from the PDF?'))return;
+  q.rows=rows;qtPersist(_qtJob);qtPaint();showMsg('✓ '+rows.length+' area'+(rows.length>1?'s':'')+' imported — now set the % for each area');}
+
+function qtClearRows(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j);if(!(q.rows||[]).length)return;if(!confirm('Remove all '+q.rows.length+' areas from this quote?'))return;q.rows=[];qtPersist(_qtJob);qtPaint();}
 function qtOpen(id){var j=allJobs[id];if(!j||!qtCan())return;_qtJob=id;qtData(j,true);var ov=document.getElementById('qt-ov');
   if(!ov){ov=document.createElement('div');ov.id='qt-ov';document.body.appendChild(ov);var st=document.createElement('style');st.textContent=QT_CSS+
     'body.qt-open .topbar,body.qt-open .topbar *{-webkit-app-region:no-drag!important;app-region:no-drag!important}#qt-ov{-webkit-app-region:no-drag;app-region:no-drag;position:fixed;inset:0;z-index:9000;background:#f6f1e7;overflow:auto;padding:env(titlebar-area-height,0px) 12px 40px}#qt-bar{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#f6f1e7;padding:12px 4px;margin:0 auto 10px;max-width:210mm;border-bottom:1px solid #e7dfcf}'+
@@ -10817,7 +10893,7 @@ function qcLoad(){if(QC)return Promise.resolve(QC);var loc=null;try{loc=JSON.par
   return (window.cloud&&cloud.db&&cloud.user?cloud.db.collection('quotes').doc(qcRatesId()).get().then(function(d){var x=d&&d.exists&&d.data();if(x&&x.rates&&x.rates.v>=3){QC=x.rates;try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}}return QC;}).catch(function(){return QC;}):Promise.resolve(QC));}
 function qcSaveRates(){try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}
   try{cloud.db.collection('quotes').doc(qcRatesId()).set({rates:QC,org:SESSION.org||'',at:Date.now()}).then(function(){showMsg('✓ Rates saved for your company');}).catch(function(e){alert('Could not save rates: '+e.message);});}catch(e){}}
-function qcIn(){var j=allJobs[_qtJob],q=j&&qtCur(j),r=q&&q.rows[_qcRow];var c=JSON.parse(JSON.stringify((r&&r.calc)||{}));c.area=r?(r.area||''):'';c.desc=r?(r.desc||''):QT_DEF.schedHead.replace('{area} ','').replace('{area}','');var o=Object.assign({fin:'lam',carc:'m16',rate:'',height:'2400',base:'',over:'',tall:'',island:'',drawers:'',extra:'',specials:[],supplyOnly:false},c);if(!Array.isArray(o.specials))o.specials=[];if(qtNum(o.extra)){o.specials.push({name:'Extra items',qty:'1',price:String(qtNum(o.extra))});o.extra='';}if(o.rate===''){var f=qcFind(QC.finishes,o.fin);o.rate=String(Math.round((f[2]+f[3])/2));}return o;}
+function qcIn(){var j=allJobs[_qtJob],q=j&&qtCur(j),r=q&&q.rows[_qcRow];var c=JSON.parse(JSON.stringify((r&&r.calc)||{}));c.area=r?(r.area||''):'';c.desc=r?(r.desc||''):'';var o=Object.assign({fin:'lam',carc:'m16',rate:'',height:'2400',base:'',over:'',tall:'',island:'',drawers:'',extra:'',specials:[],supplyOnly:false},c);if(!Array.isArray(o.specials))o.specials=[];if(qtNum(o.extra)){o.specials.push({name:'Extra items',qty:'1',price:String(qtNum(o.extra))});o.extra='';}if(o.rate===''){var f=qcFind(QC.finishes,o.fin);o.rate=String(Math.round((f[2]+f[3])/2));}return o;}
 function qcFind(L,k){return L.filter(function(x){return x[0]===k;})[0]||L[0];}
 function qcByH(h,a,b){var x=qtNum(h)||2400;if(x<=2400)return a;if(x>=2700)return b;return Math.round((a+(b-a)*(x-2400)/300)*10)/10;}
 function qcOvPct(h){return qcByH(h,QC.ov2400,QC.ov2700);}
@@ -10951,7 +11027,7 @@ function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.displa
 function qtPaint(){var j=allJobs[_qtJob],ov=document.getElementById('qt-ov');if(!j||!ov)return;var Q=qtData(j,true),q=qtCur(j);
   ov.innerHTML='<div id="qt-bar"><div style="font-weight:600;font-size:15px;margin-right:auto;">Quote · '+esc(j.name||'Job')+'</div>'+
     '<select onchange="qtPick(this.value)" style="width:auto;padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;background:#fff;font:inherit;">'+Q.versions.map(function(x,i){return '<option value="'+i+'"'+(i===Q.cur?' selected':'')+'>V'+(x.v||i+1)+' · '+qtDate(x.date)+'</option>';}).join('')+'</select>'+
-    '<button class="btn btn-blue btn-sm" onclick="qcOpen()">Price calculator</button><button class="btn btn-outline btn-sm" onclick="fpOpen()">Flat pack</button><button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button>'+(Q.versions.length>1?'<button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="qtDelVer()" title="Delete the version shown">Delete V'+(q.v||1)+'</button>':'')+'<button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
+    '<button class="btn btn-blue btn-sm" onclick="qcOpen()">Price calculator</button><button class="btn btn-outline btn-sm" onclick="fpOpen()">Flat pack</button><button class="btn btn-blue btn-sm" onclick="qtPdfPick()" title="Read a quote PDF: area, description and price become the areas of this quote">📄 Import quote PDF</button><button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button>'+(Q.versions.length>1?'<button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="qtDelVer()" title="Delete the version shown">Delete V'+(q.v||1)+'</button>':'')+'<button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
   ov.querySelectorAll('textarea.qt-in').forEach(qtGrow);}
 function qtPrint(){var j=allJobs[_qtJob];if(!j)return;qtSaveNow();var q=qtCur(j);
   var name=String((q.v<10?'0':'')+q.v+'_Quote - '+(q.ref||j.name||'Job')+' - V'+q.v).replace(/[\\/:*?"<>|]/g,'');
