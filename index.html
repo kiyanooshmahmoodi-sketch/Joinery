@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v524 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v525 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8546,7 +8546,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v524 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v525 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10929,13 +10929,14 @@ function qtOpen2(id){var j=allJobs[id];if(!j||!qtCan())return;_qtJob=id;qtData(j
   ov.style.display='block';document.body.classList.add('qt-open');qtPaint();}
 
 // ===== v499: Price calculator in the Quotation — market rates per linear metre (NSW, AUD, ex GST), every number editable per company =====
-var QC_DEF={v:3,finishes:[['lam','Laminate',800,1400],['pu','Polyurethane',1400,2200],['2p','Two pack',1800,3000],['tim','Timber',2200,4000]],   // v502: Steepwood market bands (NSW 2026), per metre of base run
+var QC_DEF={v:3,finishes:[['lam','Laminate',800,1400],['pu','Polyurethane',1400,2200],['2p','Two pack',1800,3000],['tim','Timber',2200,4000],['wp','Waterproof',1800,2400]],   // v502: Steepwood market bands (NSW 2026), per metre of base run
   carcass:[['m16','Melamine 16mm',0],['mr16','Moisture resistant 16mm',8.5],['mr18','Moisture resistant 18mm',14],['ply','Plywood',37.5]],
   ov2400:60,ov2700:80,tall2400:200,tall2700:240,islandX:100,drawer:150,supplyOnlyLess:15,roundTo:10,src:'steepwood.com.au — cabinetry cost per linear metre NSW (2026)'};
 var QC=null,_qcRow=-1;
 function qcRatesId(){return 'rates__'+(SESSION.org||'x');}
-function qcLoad(){if(QC)return Promise.resolve(QC);var loc=null;try{loc=JSON.parse(localStorage.getItem('cbk-qc-rates:'+(SESSION.org||''))||'null');}catch(e){}QC=(loc&&loc.v>=3)?loc:JSON.parse(JSON.stringify(QC_DEF));
-  return (window.cloud&&cloud.db&&cloud.user?cloud.db.collection('quotes').doc(qcRatesId()).get().then(function(d){var x=d&&d.exists&&d.data();if(x&&x.rates&&x.rates.v>=3){QC=x.rates;try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}}return QC;}).catch(function(){return QC;}):Promise.resolve(QC));}
+function qcWp(R){if(R&&R.finishes&&!R.wpAdded){R.wpAdded=1;if(!R.finishes.some(function(f){return f[0]==='wp';}))R.finishes.push(['wp','Waterproof',1800,2400]);}return R;}
+function qcLoad(){if(QC)return Promise.resolve(QC);var loc=null;try{loc=JSON.parse(localStorage.getItem('cbk-qc-rates:'+(SESSION.org||''))||'null');}catch(e){}QC=(loc&&loc.v>=3)?loc:JSON.parse(JSON.stringify(QC_DEF));qcWp(QC);
+  return (window.cloud&&cloud.db&&cloud.user?cloud.db.collection('quotes').doc(qcRatesId()).get().then(function(d){var x=d&&d.exists&&d.data();if(x&&x.rates&&x.rates.v>=3){QC=qcWp(x.rates);try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}}return QC;}).catch(function(){return QC;}):Promise.resolve(QC));}
 function qcSaveRates(){try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}
   try{cloud.db.collection('quotes').doc(qcRatesId()).set({rates:QC,org:SESSION.org||'',at:Date.now()}).then(function(){showMsg('✓ Rates saved for your company');}).catch(function(e){alert('Could not save rates: '+e.message);});}catch(e){}}
 function qcIn(){var j=allJobs[_qtJob],q=j&&qtCur(j),r=q&&q.rows[_qcRow];var c=JSON.parse(JSON.stringify((r&&r.calc)||{}));c.area=r?(r.area||''):'';c.desc=r?(r.desc||''):'';var o=Object.assign({fin:'lam',carc:'m16',rate:'',height:'2400',base:'',over:'',tall:'',island:'',drawers:'',extra:'',specials:[],supplyOnly:false},c);if(!Array.isArray(o.specials))o.specials=[];if(qtNum(o.extra)){o.specials.push({name:'Extra items',qty:'1',price:String(qtNum(o.extra))});o.extra='';}if(o.rate===''){var f=qcFind(QC.finishes,o.fin);o.rate=String(Math.round((f[2]+f[3])/2));}return o;}
