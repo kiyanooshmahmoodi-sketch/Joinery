@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v515 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v516 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v515 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v516 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10727,11 +10727,14 @@ function qtData(j,make){var id=j.id,Q=QT_STORE[id];if(!Q){var I=j.info||{};if(I.
 function qtPersist(id){var Q=QT_STORE[id],j=allJobs[id];if(!Q||!qtCan())return;Q.updatedAt=Date.now();qtLocal(id,Q);
   try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org)cloud.db.collection('quotes').doc(id).set(Object.assign(JSON.parse(JSON.stringify(Q)),{org:SESSION.org})).catch(function(e){console.warn('quote save',e);});}catch(e){}
   if(j&&j.info&&j.info.quote){delete j.info.quote;try{jhSave(id);}catch(e){}}}   // never leave prices inside the job
+document.addEventListener('visibilitychange',function(){try{if(document.visibilityState==='hidden'&&_qtJob){clearTimeout(_qtT);qtPersist(_qtJob);}}catch(e){}});
+window.addEventListener('pagehide',function(){try{if(_qtJob){clearTimeout(_qtT);qtPersist(_qtJob);}}catch(e){}});
 var _qtUnsub=null;
 function qtLoadAll(){if(!qtCan())return;
   // move any quote still kept inside a job into the locked store
   Object.keys(allJobs||{}).forEach(function(id){var j=allJobs[id];if(j&&j.info&&j.info.quote){QT_STORE[id]=QT_STORE[id]||j.info.quote;qtPersist(id);}});
-  try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org&&!_qtUnsub){var _qq=cloud.db.collection('quotes');if(_qq.where)_qq=_qq.where('org','==',SESSION.org);_qtUnsub=_qq.onSnapshot(function(sn){var ch=false;(sn.docs||[]).forEach(function(d){if(_qtJob===d.id)return;var v=d.data();if(v&&v.versions){QT_STORE[d.id]=v;qtLocal(d.id,v);ch=true;}});
+  try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org&&!_qtUnsub){var _qq=cloud.db.collection('quotes');if(_qq.where)_qq=_qq.where('org','==',SESSION.org);_qtUnsub=_qq.onSnapshot(function(sn){var ch=false;(sn.docs||[]).forEach(function(d){if(_qtJob===d.id)return;var v=d.data();if(v&&v.versions){var L=QT_STORE[d.id];if(L&&L.versions&&(L.updatedAt||0)>(v.updatedAt||0)){qtPersist(d.id);return;}   // v516: never let an older copy from the cloud replace what was just saved on this device
+      QT_STORE[d.id]=v;qtLocal(d.id,v);ch=true;}});
       if(ch&&_currentView==='jobs'){try{renderJobsHome();}catch(e){}}},function(e){console.warn('quotes',e);});}}catch(e){}}
 function qtFix(q){if(!q)return q;if(/^(We reserve|\[Company name\])/.test(q.termsIntro||''))q.termsIntro=QT_DEF.termsIntro;
   q.terms=String(q.terms||'').replace('Once signed and deposit paid, we reserve the right to retain the deposit amount.','Once signed and deposit paid, Company Name reserves the right to retain the deposit amount.').replace(/^We do not refund any amounts paid\.$/m,'Company Name do not refund any amounts paid.').replace(/from the Manufacturing unit\.$/m,'from the Manufacturing unit, Address.');
@@ -11047,7 +11050,7 @@ function qtPrintGo(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),g=functio
 // v515: page margin 0 so the browser prints no web address / title in the page corners; the margins are made with padding instead
 var QT_PRINT0='@media print{@page{size:A4;margin:0}.qt-p1,.qt-p2{padding:14mm 25mm 12mm!important;height:296mm!important}.qt-page:not(.qt-p1):not(.qt-p2){padding:0 12mm!important}.qt-sch .qt-sp td{height:12mm;border:0!important;padding:0!important;background:none!important}.qt-sch tfoot{display:table-footer-group}}';
 function qtSpacers(d){try{d.querySelectorAll('table.qt-sch').forEach(function(t){var th=t.querySelector('thead'),sp='<tr class="qt-sp"><td colspan="3"></td></tr>';if(th)th.insertAdjacentHTML('afterbegin',sp);var tf=d.createElement('tfoot');tf.innerHTML=sp;t.appendChild(tf);});}catch(e){}}
-function qtPrintDo(sel){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j);
+function qtPrintDo(sel){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j);qtPersist(_qtJob);
   var name=String((q.v<10?'0':'')+q.v+'_Quote - '+(q.ref||j.name||'Job')+' - V'+q.v).replace(/[\\/:*?"<>|]/g,'');
   // v470: print from a hidden frame inside the app (works in the installed app too — no pop-up window needed)
   var old=document.getElementById('qt-print');if(old)old.remove();var f=document.createElement('iframe');f.id='qt-print';f.setAttribute('style','position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden');document.body.appendChild(f);
