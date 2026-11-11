@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v519 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v520 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v519 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v520 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10721,7 +10721,15 @@ function qtNew(j){var inf=j.info||{},site=(j.finishes&&j.finishes.site)||inf.add
 // v469: quotes are kept apart from the job (Firestore 'quotes/{jobId}'), so only the admin and people given "Quotation" can read them — the server enforces it
 var QT_STORE={};
 function qtCan(){try{return hasRole('quote');}catch(e){return false;}}
-function qtLocal(id,v){try{if(v===undefined){var t=localStorage.getItem('cbk-quote:'+id);return t?JSON.parse(t):null;}localStorage.setItem('cbk-quote:'+id,JSON.stringify(v));}catch(e){return null;}}
+function qtLocal(id,v){var k='cbk-quote:'+id;
+  if(v===undefined){try{var t=localStorage.getItem(k);return t?JSON.parse(t):null;}catch(e){return null;}}
+  var s;try{s=JSON.stringify(v);}catch(e){return false;}
+  try{localStorage.setItem(k,s);return true;}catch(e){}
+  // v520: the browser's 5 MB storage was full and the quote silently did not save. Free space by dropping the photo/file mirror copies (the real copies are in the database / cloud), biggest first, until the quote fits.
+  try{var ks=[];for(var i=0;i<localStorage.length;i++){var kk=localStorage.key(i);if(kk&&kk.indexOf('cbkst:cbkph:')===0)ks.push([kk,(localStorage.getItem(kk)||'').length]);}
+    ks.sort(function(a,b){return b[1]-a[1];});
+    for(var j=0;j<ks.length;j++){localStorage.removeItem(ks[j][0]);try{localStorage.setItem(k,s);return true;}catch(e2){}}}catch(e){}
+  try{showMsg('⚠ This device\'s storage is full — the quote could NOT be saved on this device');}catch(e){}return false;}
 function qtData(j,make){var id=j.id,Q=QT_STORE[id];if(!Q){var I=j.info||{};if(I.quote&&typeof I.quote==='object')Q=I.quote;else Q=qtLocal(id);if(Q)QT_STORE[id]=Q;}
   if(!Q&&make){var _n=qtNew(j);Q=QT_STORE[id]={versions:[_n],cur:0,blank:qtSig(_n)};}return Q||null;}
 // v517: opening the quote and closing it without typing anything leaves no quote behind (no "V1 · $0" file)
@@ -10730,13 +10738,15 @@ function qtDropIfBlank(id){var Q=QT_STORE[id];if(!Q||!Q.blank||Q.versions.length
 function qtWeight(q){var n=0;try{(q&&q.versions||[]).forEach(function(v){(v.rows||[]).forEach(function(r){n+=1+(parseFloat(String(r.price).replace(/[^0-9.]/g,''))||0);});});}catch(e){}return n;}
 function qtPersist(id){var Q=QT_STORE[id],j=allJobs[id];if(!Q||!qtCan())return;
   if(Q.blank){if(Q.versions.length===1&&qtSig(Q.versions[0])===Q.blank)return;delete Q.blank;}   // v519: an untouched empty quote is never saved (it could replace a real one in the cloud)
-  Q.updatedAt=Date.now();qtLocal(id,Q);
-  try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org)cloud.db.collection('quotes').doc(id).set(Object.assign(JSON.parse(JSON.stringify(Q)),{org:SESSION.org})).catch(function(e){console.warn('quote save',e);});}catch(e){}
+  Q.updatedAt=Date.now();qtLocal(id,Q);try{window.storage.set('cbkqt:'+id,JSON.stringify(Q)).catch(function(){});}catch(e){}   // v520: second copy in the app database (not limited to 5 MB)
+  try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org)cloud.db.collection('quotes').doc(id).set(Object.assign(JSON.parse(JSON.stringify(Q)),{org:SESSION.org})).catch(function(e){console.warn('quote save',e);try{showMsg('⚠ Quote not saved to the cloud — '+(e&&e.message||e));}catch(x){}});}catch(e){}
   if(j&&j.info&&j.info.quote){delete j.info.quote;try{jhSave(id);}catch(e){}}}   // never leave prices inside the job
 document.addEventListener('visibilitychange',function(){try{if(document.visibilityState==='hidden'&&_qtJob){clearTimeout(_qtT);qtPersist(_qtJob);}}catch(e){}});
 window.addEventListener('pagehide',function(){try{if(_qtJob){clearTimeout(_qtT);qtPersist(_qtJob);}}catch(e){}});
 var _qtUnsub=null;
 function qtLoadAll(){if(!qtCan())return;
+  // v520: bring back any quote kept in the app database that is newer than (or missing from) this device's quick storage
+  Object.keys(allJobs||{}).forEach(function(id){try{window.storage.get('cbkqt:'+id).then(function(r){if(!r||!r.value)return;var v=JSON.parse(r.value);if(!v||!v.versions)return;var L=QT_STORE[id]||qtLocal(id);if(!L||(v.updatedAt||0)>(L.updatedAt||0)){QT_STORE[id]=v;qtLocal(id,v);try{if(_currentView==='jobs')renderJobsHome();}catch(e){}}}).catch(function(){});}catch(e){}});
   // move any quote still kept inside a job into the locked store
   Object.keys(allJobs||{}).forEach(function(id){var j=allJobs[id];if(j&&j.info&&j.info.quote){QT_STORE[id]=QT_STORE[id]||j.info.quote;qtPersist(id);}});
   try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org&&!_qtUnsub){var _qq=cloud.db.collection('quotes');if(_qq.where)_qq=_qq.where('org','==',SESSION.org);_qtUnsub=_qq.onSnapshot(function(sn){var ch=false;(sn.docs||[]).forEach(function(d){if(_qtJob===d.id)return;var v=d.data();if(v&&v.versions){var L=QT_STORE[d.id]||qtLocal(d.id);if(L&&L.versions&&((L.updatedAt||0)>(v.updatedAt||0)||(qtWeight(v)===0&&qtWeight(L)>0))){QT_STORE[d.id]=L;if(L.blank)delete L.blank;qtPersist(d.id);return;}   // v519: newer or fuller local copy wins; an empty cloud copy never replaces real prices
