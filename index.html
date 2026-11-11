@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v521 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v522 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -2144,10 +2144,19 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
         return null;});
     },
     set:function(k,v){
-      var ok=false;
-      try{localStorage.setItem('cbkst:'+k,v);ok=true;}catch(e){}
-      return idbSet(k,v).then(function(){return {key:k,value:v};}).catch(function(e){if(!ok)throw e;return {key:k,value:v};});
-    }
+      // v522: IndexedDB (hundreds of MB+) is the real store. localStorage (5 MB for the whole site) only keeps a mirror of SMALL values, never photos/files/quotes — so it can no longer fill up.
+      var big=(typeof v==='string'&&v.length>30000)||k.indexOf('cbkph:')===0||k.indexOf('cbkqt:')===0;
+      return idbSet(k,v).then(function(){
+        if(big){try{localStorage.removeItem('cbkst:'+k);}catch(e){}}
+        else{try{localStorage.setItem('cbkst:'+k,v);}catch(e){}}
+        return {key:k,value:v};
+      }).catch(function(e){
+        try{localStorage.setItem('cbkst:'+k,v);return {key:k,value:v};}catch(e2){}
+        throw e;});
+    },
+    // v522: move big old mirrors out of localStorage — only after the same value is confirmed to be in IndexedDB
+    slim:function(){try{var ks=[];for(var i=0;i<localStorage.length;i++){var kk=localStorage.key(i);if(kk&&kk.indexOf('cbkst:')===0){var v=localStorage.getItem(kk);if(v&&v.length>30000)ks.push([kk,v]);}}
+      ks.forEach(function(p){var k=p[0].slice(6);idbGet(k).then(function(cur){if(cur===p[1]){localStorage.removeItem(p[0]);}else if(cur===undefined||cur===null){return idbSet(k,p[1]).then(function(){return idbGet(k);}).then(function(c2){if(c2===p[1])localStorage.removeItem(p[0]);});}}).catch(function(){});});}catch(e){}}
   };
 })();
 </script>
@@ -8531,7 +8540,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v521 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v522 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10724,12 +10733,14 @@ function qtCan(){try{return hasRole('quote');}catch(e){return false;}}
 function qtLocal(id,v){var k='cbk-quote:'+id;
   if(v===undefined){try{var t=localStorage.getItem(k);return t?JSON.parse(t):null;}catch(e){return null;}}
   var s;try{s=JSON.stringify(v);}catch(e){return false;}
+  // v522: the app database holds every quote; this quick copy is only kept while the site's 5 MB has plenty of room (so other data can never be starved by quotes)
+  try{var used=0;for(var u=0;u<localStorage.length;u++){var uk=localStorage.key(u);used+=uk.length+(localStorage.getItem(uk)||'').length;}if(used>3000000&&localStorage.getItem(k)===null)return false;}catch(e){}
   try{localStorage.setItem(k,s);return true;}catch(e){}
   // v520: the browser's 5 MB storage was full and the quote silently did not save. Free space by dropping the photo/file mirror copies (the real copies are in the database / cloud), biggest first, until the quote fits.
   try{var ks=[];for(var i=0;i<localStorage.length;i++){var kk=localStorage.key(i);if(kk&&kk.indexOf('cbkst:cbkph:')===0)ks.push([kk,(localStorage.getItem(kk)||'').length]);}
     ks.sort(function(a,b){return b[1]-a[1];});
     for(var j=0;j<ks.length;j++){localStorage.removeItem(ks[j][0]);try{localStorage.setItem(k,s);return true;}catch(e2){}}}catch(e){}
-  try{showMsg('⚠ This device\'s storage is full — the quote could NOT be saved on this device');}catch(e){}return false;}
+  try{}catch(e){}return false;}
 function qtData(j,make){var id=j.id,Q=QT_STORE[id];if(!Q){var I=j.info||{};if(I.quote&&typeof I.quote==='object')Q=I.quote;else Q=qtLocal(id);if(Q)QT_STORE[id]=Q;}
   if(!Q&&make){var _n=qtNew(j);Q=QT_STORE[id]={versions:[_n],cur:0,blank:qtSig(_n)};}return Q||null;}
 // v517: opening the quote and closing it without typing anything leaves no quote behind (no "V1 · $0" file)
@@ -10738,8 +10749,8 @@ function qtDropIfBlank(id){var Q=QT_STORE[id];if(!Q||!Q.blank||Q.versions.length
 function qtWeight(q){var n=0;try{(q&&q.versions||[]).forEach(function(v){(v.rows||[]).forEach(function(r){n+=1+(parseFloat(String(r.price).replace(/[^0-9.]/g,''))||0);});});}catch(e){}return n;}
 function qtPersist(id){var Q=QT_STORE[id],j=allJobs[id];if(!Q||!qtCan())return;
   if(Q.blank){if(Q.versions.length===1&&qtSig(Q.versions[0])===Q.blank)return;delete Q.blank;}   // v519: an untouched empty quote is never saved (it could replace a real one in the cloud)
-  Q.updatedAt=Date.now();var _lok=qtLocal(id,Q);try{window.storage.set('cbkqt:'+id,JSON.stringify(Q)).catch(function(){});}catch(e){}qtSyncSet(id,'saving',_lok);   // v520: second copy in the app database (not limited to 5 MB)
-  try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org)cloud.db.collection('quotes').doc(id).set(Object.assign(JSON.parse(JSON.stringify(Q)),{org:SESSION.org})).then(function(){qtSyncSet(id,'ok',_lok);qtSnap(id,Q);}).catch(function(e){console.warn('quote save',e);qtSyncSet(id,'fail',_lok,e);try{showMsg('⚠ Quote not saved to the cloud — '+(e&&e.message||e));}catch(x){}});else qtSyncSet(id,'none',_lok);}catch(e){}
+  Q.updatedAt=Date.now();var _lok=qtLocal(id,Q),_idb=false;try{window.storage.set('cbkqt:'+id,JSON.stringify(Q)).then(function(){_idb=true;if(_qtSync[id]){_qtSync[id].lok=true;try{qtSyncPaint();}catch(e){}}}).catch(function(){});}catch(e){}qtSyncSet(id,'saving',_lok);   // v520: second copy in the app database (not limited to 5 MB)
+  try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org)cloud.db.collection('quotes').doc(id).set(Object.assign(JSON.parse(JSON.stringify(Q)),{org:SESSION.org})).then(function(){qtSyncSet(id,'ok',_lok||_idb);qtSnap(id,Q);}).catch(function(e){console.warn('quote save',e);qtSyncSet(id,'fail',_lok||_idb,e);try{showMsg('⚠ Quote not saved to the cloud — '+(e&&e.message||e));}catch(x){}});else setTimeout(function(){qtSyncSet(id,'none',_lok||_idb);},400);}catch(e){}
   if(j&&j.info&&j.info.quote){delete j.info.quote;try{jhSave(id);}catch(e){}}}   // never leave prices inside the job
 document.addEventListener('visibilitychange',function(){try{if(document.visibilityState==='hidden'&&_qtJob){clearTimeout(_qtT);qtPersist(_qtJob);}}catch(e){}});
 window.addEventListener('pagehide',function(){try{if(_qtJob){clearTimeout(_qtT);qtPersist(_qtJob);}}catch(e){}});
@@ -10896,7 +10907,10 @@ async function qtPdfImport(file){var j=allJobs[_qtJob];if(!j)return;showMsg('Rea
 function qtClearRows(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j);if(!(q.rows||[]).length)return;if(!confirm('Remove all '+q.rows.length+' areas from this quote?'))return;q.rows=[];qtPersist(_qtJob);qtPaint();}
 function qtOpen(id){var j=allJobs[id];if(!j||!qtCan())return;
   var cl=(window.cloud&&cloud.db&&cloud.user&&SESSION.org);
-  if(!cl||QT_STORE[id]||qtLocal(id)||(j.info&&j.info.quote))return qtOpen2(id);
+  if(QT_STORE[id]||qtLocal(id)||(j.info&&j.info.quote))return qtOpen2(id);
+  try{window.storage.get('cbkqt:'+id).then(function(r){var v=r&&r.value&&JSON.parse(r.value);if(v&&v.versions){QT_STORE[id]=v;}}).catch(function(){}).then(function(){if(QT_STORE[id]||!cl)return qtOpen2(id);qtOpenCloud(id,j);});return;}catch(e){}
+  if(!cl)return qtOpen2(id);qtOpenCloud(id,j);}
+function qtOpenCloud(id,j){
   showMsg('Loading the quote…');var done=false;
   Promise.race([cloud.db.collection('quotes').doc(id).get(),new Promise(function(r,x){setTimeout(function(){x(new Error('timeout'));},8000);})]).then(function(d){done=true;var v=d&&d.exists&&d.data();if(v&&v.versions){QT_STORE[id]=v;qtLocal(id,v);}qtOpen2(id);}).catch(function(e){if(done)return;alert('Could not reach the cloud to load this quote ('+(e&&e.message||e)+'). Check the internet and try again — nothing was changed.');});}
 function qtOpen2(id){var j=allJobs[id];if(!j||!qtCan())return;_qtJob=id;qtData(j,true);var ov=document.getElementById('qt-ov');
@@ -11165,6 +11179,7 @@ function qtHistRestore(i){var v=(window._qtHiL||[])[i];if(!v||!_qtJob)return;if(
 function qtBackup(){try{var o={app:'CabLine',kind:'quotes-backup',at:new Date().toISOString(),quotes:{}};Object.keys(allJobs||{}).forEach(function(id){var Q=QT_STORE[id]||qtLocal(id);if(Q&&Q.versions)o.quotes[id]={job:allJobs[id].name,quote:Q};});
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:'application/json'}));a.download='CabLine-quotes-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},500);showMsg('✓ Backup file downloaded');}catch(e){alert('Could not make the backup: '+e.message);}}
 // storage warning: the browser keeps about 5 MB per site; tell before it fills up
+setTimeout(function(){try{if(window.storage&&window.storage.slim)window.storage.slim();}catch(e){}try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}},4000);
 setTimeout(function(){try{var n=0;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);n+=k.length+(localStorage.getItem(k)||'').length;}var pct=Math.round(n/5242880*100);if(pct>=80)showMsg('⚠ This device\'s storage is '+pct+'% full. Old photo copies are cleared automatically when needed; if you see a red warning on a quote, tell Kiya.');}catch(e){}},8000);
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&_qtJob&&document.getElementById('qt-ov')&&document.getElementById('qt-ov').style.display!=='none')qtClose();});
 function qtSumm(j){var Q=qtData(j,false);if(!Q||!Q.versions.length)return 'No quote yet';var q=Q.versions[Q.cur!=null?Q.cur:Q.versions.length-1];return 'V'+(q.v||1)+' · '+qtMoney(qtSumsQ(q).tot)+' incl. GST';}
