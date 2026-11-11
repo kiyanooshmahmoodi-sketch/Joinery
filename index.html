@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v517 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v518 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v517 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v518 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11040,16 +11040,16 @@ function qtPrint(){var j=allJobs[_qtJob];if(!j)return;qtSaveNow();var q=qtCur(j)
   var sv={};try{sv=JSON.parse(localStorage.getItem('qtPrintPages')||'{}');}catch(e){}
   var chk=function(k,t,sub){return '<label style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #e5e0d6;border-radius:10px;margin-bottom:8px;cursor:pointer;background:#fff;"><input type="checkbox" id="qt-pp-'+k+'" '+(sv[k]===false?'':'checked')+' style="margin-top:3px;"><span><b>'+t+'</b><br><span style="font-size:12px;color:#78716c;">'+sub+'</span></span></label>';};
   var d=document.createElement('div');d.id='qt-pp';d.setAttribute('style','position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;');
-  d.innerHTML='<div style="background:#faf8f3;border-radius:14px;max-width:440px;width:100%;padding:20px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.4);font-family:inherit;"><div style="font-size:17px;font-weight:700;margin-bottom:4px;">Which pages do you want to print?</div><div style="font-size:12px;color:#78716c;margin-bottom:12px;">Tick the pages, check the date, then press Print.</div>'+
+  d.innerHTML='<div style="background:#faf8f3;border-radius:14px;max-width:440px;width:100%;padding:20px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.4);font-family:inherit;"><div style="font-size:17px;font-weight:700;margin-bottom:4px;">Which pages do you want to print?</div><div style="font-size:12px;color:#78716c;margin-bottom:12px;">Tick the pages, check the date, then press Save PDF (asks where to save) or Print.</div>'+
     chk('p1','Page 1 — Quote','Quote title, date, project ref, total')+chk('p2','Page 2 — Terms','Terms, acceptance and bank details')+chk('p3','Page 3 — Joinery Schedule','Areas, descriptions and prices')+
     '<div style="display:flex;align-items:center;gap:10px;margin:12px 0 14px;"><b style="font-size:13px;">Date</b><input type="date" id="qt-pp-date" value="'+qtEsc(q.date||qtToday())+'" style="padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;font:inherit;"></div>'+
-    '<div style="display:flex;gap:8px;justify-content:flex-end;"><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'qt-pp\').remove()">Cancel</button><button class="btn btn-blue btn-sm" onclick="qtPrintGo()">🖨 Print</button></div></div>';
+    '<div style="display:flex;gap:8px;justify-content:flex-end;"><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'qt-pp\').remove()">Cancel</button><button class="btn btn-outline btn-sm" onclick="qtPrintGo(1)">⬇ Save PDF</button><button class="btn btn-blue btn-sm" onclick="qtPrintGo()">🖨 Print</button></div></div>';
   document.body.appendChild(d);}
-function qtPrintGo(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),g=function(k){var e=document.getElementById('qt-pp-'+k);return !e||e.checked;},sel={p1:g('p1'),p2:g('p2'),p3:g('p3')};
+function qtPrintGo(pdf){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),g=function(k){var e=document.getElementById('qt-pp-'+k);return !e||e.checked;},sel={p1:g('p1'),p2:g('p2'),p3:g('p3')};
   if(!sel.p1&&!sel.p2&&!sel.p3){alert('Tick at least one page');return;}
   try{localStorage.setItem('qtPrintPages',JSON.stringify(sel));}catch(e){}
   var de=document.getElementById('qt-pp-date');if(de&&de.value&&de.value!==q.date){q.date=de.value;qtPersist(_qtJob);qtPaint();}
-  var pp=document.getElementById('qt-pp');if(pp)pp.remove();qtPrintDo(sel);}
+  var pp=document.getElementById('qt-pp');if(pp)pp.remove();if(pdf)qtPdfSave(sel);else qtPrintDo(sel);}
 // v515: page margin 0 so the browser prints no web address / title in the page corners; the margins are made with padding instead
 var QT_PRINT0='@media print{@page{size:A4;margin:0}.qt-p1,.qt-p2{padding:14mm 25mm 12mm!important;height:296mm!important}.qt-page:not(.qt-p1):not(.qt-p2){padding:0 12mm!important}.qt-sch .qt-sp td{height:12mm;border:0!important;padding:0!important;background:none!important}.qt-sch tfoot{display:table-footer-group}}';
 function qtSpacers(d){try{d.querySelectorAll('table.qt-sch').forEach(function(t){var th=t.querySelector('thead'),sp='<tr class="qt-sp"><td colspan="3"></td></tr>';if(th)th.insertAdjacentHTML('afterbegin',sp);var tf=d.createElement('tfoot');tf.innerHTML=sp;t.appendChild(tf);});}catch(e){}}
@@ -11061,6 +11061,58 @@ function qtPrintDo(sel){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j);qtPers
   qtSpacers(d);
   if(sel){var pgs=d.querySelectorAll('section.qt-page');pgs.forEach(function(sc){var k=sc.classList.contains('qt-p1')?'p1':(sc.classList.contains('qt-p2')?'p2':'p3');if(!sel[k])sc.remove();});var rest=d.querySelectorAll('section.qt-page');if(rest.length)rest[rest.length-1].style.pageBreakAfter='auto';}
   var t0=document.title;setTimeout(function(){try{document.title=name;f.contentWindow.focus();f.contentWindow.print();}catch(e){alert('Could not open printing: '+e.message);}setTimeout(function(){document.title=t0;},1500);},350);}
+
+// ===== v518: Save PDF — builds the quote PDF inside the app (no print dialog) and asks where to save it =====
+function qtFileName(j,q){return String((q.v<10?'0':'')+q.v+'_Quote - '+(q.ref||j.name||'Job')+' - V'+q.v).replace(/[\\/:*?"<>|]/g,'');}
+function qtPdfImg(d,sec,W,H,sc){return new Promise(function(res,rej){
+  var wrap=d.createElement('div'),st=d.createElement('style'),css='';d.querySelectorAll('style').forEach(function(x){css+=x.textContent;});
+  st.textContent=css;wrap.appendChild(st);var cl=sec.cloneNode(true);cl.style.width=W+'px';wrap.appendChild(cl);
+  var xml=new XMLSerializer().serializeToString(wrap);
+  var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'"><foreignObject x="0" y="0" width="'+W+'" height="'+H+'">'+xml+'</foreignObject></svg>';
+  var im=new Image();im.onload=function(){try{var c=document.createElement('canvas');c.width=Math.round(W*sc);c.height=Math.round(H*sc);var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);res(c);}catch(e){rej(e);}};
+  im.onerror=function(){rej(new Error('page drawing failed'));};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);});}
+function qtPdfBytes(items){var parts=[],offs=[],len=0,enc=new TextEncoder();
+  function put(x){var b=typeof x==='string'?enc.encode(x):x;parts.push(b);len+=b.length;}
+  function obj(n,body){offs[n]=len;put(n+' 0 obj\n'+body+'\nendobj\n');}
+  put('%PDF-1.4\n');var kids=[],N=2+items.length*3;
+  items.forEach(function(it,i){kids.push((3+i*3)+' 0 R');});
+  obj(1,'<</Type/Catalog/Pages 2 0 R>>');obj(2,'<</Type/Pages/Kids['+kids.join(' ')+']/Count '+items.length+'>>');
+  items.forEach(function(it,i){var p=3+i*3,c=p+1,m=p+2,cs='q 595.28 0 0 841.89 0 0 cm /Im0 Do Q';
+    obj(p,'<</Type/Page/Parent 2 0 R/MediaBox[0 0 595.28 841.89]/Resources<</XObject<</Im0 '+m+' 0 R>>>>/Contents '+c+' 0 R>>');
+    obj(c,'<</Length '+cs.length+'>>\nstream\n'+cs+'\nendstream');
+    offs[m]=len;put(m+' 0 obj\n<</Type/XObject/Subtype/Image/Width '+it.w+'/Height '+it.h+'/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length '+it.bytes.length+'>>\nstream\n');put(it.bytes);put('\nendstream\nendobj\n');});
+  var xr=len;put('xref\n0 '+(N+1)+'\n0000000000 65535 f \n');for(var n=1;n<=N;n++)put(('0000000000'+offs[n]).slice(-10)+' 00000 n \n');
+  put('trailer\n<</Size '+(N+1)+'/Root 1 0 R>>\nstartxref\n'+xr+'\n%%EOF\n');return new Blob(parts,{type:'application/pdf'});}
+function qtJpg(c){var u=c.toDataURL('image/jpeg',0.92),b=atob(u.split(',')[1]),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return {bytes:a,w:c.width,h:c.height};}
+async function qtPdfBuild(q,sel){
+  var f=document.createElement('iframe');f.setAttribute('style','position:fixed;left:-9999px;top:0;width:794px;height:1200px;border:0');document.body.appendChild(f);
+  try{var d=f.contentWindow.document;d.open();d.write('<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#fff;width:794px}'+QT_CSS+'.qt-page{box-shadow:none!important;margin:0!important;width:794px!important}.qt-p1,.qt-p2{padding:14mm 25mm 12mm!important;height:296mm!important;min-height:0!important}.qt-page:not(.qt-p1):not(.qt-p2){padding:0 12mm!important;min-height:0!important}</style></head><body>'+qtDoc(q,false)+'</body></html>');d.close();
+    d.querySelectorAll('section.qt-page').forEach(function(sc){var k=sc.classList.contains('qt-p1')?'p1':(sc.classList.contains('qt-p2')?'p2':'p3');if(!sel[k])sc.remove();});
+    await new Promise(function(r){setTimeout(r,400);});
+    var W=794,PH=1123,items=[];
+    var secs=d.querySelectorAll('section.qt-page');
+    for(var i=0;i<secs.length;i++){var sec=secs[i],top=sec.getBoundingClientRect().top,H=Math.ceil(sec.getBoundingClientRect().height);
+      var sc=Math.min(2,Math.sqrt(14e6/(W*H))),big=await qtPdfImg(d,sec,W,H,sc);
+      var cuts=[];
+      if(H<=PH+4){cuts.push([0,Math.min(H,PH),0]);}
+      else{var bots=[];sec.querySelectorAll('tr').forEach(function(r){bots.push(r.getBoundingClientRect().bottom-top);});
+        var CH=1032,st=0;while(st<H-2){var en=st+CH;if(en>=H)en=H;else{var best=0;bots.forEach(function(b){if(b>st+60&&b<=en&&b>best)best=b;});if(best)en=best;}cuts.push([st,en,45]);st=en;}}
+      cuts.forEach(function(c){var pc=document.createElement('canvas');pc.width=Math.round(W*sc);pc.height=Math.round(PH*sc);var x=pc.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,pc.width,pc.height);
+        x.drawImage(big,0,Math.round(c[0]*sc),big.width,Math.round((c[1]-c[0])*sc),0,Math.round(c[2]*sc),big.width,Math.round((c[1]-c[0])*sc));items.push(qtJpg(pc));});}
+    if(!items.length)throw new Error('nothing to save');
+    return qtPdfBytes(items);
+  }finally{f.remove();}}
+async function qtPdfSave(sel){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j);qtPersist(_qtJob);var fn=qtFileName(j,q)+'.pdf',fh=null;
+  if(window.showSaveFilePicker){try{fh=await window.showSaveFilePicker({suggestedName:fn,types:[{description:'PDF',accept:{'application/pdf':['.pdf']}}]});}catch(e){if(e&&e.name==='AbortError')return;fh=null;}}
+  showMsg('Making the PDF…');var blob;
+  try{blob=await qtPdfBuild(q,sel);}catch(e){alert('Could not make the PDF: '+e.message+'\nUse Print and choose Save as PDF instead.');return;}
+  if(fh){try{var w=await fh.createWritable();await w.write(blob);await w.close();showMsg('✓ PDF saved');return;}catch(e){alert('Could not save: '+e.message);}}
+  qtPdfReady(blob,fn);}
+function qtPdfReady(blob,fn){window._qtBlob=blob;window._qtFn=fn;var old=document.getElementById('qt-pr');if(old)old.remove();var d=document.createElement('div');d.id='qt-pr';d.setAttribute('style','position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;');
+  d.innerHTML='<div style="background:#faf8f3;border-radius:14px;max-width:400px;width:100%;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.4);"><div style="font-size:17px;font-weight:700;margin-bottom:4px;">✓ PDF is ready</div><div style="font-size:12.5px;color:#78716c;margin-bottom:14px;word-break:break-all;">'+esc(fn)+'<br>Press Save, then choose where to keep it (on iPad: Save to Files).</div><div style="display:flex;gap:8px;justify-content:flex-end;"><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'qt-pr\').remove()">Close</button><button class="btn btn-blue btn-sm" onclick="qtPdfShare()">⬇ Save</button></div></div>';document.body.appendChild(d);}
+function qtPdfShare(){var b=window._qtBlob,fn=window._qtFn;if(!b)return;var file=null;try{file=new File([b],fn,{type:'application/pdf'});}catch(e){}
+  if(file&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:fn}).catch(function(){});return;}
+  var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fn;document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},500);}
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&_qtJob&&document.getElementById('qt-ov')&&document.getElementById('qt-ov').style.display!=='none')qtClose();});
 function qtSumm(j){var Q=qtData(j,false);if(!Q||!Q.versions.length)return 'No quote yet';var q=Q.versions[Q.cur!=null?Q.cur:Q.versions.length-1];return 'V'+(q.v||1)+' · '+qtMoney(qtSumsQ(q).tot)+' incl. GST';}
 function qtSaveNow(){clearTimeout(_qtT);if(_qtJob){qtPersist(_qtJob);showMsg('✓ Quote saved');}}
