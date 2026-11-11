@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v520 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v521 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v520 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v521 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10738,8 +10738,8 @@ function qtDropIfBlank(id){var Q=QT_STORE[id];if(!Q||!Q.blank||Q.versions.length
 function qtWeight(q){var n=0;try{(q&&q.versions||[]).forEach(function(v){(v.rows||[]).forEach(function(r){n+=1+(parseFloat(String(r.price).replace(/[^0-9.]/g,''))||0);});});}catch(e){}return n;}
 function qtPersist(id){var Q=QT_STORE[id],j=allJobs[id];if(!Q||!qtCan())return;
   if(Q.blank){if(Q.versions.length===1&&qtSig(Q.versions[0])===Q.blank)return;delete Q.blank;}   // v519: an untouched empty quote is never saved (it could replace a real one in the cloud)
-  Q.updatedAt=Date.now();qtLocal(id,Q);try{window.storage.set('cbkqt:'+id,JSON.stringify(Q)).catch(function(){});}catch(e){}   // v520: second copy in the app database (not limited to 5 MB)
-  try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org)cloud.db.collection('quotes').doc(id).set(Object.assign(JSON.parse(JSON.stringify(Q)),{org:SESSION.org})).catch(function(e){console.warn('quote save',e);try{showMsg('⚠ Quote not saved to the cloud — '+(e&&e.message||e));}catch(x){}});}catch(e){}
+  Q.updatedAt=Date.now();var _lok=qtLocal(id,Q);try{window.storage.set('cbkqt:'+id,JSON.stringify(Q)).catch(function(){});}catch(e){}qtSyncSet(id,'saving',_lok);   // v520: second copy in the app database (not limited to 5 MB)
+  try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org)cloud.db.collection('quotes').doc(id).set(Object.assign(JSON.parse(JSON.stringify(Q)),{org:SESSION.org})).then(function(){qtSyncSet(id,'ok',_lok);qtSnap(id,Q);}).catch(function(e){console.warn('quote save',e);qtSyncSet(id,'fail',_lok,e);try{showMsg('⚠ Quote not saved to the cloud — '+(e&&e.message||e));}catch(x){}});else qtSyncSet(id,'none',_lok);}catch(e){}
   if(j&&j.info&&j.info.quote){delete j.info.quote;try{jhSave(id);}catch(e){}}}   // never leave prices inside the job
 document.addEventListener('visibilitychange',function(){try{if(document.visibilityState==='hidden'&&_qtJob){clearTimeout(_qtT);qtPersist(_qtJob);}}catch(e){}});
 window.addEventListener('pagehide',function(){try{if(_qtJob){clearTimeout(_qtT);qtPersist(_qtJob);}}catch(e){}});
@@ -10749,7 +10749,7 @@ function qtLoadAll(){if(!qtCan())return;
   Object.keys(allJobs||{}).forEach(function(id){try{window.storage.get('cbkqt:'+id).then(function(r){if(!r||!r.value)return;var v=JSON.parse(r.value);if(!v||!v.versions)return;var L=QT_STORE[id]||qtLocal(id);if(!L||(v.updatedAt||0)>(L.updatedAt||0)){QT_STORE[id]=v;qtLocal(id,v);try{if(_currentView==='jobs')renderJobsHome();}catch(e){}}}).catch(function(){});}catch(e){}});
   // move any quote still kept inside a job into the locked store
   Object.keys(allJobs||{}).forEach(function(id){var j=allJobs[id];if(j&&j.info&&j.info.quote){QT_STORE[id]=QT_STORE[id]||j.info.quote;qtPersist(id);}});
-  try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org&&!_qtUnsub){var _qq=cloud.db.collection('quotes');if(_qq.where)_qq=_qq.where('org','==',SESSION.org);_qtUnsub=_qq.onSnapshot(function(sn){var ch=false;(sn.docs||[]).forEach(function(d){if(_qtJob===d.id)return;var v=d.data();if(v&&v.versions){var L=QT_STORE[d.id]||qtLocal(d.id);if(L&&L.versions&&((L.updatedAt||0)>(v.updatedAt||0)||(qtWeight(v)===0&&qtWeight(L)>0))){QT_STORE[d.id]=L;if(L.blank)delete L.blank;qtPersist(d.id);return;}   // v519: newer or fuller local copy wins; an empty cloud copy never replaces real prices
+  try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org&&!_qtUnsub){var _qq=cloud.db.collection('quotes');if(_qq.where)_qq=_qq.where('org','==',SESSION.org);_qtUnsub=_qq.onSnapshot(function(sn){var ch=false;(sn.docs||[]).forEach(function(d){if(_qtJob===d.id)return;var v=d.data();if(v&&v.versions&&!v.bak&&d.id.indexOf('bak__')!==0){var L=QT_STORE[d.id]||qtLocal(d.id);if(L&&L.versions&&((L.updatedAt||0)>(v.updatedAt||0)||(qtWeight(v)===0&&qtWeight(L)>0))){QT_STORE[d.id]=L;if(L.blank)delete L.blank;qtPersist(d.id);return;}   // v519: newer or fuller local copy wins; an empty cloud copy never replaces real prices
       if(L&&L.versions&&qtWeight(L)>0){try{localStorage.setItem('cbk-quote-bak:'+d.id,JSON.stringify(L));}catch(e){}}   // v516: never let an older copy from the cloud replace what was just saved on this device
       QT_STORE[d.id]=v;qtLocal(d.id,v);ch=true;}});
       if(ch&&_currentView==='jobs'){try{renderJobsHome();}catch(e){}}},function(e){console.warn('quotes',e);});}}catch(e){}}
@@ -11050,9 +11050,9 @@ function fpSetP(i,cid,v){var it=FP.items[i];if(!it)return;if(!it.p)it.p={};if(St
 
 function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.display='none';document.body.classList.remove('qt-open');if(_qtJob&&!qtDropIfBlank(_qtJob))qtPersist(_qtJob);_qtJob=null;try{renderJobsHome();}catch(e){}}
 function qtPaint(){var j=allJobs[_qtJob],ov=document.getElementById('qt-ov');if(!j||!ov)return;var Q=qtData(j,true),q=qtCur(j);
-  ov.innerHTML='<div id="qt-bar"><div style="font-weight:600;font-size:15px;margin-right:auto;">Quote · '+esc(j.name||'Job')+'</div>'+
+  ov.innerHTML='<div id="qt-bar"><div style="font-weight:600;font-size:15px;margin-right:auto;">Quote · '+esc(j.name||'Job')+' <span id="qt-sync" style="font-size:12px;margin-left:8px;"></span></div>'+
     '<select onchange="qtPick(this.value)" style="width:auto;padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;background:#fff;font:inherit;">'+Q.versions.map(function(x,i){return '<option value="'+i+'"'+(i===Q.cur?' selected':'')+'>V'+(x.v||i+1)+' · '+qtDate(x.date)+'</option>';}).join('')+'</select>'+
-    '<button class="btn btn-blue btn-sm" onclick="qcOpen()">Price calculator</button><button class="btn btn-outline btn-sm" onclick="fpOpen()">Flat pack</button><button class="btn btn-blue btn-sm" onclick="qtPdfPick()" title="Read a quote PDF: area, description and price become the areas of this quote">📄 Import quote PDF</button><button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button>'+(Q.versions.length>1?'<button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="qtDelVer()" title="Delete the version shown">Delete V'+(q.v||1)+'</button>':'')+'<button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
+    '<button class="btn btn-blue btn-sm" onclick="qcOpen()">Price calculator</button><button class="btn btn-outline btn-sm" onclick="fpOpen()">Flat pack</button><button class="btn btn-blue btn-sm" onclick="qtPdfPick()" title="Read a quote PDF: area, description and price become the areas of this quote">📄 Import quote PDF</button><button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button>'+(Q.versions.length>1?'<button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="qtDelVer()" title="Delete the version shown">Delete V'+(q.v||1)+'</button>':'')+'<button class="btn btn-outline btn-sm" onclick="qtHist()" title="Earlier copies kept in the cloud">⏪ History</button><button class="btn btn-outline btn-sm" onclick="qtBackup()" title="Download all quotes as a backup file">⬇ Backup</button><button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
   ov.querySelectorAll('textarea.qt-in').forEach(qtGrow);}
 // v514: Print / PDF first asks which pages to print (and the date) — e.g. only the last page for the customer
 function qtPrint(){var j=allJobs[_qtJob];if(!j)return;qtSaveNow();var q=qtCur(j),old=document.getElementById('qt-pp');if(old)old.remove();
@@ -11132,6 +11132,40 @@ function qtPdfReady(blob,fn){window._qtBlob=blob;window._qtFn=fn;var old=documen
 function qtPdfShare(){var b=window._qtBlob,fn=window._qtFn;if(!b)return;var file=null;try{file=new File([b],fn,{type:'application/pdf'});}catch(e){}
   if(file&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:fn}).catch(function(){});return;}
   var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fn;document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},500);}
+
+// ===== v521: save status, cloud history (restore), backup download, storage warning =====
+var _qtSync={},_qtSnapAt={};
+function qtSyncSet(id,st,lok,err){_qtSync[id]={st:st,lok:lok,t:Date.now(),err:err&&(err.message||String(err))};try{qtSyncPaint();}catch(e){}}
+function qtSyncPaint(){var el=document.getElementById('qt-sync');if(!el||!_qtJob)return;var o=_qtSync[_qtJob],hm=function(t){var d=new Date(t);return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);},t,c;
+  if(!o){t='';c='#78716c';}
+  else if(o.st==='saving'){t='… saving';c='#78716c';}
+  else if(o.st==='ok'){t='☁ Saved to the cloud '+hm(o.t)+(o.lok===false?' · ⚠ not on this device':'');c=o.lok===false?'#b45309':'#166534';}
+  else if(o.st==='fail'){t='⚠ NOT saved to the cloud — '+(o.err||'error');c='#b91c1c';}
+  else{t='⚠ Saved on this device only'+(o.lok===false?' — and the device is full, NOT saved!':'');c='#b91c1c';}
+  el.textContent=t;el.style.color=c;el.style.fontWeight='600';}
+(function(){var _p=qtPaint;qtPaint=function(){var r=_p.apply(this,arguments);try{qtSyncPaint();}catch(e){}return r;};})();
+// cloud history: a full copy every 10 minutes (last 24 h) and one per day (last 14 days), only when the quote has prices
+function qtSnap(id,Q,force){try{if(!(window.cloud&&cloud.db&&cloud.user&&SESSION.org))return;if(qtWeight(Q)===0)return;var now=Date.now();if(!force&&now-(_qtSnapAt[id]||0)<600000)return;_qtSnapAt[id]=now;
+  var copy=Object.assign(JSON.parse(JSON.stringify(Q)),{org:SESSION.org,bak:true,src:id,savedAt:now});delete copy.blank;
+  var col=cloud.db.collection('quotes');col.doc('bak__'+id+'__t'+(Math.floor(now/600000)%144)).set(copy).catch(function(){});col.doc('bak__'+id+'__d'+(Math.floor(now/86400000)%14)).set(copy).catch(function(){});}catch(e){}}
+function qtTot(q){var n=0;try{(q.rows||[]).forEach(function(r){n+=parseFloat(String(r.price).replace(/[^0-9.]/g,''))||0;});}catch(e){}return n;}
+async function qtHist(){var j=allJobs[_qtJob];if(!j)return;if(!(window.cloud&&cloud.db&&cloud.user&&SESSION.org)){alert('History is kept in the cloud — connect to the internet and sign in.');return;}
+  var old=document.getElementById('qt-hi');if(old)old.remove();var d=document.createElement('div');d.id='qt-hi';d.setAttribute('style','position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;');
+  d.innerHTML='<div style="background:#faf8f3;border-radius:14px;max-width:520px;width:100%;max-height:85vh;overflow:auto;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.4);"><div style="font-size:17px;font-weight:700;margin-bottom:8px;">⏪ Earlier copies of this quote</div><div id="qt-hi-b" style="font-size:13px;color:#57534e;">Loading…</div><div style="text-align:right;margin-top:12px;"><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'qt-hi\').remove()">Close</button></div></div>';document.body.appendChild(d);
+  var box=document.getElementById('qt-hi-b');
+  try{var sn=await cloud.db.collection('quotes').where('org','==',SESSION.org).where('src','==',_qtJob).get(),L=[];sn.forEach(function(x){var v=x.data();if(v&&v.versions)L.push(v);});
+    L.sort(function(a,b){return (b.savedAt||0)-(a.savedAt||0);});var seen={};L=L.filter(function(v){var k=v.savedAt+'|'+qtWeight(v);if(seen[k])return false;seen[k]=1;return true;});window._qtHiL=L;
+    var rows=L.map(function(v,i){var cur=v.versions[v.cur||0]||v.versions[0]||{},sig=(v.savedAt||0);var dt=new Date(sig),ds=dt.toLocaleString('en-AU',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #e7dfcf;"><div style="flex:1;"><b>'+esc(ds)+'</b><br><span style="font-size:12px;color:#78716c;">'+(cur.rows||[]).length+' areas · $ '+Math.round(qtTot(cur)).toLocaleString('en-AU')+'</span></div><button class="btn btn-blue btn-sm" onclick="qtHistRestore('+i+')">Restore</button></div>';});
+    box.innerHTML=rows.length?rows.join(''):'No earlier copies yet. From now on a copy is kept automatically every 10 minutes while you work.';}
+  catch(e){box.textContent='Could not load: '+(e&&e.message||e);}}
+function qtHistRestore(i){var v=(window._qtHiL||[])[i];if(!v||!_qtJob)return;if(!confirm('Replace the quote now on screen with this earlier copy?\n\n(The quote on screen is kept as a history copy first.)'))return;
+  var cur=QT_STORE[_qtJob];if(cur)qtSnap(_qtJob,cur,true);
+  var q=JSON.parse(JSON.stringify(v));['bak','src','savedAt','blank'].forEach(function(k){delete q[k];});QT_STORE[_qtJob]=q;qtPersist(_qtJob);qtPaint();var h=document.getElementById('qt-hi');if(h)h.remove();showMsg('✓ Earlier copy restored');}
+function qtBackup(){try{var o={app:'CabLine',kind:'quotes-backup',at:new Date().toISOString(),quotes:{}};Object.keys(allJobs||{}).forEach(function(id){var Q=QT_STORE[id]||qtLocal(id);if(Q&&Q.versions)o.quotes[id]={job:allJobs[id].name,quote:Q};});
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:'application/json'}));a.download='CabLine-quotes-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},500);showMsg('✓ Backup file downloaded');}catch(e){alert('Could not make the backup: '+e.message);}}
+// storage warning: the browser keeps about 5 MB per site; tell before it fills up
+setTimeout(function(){try{var n=0;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);n+=k.length+(localStorage.getItem(k)||'').length;}var pct=Math.round(n/5242880*100);if(pct>=80)showMsg('⚠ This device\'s storage is '+pct+'% full. Old photo copies are cleared automatically when needed; if you see a red warning on a quote, tell Kiya.');}catch(e){}},8000);
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&_qtJob&&document.getElementById('qt-ov')&&document.getElementById('qt-ov').style.display!=='none')qtClose();});
 function qtSumm(j){var Q=qtData(j,false);if(!Q||!Q.versions.length)return 'No quote yet';var q=Q.versions[Q.cur!=null?Q.cur:Q.versions.length-1];return 'V'+(q.v||1)+' · '+qtMoney(qtSumsQ(q).tot)+' incl. GST';}
 function qtSaveNow(){clearTimeout(_qtT);if(_qtJob){qtPersist(_qtJob);showMsg('✓ Quote saved');}}
