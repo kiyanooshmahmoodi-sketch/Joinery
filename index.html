@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v514 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v515 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v514 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v515 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11044,11 +11044,15 @@ function qtPrintGo(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),g=functio
   try{localStorage.setItem('qtPrintPages',JSON.stringify(sel));}catch(e){}
   var de=document.getElementById('qt-pp-date');if(de&&de.value&&de.value!==q.date){q.date=de.value;qtPersist(_qtJob);qtPaint();}
   var pp=document.getElementById('qt-pp');if(pp)pp.remove();qtPrintDo(sel);}
+// v515: page margin 0 so the browser prints no web address / title in the page corners; the margins are made with padding instead
+var QT_PRINT0='@media print{@page{size:A4;margin:0}.qt-p1,.qt-p2{padding:14mm 25mm 12mm!important;height:296mm!important}.qt-page:not(.qt-p1):not(.qt-p2){padding:0 12mm!important}.qt-sch .qt-sp td{height:12mm;border:0!important;padding:0!important;background:none!important}.qt-sch tfoot{display:table-footer-group}}';
+function qtSpacers(d){try{d.querySelectorAll('table.qt-sch').forEach(function(t){var th=t.querySelector('thead'),sp='<tr class="qt-sp"><td colspan="3"></td></tr>';if(th)th.insertAdjacentHTML('afterbegin',sp);var tf=d.createElement('tfoot');tf.innerHTML=sp;t.appendChild(tf);});}catch(e){}}
 function qtPrintDo(sel){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j);
   var name=String((q.v<10?'0':'')+q.v+'_Quote - '+(q.ref||j.name||'Job')+' - V'+q.v).replace(/[\\/:*?"<>|]/g,'');
   // v470: print from a hidden frame inside the app (works in the installed app too — no pop-up window needed)
   var old=document.getElementById('qt-print');if(old)old.remove();var f=document.createElement('iframe');f.id='qt-print';f.setAttribute('style','position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden');document.body.appendChild(f);
-  var d=f.contentWindow.document;d.open();d.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(name)+'</title><style>body{margin:0;background:#fff}'+QT_CSS+'</style></head><body>'+qtDoc(q,false)+'</body></html>');d.close();
+  var d=f.contentWindow.document;d.open();d.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(name)+'</title><style>body{margin:0;background:#fff}'+QT_CSS+QT_PRINT0+'</style></head><body>'+qtDoc(q,false)+'</body></html>');d.close();
+  qtSpacers(d);
   if(sel){var pgs=d.querySelectorAll('section.qt-page');pgs.forEach(function(sc){var k=sc.classList.contains('qt-p1')?'p1':(sc.classList.contains('qt-p2')?'p2':'p3');if(!sel[k])sc.remove();});var rest=d.querySelectorAll('section.qt-page');if(rest.length)rest[rest.length-1].style.pageBreakAfter='auto';}
   var t0=document.title;setTimeout(function(){try{document.title=name;f.contentWindow.focus();f.contentWindow.print();}catch(e){alert('Could not open printing: '+e.message);}setTimeout(function(){document.title=t0;},1500);},350);}
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&_qtJob&&document.getElementById('qt-ov')&&document.getElementById('qt-ov').style.display!=='none')qtClose();});
