@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v516 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v517 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v516 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v517 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10723,7 +10723,10 @@ var QT_STORE={};
 function qtCan(){try{return hasRole('quote');}catch(e){return false;}}
 function qtLocal(id,v){try{if(v===undefined){var t=localStorage.getItem('cbk-quote:'+id);return t?JSON.parse(t):null;}localStorage.setItem('cbk-quote:'+id,JSON.stringify(v));}catch(e){return null;}}
 function qtData(j,make){var id=j.id,Q=QT_STORE[id];if(!Q){var I=j.info||{};if(I.quote&&typeof I.quote==='object')Q=I.quote;else Q=qtLocal(id);if(Q)QT_STORE[id]=Q;}
-  if(!Q&&make){Q=QT_STORE[id]={versions:[qtNew(j)],cur:0};}return Q||null;}
+  if(!Q&&make){var _n=qtNew(j);Q=QT_STORE[id]={versions:[_n],cur:0,blank:qtSig(_n)};}return Q||null;}
+// v517: opening the quote and closing it without typing anything leaves no quote behind (no "V1 · $0" file)
+function qtSig(q){var c=JSON.parse(JSON.stringify(q));delete c.at;return JSON.stringify(c);}
+function qtDropIfBlank(id){var Q=QT_STORE[id];if(!Q||!Q.blank||Q.versions.length!==1)return false;if(qtSig(Q.versions[0])!==Q.blank)return false;delete QT_STORE[id];try{localStorage.removeItem('cbk-quote:'+id);}catch(e){}try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org)cloud.db.collection('quotes').doc(id).delete().catch(function(){});}catch(e){}return true;}
 function qtPersist(id){var Q=QT_STORE[id],j=allJobs[id];if(!Q||!qtCan())return;Q.updatedAt=Date.now();qtLocal(id,Q);
   try{if(window.cloud&&cloud.db&&cloud.user&&SESSION.org)cloud.db.collection('quotes').doc(id).set(Object.assign(JSON.parse(JSON.stringify(Q)),{org:SESSION.org})).catch(function(e){console.warn('quote save',e);});}catch(e){}
   if(j&&j.info&&j.info.quote){delete j.info.quote;try{jhSave(id);}catch(e){}}}   // never leave prices inside the job
@@ -11026,7 +11029,7 @@ function fpListsHTML(){var n=FP.cos.length,cols='minmax(170px,1fr) 70px'+FP.cos.
     '<div style="padding:0 16px 16px;overflow-x:auto;"><div style="min-width:'+(280+n*92)+'px;">'+hdr+body+'</div></div></div>';}
 function fpSetP(i,cid,v){var it=FP.items[i];if(!it)return;if(!it.p)it.p={};if(String(v).trim()==='')delete it.p[cid];else it.p[cid]=qtNum(v);}
 
-function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.display='none';document.body.classList.remove('qt-open');if(_qtJob)qtPersist(_qtJob);_qtJob=null;try{renderJobsHome();}catch(e){}}
+function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.display='none';document.body.classList.remove('qt-open');if(_qtJob&&!qtDropIfBlank(_qtJob))qtPersist(_qtJob);_qtJob=null;try{renderJobsHome();}catch(e){}}
 function qtPaint(){var j=allJobs[_qtJob],ov=document.getElementById('qt-ov');if(!j||!ov)return;var Q=qtData(j,true),q=qtCur(j);
   ov.innerHTML='<div id="qt-bar"><div style="font-weight:600;font-size:15px;margin-right:auto;">Quote · '+esc(j.name||'Job')+'</div>'+
     '<select onchange="qtPick(this.value)" style="width:auto;padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;background:#fff;font:inherit;">'+Q.versions.map(function(x,i){return '<option value="'+i+'"'+(i===Q.cur?' selected':'')+'>V'+(x.v||i+1)+' · '+qtDate(x.date)+'</option>';}).join('')+'</select>'+
