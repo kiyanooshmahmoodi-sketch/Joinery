@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v522 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v523 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -7827,7 +7827,7 @@ function updateProjectCount(){
   if(el)el.textContent='📂 '+n+' project'+(n===1?'':'s');
 }
 // v502: add a job without the Jobs page (companies that use only Cabinets / Drafting / …)
-async function cbNewJob(){if(typeof orgRoBlock==='function'&&orgRoBlock())return;var nm=(prompt('Job name','')||'').trim();if(!nm)return;var ad=(prompt('Site address (optional)','')||'').trim();
+async function cbNewJob(){if(typeof orgRoBlock==='function'&&orgRoBlock())return;var nm=(prompt('Job name','')||'').trim();if(!nm)return;var _ex=jobByName(nm);if(_ex){selectJob(_ex.id);try{closeJobs();}catch(e){}showMsg('✓ Project “'+_ex.name+'” already exists — opened it (no duplicate)');return;}var ad=(prompt('Site address (optional)','')||'').trim();
   await newJob();var j=allJobs[currentJobId];if(!j)return;j.name=nm;var pin=document.getElementById('proj-input');if(pin)pin.value=nm;var pd=document.getElementById('proj-display');if(pd)pd.textContent=nm;
   var inf=jhInfo(j);if(ad)inf.address=ad;if(orgHas('drafting')&&hasRole('drafting')&&!hasRole('jobs')){inf.stageManual='drafting';inf.dfHold=true;}
   saveData();try{refresh();}catch(e){}closeJobs();try{if(_currentView==='drafting')renderDrafting();}catch(e){}showMsg('✓ Job “'+nm+'” added');}
@@ -7891,6 +7891,7 @@ function selectJob(id){
   closeJobs();showMsg('📂 '+job.name);
 }
 
+function jobByName(nm,exId){var n=String(nm||'').toLowerCase().replace(/[^a-z0-9]+/g,'');if(!n||n==='newjob'||n==='importedproject')return null;for(var id in allJobs){if(id===exId)continue;var j=allJobs[id];if(j&&String(j.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'')===n)return j;}return null;}
 async function newJob(_opts){
   _opts=_opts||{};
   // ── PENDING-IMPORT DETECTION ─────────────────────────────────────
@@ -7905,6 +7906,11 @@ async function newJob(_opts){
     if(_np>0){
       _includePending=confirm('📊 You have '+_np+' pending units from a just-imported Excel.\n\nOK = use them in this new project\nCancel = ignore the import and start empty');
     }
+  }
+  /* v523: never create a second project with the same name — reuse the existing one */
+  if(_includePending&&_lastImportFileNames&&_lastImportFileNames.length){
+    var _dn=_deriveImportProjectName(),_ex=jobByName(_dn);
+    if(_ex){selectJob(_ex.id);confirmImport();try{renderJobsHome();}catch(e){}showMsg('✓ Added to the existing project “'+_ex.name+'” (no duplicate created)');return;}
   }
   var _stashU=_includePending?pendingUnits.slice():[];
   var _stashG=_includePending?pendingGlass.slice():[];
@@ -8540,7 +8546,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v522 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v523 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
