@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v523 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v524 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8546,7 +8546,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v523 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v524 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11072,7 +11072,7 @@ function qtClose(){var ov=document.getElementById('qt-ov');if(ov)ov.style.displa
 function qtPaint(){var j=allJobs[_qtJob],ov=document.getElementById('qt-ov');if(!j||!ov)return;var Q=qtData(j,true),q=qtCur(j);
   ov.innerHTML='<div id="qt-bar"><div style="font-weight:600;font-size:15px;margin-right:auto;">Quote · '+esc(j.name||'Job')+' <span id="qt-sync" style="font-size:12px;margin-left:8px;"></span></div>'+
     '<select onchange="qtPick(this.value)" style="width:auto;padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;background:#fff;font:inherit;">'+Q.versions.map(function(x,i){return '<option value="'+i+'"'+(i===Q.cur?' selected':'')+'>V'+(x.v||i+1)+' · '+qtDate(x.date)+'</option>';}).join('')+'</select>'+
-    '<button class="btn btn-blue btn-sm" onclick="qcOpen()">Price calculator</button><button class="btn btn-outline btn-sm" onclick="fpOpen()">Flat pack</button><button class="btn btn-blue btn-sm" onclick="qtPdfPick()" title="Read a quote PDF: area, description and price become the areas of this quote">📄 Import quote PDF</button><button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button>'+(Q.versions.length>1?'<button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="qtDelVer()" title="Delete the version shown">Delete V'+(q.v||1)+'</button>':'')+'<button class="btn btn-outline btn-sm" onclick="qtHist()" title="Earlier copies kept in the cloud">⏪ History</button><button class="btn btn-outline btn-sm" onclick="qtBackup()" title="Download all quotes as a backup file">⬇ Backup</button><button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
+    '<button class="btn btn-blue btn-sm" onclick="qcOpen()">Price calculator</button><button class="btn btn-outline btn-sm" onclick="fpOpen()">Flat pack</button><button class="btn btn-blue btn-sm" onclick="qtPdfPick()" title="Read a quote PDF: area, description and price become the areas of this quote">📄 Import quote PDF</button><button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button>'+(Q.versions.length>1?'<button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="qtDelVer()" title="Delete the version shown">Delete V'+(q.v||1)+'</button>':'')+'<button class="btn btn-sm" style="background:#166534;color:#fff;border:0;font-weight:700;" onclick="qtSaveBtn()" title="Save this quote now and check that it really is stored">💾 Save</button><button class="btn btn-outline btn-sm" onclick="qtHist()" title="Earlier copies kept in the cloud">⏪ History</button><button class="btn btn-outline btn-sm" onclick="qtBackup()" title="Download all quotes as a backup file">⬇ Backup</button><button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
   ov.querySelectorAll('textarea.qt-in').forEach(qtGrow);}
 // v514: Print / PDF first asks which pages to print (and the date) — e.g. only the last page for the customer
 function qtPrint(){var j=allJobs[_qtJob];if(!j)return;qtSaveNow();var q=qtCur(j),old=document.getElementById('qt-pp');if(old)old.remove();
@@ -11182,6 +11182,18 @@ async function qtHist(){var j=allJobs[_qtJob];if(!j)return;if(!(window.cloud&&cl
 function qtHistRestore(i){var v=(window._qtHiL||[])[i];if(!v||!_qtJob)return;if(!confirm('Replace the quote now on screen with this earlier copy?\n\n(The quote on screen is kept as a history copy first.)'))return;
   var cur=QT_STORE[_qtJob];if(cur)qtSnap(_qtJob,cur,true);
   var q=JSON.parse(JSON.stringify(v));['bak','src','savedAt','blank'].forEach(function(k){delete q[k];});QT_STORE[_qtJob]=q;qtPersist(_qtJob);qtPaint();var h=document.getElementById('qt-hi');if(h)h.remove();showMsg('✓ Earlier copy restored');}
+function qtSaveBtn(){var id=_qtJob,j=allJobs[id];if(!j)return;try{qtSaveNow();}catch(e){}var Q=QT_STORE[id];if(!Q){showMsg('⚠ Nothing to save');return;}
+  try{qtPersist(id);}catch(e){}
+  try{if(qtWeight(Q)>0)qtSnap(id,Q,true);}catch(e){}
+  var tot='';try{tot=qtMoney(qtSumsQ(qtCur(j)).tot);}catch(e){}
+  showMsg('… saving '+j.name);
+  setTimeout(function(){var ok=[],bad=[];
+    try{var l=qtLocal(id);if(l&&l.updatedAt>=Q.updatedAt)ok.push('this device');}catch(e){}
+    var done=function(){var o=_qtSync[id];if(o&&o.st==='ok')ok.push('cloud');else bad.push('cloud');
+      if(bad.length||!ok.length)showMsg('⚠ NOT fully saved ('+(bad.join(', ')||'device')+'). Press Save again, then 📥 Backup.');
+      else showMsg('✓ Saved '+j.name+' · '+tot+' incl. GST · stored on '+ok.join(' + '));qtSyncPaint();};
+    try{window.storage.get('cbkqt:'+id).then(function(r){try{var v=r&&JSON.parse(r.value||r);if(v&&v.updatedAt>=Q.updatedAt)ok.push('app database');}catch(e){}done();},done);}catch(e){done();}
+  },2500);}
 function qtBackup(){try{var o={app:'CabLine',kind:'quotes-backup',at:new Date().toISOString(),quotes:{}};Object.keys(allJobs||{}).forEach(function(id){var Q=QT_STORE[id]||qtLocal(id);if(Q&&Q.versions)o.quotes[id]={job:allJobs[id].name,quote:Q};});
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:'application/json'}));a.download='CabLine-quotes-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},500);showMsg('✓ Backup file downloaded');}catch(e){alert('Could not make the backup: '+e.message);}}
 // storage warning: the browser keeps about 5 MB per site; tell before it fills up
