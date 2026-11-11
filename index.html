@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v513 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v514 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8531,7 +8531,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v513 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v514 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -11029,11 +11029,27 @@ function qtPaint(){var j=allJobs[_qtJob],ov=document.getElementById('qt-ov');if(
     '<select onchange="qtPick(this.value)" style="width:auto;padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;background:#fff;font:inherit;">'+Q.versions.map(function(x,i){return '<option value="'+i+'"'+(i===Q.cur?' selected':'')+'>V'+(x.v||i+1)+' · '+qtDate(x.date)+'</option>';}).join('')+'</select>'+
     '<button class="btn btn-blue btn-sm" onclick="qcOpen()">Price calculator</button><button class="btn btn-outline btn-sm" onclick="fpOpen()">Flat pack</button><button class="btn btn-blue btn-sm" onclick="qtPdfPick()" title="Read a quote PDF: area, description and price become the areas of this quote">📄 Import quote PDF</button><button class="btn btn-outline btn-sm" onclick="qtAddStd()">+ All standard areas</button><button class="btn btn-outline btn-sm" onclick="qtNewVer()">+ New version</button>'+(Q.versions.length>1?'<button class="btn btn-outline btn-sm" style="color:#991b1b;" onclick="qtDelVer()" title="Delete the version shown">Delete V'+(q.v||1)+'</button>':'')+'<button class="btn btn-outline btn-sm" onclick="qtSaveNow()">Save</button><button class="btn btn-blue btn-sm" onclick="qtPrint()">Print / PDF</button><button class="btn btn-outline btn-sm" onclick="qtClose()">Close</button></div>'+qtDoc(q,true);
   ov.querySelectorAll('textarea.qt-in').forEach(qtGrow);}
-function qtPrint(){var j=allJobs[_qtJob];if(!j)return;qtSaveNow();var q=qtCur(j);
+// v514: Print / PDF first asks which pages to print (and the date) — e.g. only the last page for the customer
+function qtPrint(){var j=allJobs[_qtJob];if(!j)return;qtSaveNow();var q=qtCur(j),old=document.getElementById('qt-pp');if(old)old.remove();
+  var sv={};try{sv=JSON.parse(localStorage.getItem('qtPrintPages')||'{}');}catch(e){}
+  var chk=function(k,t,sub){return '<label style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #e5e0d6;border-radius:10px;margin-bottom:8px;cursor:pointer;background:#fff;"><input type="checkbox" id="qt-pp-'+k+'" '+(sv[k]===false?'':'checked')+' style="margin-top:3px;"><span><b>'+t+'</b><br><span style="font-size:12px;color:#78716c;">'+sub+'</span></span></label>';};
+  var d=document.createElement('div');d.id='qt-pp';d.setAttribute('style','position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;');
+  d.innerHTML='<div style="background:#faf8f3;border-radius:14px;max-width:440px;width:100%;padding:20px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.4);font-family:inherit;"><div style="font-size:17px;font-weight:700;margin-bottom:4px;">Which pages do you want to print?</div><div style="font-size:12px;color:#78716c;margin-bottom:12px;">Tick the pages, check the date, then press Print.</div>'+
+    chk('p1','Page 1 — Quote','Quote title, date, project ref, total')+chk('p2','Page 2 — Terms','Terms, acceptance and bank details')+chk('p3','Page 3 — Joinery Schedule','Areas, descriptions and prices')+
+    '<div style="display:flex;align-items:center;gap:10px;margin:12px 0 14px;"><b style="font-size:13px;">Date</b><input type="date" id="qt-pp-date" value="'+qtEsc(q.date||qtToday())+'" style="padding:7px 10px;border:1px solid #d6cfc4;border-radius:8px;font:inherit;"></div>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;"><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'qt-pp\').remove()">Cancel</button><button class="btn btn-blue btn-sm" onclick="qtPrintGo()">🖨 Print</button></div></div>';
+  document.body.appendChild(d);}
+function qtPrintGo(){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),g=function(k){var e=document.getElementById('qt-pp-'+k);return !e||e.checked;},sel={p1:g('p1'),p2:g('p2'),p3:g('p3')};
+  if(!sel.p1&&!sel.p2&&!sel.p3){alert('Tick at least one page');return;}
+  try{localStorage.setItem('qtPrintPages',JSON.stringify(sel));}catch(e){}
+  var de=document.getElementById('qt-pp-date');if(de&&de.value&&de.value!==q.date){q.date=de.value;qtPersist(_qtJob);qtPaint();}
+  var pp=document.getElementById('qt-pp');if(pp)pp.remove();qtPrintDo(sel);}
+function qtPrintDo(sel){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j);
   var name=String((q.v<10?'0':'')+q.v+'_Quote - '+(q.ref||j.name||'Job')+' - V'+q.v).replace(/[\\/:*?"<>|]/g,'');
   // v470: print from a hidden frame inside the app (works in the installed app too — no pop-up window needed)
   var old=document.getElementById('qt-print');if(old)old.remove();var f=document.createElement('iframe');f.id='qt-print';f.setAttribute('style','position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden');document.body.appendChild(f);
   var d=f.contentWindow.document;d.open();d.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(name)+'</title><style>body{margin:0;background:#fff}'+QT_CSS+'</style></head><body>'+qtDoc(q,false)+'</body></html>');d.close();
+  if(sel){var pgs=d.querySelectorAll('section.qt-page');pgs.forEach(function(sc){var k=sc.classList.contains('qt-p1')?'p1':(sc.classList.contains('qt-p2')?'p2':'p3');if(!sel[k])sc.remove();});var rest=d.querySelectorAll('section.qt-page');if(rest.length)rest[rest.length-1].style.pageBreakAfter='auto';}
   var t0=document.title;setTimeout(function(){try{document.title=name;f.contentWindow.focus();f.contentWindow.print();}catch(e){alert('Could not open printing: '+e.message);}setTimeout(function(){document.title=t0;},1500);},350);}
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&_qtJob&&document.getElementById('qt-ov')&&document.getElementById('qt-ov').style.display!=='none')qtClose();});
 function qtSumm(j){var Q=qtData(j,false);if(!Q||!Q.versions.length)return 'No quote yet';var q=Q.versions[Q.cur!=null?Q.cur:Q.versions.length-1];return 'V'+(q.v||1)+' · '+qtMoney(qtSumsQ(q).tot)+' incl. GST';}
