@@ -1389,7 +1389,7 @@ body.is-orgadm #view-admin .tabs .tab:not(:first-child),body.is-orgadm #mail-car
     <span id="brand-ver"></span>
     <div style="display:none">
       <div class="brand-name" id="brand-name">PROJECT MANAGER SOFTWARE</div>
-      <div class="brand-sub" id="brand-sub">v525 · Design by Kiya</div>
+      <div class="brand-sub" id="brand-sub">v526 · Design by Kiya</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -8546,7 +8546,7 @@ var BRAND_LOGOS={
 // — the old per-view truck logo + separate "Project Manager" dashboard brand
 // were removed along with the Project Manager feature itself.
 var BRAND_NAMES={tracker:'PROJECT MANAGER SOFTWARE'};
-var BRAND_SUBS={tracker:'v525 · Design by Kiya'};
+var BRAND_SUBS={tracker:'v526 · Design by Kiya'};
 
 function updateBrand(view){
   var logoEl=document.getElementById('brand-logo');
@@ -10940,6 +10940,7 @@ function qcLoad(){if(QC)return Promise.resolve(QC);var loc=null;try{loc=JSON.par
 function qcSaveRates(){try{localStorage.setItem('cbk-qc-rates:'+(SESSION.org||''),JSON.stringify(QC));}catch(e){}
   try{cloud.db.collection('quotes').doc(qcRatesId()).set({rates:QC,org:SESSION.org||'',at:Date.now()}).then(function(){showMsg('✓ Rates saved for your company');}).catch(function(e){alert('Could not save rates: '+e.message);});}catch(e){}}
 function qcIn(){var j=allJobs[_qtJob],q=j&&qtCur(j),r=q&&q.rows[_qcRow];var c=JSON.parse(JSON.stringify((r&&r.calc)||{}));c.area=r?(r.area||''):'';c.desc=r?(r.desc||''):'';var o=Object.assign({fin:'lam',carc:'m16',rate:'',height:'2400',base:'',over:'',tall:'',island:'',drawers:'',extra:'',specials:[],supplyOnly:false},c);if(!Array.isArray(o.specials))o.specials=[];if(qtNum(o.extra)){o.specials.push({name:'Extra items',qty:'1',price:String(qtNum(o.extra))});o.extra='';}if(o.rate===''){var f=qcFind(QC.finishes,o.fin);o.rate=String(Math.round((f[2]+f[3])/2));}return o;}
+function qcFinSet(v){if(_qcC.fin===v&&window._qcFinDone===v+'|'+_qcC.rate)return;_qcC.fin=v;var f=qcFind(QC.finishes,v);_qcC.rate=String(Math.round((f[2]+f[3])/2));window._qcFinDone=v+'|'+_qcC.rate;qcPaint();}
 function qcFind(L,k){return L.filter(function(x){return x[0]===k;})[0]||L[0];}
 function qcByH(h,a,b){var x=qtNum(h)||2400;if(x<=2400)return a;if(x>=2700)return b;return Math.round((a+(b-a)*(x-2400)/300)*10)/10;}
 function qcOvPct(h){return qcByH(h,QC.ov2400,QC.ov2700);}
@@ -10953,7 +10954,7 @@ function qcCalc(c){var R=QC,f=qcFind(R.finishes,c.fin),cb=qcFind(R.carcass,c.car
   if(c.supplyOnly&&!f[4]){var less=sub*R.supplyOnlyLess/100;parts.push(['Supply only (no installation)',-less,'− '+R.supplyOnlyLess+'%']);sub-=less;}
   var rt=Math.max(1,R.roundTo||1),ex=Math.round(sub/rt)*rt;return {rate:rate,rateC:rateC,ov:ov,parts:parts,ex:ex,gst:Math.round(ex*0.1),inc:ex+Math.round(ex*0.1),f:f,cb:cb};}
 async function qcOpen(row){var j=allJobs[_qtJob];if(!j)return;await qcLoad();var q=qtCur(j);_qcRow=row!=null?row:(_qcRow>=0&&q.rows[_qcRow]?_qcRow:(q.rows.length?0:-1));if(_qcRow>=q.rows.length)_qcRow=-1;var _k=_qtJob+'|'+_qcRow;if(!(window._qcC&&window._qcKey===_k))window._qcC=qcIn();window._qcKey=_k;qcPaint();}   // v511: reopening keeps what was typed, until it is put into the quote
-function qcPaint(tab){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),c=window._qcC,R=QC;
+function qcPaint(tab){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),c=window._qcC,R=QC;if(c&&R&&!R.finishes.some(function(x){return x[0]===c.fin;})){c.fin=R.finishes[0][0];c.rate=String(Math.round((R.finishes[0][2]+R.finishes[0][3])/2));}
   var ov=document.getElementById('qc-ov');if(!ov){ov=document.createElement('div');ov.id='qc-ov';ov.setAttribute('data-raw-colour','');ov.style.cssText='position:fixed;inset:0;z-index:9500;background:rgba(19,17,16,.5);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(env(titlebar-area-height,0px) + 20px) 12px 24px;-webkit-app-region:no-drag;app-region:no-drag;';ov.onclick=null;document.body.appendChild(ov);}   // v511: a click outside no longer closes the calculator (it lost everything typed)
   ov.style.display='flex';
   if(tab==='rates'){ov.innerHTML=qcRatesHTML();return;}
@@ -10963,7 +10964,7 @@ function qcPaint(tab){var j=allJobs[_qtJob];if(!j)return;var q=qtCur(j),c=window
     '<div style="display:flex;gap:8px;align-items:center;padding:14px 16px;border-bottom:1px solid #eee;flex-wrap:wrap;"><div style="flex:1;min-width:200px;"><div style="font-weight:700;font-size:15px;">Price calculator</div><div style="font-size:12px;color:#71717a;">Market rates per linear metre, AUD, ex GST. Change them in Rates.</div></div><button class="btn btn-outline btn-sm" onclick="qcPaint(\'rates\')">Rates</button><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'qc-ov\').style.display=\'none\'">Close</button></div>'+
     '<div style="padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">'+
       '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Area in this quote<select onchange="qcPickRow(this.value)">'+q.rows.map(function(r,i){return '<option value="'+i+'"'+(i===_qcRow?' selected':'')+'>'+esc(r.area||('Area '+(i+1)))+'</option>';}).join('')+'<option value="-1"'+(_qcRow<0?' selected':'')+'>+ New area…</option></select></label>'+
-      '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Door finish<select id="qc-fin" onchange="_qcC.fin=this.value;var f=qcFind(QC.finishes,this.value);_qcC.rate=String(Math.round((f[2]+f[3])/2));qcPaint()">'+R.finishes.map(function(x){return '<option value="'+x[0]+'"'+(c.fin===x[0]?' selected':'')+'>'+esc(x[1])+'</option>';}).join('')+'</select></label>'+
+      '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Door finish<select id="qc-fin" onchange="qcFinSet(this.value)" oninput="qcFinSet(this.value)">'+R.finishes.map(function(x){return '<option value="'+x[0]+'"'+(c.fin===x[0]?' selected':'')+'>'+esc(x[1])+'</option>';}).join('')+'</select></label>'+
       '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Carcass board'+sel('carc',R.carcass)+'</label>'+
       '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#52525b;">Total cabinet height<select id="qc-height" onchange="_qcC.height=this.value;qcRes()"><option value="2400"'+(String(c.height)==='2400'?' selected':'')+'>2400 mm</option><option value="2700"'+(String(c.height)==='2700'?' selected':'')+'>2700 mm</option></select></label>'+
       (function(){var f=qcFind(R.finishes,c.fin),lo=f[2],hi=f[3],v=qtNum(c.rate)||Math.round((lo+hi)/2);return '<div style="grid-column:1/-1;background:#faf8f4;border-radius:10px;padding:10px 12px;"><div style="display:flex;justify-content:space-between;font-size:12px;color:#52525b;"><span>Price per metre — market lowest <b>'+qtMoney(lo)+'</b></span><span>highest <b>'+qtMoney(hi)+'</b></span></div>'+
